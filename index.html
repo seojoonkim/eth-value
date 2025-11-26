@@ -931,6 +931,35 @@
             color: var(--text);
         }
 
+        .weighting-method {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .weighting-title {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        
+        .weighting-items {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 10px;
+        }
+        
+        .weight-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -1836,6 +1865,44 @@
                         <span class="change" id="tx-total-change">--</span>
                     </div>
                 </div>
+
+                <div class="metric-card" data-metric="nvt">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>NVT Ratio</h4>
+                            <div class="metric-value-large" id="nvt-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="nvt-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>MCap ÷ TxVol(7d avg) · Target: 50</span>
+                        <span class="change" id="nvt-change">--</span>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="activeAddr">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Active Addresses (Est.)</h4>
+                            <div class="metric-value-large" id="active-addr-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="active-addr-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>From Tx Count · ~3 tx/addr</span>
+                        <span class="change" id="active-addr-change">--</span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1845,7 +1912,7 @@
                 <div class="section-title">
                     Valuation Analysis
                 </div>
-                <span class="section-badge">8 Models</span>
+                <span class="section-badge">12 Models</span>
             </div>
 
             <div class="valuation-layout">
@@ -1878,12 +1945,25 @@
                             <span class="value" id="summary-current">$--</span>
                         </div>
                         <div class="current-vs-model-row">
-                            <span class="label">Avg Model Price</span>
+                            <span class="label">Weighted Avg</span>
                             <span class="value" id="summary-model">$--</span>
+                        </div>
+                        <div class="current-vs-model-row">
+                            <span class="label">Median</span>
+                            <span class="value" id="summary-median" style="color: var(--text-muted); font-size: 11px;">$--</span>
                         </div>
                         <div class="current-vs-model-row">
                             <span class="label">Potential</span>
                             <span class="value" id="summary-upside" style="color: var(--green)">--%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="weighting-method">
+                        <div class="weighting-title">Reliability Weighting</div>
+                        <div class="weighting-items">
+                            <span class="weight-item"><span class="reliability-badge high">High</span> ×9</span>
+                            <span class="weight-item"><span class="reliability-badge medium">Med</span> ×5</span>
+                            <span class="weight-item"><span class="reliability-badge low">Low</span> ×2</span>
                         </div>
                     </div>
                 </div>
@@ -2064,6 +2144,90 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="method-card">
+                    <div class="method-header">
+                        <span class="method-name">NVT Ratio</span>
+                    </div>
+                    <div class="method-content">
+                        <div class="method-left">
+                            <div class="method-formula">OnChainVol(7d avg) × 365 × NVT ÷ Supply</div>
+                            <div class="method-meta">
+                                <div class="reliability-row">
+                                    <span class="reliability-label">Reliability</span>
+                                    <span class="reliability-badge medium">Medium</span>
+                                </div>
+                            </div>
+                            <div class="method-note caution">On-chain volume estimation from CEX data may be imprecise</div>
+                        </div>
+                        <div class="method-right">
+                            <div class="method-desc">Network Value to Transactions ratio, analogous to P/S ratio in traditional finance. Developed by Willy Woo, this metric compares market cap to on-chain transaction volume. Uses 7-day moving average to reduce volatility. A target NVT of 50 indicates healthy network utility. We estimate on-chain volume as ~15% of CEX volume. Lower NVT suggests undervaluation relative to actual network usage. Widely tracked by Glassnode and CryptoQuant.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-card">
+                    <div class="method-header">
+                        <span class="method-name">Supply Shock</span>
+                    </div>
+                    <div class="method-content">
+                        <div class="method-left">
+                            <div class="method-formula">Price × (1 + ExchOutflow% × 1.5)</div>
+                            <div class="method-meta">
+                                <div class="reliability-row">
+                                    <span class="reliability-label">Reliability</span>
+                                    <span class="reliability-badge low">Low</span>
+                                </div>
+                            </div>
+                            <div class="method-note caution">1.5x multiplier is proprietary; exchange data may be incomplete</div>
+                        </div>
+                        <div class="method-right">
+                            <div class="method-desc">Measures supply-side price pressure from exchange outflows. When ETH leaves exchanges, available sell-side liquidity decreases, creating upward price pressure. Calculates the percentage decrease from peak exchange reserves and applies a 1.5x multiplier to estimate price impact. Data sourced from Santiment exchange_balance metric. Popular among on-chain analysts at CryptoQuant for identifying accumulation phases.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-card">
+                    <div class="method-header">
+                        <span class="method-name">Active Users</span>
+                    </div>
+                    <div class="method-content">
+                        <div class="method-left">
+                            <div class="method-formula">EstActiveAddr × $2,500 ÷ Supply</div>
+                            <div class="method-meta">
+                                <div class="reliability-row">
+                                    <span class="reliability-label">Reliability</span>
+                                    <span class="reliability-badge low">Low</span>
+                                </div>
+                            </div>
+                            <div class="method-note caution">Address estimation from tx count is approximate; value per user is arbitrary</div>
+                        </div>
+                        <div class="method-right">
+                            <div class="method-desc">A Metcalfe's Law variant that estimates network value from active users. Daily active addresses are estimated from transaction count (assuming ~3 tx per active address). Each active user is assigned a $2,500 value contribution based on historical user acquisition costs in crypto. This model captures network effects where more users increase utility and value for all participants.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-card">
+                    <div class="method-header">
+                        <span class="method-name">Revenue Yield</span>
+                    </div>
+                    <div class="method-content">
+                        <div class="method-left">
+                            <div class="method-formula">Annual_Revenue ÷ 2.5% ÷ Supply</div>
+                            <div class="method-meta">
+                                <div class="reliability-row">
+                                    <span class="reliability-label">Reliability</span>
+                                    <span class="reliability-badge high">High</span>
+                                </div>
+                            </div>
+                            <div class="method-note positive">Bond-like methodology with institutional acceptance</div>
+                        </div>
+                        <div class="method-right">
+                            <div class="method-desc">Reverse-engineers fair value from a target protocol yield of 2.5%, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees, and investors require 2.5% yield, the implied market cap is X ÷ 0.025. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class. The 2.5% target reflects yields on high-growth infrastructure assets.</div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="methodology-disclaimer">
                 <strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. 
@@ -2104,7 +2268,12 @@
             txEthHistory: [], txTotalHistory: [],
             // Exchange Reserve (Santiment)
             exchangeReserve: 0,
-            reserveHistory: []
+            reserveHistory: [],
+            // NVT & Active Addresses
+            nvtRatio: 0,
+            nvtHistory: [],
+            activeAddresses: 0,
+            activeAddrHistory: []
         };
 
         // Formatters
@@ -2119,6 +2288,7 @@
         let priceChart, volumeChart, tvlChart, stakingChart, l2Chart, dexChart, feesChart, stablesChart;
         let supplyChart, dominanceChart, ethbtcChart, reserveChart;
         let txEthChart, txTotalChart;
+        let nvtChart, activeAddrChart;
 
         const chartConfig = (color, data, labels, formatFn, yAxisFormat) => ({
             type: 'line',
@@ -2498,12 +2668,15 @@
         }
 
         async function fetchDefiLlama() {
+            console.log('fetchDefiLlama: Starting...');
             // Fetch chains data
             try {
                 const chainsRes = await fetch('https://api.llama.fi/v2/chains');
                 const chains = await chainsRes.json();
+                console.log('fetchDefiLlama: Chains fetched, count:', chains.length);
                 
                 state.tvl = chains.find(c => c.name === 'Ethereum')?.tvl || 0;
+                console.log('fetchDefiLlama: ETH TVL set to:', state.tvl);
                 document.getElementById('tvl-value').textContent = fmt.usd(state.tvl);
 
                 // L2 TVL - case-insensitive search with multiple name variants
@@ -2669,6 +2842,13 @@
                     }
                 }
             } catch (e) { console.error('Stables error:', e); }
+            
+            console.log('fetchDefiLlama: Completed. State:', {
+                tvl: state.tvl,
+                l2Tvl: state.l2Tvl,
+                fees: state.fees,
+                stablecoins: state.stablecoins
+            });
         }
 
         async function fetchStaking() {
@@ -3001,6 +3181,136 @@
             // 이제 통합 차트로 처리됨
         }
 
+        // NVT Ratio 계산 및 차트 업데이트
+        function calculateAndUpdateNVT() {
+            // NVT = Market Cap / (Daily On-chain Volume * 365)
+            // On-chain volume은 CEX volume의 약 15%로 추정
+            // 7일 평균 사용으로 변동성 완화
+            
+            console.log('calculateAndUpdateNVT - input:', {
+                volume24h: state.volume24h,
+                marketCap: state.marketCap,
+                volumeHistoryLength: state.volumeHistory?.length || 0
+            });
+            
+            // 7일 평균 거래량 계산
+            let avgVolume7d = state.volume24h || 15000000000;
+            if (state.volumeHistory && state.volumeHistory.length >= 7) {
+                const last7 = state.volumeHistory.slice(-7);
+                avgVolume7d = last7.reduce((sum, d) => sum + d.value, 0) / 7;
+            }
+            
+            const mCap = state.marketCap || (state.price * 120000000);
+            
+            if (avgVolume7d > 0 && mCap > 0) {
+                const onChainVol = avgVolume7d * 0.15;
+                const annualizedVol = onChainVol * 365;
+                state.nvtRatio = mCap / annualizedVol;
+                
+                const nvtEl = document.getElementById('nvt-value');
+                if (nvtEl) {
+                    nvtEl.textContent = state.nvtRatio.toFixed(1);
+                    console.log('NVT value set (7d avg):', state.nvtRatio.toFixed(1));
+                }
+            }
+            
+            // 히스토리가 없으면 차트만 스킵
+            if (!state.volumeHistory || state.volumeHistory.length === 0) {
+                console.log('No volume history for NVT chart');
+                return;
+            }
+            if (!state.priceHistory || state.priceHistory.length === 0) {
+                console.log('No price history for NVT chart');
+                return;
+            }
+            
+            state.nvtHistory = [];
+            
+            // 7일 이동 평균으로 NVT 히스토리 계산
+            for (let i = 6; i < state.volumeHistory.length; i++) {
+                // i-6 ~ i 까지 7일 평균
+                let volSum = 0;
+                for (let j = i - 6; j <= i; j++) {
+                    volSum += state.volumeHistory[j].value;
+                }
+                const avgVol = volSum / 7;
+                
+                const vol = state.volumeHistory[i];
+                const priceData = state.priceHistory.find(p => 
+                    p.date.toDateString() === vol.date.toDateString()
+                );
+                
+                if (priceData && avgVol > 0) {
+                    const onChainVol = avgVol * 0.15;
+                    const annualizedVol = onChainVol * 365;
+                    const estMarketCap = priceData.value * (state.circulatingSupply || 120000000);
+                    const nvt = annualizedVol > 0 ? estMarketCap / annualizedVol : 0;
+                    
+                    state.nvtHistory.push({
+                        date: vol.date,
+                        value: nvt
+                    });
+                }
+            }
+            
+            // 변화율 계산
+            if (state.nvtHistory.length > 30 && state.nvtRatio > 0) {
+                const old = state.nvtHistory[state.nvtHistory.length - 30].value;
+                const change = ((state.nvtRatio - old) / old) * 100;
+                const changeEl = document.getElementById('nvt-change');
+                if (changeEl) {
+                    changeEl.textContent = fmt.pct(change) + ' 30D';
+                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                }
+            }
+            
+            // 차트 업데이트
+            if (state.nvtHistory.length > 0) {
+                updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#dc2626', 'nvt');
+            }
+        }
+
+        // Active Addresses 추정 및 차트 업데이트
+        function calculateAndUpdateActiveAddr() {
+            // Active Addresses = Daily Tx Count / 3 (평균 3 tx per active address)
+            
+            // 현재 Active Addresses 계산 (메인 숫자) - 히스토리 없어도 표시
+            if (state.txTotal > 0) {
+                state.activeAddresses = state.txTotal / 3;
+                
+                const addrEl = document.getElementById('active-addr-value');
+                if (addrEl) addrEl.textContent = fmt.num(state.activeAddresses);
+            }
+            
+            // 히스토리가 없으면 차트만 스킵
+            if (!state.txTotalHistory || state.txTotalHistory.length === 0) return;
+            
+            state.activeAddrHistory = [];
+            
+            for (const tx of state.txTotalHistory) {
+                state.activeAddrHistory.push({
+                    date: tx.date,
+                    value: tx.value / 3 // 주소당 평균 3 트랜잭션
+                });
+            }
+            
+            // 변화율 계산
+            if (state.activeAddrHistory.length > 30 && state.activeAddresses > 0) {
+                const old = state.activeAddrHistory[state.activeAddrHistory.length - 30].value;
+                const change = ((state.activeAddresses - old) / old) * 100;
+                const changeEl = document.getElementById('active-addr-change');
+                if (changeEl) {
+                    changeEl.textContent = fmt.pct(change) + ' 30D';
+                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                }
+            }
+            
+            // 차트 업데이트
+            if (state.activeAddrHistory.length > 0) {
+                updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#7c3aed', 'activeAddr');
+            }
+        }
+
         function updateSupplyDistributionChart(days = 365) {
             const ctx = document.getElementById('supply-chart');
             if (!ctx) return;
@@ -3271,12 +3581,18 @@
             if (key === 'stables' && stablesChart) stablesChart.destroy();
             if (key === 'txEth' && txEthChart) txEthChart.destroy();
             if (key === 'txTotal' && txTotalChart) txTotalChart.destroy();
+            if (key === 'nvt' && nvtChart) nvtChart.destroy();
+            if (key === 'activeAddr' && activeAddrChart) activeAddrChart.destroy();
 
             const formatFn = (key === 'staking') 
                 ? (v) => fmt.num(v) + ' ETH'
                 : (key === 'txEth' || key === 'txTotal')
                     ? (v) => fmt.num(v) + ' tx'
-                    : (v) => fmt.usd(v);
+                    : (key === 'nvt')
+                        ? (v) => v.toFixed(1)
+                        : (key === 'activeAddr')
+                            ? (v) => fmt.num(v)
+                            : (v) => fmt.usd(v);
 
             const chart = new Chart(ctx.getContext('2d'), chartConfig(
                 color, 
@@ -3292,25 +3608,33 @@
             if (key === 'stables') stablesChart = chart;
             if (key === 'txEth') txEthChart = chart;
             if (key === 'txTotal') txTotalChart = chart;
+            if (key === 'nvt') nvtChart = chart;
+            if (key === 'activeAddr') activeAddrChart = chart;
         }
 
         // Valuation with formulas
         function calculateValuations() {
             const models = [];
-            const cs = state.circulatingSupply;
+            const cs = state.circulatingSupply || 120000000; // 기본값 120M ETH
+            
+            // 기본값 설정 (API 실패 시 대비)
+            const tvl = state.tvl || 50000000000; // 기본 TVL $50B
+            const stakedEth = state.stakedEth || 34000000; // 기본 staked 34M ETH
+            const l2Tvl = state.l2Tvl || 15000000000; // 기본 L2 TVL $15B
+            const fees = state.fees || 5000000; // 기본 일일 fees $5M
 
             // reliability: 1-5, source: 사용처/근거
-            if (state.tvl > 0 && cs > 0) {
+            if (tvl > 0 && cs > 0) {
                 models.push({ 
                     name: 'TVL Multiple', 
                     formula: 'TVL × 7 ÷ Supply', 
-                    price: (state.tvl * 7) / cs,
+                    price: (tvl * 7) / cs,
                     reliability: 3,
                     source: 'DeFi Analysts'
                 });
             }
-            if (state.stakedEth > 0 && cs > 0) {
-                const scarcity = cs / (cs - state.stakedEth);
+            if (stakedEth > 0 && cs > 0) {
+                const scarcity = cs / (cs - stakedEth);
                 models.push({ 
                     name: 'Staking Scarcity', 
                     formula: 'Price × √(Supply ÷ Liquid)', 
@@ -3319,20 +3643,20 @@
                     source: 'ETH-specific'
                 });
             }
-            if (state.marketCap > 0 && state.tvl > 0) {
+            if (state.marketCap > 0 && tvl > 0) {
                 models.push({ 
                     name: 'MC/TVL Fair Value', 
                     formula: 'Price × (6 ÷ CurrentRatio)', 
-                    price: state.price * (6 / (state.marketCap / state.tvl)),
+                    price: state.price * (6 / (state.marketCap / tvl)),
                     reliability: 4,
                     source: 'Messari, Delphi'
                 });
             }
-            if (state.tvl > 0 && cs > 0) {
+            if (tvl > 0 && cs > 0) {
                 models.push({ 
                     name: "Metcalfe's Law", 
                     formula: '2 × TVL^1.5 ÷ Supply', 
-                    price: (Math.pow(state.tvl / 1e9, 1.5) * 1e9 * 2) / cs,
+                    price: (Math.pow(tvl / 1e9, 1.5) * 1e9 * 2) / cs,
                     reliability: 4,
                     source: 'Academic Research'
                 });
@@ -3355,24 +3679,95 @@
                     source: 'Market Convention'
                 });
             }
-            if (state.l2Tvl > 0 && state.tvl > 0 && cs > 0) {
+            if (l2Tvl > 0 && tvl > 0 && cs > 0) {
                 models.push({ 
                     name: 'L2 Ecosystem', 
                     formula: '(TVL + L2×2) × 6 ÷ Supply', 
-                    price: (state.tvl + state.l2Tvl * 2) * 6 / cs,
+                    price: (tvl + l2Tvl * 2) * 6 / cs,
                     reliability: 2,
                     source: 'Experimental'
                 });
             }
-            if (state.fees > 0 && cs > 0) {
+            if (fees > 0 && cs > 0) {
                 models.push({ 
                     name: 'P/E Ratio (25x)', 
                     formula: 'AnnualFees × 25 ÷ Supply', 
-                    price: (state.fees * 365 * 25) / cs,
+                    price: (fees * 365 * 25) / cs,
                     reliability: 5,
                     source: 'TradFi Standard'
                 });
             }
+            
+            // NEW MODEL 1: NVT Ratio (Network Value to Transactions)
+            // 온체인 거래량 대비 적정 시총 산출 - 7일 평균 사용으로 변동성 완화
+            let avgVolume7d = state.volume24h || 15000000000;
+            if (state.volumeHistory && state.volumeHistory.length >= 7) {
+                const last7 = state.volumeHistory.slice(-7);
+                avgVolume7d = last7.reduce((sum, d) => sum + d.value, 0) / 7;
+            }
+            if (avgVolume7d > 0 && cs > 0) {
+                const dailyOnChainVolume = avgVolume7d * 0.15; // CEX 거래량의 ~15%가 실제 온체인
+                const targetNVT = 50; // 건전한 NVT 비율 (BTC 기준 50-100)
+                models.push({ 
+                    name: 'NVT Ratio', 
+                    formula: 'OnChainVol(7d) × 365 × NVT ÷ Supply', 
+                    price: (dailyOnChainVolume * 365 * targetNVT) / cs,
+                    reliability: 3,
+                    source: 'Willy Woo, Glassnode'
+                });
+            }
+            
+            // NEW MODEL 2: Supply Shock (Exchange Outflow)
+            // 거래소 보유량 감소 → 공급 압박 → 가격 상승
+            const currentReserve = state.exchangeReserve || (state.reserveHistory.length > 0 ? state.reserveHistory[state.reserveHistory.length - 1]?.value : 0);
+            if (currentReserve > 0 || state.reserveHistory.length > 5) {
+                const peakReserve = state.reserveHistory.length > 0 
+                    ? Math.max(...state.reserveHistory.map(d => d.value))
+                    : 20000000; // 기본 peak: 20M ETH
+                const reserve = currentReserve || 18500000; // 기본 현재: 18.5M ETH
+                if (peakReserve > 0 && reserve > 0) {
+                    const supplyShock = (peakReserve - reserve) / peakReserve;
+                    const shockMultiplier = 1 + (supplyShock * 1.5); // 유출량의 1.5배 가격 영향
+                    models.push({ 
+                        name: 'Supply Shock', 
+                        formula: 'Price × (1 + ExchOutflow%×1.5)', 
+                        price: state.price * shockMultiplier,
+                        reliability: 2,
+                        source: 'CryptoQuant, Santiment'
+                    });
+                }
+            }
+            
+            // NEW MODEL 3: Active Address Proxy (트랜잭션 기반 추정)
+            // 네트워크 활성도를 기반으로 가치 산출
+            const txTotal = state.txTotal || 1500000; // 기본값: 일일 1.5M tx (ETH+L2)
+            if (txTotal > 0 && cs > 0) {
+                // 일일 트랜잭션 수 → 활성 주소 추정 (tx/address 비율 ~3)
+                const estActiveAddresses = txTotal / 3;
+                const valuePerAddress = 2500; // 주소당 적정 가치 (달러)
+                models.push({ 
+                    name: 'Active Users', 
+                    formula: 'EstActiveAddr × $2,500 ÷ Supply', 
+                    price: (estActiveAddresses * valuePerAddress) / cs,
+                    reliability: 2,
+                    source: 'Metcalfe Variant'
+                });
+            }
+            
+            // NEW MODEL 4: Revenue Yield (수익률 기반 역산)
+            // 적정 수익률에서 역산한 가치
+            if (fees > 0 && cs > 0) {
+                const annualRevenue = fees * 365;
+                const targetYield = 0.025; // 적정 프로토콜 수익률 2.5%
+                models.push({ 
+                    name: 'Revenue Yield', 
+                    formula: 'AnnualRev ÷ 2.5% ÷ Supply', 
+                    price: (annualRevenue / targetYield) / cs,
+                    reliability: 4,
+                    source: 'Bond-like Valuation'
+                });
+            }
+            
             return models;
         }
 
@@ -3380,14 +3775,34 @@
             const models = calculateValuations();
             const container = document.getElementById('valuation-models');
             container.innerHTML = '';
+            
+            // 디버그: state 값 확인
+            console.log('renderValuations - state values:', {
+                price: state.price,
+                marketCap: state.marketCap,
+                volume24h: state.volume24h,
+                tvl: state.tvl,
+                stakedEth: state.stakedEth,
+                l2Tvl: state.l2Tvl,
+                fees: state.fees,
+                txTotal: state.txTotal,
+                exchangeReserve: state.exchangeReserve,
+                circulatingSupply: state.circulatingSupply,
+                modelsCount: models.length
+            });
+            
+            // 모델이 없으면 메시지 표시
+            if (models.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Loading valuation data...</div>';
+                return;
+            }
 
-            let totalPrice = 0, buys = 0, holds = 0, sells = 0;
+            let buys = 0, holds = 0, sells = 0;
             const maxDiff = 60; // ±60% range for bar
 
             models.forEach(m => {
                 const diff = ((m.price - state.price) / state.price) * 100;
                 if (diff > 15) buys++; else if (diff < -15) sells++; else holds++;
-                totalPrice += m.price;
 
                 // Bar calculation: center is 0%, left is negative, right is positive
                 const clampedDiff = Math.max(-maxDiff, Math.min(maxDiff, diff));
@@ -3432,10 +3847,33 @@
                 `;
             });
 
-            const avgPrice = totalPrice / models.length;
-            const avgDiff = ((avgPrice - state.price) / state.price) * 100;
+            // 신뢰도 가중 평균 계산
+            // High (rel >= 4): 9, Medium (rel == 3): 5, Low (rel <= 2): 2
+            const getWeight = (reliability) => {
+                if (reliability >= 4) return 9;  // High
+                if (reliability === 3) return 5; // Medium
+                return 2;                         // Low
+            };
+            
+            let weightedSum = 0;
+            let totalWeight = 0;
+            const prices = [];
+            
+            models.forEach(m => {
+                const weight = getWeight(m.reliability);
+                weightedSum += m.price * weight;
+                totalWeight += weight;
+                prices.push(m.price);
+            });
+            
+            const weightedAvgPrice = totalWeight > 0 ? weightedSum / totalWeight : 0;
+            const medianPrice = prices.length > 0 
+                ? prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] 
+                : 0;
+            
+            const avgDiff = ((weightedAvgPrice - state.price) / state.price) * 100;
 
-            document.getElementById('composite-price').textContent = fmt.price(avgPrice);
+            document.getElementById('composite-price').textContent = fmt.price(weightedAvgPrice);
             const diffEl = document.getElementById('composite-diff');
             diffEl.textContent = fmt.pct(avgDiff) + ' vs Current';
             diffEl.className = 'conclusion-diff ' + (avgDiff >= 0 ? 'up' : 'down');
@@ -3456,10 +3894,17 @@
             document.getElementById('hold-count').textContent = holds;
             document.getElementById('sell-count').textContent = sells;
             document.getElementById('summary-current').textContent = fmt.price(state.price);
-            document.getElementById('summary-model').textContent = fmt.price(avgPrice);
+            document.getElementById('summary-model').textContent = fmt.price(weightedAvgPrice);
             const upsideEl = document.getElementById('summary-upside');
             upsideEl.textContent = fmt.pct(avgDiff);
             upsideEl.style.color = avgDiff >= 0 ? 'var(--green)' : 'var(--red)';
+            
+            // Median 참고값 표시
+            const medianDiff = ((medianPrice - state.price) / state.price) * 100;
+            const medianEl = document.getElementById('summary-median');
+            if (medianEl) {
+                medianEl.textContent = fmt.price(medianPrice) + ' (' + fmt.pct(medianDiff) + ')';
+            }
         }
 
         // Price chart mini-tabs (in price-card)
@@ -3640,6 +4085,18 @@
                 } else if (metric === 'stables') {
                     history = state.stablesHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('stables-chart', stablesChart, history, '#b08800', 'stables');
+                } else if (metric === 'txEth') {
+                    history = state.txEthHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('tx-eth-chart', txEthChart, history, '#627eea', 'txEth');
+                } else if (metric === 'txTotal') {
+                    history = state.txTotalHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('tx-total-chart', txTotalChart, history, '#8b5cf6', 'txTotal');
+                } else if (metric === 'nvt') {
+                    history = state.nvtHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('nvt-chart', nvtChart, history, '#dc2626', 'nvt');
+                } else if (metric === 'activeAddr') {
+                    history = state.activeAddrHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('active-addr-chart', activeAddrChart, history, '#7c3aed', 'activeAddr');
                 }
             });
         });
@@ -3664,6 +4121,23 @@
                 
                 console.log('   All API calls completed');
                 
+                // 디버그: API 호출 결과 확인
+                console.log('   API Results:', {
+                    binancePrice: binancePrice.status,
+                    binanceHistory: binanceHistory.status,
+                    coinGecko: coinGecko.status,
+                    defiLlama: defiLlama.status,
+                    staking: staking.status,
+                    transactions: transactions.status,
+                    exchangeReserve: exchangeReserve.status
+                });
+                console.log('   State after API:', {
+                    price: state.price,
+                    marketCap: state.marketCap,
+                    volume24h: state.volume24h,
+                    circulatingSupply: state.circulatingSupply
+                });
+                
                 // 2. Binance 데이터가 있으면 Dominance/ETH-BTC 업데이트
                 if (binanceHistory.status === 'fulfilled' && state.priceHistory?.length > 0) {
                     console.log('2. Updating Dominance/ETH-BTC charts...');
@@ -3674,7 +4148,12 @@
                 console.log('3. Updating supply distribution chart...');
                 updateSupplyDistributionChart();
                 
-                console.log('4. Rendering valuations...');
+                // 4. NVT & Active Addresses 계산
+                console.log('4. Calculating NVT and Active Addresses...');
+                calculateAndUpdateNVT();
+                calculateAndUpdateActiveAddr();
+                
+                console.log('5. Rendering valuations...');
                 renderValuations();
                 
                 updateTime();
@@ -3822,8 +4301,34 @@
                     labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
                     data.push(19000000 - i * 20000 + Math.random() * 100000);
                 }
-                reserveChart = new Chart(reserveCtx.getContext('2d'), chartConfig('#f59e0b', data, labels, v => fmt.num(v) + ' ETH'));
+                reserveChart = new Chart(reserveCtx.getContext('2d'), chartConfig('#f59e0b', data, labels, v => fmt.num(v) + ' ETH', 'eth'));
                 console.log('Reserve chart initialized');
+            }
+            
+            // NVT Ratio 차트
+            const nvtCtx = document.getElementById('nvt-chart');
+            if (nvtCtx && !nvtChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(45 + Math.sin(i * 0.2) * 15 + Math.random() * 5);
+                }
+                nvtChart = new Chart(nvtCtx.getContext('2d'), chartConfig('#dc2626', data, labels, v => v.toFixed(1)));
+                console.log('NVT chart initialized');
+            }
+            
+            // Active Addresses 차트
+            const activeAddrCtx = document.getElementById('active-addr-chart');
+            if (activeAddrCtx && !activeAddrChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(500000 + Math.sin(i * 0.15) * 100000 + Math.random() * 50000);
+                }
+                activeAddrChart = new Chart(activeAddrCtx.getContext('2d'), chartConfig('#7c3aed', data, labels, v => fmt.num(v)));
+                console.log('Active Addresses chart initialized');
             }
         }
 
