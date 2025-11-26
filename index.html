@@ -145,6 +145,11 @@
             font-weight: 700;
             color: var(--text);
             white-space: nowrap;
+            transition: color 0.2s ease;
+        }
+
+        .logo-text:hover {
+            color: var(--primary);
         }
 
         .header-meta {
@@ -1191,6 +1196,155 @@
             color: var(--red);
         }
 
+        /* Summary Section */
+        .summary-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .summary-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .summary-valuation {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .summary-valuation-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-valuation-row:last-child {
+            border-bottom: none;
+            padding-top: 12px;
+            margin-top: 4px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .summary-value.large {
+            font-size: 24px;
+        }
+
+        .summary-opportunity {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .summary-opportunity.upside {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+
+        .summary-opportunity.downside {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+
+        .summary-description {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .summary-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .summary-text strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .summary-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .summary-cta a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .summary-cta a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+            .summary-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .summary-section {
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+
+            .summary-title {
+                font-size: 16px;
+            }
+
+            .summary-value.large {
+                font-size: 20px;
+            }
+
+            .summary-text {
+                font-size: 12px;
+            }
+        }
+
         /* Responsive - Tablet */
         @media (max-width: 1200px) {
             .price-card { grid-template-columns: 1fr; }
@@ -1630,10 +1784,11 @@
     </style>
 </head>
 <body>
+    <a id="top"></a>
     <!-- Sticky Header -->
     <div class="header-wrapper">
         <header class="header">
-            <div class="logo">
+            <a href="#top" class="logo" style="text-decoration: none;">
                 <div class="logo-icon">
                     <svg viewBox="0 0 256 417" xmlns="http://www.w3.org/2000/svg">
                         <path d="M127.961 0l-2.795 9.5v275.668l2.795 2.79 127.962-75.638z" fill="rgba(255,255,255,0.8)"/>
@@ -1642,10 +1797,7 @@
                 </div>
                 <span class="logo-text">ETH Valuation</span>
                 <span class="version-badge">v0.1.4</span>
-            </div>
-            <div class="header-meta">
-                <span class="credit">by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>)</span>
-            </div>
+            </a>
             <div class="header-right">
                 <div class="status">
                     <span class="status-dot" id="status-dot"></span>
@@ -1663,6 +1815,46 @@
     </div>
 
     <div class="container">
+        <!-- SUMMARY SECTION -->
+        <div class="summary-section" id="section-summary">
+            <div class="summary-header">
+                <div class="summary-title">📊 Executive Summary</div>
+            </div>
+            <div class="summary-content">
+                <div class="summary-valuation">
+                    <div class="summary-valuation-row">
+                        <span class="summary-label">Current Price</span>
+                        <span class="summary-value" id="summary-current-price">$--</span>
+                    </div>
+                    <div class="summary-valuation-row">
+                        <span class="summary-label">Fair Value (8 Models)</span>
+                        <span class="summary-value" id="summary-fair-value">$--</span>
+                    </div>
+                    <div class="summary-valuation-row">
+                        <span class="summary-label">Opportunity</span>
+                        <span class="summary-opportunity upside" id="summary-opportunity">-- %</span>
+                    </div>
+                </div>
+                <div class="summary-description">
+                    <p class="summary-text">
+                        This dashboard attempts to derive Ethereum's <strong>intrinsic value</strong> using 8 different valuation methodologies — 
+                        from traditional finance frameworks (DCF, P/E, Revenue Yield) to crypto-native metrics (TVL Multiple, Metcalfe's Law, Staking Scarcity).
+                    </p>
+                    <p class="summary-text">
+                        We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. 
+                        While these models have limitations and assumptions, they provide a framework for thinking about value beyond pure price speculation.
+                    </p>
+                    <p class="summary-text">
+                        Found a bug or have suggestions? Let me know anytime — feedback is always welcome!
+                    </p>
+                    <div class="summary-cta">
+                        <img src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px;">
+                        📧 <a href="mailto:simon@hashed.com">simon@hashed.com</a> or 𝕏 <a href="https://x.com/simonkim_nft" target="_blank">@simonkim_nft</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- SECTION 1: PRICE & MARKET -->
         <section class="section" id="section-price">
             <div class="section-header">
@@ -2289,8 +2481,8 @@
         const fmt = {
             usd: (n, d=1) => n >= 1e12 ? '$'+(n/1e12).toFixed(d)+'T' : n >= 1e9 ? '$'+(n/1e9).toFixed(d)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(d)+'M' : '$'+n.toFixed(d),
             num: (n, d=1) => n >= 1e9 ? (n/1e9).toFixed(d)+'B' : n >= 1e6 ? (n/1e6).toFixed(d)+'M' : n >= 1e3 ? (n/1e3).toFixed(d)+'K' : n.toFixed(d),
-            pct: (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%',
-            price: (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            pct: (n) => (n >= 0 ? '+' : '') + n.toFixed(1) + '%',
+            price: (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
         };
 
         // Charts
@@ -2409,7 +2601,7 @@
                         displayColors: false,
                         callbacks: {
                             title: (items) => items[0]?.label || '',
-                            label: (item) => '$' + item.raw.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            label: (item) => '$' + item.raw.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
                         }
                     }
                 },
@@ -3287,13 +3479,14 @@
                 }
             }
             
-            // 변화율 계산
-            if (state.nvtHistory.length > 30 && state.nvtRatio > 0) {
-                const old = state.nvtHistory[state.nvtHistory.length - 30].value;
-                const change = ((state.nvtRatio - old) / old) * 100;
+            // 변화율 계산 (YoY)
+            if (state.nvtHistory.length > 1) {
+                const first = state.nvtHistory[0].value;
+                const last = state.nvtHistory[state.nvtHistory.length - 1].value;
+                const change = ((last - first) / first) * 100;
                 const changeEl = document.getElementById('nvt-change');
                 if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 30D';
+                    changeEl.textContent = fmt.pct(change) + ' YoY';
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
             }
@@ -3328,13 +3521,14 @@
                 });
             }
             
-            // 변화율 계산
-            if (state.activeAddrHistory.length > 30 && state.activeAddresses > 0) {
-                const old = state.activeAddrHistory[state.activeAddrHistory.length - 30].value;
-                const change = ((state.activeAddresses - old) / old) * 100;
+            // 변화율 계산 (YoY)
+            if (state.activeAddrHistory.length > 1) {
+                const first = state.activeAddrHistory[0].value;
+                const last = state.activeAddrHistory[state.activeAddrHistory.length - 1].value;
+                const change = ((last - first) / first) * 100;
                 const changeEl = document.getElementById('active-addr-change');
                 if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 30D';
+                    changeEl.textContent = fmt.pct(change) + ' YoY';
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
             }
@@ -3874,6 +4068,22 @@
             if (medianEl) {
                 medianEl.textContent = fmt.price(medianPrice) + ' (' + fmt.pct(medianDiff) + ')';
             }
+            
+            // 상단 Executive Summary 업데이트
+            const summaryCurrentEl = document.getElementById('summary-current-price');
+            const summaryFairEl = document.getElementById('summary-fair-value');
+            const summaryOpportunityEl = document.getElementById('summary-opportunity');
+            
+            if (summaryCurrentEl) {
+                summaryCurrentEl.textContent = fmt.price(state.price);
+            }
+            if (summaryFairEl) {
+                summaryFairEl.textContent = fmt.price(weightedAvgPrice);
+            }
+            if (summaryOpportunityEl) {
+                summaryOpportunityEl.textContent = (avgDiff >= 0 ? '▲ ' : '▼ ') + fmt.pct(avgDiff) + ' ' + (avgDiff > 15 ? 'Upside' : avgDiff < -15 ? 'Downside' : 'Fair');
+                summaryOpportunityEl.className = 'summary-opportunity ' + (avgDiff >= 0 ? 'upside' : 'downside');
+            }
         }
 
         // Price chart mini-tabs (in price-card)
@@ -4027,6 +4237,7 @@
                 const card = tab.closest('.metric-card');
                 const metric = card.dataset.metric;
                 const period = parseInt(tab.dataset.period);
+                const periodLabel = period === 365 ? 'YoY' : period === 90 ? '90D' : '30D';
                 
                 // Update active state
                 card.querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
@@ -4034,38 +4245,61 @@
                 
                 // Filter history based on period
                 let history;
+                let changeElId;
                 const cutoffDate = Date.now() - (period * 24 * 60 * 60 * 1000);
                 
                 if (metric === 'tvl') {
                     history = state.tvlHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('tvl-chart', tvlChart, history, '#22863a', 'tvl');
+                    changeElId = 'tvl-change';
                 } else if (metric === 'staking') {
                     history = state.stakingHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('staking-chart', stakingChart, history, '#0366d6', 'staking');
+                    changeElId = 'staking-change';
                 } else if (metric === 'l2') {
                     history = state.l2History.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('l2-chart', l2Chart, history, '#6f42c1', 'l2');
+                    changeElId = 'l2-change';
                 } else if (metric === 'dex') {
                     history = state.dexHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('dex-chart', dexChart, history, '#00bcd4', 'dex');
+                    changeElId = 'dex-change';
                 } else if (metric === 'fees') {
                     history = state.feesHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('fees-chart', feesChart, history, '#e65100', 'fees');
+                    changeElId = 'fees-change';
                 } else if (metric === 'stables') {
                     history = state.stablesHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('stables-chart', stablesChart, history, '#b08800', 'stables');
+                    changeElId = 'stables-change';
                 } else if (metric === 'txEth') {
                     history = state.txEthHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('tx-eth-chart', txEthChart, history, '#627eea', 'txEth');
+                    changeElId = 'tx-eth-change';
                 } else if (metric === 'txTotal') {
                     history = state.txTotalHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('tx-total-chart', txTotalChart, history, '#8b5cf6', 'txTotal');
+                    changeElId = 'tx-total-change';
                 } else if (metric === 'nvt') {
                     history = state.nvtHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('nvt-chart', nvtChart, history, '#dc2626', 'nvt');
+                    changeElId = 'nvt-change';
                 } else if (metric === 'activeAddr') {
                     history = state.activeAddrHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('active-addr-chart', activeAddrChart, history, '#7c3aed', 'activeAddr');
+                    changeElId = 'active-addr-change';
+                }
+                
+                // Update change percentage based on selected period
+                if (history && history.length > 1 && changeElId) {
+                    const first = history[0].value;
+                    const last = history[history.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const changeEl = document.getElementById(changeElId);
+                    if (changeEl) {
+                        changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
                 }
             });
         });
