@@ -1337,7 +1337,7 @@
         }
 
         .summary-text {
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.7;
             color: var(--text-secondary);
         }
@@ -1351,7 +1351,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 12px;
+            font-size: 11px;
             color: var(--primary);
             font-weight: 500;
         }
@@ -1386,7 +1386,7 @@
             }
 
             .summary-text {
-                font-size: 12px;
+                font-size: 11px;
             }
         }
 
@@ -4445,7 +4445,14 @@
                 summaryFairEl.textContent = fmt.price(weightedAvgPrice);
             }
             if (summaryOpportunityEl) {
-                summaryOpportunityEl.textContent = (avgDiff >= 0 ? '▲ ' : '▼ ') + fmt.pct(avgDiff) + ' ' + (avgDiff > 15 ? 'Upside' : avgDiff < -15 ? 'Downside' : 'Fair');
+                const upsideText = translations[currentLang] && translations[currentLang]['valuation.undervalued'] 
+                    ? translations[currentLang]['valuation.undervalued'] : 'Upside';
+                const downsideText = translations[currentLang] && translations[currentLang]['valuation.overvalued'] 
+                    ? translations[currentLang]['valuation.overvalued'] : 'Downside';
+                const fairTextSummary = translations[currentLang] && translations[currentLang]['valuation.fair'] 
+                    ? translations[currentLang]['valuation.fair'] : 'Fair';
+                const opportunityLabel = avgDiff > 15 ? upsideText : avgDiff < -15 ? downsideText : fairTextSummary;
+                summaryOpportunityEl.textContent = (avgDiff >= 0 ? '▲ ' : '▼ ') + fmt.pct(avgDiff) + ' ' + opportunityLabel;
                 summaryOpportunityEl.className = 'summary-opportunity ' + (avgDiff >= 0 ? 'upside' : 'downside');
             }
         }
