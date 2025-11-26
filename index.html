@@ -31,6 +31,10 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html, body {
+            height: 100%;
+        }
+
         html {
             overflow-x: hidden;
         }
@@ -49,7 +53,16 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 16px;
-            overflow-x: hidden;
+        }
+
+        /* Sticky Header Wrapper */
+        .header-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         /* Header */
@@ -57,11 +70,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 16px;
+            padding: 12px 16px;
             gap: 12px;
             flex-wrap: wrap;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .logo {
@@ -1545,8 +1559,8 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
+    <!-- Sticky Header -->
+    <div class="header-wrapper">
         <header class="header">
             <div class="logo">
                 <div class="logo-icon">
@@ -1569,7 +1583,9 @@
                 <span id="update-time">--:--:--</span>
             </div>
         </header>
+    </div>
 
+    <div class="container">
         <!-- SECTION 1: PRICE & MARKET -->
         <section class="section">
             <div class="section-header">
@@ -1733,25 +1749,6 @@
                     </div>
                 </div>
 
-                <div class="metric-card" data-metric="staking">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Staked ETH</h4>
-                            <div class="metric-value-large" id="staked-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><canvas id="staking-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Rate: <span id="staking-rate">--%</span></span>
-                        <span class="change" id="staking-change">--</span>
-                    </div>
-                </div>
-
                 <div class="metric-card" data-metric="l2">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -1768,6 +1765,25 @@
                     <div class="metric-footer">
                         <span>All Major L2s</span>
                         <span class="change" id="l2-change">--</span>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="staking">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Staked ETH</h4>
+                            <div class="metric-value-large" id="staked-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="staking-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Rate: <span id="staking-rate">--%</span></span>
+                        <span class="change" id="staking-change">--</span>
                     </div>
                 </div>
 
@@ -2680,28 +2696,52 @@
                 document.getElementById('tvl-value').textContent = fmt.usd(state.tvl);
 
                 // L2 TVL - case-insensitive search with multiple name variants
+                // Updated list based on DefiLlama chains page (Nov 2025)
                 const l2Names = [
+                    // Major Optimistic Rollups
                     'Arbitrum', 'Arbitrum One',
                     'Optimism', 'OP Mainnet',
                     'Base',
+                    'Blast',
+                    'Mantle',
+                    'Mode',
+                    'Boba', 'Boba Network',
+                    'Metis', 'Metis Andromeda',
+                    'Fraxtal',
+                    'World Chain',
+                    'Ink',
+                    'Soneium',
+                    'Zora',
+                    // ZK Rollups
                     'zkSync Era', 'ZKsync Era', 'zkSync', 'ZKsync',
                     'Linea',
                     'Starknet', 'StarkNet',
                     'Scroll',
                     'Manta', 'Manta Pacific',
-                    'Blast',
-                    'Mantle',
                     'Polygon zkEVM', 'Polygon zkevm',
-                    'Mode',
                     'Taiko',
                     'ZKsync Lite', 'zkSync Lite',
-                    'Zora',
-                    'Metis', 'Metis Andromeda',
-                    'Boba', 'Boba Network',
+                    'Immutable zkEVM',
+                    'Cronos zkEVM',
+                    // Plasma / Validiums
+                    'Plasma',
                     'Loopring',
                     'dYdX',
-                    'Immutable X', 'ImmutableX'
+                    'Immutable X', 'ImmutableX',
+                    // Other L2s
+                    'Arbitrum Nova',
+                    'opBNB',
+                    'Kroma',
+                    'Zircuit',
+                    'Cyber'
                 ];
+                
+                // Debug: Log all chains with TVL > $100M to see what we're missing
+                console.log('=== All chains with TVL > $100M ===');
+                const sortedChains = [...chains].sort((a, b) => (b.tvl || 0) - (a.tvl || 0));
+                sortedChains.slice(0, 30).forEach((chain, i) => {
+                    console.log(`${i+1}. ${chain.name}: $${((chain.tvl || 0)/1e9).toFixed(2)}B`);
+                });
                 
                 const foundL2s = new Set();
                 let l2Total = 0;
@@ -2712,14 +2752,15 @@
                         if (chainNameLower === l2Name.toLowerCase() && !foundL2s.has(chainNameLower)) {
                             foundL2s.add(chainNameLower);
                             l2Total += chain.tvl || 0;
-                            console.log(`L2 Found: ${chain.name} = $${(chain.tvl/1e9).toFixed(2)}B`);
+                            console.log(`✓ L2 Found: ${chain.name} = $${(chain.tvl/1e9).toFixed(2)}B`);
                             break;
                         }
                     }
                 });
                 
                 state.l2Tvl = l2Total;
-                console.log(`Total L2 TVL: $${(l2Total/1e9).toFixed(2)}B`);
+                console.log(`=== Total L2 TVL: $${(l2Total/1e9).toFixed(2)}B ===`);
+                console.log(`Found ${foundL2s.size} L2 chains:`, Array.from(foundL2s));
                 document.getElementById('l2-value').textContent = fmt.usd(state.l2Tvl);
             } catch (e) { console.error('Chains error:', e); }
 
@@ -4336,16 +4377,8 @@
             console.log('DOM loaded, initializing...');
             initCharts();
             fetchAll();
-            
-            // Auto-refresh every 60 seconds
-            setInterval(fetchAll, 60000);
-            
-            // Manual refresh with 'R' key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'r' || e.key === 'R') {
-                    fetchAll();
-                }
-            });
+            setInterval(fetchAll, 120000);
+            setInterval(updateTime, 1000);
         });
     </script>
 </body>
