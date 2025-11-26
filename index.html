@@ -1644,7 +1644,7 @@
                 <span class="version-badge">v0.1.4</span>
             </div>
             <div class="header-meta">
-                <span class="credit">by <strong>Hashed</strong> (<a href="mailto:contact@hashed.com">contact@hashed.com</a>)</span>
+                <span class="credit">by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>)</span>
             </div>
             <div class="header-right">
                 <div class="status">
@@ -2005,7 +2005,7 @@
                 <div class="section-title">
                     Valuation Analysis
                 </div>
-                <span class="section-badge">12 Models</span>
+                <span class="section-badge">8 Models</span>
             </div>
 
             <div class="valuation-layout">
@@ -2177,27 +2177,6 @@
 
                 <div class="method-card">
                     <div class="method-header">
-                        <span class="method-name">BTC Ratio Model</span>
-                    </div>
-                    <div class="method-content">
-                        <div class="method-left">
-                            <div class="method-formula">BTC_MCap × 0.45 ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge low">Low</span>
-                                </div>
-                            </div>
-                            <div class="method-note caution">45% target ratio is arbitrary and speculative</div>
-                        </div>
-                        <div class="method-right">
-                            <div class="method-desc">Relative valuation assuming ETH will reach 45% of Bitcoin's market cap. Currently ETH trades at ~35% of BTC market cap. The "flippening" narrative suggests ETH's utility (smart contracts, DeFi, NFTs) could eventually match or exceed BTC's store-of-value proposition. This model is popular among ETH maximalists but relies heavily on subjective market share assumptions.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="method-card">
-                    <div class="method-header">
                         <span class="method-name">L2 Ecosystem</span>
                     </div>
                     <div class="method-content">
@@ -2240,69 +2219,6 @@
 
                 <div class="method-card">
                     <div class="method-header">
-                        <span class="method-name">NVT Ratio</span>
-                    </div>
-                    <div class="method-content">
-                        <div class="method-left">
-                            <div class="method-formula">OnChainVol(7d avg) × 365 × NVT ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge medium">Medium</span>
-                                </div>
-                            </div>
-                            <div class="method-note caution">On-chain volume estimation from CEX data may be imprecise</div>
-                        </div>
-                        <div class="method-right">
-                            <div class="method-desc">Network Value to Transactions ratio, analogous to P/S ratio in traditional finance. Developed by Willy Woo, this metric compares market cap to on-chain transaction volume. Uses 7-day moving average to reduce volatility. A target NVT of 50 indicates healthy network utility. We estimate on-chain volume as ~15% of CEX volume. Lower NVT suggests undervaluation relative to actual network usage. Widely tracked by Glassnode and CryptoQuant.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="method-card">
-                    <div class="method-header">
-                        <span class="method-name">Supply Shock</span>
-                    </div>
-                    <div class="method-content">
-                        <div class="method-left">
-                            <div class="method-formula">Price × (1 + ExchOutflow% × 1.5)</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge low">Low</span>
-                                </div>
-                            </div>
-                            <div class="method-note caution">1.5x multiplier is proprietary; exchange data may be incomplete</div>
-                        </div>
-                        <div class="method-right">
-                            <div class="method-desc">Measures supply-side price pressure from exchange outflows. When ETH leaves exchanges, available sell-side liquidity decreases, creating upward price pressure. Calculates the percentage decrease from peak exchange reserves and applies a 1.5x multiplier to estimate price impact. Data sourced from Santiment exchange_balance metric. Popular among on-chain analysts at CryptoQuant for identifying accumulation phases.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="method-card">
-                    <div class="method-header">
-                        <span class="method-name">Active Users</span>
-                    </div>
-                    <div class="method-content">
-                        <div class="method-left">
-                            <div class="method-formula">EstActiveAddr × $2,500 ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge low">Low</span>
-                                </div>
-                            </div>
-                            <div class="method-note caution">Address estimation from tx count is approximate; value per user is arbitrary</div>
-                        </div>
-                        <div class="method-right">
-                            <div class="method-desc">A Metcalfe's Law variant that estimates network value from active users. Daily active addresses are estimated from transaction count (assuming ~3 tx per active address). Each active user is assigned a $2,500 value contribution based on historical user acquisition costs in crypto. This model captures network effects where more users increase utility and value for all participants.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="method-card">
-                    <div class="method-header">
                         <span class="method-name">Revenue Yield</span>
                     </div>
                     <div class="method-content">
@@ -2331,7 +2247,7 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <div class="footer-brand">by <strong>Hashed</strong> (<a href="mailto:contact@hashed.com">contact@hashed.com</a>) · v0.1.4</div>
+            <div class="footer-brand">by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.1.4</div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
                 <span class="source-tag">CoinGecko</span>
@@ -3788,15 +3704,6 @@
                     source: 'TradFi Standard'
                 });
             }
-            if (state.marketCap > 0 && cs > 0) {
-                models.push({ 
-                    name: 'BTC Ratio', 
-                    formula: 'EstBTC_MCap × 0.45 ÷ Supply', 
-                    price: ((state.marketCap / 0.35) * 0.45) / cs,
-                    reliability: 3,
-                    source: 'Market Convention'
-                });
-            }
             if (l2Tvl > 0 && tvl > 0 && cs > 0) {
                 models.push({ 
                     name: 'L2 Ecosystem', 
@@ -3816,63 +3723,7 @@
                 });
             }
             
-            // NEW MODEL 1: NVT Ratio (Network Value to Transactions)
-            // 온체인 거래량 대비 적정 시총 산출 - 7일 평균 사용으로 변동성 완화
-            let avgVolume7d = state.volume24h || 15000000000;
-            if (state.volumeHistory && state.volumeHistory.length >= 7) {
-                const last7 = state.volumeHistory.slice(-7);
-                avgVolume7d = last7.reduce((sum, d) => sum + d.value, 0) / 7;
-            }
-            if (avgVolume7d > 0 && cs > 0) {
-                const dailyOnChainVolume = avgVolume7d * 0.15; // CEX 거래량의 ~15%가 실제 온체인
-                const targetNVT = 50; // 건전한 NVT 비율 (BTC 기준 50-100)
-                models.push({ 
-                    name: 'NVT Ratio', 
-                    formula: 'OnChainVol(7d) × 365 × NVT ÷ Supply', 
-                    price: (dailyOnChainVolume * 365 * targetNVT) / cs,
-                    reliability: 3,
-                    source: 'Willy Woo, Glassnode'
-                });
-            }
-            
-            // NEW MODEL 2: Supply Shock (Exchange Outflow)
-            // 거래소 보유량 감소 → 공급 압박 → 가격 상승
-            const currentReserve = state.exchangeReserve || (state.reserveHistory.length > 0 ? state.reserveHistory[state.reserveHistory.length - 1]?.value : 0);
-            if (currentReserve > 0 || state.reserveHistory.length > 5) {
-                const peakReserve = state.reserveHistory.length > 0 
-                    ? Math.max(...state.reserveHistory.map(d => d.value))
-                    : 20000000; // 기본 peak: 20M ETH
-                const reserve = currentReserve || 18500000; // 기본 현재: 18.5M ETH
-                if (peakReserve > 0 && reserve > 0) {
-                    const supplyShock = (peakReserve - reserve) / peakReserve;
-                    const shockMultiplier = 1 + (supplyShock * 1.5); // 유출량의 1.5배 가격 영향
-                    models.push({ 
-                        name: 'Supply Shock', 
-                        formula: 'Price × (1 + ExchOutflow%×1.5)', 
-                        price: state.price * shockMultiplier,
-                        reliability: 2,
-                        source: 'CryptoQuant, Santiment'
-                    });
-                }
-            }
-            
-            // NEW MODEL 3: Active Address Proxy (트랜잭션 기반 추정)
-            // 네트워크 활성도를 기반으로 가치 산출
-            const txTotal = state.txTotal || 1500000; // 기본값: 일일 1.5M tx (ETH+L2)
-            if (txTotal > 0 && cs > 0) {
-                // 일일 트랜잭션 수 → 활성 주소 추정 (tx/address 비율 ~3)
-                const estActiveAddresses = txTotal / 3;
-                const valuePerAddress = 2500; // 주소당 적정 가치 (달러)
-                models.push({ 
-                    name: 'Active Users', 
-                    formula: 'EstActiveAddr × $2,500 ÷ Supply', 
-                    price: (estActiveAddresses * valuePerAddress) / cs,
-                    reliability: 2,
-                    source: 'Metcalfe Variant'
-                });
-            }
-            
-            // NEW MODEL 4: Revenue Yield (수익률 기반 역산)
+            // Revenue Yield (수익률 기반 역산)
             // 적정 수익률에서 역산한 가치
             if (fees > 0 && cs > 0) {
                 const annualRevenue = fees * 365;
@@ -3946,7 +3797,7 @@
                             </div>
                         </div>
                         <div class="model-row-2">
-                            <div class="model-price">${fmt.price(m.price)}</div>
+                            <div class="model-price">$${m.price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</div>
                             <div class="model-bar-container">
                                 <div class="model-bar-bg"></div>
                                 <div class="model-bar-center"></div>
