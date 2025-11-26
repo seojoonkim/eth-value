@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethereum Intrinsic Value Dashboard | Hashed</title>
+    <title>ETHval | Intrinsic Value Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -145,7 +145,7 @@
         .logo-icon svg { width: 14px; height: 14px; fill: white; }
 
         .logo-text {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--text);
             white-space: nowrap;
@@ -154,6 +154,19 @@
 
         .logo-text:hover {
             color: var(--primary);
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .logo-subtitle {
+            font-size: 10px;
+            font-weight: 400;
+            color: var(--text-muted);
+            white-space: nowrap;
         }
 
         .header-meta {
@@ -1466,7 +1479,11 @@
             }
 
             .logo-text {
-                font-size: 12px;
+                font-size: 13px;
+            }
+
+            .logo-subtitle {
+                display: none;
             }
 
             /* 모바일에서 header-meta 작게 표시 */
@@ -1858,7 +1875,10 @@
                         <path d="M127.962 0L0 212.32l127.962 75.639V154.158z" fill="white"/>
                     </svg>
                 </div>
-                <span class="logo-text">ETH Valuation</span>
+                <div class="logo-title">
+                    <span class="logo-text">ETHval</span>
+                    <span class="logo-subtitle">Intrinsic Value Dashboard</span>
+                </div>
                 <span class="version-badge">v0.1.4</span>
             </a>
             <div class="header-center">
