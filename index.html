@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ethereum Intrinsic Value Dashboard | Hashed</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <style>
@@ -41,7 +43,7 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg);
             color: var(--text);
             font-size: 12px;
@@ -76,6 +78,7 @@
             max-width: 1400px;
             margin-left: auto;
             margin-right: auto;
+            position: relative;
         }
 
         /* Navigation Bar */
@@ -180,6 +183,17 @@
             white-space: nowrap;
         }
 
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
         .header-right {
             display: flex;
             align-items: center;
@@ -188,6 +202,37 @@
             color: var(--text-muted);
             flex-shrink: 0;
             white-space: nowrap;
+        }
+
+        .lang-selector {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: var(--bg-card-alt);
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .lang-btn {
+            padding: 3px 6px;
+            font-size: 9px;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.15s ease;
+        }
+
+        .lang-btn:hover {
+            color: var(--text);
+        }
+
+        .lang-btn.active {
+            background: var(--bg);
+            color: var(--primary);
+            font-weight: 600;
         }
 
         .status {
@@ -256,7 +301,7 @@
             background: var(--bg-card);
             border-radius: 8px;
             padding: 16px;
-            border: 1px solid var(--border);
+            border: none;
         }
 
         .price-card-left {
@@ -473,7 +518,7 @@
             background: var(--bg-card);
             border-radius: 6px;
             padding: 12px;
-            border: 1px solid var(--border);
+            border: none;
             min-width: 0;
             overflow: hidden;
         }
@@ -569,7 +614,7 @@
             background: var(--bg-card);
             border-radius: 6px;
             padding: 10px;
-            border: 1px solid var(--border);
+            border: none;
             min-width: 0;
         }
 
@@ -603,7 +648,7 @@
             background: var(--bg-card);
             border-radius: 6px;
             padding: 12px;
-            border: 1px solid var(--border);
+            border: none;
             min-width: 0;
             overflow: hidden;
         }
@@ -711,7 +756,7 @@
 
         .valuation-model {
             background: var(--bg-card);
-            border: 1px solid var(--border);
+            border: none;
             border-radius: 6px;
             padding: 10px 14px;
             min-width: 0;
@@ -899,7 +944,7 @@
         /* Conclusion Panel */
         .conclusion-panel {
             background: var(--bg-card);
-            border: 1px solid var(--border);
+            border: none;
             border-radius: 8px;
             padding: 16px;
             text-align: center;
@@ -975,7 +1020,7 @@
             padding: 10px;
             background: var(--bg);
             border-radius: 6px;
-            border: 1px solid var(--border);
+            border: none;
         }
 
         .current-vs-model-row {
@@ -986,7 +1031,7 @@
         }
 
         .current-vs-model-row:not(:last-child) {
-            border-bottom: 1px solid var(--border);
+            border-bottom: none;
         }
 
         .current-vs-model-row .label { color: var(--text-muted); }
@@ -999,7 +1044,7 @@
         .weighting-method {
             margin-top: 12px;
             padding-top: 12px;
-            border-top: 1px solid var(--border);
+            border-top: none;
         }
         
         .weighting-title {
@@ -1085,7 +1130,7 @@
 
         .method-card {
             background: var(--bg);
-            border: 1px solid var(--border);
+            border: none;
             border-radius: 6px;
             padding: 14px;
             font-size: 10px;
@@ -1136,7 +1181,7 @@
 
         .method-desc {
             color: var(--text-secondary);
-            line-height: 1.5;
+            line-height: 1.65;
             font-size: 11px;
         }
 
@@ -1168,7 +1213,7 @@
             font-style: italic;
             border-left: 2px solid var(--border);
             padding-left: 8px;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         .method-note.positive {
@@ -1189,7 +1234,7 @@
             border-radius: 0;
             font-size: 11px;
             color: var(--text-secondary);
-            line-height: 1.5;
+            line-height: 1.65;
         }
 
         .methodology-disclaimer strong {
@@ -1199,7 +1244,7 @@
         /* Summary Section */
         .summary-section {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: 1px solid var(--border);
+            border: none;
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 32px;
@@ -1229,7 +1274,7 @@
             background: white;
             border-radius: 8px;
             padding: 20px;
-            border: 1px solid var(--border);
+            border: none;
         }
 
         .summary-valuation-row {
@@ -1237,7 +1282,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            border-bottom: 1px solid var(--border);
+            border-bottom: none;
         }
 
         .summary-valuation-row:last-child {
@@ -1443,6 +1488,17 @@
             }
 
             /* 모바일에서 시간 숨기고 Live만 표시 */
+            .header-center {
+                position: static;
+                transform: none;
+                font-size: 10px;
+                gap: 4px;
+            }
+
+            .header-center #update-time {
+                display: none;
+            }
+
             .header-right {
                 display: flex;
                 align-items: center;
@@ -1451,8 +1507,14 @@
                 flex-shrink: 0;
             }
 
-            .header-right #update-time {
-                display: none;
+            .lang-selector {
+                gap: 1px;
+                padding: 1px;
+            }
+
+            .lang-btn {
+                padding: 2px 4px;
+                font-size: 8px;
             }
 
             .nav-bar {
@@ -1798,19 +1860,27 @@
                 <span class="logo-text">ETH Valuation</span>
                 <span class="version-badge">v0.1.4</span>
             </a>
-            <div class="header-right">
+            <div class="header-center">
                 <div class="status">
                     <span class="status-dot" id="status-dot"></span>
-                    <span id="status-text">Live</span>
+                    <span id="status-text" data-i18n="status.live">Live</span>
                 </div>
                 <span id="update-time">--:--:--</span>
             </div>
+            <div class="header-right">
+                <div class="lang-selector">
+                    <button class="lang-btn active" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="ko">한</button>
+                    <button class="lang-btn" data-lang="zh">中</button>
+                    <button class="lang-btn" data-lang="ja">日</button>
+                </div>
+            </div>
         </header>
         <nav class="nav-bar">
-            <a class="nav-item active" href="#section-price" onclick="console.log('clicked price'); document.getElementById('section-price').scrollIntoView({behavior:'smooth', block:'start'}); return false;">Price & Market</a>
-            <a class="nav-item" href="#section-onchain" onclick="console.log('clicked onchain'); document.getElementById('section-onchain').scrollIntoView({behavior:'smooth', block:'start'}); return false;">On-Chain Metrics</a>
-            <a class="nav-item" href="#section-valuation" onclick="console.log('clicked valuation'); document.getElementById('section-valuation').scrollIntoView({behavior:'smooth', block:'start'}); return false;">Valuation Analysis</a>
-            <a class="nav-item" href="#section-methodology" onclick="console.log('clicked methodology'); document.getElementById('section-methodology').scrollIntoView({behavior:'smooth', block:'start'}); return false;">Methodology</a>
+            <a class="nav-item active" href="#section-price" data-i18n="nav.price" onclick="document.getElementById('section-price').scrollIntoView({behavior:'smooth', block:'start'}); return false;">Price & Market</a>
+            <a class="nav-item" href="#section-onchain" data-i18n="nav.onchain" onclick="document.getElementById('section-onchain').scrollIntoView({behavior:'smooth', block:'start'}); return false;">On-Chain Metrics</a>
+            <a class="nav-item" href="#section-valuation" data-i18n="nav.valuation" onclick="document.getElementById('section-valuation').scrollIntoView({behavior:'smooth', block:'start'}); return false;">Valuation Analysis</a>
+            <a class="nav-item" href="#section-methodology" data-i18n="nav.methodology" onclick="document.getElementById('section-methodology').scrollIntoView({behavior:'smooth', block:'start'}); return false;">Methodology</a>
         </nav>
     </div>
 
@@ -1818,33 +1888,33 @@
         <!-- SUMMARY SECTION -->
         <div class="summary-section" id="section-summary">
             <div class="summary-header">
-                <div class="summary-title">📊 Executive Summary</div>
+                <div class="summary-title" data-i18n="summary.title">📊 Executive Summary</div>
             </div>
             <div class="summary-content">
                 <div class="summary-valuation">
                     <div class="summary-valuation-row">
-                        <span class="summary-label">Current Price</span>
+                        <span class="summary-label" data-i18n="summary.currentPrice">Current Price</span>
                         <span class="summary-value" id="summary-current-price">$--</span>
                     </div>
                     <div class="summary-valuation-row">
-                        <span class="summary-label">Fair Value (8 Models)</span>
+                        <span class="summary-label" data-i18n="summary.fairValue">Fair Value (8 Models)</span>
                         <span class="summary-value" id="summary-fair-value">$--</span>
                     </div>
                     <div class="summary-valuation-row">
-                        <span class="summary-label">Opportunity</span>
+                        <span class="summary-label" data-i18n="summary.opportunity">Opportunity</span>
                         <span class="summary-opportunity upside" id="summary-opportunity">-- %</span>
                     </div>
                 </div>
                 <div class="summary-description">
-                    <p class="summary-text">
+                    <p class="summary-text" data-i18n="summary.desc1">
                         This dashboard attempts to derive Ethereum's <strong>intrinsic value</strong> using 8 different valuation methodologies — 
                         from traditional finance frameworks (DCF, P/E, Revenue Yield) to crypto-native metrics (TVL Multiple, Metcalfe's Law, Staking Scarcity).
                     </p>
-                    <p class="summary-text">
+                    <p class="summary-text" data-i18n="summary.desc2">
                         We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. 
                         While these models have limitations and assumptions, they provide a framework for thinking about value beyond pure price speculation.
                     </p>
-                    <p class="summary-text">
+                    <p class="summary-text" data-i18n="summary.feedback">
                         Found a bug or have suggestions? Let me know anytime — feedback is always welcome!
                     </p>
                     <div class="summary-cta">
@@ -1858,8 +1928,8 @@
         <!-- SECTION 1: PRICE & MARKET -->
         <section class="section" id="section-price">
             <div class="section-header">
-                <div class="section-title">Price & Market Overview</div>
-                <span class="section-badge">Live</span>
+                <div class="section-title" data-i18n="section.priceTitle">Price & Market Overview</div>
+                <span class="section-badge" data-i18n="status.live">Live</span>
             </div>
 
             <!-- Price Card - Combined -->
@@ -1992,10 +2062,10 @@
         <!-- SECTION 2: ON-CHAIN METRICS -->
         <section class="section" id="section-onchain">
             <div class="section-header">
-                <div class="section-title">
+                <div class="section-title" data-i18n="section.onchainTitle">
                     On-Chain Metrics & Trends
                 </div>
-                <span class="section-badge">Weekly Data</span>
+                <span class="section-badge" data-i18n="section.weeklyData">Weekly Data</span>
             </div>
 
             <div class="metrics-grid">
@@ -2173,7 +2243,7 @@
                 <div class="metric-card" data-metric="activeAddr">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Active Addresses (Est.)</h4>
+                            <h4>Active Addresses</h4>
                             <div class="metric-value-large" id="active-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -2194,17 +2264,17 @@
         <!-- SECTION 3: VALUATION -->
         <section class="section" id="section-valuation">
             <div class="section-header">
-                <div class="section-title">
+                <div class="section-title" data-i18n="section.valuationTitle">
                     Valuation Analysis
                 </div>
-                <span class="section-badge">8 Models</span>
+                <span class="section-badge" data-i18n="section.models">8 Models</span>
             </div>
 
             <div class="valuation-layout">
                 <div class="valuation-models" id="valuation-models"></div>
 
                 <div class="conclusion-panel">
-                    <div class="conclusion-label">Composite Fair Value</div>
+                    <div class="conclusion-label" data-i18n="valuation.compositeFairValue">Composite Fair Value</div>
                     <div class="conclusion-price" id="composite-price">$--</div>
                     <div class="conclusion-diff up" id="composite-diff">-- vs Current</div>
                     <div class="conclusion-verdict bullish" id="verdict">--</div>
@@ -2212,43 +2282,43 @@
                     <div class="signal-breakdown">
                         <div class="signal-item">
                             <div class="signal-count buy" id="buy-count">-</div>
-                            <div class="signal-label">Buy</div>
+                            <div class="signal-label" data-i18n="signal.buy">Buy</div>
                         </div>
                         <div class="signal-item">
                             <div class="signal-count hold" id="hold-count">-</div>
-                            <div class="signal-label">Hold</div>
+                            <div class="signal-label" data-i18n="signal.hold">Hold</div>
                         </div>
                         <div class="signal-item">
                             <div class="signal-count sell" id="sell-count">-</div>
-                            <div class="signal-label">Sell</div>
+                            <div class="signal-label" data-i18n="signal.sell">Sell</div>
                         </div>
                     </div>
 
                     <div class="current-vs-model">
                         <div class="current-vs-model-row">
-                            <span class="label">Current Price</span>
+                            <span class="label" data-i18n="valuation.currentPrice">Current Price</span>
                             <span class="value" id="summary-current">$--</span>
                         </div>
                         <div class="current-vs-model-row">
-                            <span class="label">Weighted Avg</span>
+                            <span class="label" data-i18n="valuation.weightedAvg">Weighted Avg</span>
                             <span class="value" id="summary-model">$--</span>
                         </div>
                         <div class="current-vs-model-row">
-                            <span class="label">Median</span>
+                            <span class="label" data-i18n="valuation.median">Median</span>
                             <span class="value" id="summary-median" style="color: var(--text-muted); font-size: 11px;">$--</span>
                         </div>
                         <div class="current-vs-model-row">
-                            <span class="label">Potential</span>
+                            <span class="label" data-i18n="valuation.potential">Potential</span>
                             <span class="value" id="summary-upside" style="color: var(--green)">--%</span>
                         </div>
                     </div>
                     
                     <div class="weighting-method">
-                        <div class="weighting-title">Reliability Weighting</div>
+                        <div class="weighting-title" data-i18n="valuation.reliabilityWeighting">Reliability Weighting</div>
                         <div class="weighting-items">
-                            <span class="weight-item"><span class="reliability-badge high">High</span> ×9</span>
-                            <span class="weight-item"><span class="reliability-badge medium">Med</span> ×5</span>
-                            <span class="weight-item"><span class="reliability-badge low">Low</span> ×2</span>
+                            <span class="weight-item"><span class="reliability-badge high" data-i18n="method.high">High</span> ×9</span>
+                            <span class="weight-item"><span class="reliability-badge medium" data-i18n="method.med">Med</span> ×5</span>
+                            <span class="weight-item"><span class="reliability-badge low" data-i18n="method.low">Low</span> ×2</span>
                         </div>
                     </div>
                 </div>
@@ -2258,8 +2328,8 @@
         <!-- Methodology Section -->
         <section class="section methodology-section" id="section-methodology">
             <div class="section-header">
-                <div class="section-title">Valuation Methodology</div>
-                <span class="section-badge">Reference</span>
+                <div class="section-title" data-i18n="section.methodologyTitle">Valuation Methodology</div>
+                <span class="section-badge" data-i18n="section.reference">Reference</span>
             </div>
             <div class="methodology-grid">
                 <div class="method-card">
@@ -2271,14 +2341,14 @@
                             <div class="method-formula">Price = TVL × 7 ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge high">High</span>
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge high" data-i18n="method.high">High</span>
                                 </div>
                             </div>
-                            <div class="method-note caution">TVL may include leverage, recursive deposits, and double-counting across protocols</div>
+                            <div class="method-note caution" data-i18n="method.tvl.note">TVL may include leverage, recursive deposits, and double-counting across protocols</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc">Values ETH based on total assets locked in DeFi protocols. The 7x multiple is derived from historical MC/TVL ratios during balanced market conditions (2020-2023 average). Higher TVL indicates greater network utility, adoption, and trust in Ethereum's smart contract ecosystem. This model assumes DeFi activity is a primary value driver for ETH.</div>
+                            <div class="method-desc" data-i18n="method.tvl.desc">Values ETH based on total assets locked in DeFi protocols. The 7x multiple is derived from historical MC/TVL ratios during balanced market conditions (2020-2023 average). Higher TVL indicates greater network utility, adoption, and trust in Ethereum's smart contract ecosystem. This model assumes DeFi activity is a primary value driver for ETH.</div>
                         </div>
                     </div>
                 </div>
@@ -2292,14 +2362,14 @@
                             <div class="method-formula">Price × √(Supply ÷ Liquid)</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge low">Low</span>
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge low" data-i18n="method.low">Low</span>
                                 </div>
                             </div>
-                            <div class="method-note caution">Proprietary model developed for this dashboard. Lacks peer review or academic validation</div>
+                            <div class="method-note caution" data-i18n="method.staking.note">Proprietary model developed for this dashboard. Lacks peer review or academic validation</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc">Applies a scarcity premium when circulating supply decreases due to staking. As more ETH is locked in validators (currently ~28%), liquid supply shrinks, theoretically increasing price pressure. The square root function dampens extreme valuations while still capturing the scarcity effect. This model gained relevance post-Merge with ETH's transition to Proof-of-Stake.</div>
+                            <div class="method-desc" data-i18n="method.staking.desc">Applies a scarcity premium when circulating supply decreases due to staking. As more ETH is locked in validators (currently ~28%), liquid supply shrinks, theoretically increasing price pressure. The square root function dampens extreme valuations while still capturing the scarcity effect. This model gained relevance post-Merge with ETH's transition to Proof-of-Stake.</div>
                         </div>
                     </div>
                 </div>
@@ -2313,14 +2383,14 @@
                             <div class="method-formula">Price × (6 ÷ Current Ratio)</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge high">High</span>
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge high" data-i18n="method.high">High</span>
                                 </div>
                             </div>
-                            <div class="method-note positive">Industry-standard metric for cross-chain valuation comparisons</div>
+                            <div class="method-note positive" data-i18n="method.mctvl.note">Industry-standard metric for cross-chain valuation comparisons</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc">Mean-reversion model assuming Market Cap to TVL ratio returns to historical average of 6x. When ratio is above 6x, ETH is considered overvalued; below 6x indicates undervaluation. Similar to P/B ratio in traditional equity analysis. Widely used by institutional researchers including Messari and Delphi Digital for relative valuation comparisons across L1 blockchains.</div>
+                            <div class="method-desc" data-i18n="method.mctvl.desc">Mean-reversion model assuming Market Cap to TVL ratio returns to historical average of 6x. When ratio is above 6x, ETH is considered overvalued; below 6x indicates undervaluation. Similar to P/B ratio in traditional equity analysis. Widely used by institutional researchers including Messari and Delphi Digital for relative valuation comparisons across L1 blockchains.</div>
                         </div>
                     </div>
                 </div>
@@ -2334,14 +2404,14 @@
                             <div class="method-formula">2 × (TVL/1B)^1.5 × 1B ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge high">High</span>
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge high" data-i18n="method.high">High</span>
                                 </div>
                             </div>
-                            <div class="method-note positive">Academically validated model with strong historical correlation</div>
+                            <div class="method-note positive" data-i18n="method.metcalfe.note">Academically validated model with strong historical correlation</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc">Network value grows proportionally to the square of active users/nodes. Originally developed for telecommunications, this model has been empirically validated for Bitcoin and Ethereum by academic researchers (Alabi 2017, Peterson 2018). Uses TVL as a proxy for network activity. The 1.5 exponent (between linear and quadratic) accounts for real-world network friction.</div>
+                            <div class="method-desc" data-i18n="method.metcalfe.desc">Network value grows proportionally to the square of active users/nodes. Originally developed for telecommunications, this model has been empirically validated for Bitcoin and Ethereum by academic researchers (Alabi 2017, Peterson 2018). Uses TVL as a proxy for network activity. The 1.5 exponent (between linear and quadratic) accounts for real-world network friction.</div>
                         </div>
                     </div>
                 </div>
@@ -2355,14 +2425,14 @@
                             <div class="method-formula">P × 1.035 ÷ (0.10 - 0.03)</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge medium">Medium</span>
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
                                 </div>
                             </div>
-                            <div class="method-note caution">Highly sensitive to discount rate and growth rate assumptions</div>
+                            <div class="method-note caution" data-i18n="method.dcf.note">Highly sensitive to discount rate and growth rate assumptions</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc">Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses current staking yield (~3.5%) as the cash flow rate, 10% discount rate (crypto risk premium), and 3% perpetual growth rate. This approach bridges traditional finance valuation with crypto-native yield generation, making ETH comparable to dividend-paying assets.</div>
+                            <div class="method-desc" data-i18n="method.dcf.desc">Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses current staking yield (~3.5%) as the cash flow rate, 10% discount rate (crypto risk premium), and 3% perpetual growth rate. This approach bridges traditional finance valuation with crypto-native yield generation, making ETH comparable to dividend-paying assets.</div>
                         </div>
                     </div>
                 </div>
@@ -2376,14 +2446,14 @@
                             <div class="method-formula">(TVL + L2_TVL×2) × 6 ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge low">Low</span>
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge low" data-i18n="method.low">Low</span>
                                 </div>
                             </div>
-                            <div class="method-note caution">2x L2 weight multiplier is proprietary without empirical basis</div>
+                            <div class="method-note caution" data-i18n="method.l2.note">2x L2 weight multiplier is proprietary without empirical basis</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc">Captures value from Ethereum's Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum's value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.</div>
+                            <div class="method-desc" data-i18n="method.l2.desc">Captures value from Ethereum's Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum's value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.</div>
                         </div>
                     </div>
                 </div>
@@ -2397,14 +2467,14 @@
                             <div class="method-formula">Annual_Fees × 25 ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge high">High</span>
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge high" data-i18n="method.high">High</span>
                                 </div>
                             </div>
-                            <div class="method-note positive">Directly comparable to traditional equity valuation</div>
+                            <div class="method-note positive" data-i18n="method.pe.note">Directly comparable to traditional equity valuation</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc">Treats network transaction fees as "earnings" and applies a P/E multiple comparable to growth tech stocks (25x). Annual fees represent actual economic value captured by the protocol. Post EIP-1559, a portion of fees is burned, making this metric even more relevant as it directly impacts ETH supply. Used by Token Terminal and other institutional-grade analytics platforms.</div>
+                            <div class="method-desc" data-i18n="method.pe.desc">Treats network transaction fees as "earnings" and applies a P/E multiple comparable to growth tech stocks (25x). Annual fees represent actual economic value captured by the protocol. Post EIP-1559, a portion of fees is burned, making this metric even more relevant as it directly impacts ETH supply. Used by Token Terminal and other institutional-grade analytics platforms.</div>
                         </div>
                     </div>
                 </div>
@@ -2418,21 +2488,21 @@
                             <div class="method-formula">Annual_Revenue ÷ 2.5% ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
-                                    <span class="reliability-label">Reliability</span>
-                                    <span class="reliability-badge high">High</span>
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge high" data-i18n="method.high">High</span>
                                 </div>
                             </div>
-                            <div class="method-note positive">Bond-like methodology with institutional acceptance</div>
+                            <div class="method-note positive" data-i18n="method.yield.note">Bond-like methodology with institutional acceptance</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc">Reverse-engineers fair value from a target protocol yield of 2.5%, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees, and investors require 2.5% yield, the implied market cap is X ÷ 0.025. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class. The 2.5% target reflects yields on high-growth infrastructure assets.</div>
+                            <div class="method-desc" data-i18n="method.yield.desc">Reverse-engineers fair value from a target protocol yield of 2.5%, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees, and investors require 2.5% yield, the implied market cap is X ÷ 0.025. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class. The 2.5% target reflects yields on high-growth infrastructure assets.</div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="methodology-disclaimer">
+            <div class="methodology-disclaimer" data-i18n="disclaimer.text">
                 <strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. 
-                "Popularity" refers to usage frequency in the industry/community. "Reliability" indicates the level of academic backing and empirical validation.
+                "Reliability" indicates the level of academic backing and empirical validation.
                 Investment decisions should consider multiple factors comprehensively.
             </div>
         </section>
@@ -2447,11 +2517,279 @@
                 <span class="source-tag">Beaconcha.in</span>
                 <span class="source-tag">Santiment</span>
             </div>
-            <div class="footer-disclaimer">Auto-refresh 120s · For informational purposes only · Not financial advice</div>
+            <div class="footer-disclaimer" data-i18n="footer.disclaimer">Auto-refresh 120s · For informational purposes only · Not financial advice</div>
         </footer>
     </div>
 
     <script>
+        // Translations
+        const translations = {
+            en: {
+                'status.live': 'Live',
+                'status.updating': 'Updating...',
+                'nav.price': 'Price & Market',
+                'nav.onchain': 'On-Chain Metrics',
+                'nav.valuation': 'Valuation Analysis',
+                'nav.methodology': 'Methodology',
+                'summary.title': '📊 Executive Summary',
+                'summary.currentPrice': 'Current Price',
+                'summary.fairValue': 'Fair Value (8 Models)',
+                'summary.opportunity': 'Opportunity',
+                'summary.desc1': 'This dashboard attempts to derive Ethereum\'s <strong>intrinsic value</strong> using 8 different valuation methodologies — from traditional finance frameworks (DCF, P/E, Revenue Yield) to crypto-native metrics (TVL Multiple, Metcalfe\'s Law, Staking Scarcity).',
+                'summary.desc2': 'We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. While these models have limitations and assumptions, they provide a framework for thinking about value beyond pure price speculation.',
+                'summary.feedback': 'Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
+                'section.priceTitle': 'Price & Market Overview',
+                'section.onchainTitle': 'On-Chain Metrics & Trends',
+                'section.valuationTitle': 'Valuation Analysis',
+                'section.methodologyTitle': 'Valuation Methodology',
+                'section.weeklyData': 'Weekly Data',
+                'section.models': '8 Models',
+                'section.reference': 'Reference',
+                'valuation.compositeFairValue': 'Composite Fair Value',
+                'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. "Reliability" indicates the level of academic backing and empirical validation. Investment decisions should consider multiple factors comprehensively.',
+                'footer.disclaimer': 'Auto-refresh 120s · For informational purposes only · Not financial advice',
+                'method.reliability': 'Reliability',
+                'method.high': 'High',
+                'method.medium': 'Medium',
+                'method.low': 'Low',
+                'method.tvl.note': 'TVL may include leverage, recursive deposits, and double-counting across protocols',
+                'method.tvl.desc': 'Values ETH based on total assets locked in DeFi protocols. The 7x multiple is derived from historical MC/TVL ratios during balanced market conditions (2020-2023 average). Higher TVL indicates greater network utility, adoption, and trust in Ethereum\'s smart contract ecosystem. This model assumes DeFi activity is a primary value driver for ETH.',
+                'method.staking.note': 'Proprietary model developed for this dashboard. Lacks peer review or academic validation',
+                'method.staking.desc': 'Applies a scarcity premium when circulating supply decreases due to staking. As more ETH is locked in validators (currently ~28%), liquid supply shrinks, theoretically increasing price pressure. The square root function dampens extreme valuations while still capturing the scarcity effect. This model gained relevance post-Merge with ETH\'s transition to Proof-of-Stake.',
+                'method.mctvl.note': 'Industry-standard metric for cross-chain valuation comparisons',
+                'method.mctvl.desc': 'Mean-reversion model assuming Market Cap to TVL ratio returns to historical average of 6x. When ratio is above 6x, ETH is considered overvalued; below 6x indicates undervaluation. Similar to P/B ratio in traditional equity analysis. Widely used by institutional researchers including Messari and Delphi Digital for relative valuation comparisons across L1 blockchains.',
+                'method.metcalfe.note': 'Academically validated model with strong historical correlation',
+                'method.metcalfe.desc': 'Network value grows proportionally to the square of active users/nodes. Originally developed for telecommunications, this model has been empirically validated for Bitcoin and Ethereum by academic researchers (Alabi 2017, Peterson 2018). Uses TVL as a proxy for network activity. The 1.5 exponent (between linear and quadratic) accounts for real-world network friction.',
+                'method.dcf.note': 'Highly sensitive to discount rate and growth rate assumptions',
+                'method.dcf.desc': 'Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses current staking yield (~3.5%) as the cash flow rate, 10% discount rate (crypto risk premium), and 3% perpetual growth rate. This approach bridges traditional finance valuation with crypto-native yield generation, making ETH comparable to dividend-paying assets.',
+                'method.l2.note': '2x L2 weight multiplier is proprietary without empirical basis',
+                'method.l2.desc': 'Captures value from Ethereum\'s Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum\'s value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.',
+                'method.pe.note': 'Directly comparable to traditional equity valuation',
+                'method.pe.desc': 'Treats network transaction fees as "earnings" and applies a P/E multiple comparable to growth tech stocks (25x). Annual fees represent actual economic value captured by the protocol. Post EIP-1559, a portion of fees is burned, making this metric even more relevant as it directly impacts ETH supply. Used by Token Terminal and other institutional-grade analytics platforms.',
+                'method.yield.note': 'Bond-like methodology with institutional acceptance',
+                'method.yield.desc': 'Reverse-engineers fair value from a target protocol yield of 2.5%, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees, and investors require 2.5% yield, the implied market cap is X ÷ 0.025. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class. The 2.5% target reflects yields on high-growth infrastructure assets.',
+                'valuation.undervalued': 'Undervalued',
+                'valuation.overvalued': 'Overvalued',
+                'valuation.fair': 'Fair',
+                'valuation.vsCurrent': 'vs Current',
+                'valuation.currentPrice': 'Current Price',
+                'valuation.weightedAvg': 'Weighted Avg',
+                'valuation.median': 'Median',
+                'valuation.potential': 'Potential',
+                'valuation.reliabilityWeighting': 'Reliability Weighting',
+                'signal.buy': 'Buy',
+                'signal.hold': 'Hold',
+                'signal.sell': 'Sell',
+                'method.med': 'Med'
+            },
+            ko: {
+                'status.live': '실시간',
+                'status.updating': '업데이트 중...',
+                'nav.price': '시세 & 시장',
+                'nav.onchain': '온체인 지표',
+                'nav.valuation': '밸류에이션',
+                'nav.methodology': '방법론',
+                'summary.title': '📊 핵심 요약',
+                'summary.currentPrice': '현재 가격',
+                'summary.fairValue': '적정 가치 (8개 모델)',
+                'summary.opportunity': '투자 기회',
+                'summary.desc1': '이 대시보드는 전통 금융 프레임워크(DCF, P/E, Revenue Yield)부터 크립토 네이티브 지표(TVL Multiple, Metcalfe\'s Law, Staking Scarcity)까지 8가지 밸류에이션 방법론을 활용하여 이더리움의 <strong>내재 가치</strong>를 도출하려는 시도입니다.',
+                'summary.desc2': '크립토 산업에는 더욱 엄밀한 펀더멘털 기반의 가치평가 접근법이 필요하다고 생각합니다. 이 모델들은 한계와 가정이 있지만, 단순한 가격 투기를 넘어 가치에 대해 생각하는 프레임워크를 제공합니다.',
+                'summary.feedback': '버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
+                'section.priceTitle': '시세 & 시장 개요',
+                'section.onchainTitle': '온체인 지표 & 트렌드',
+                'section.valuationTitle': '밸류에이션 분석',
+                'section.methodologyTitle': '밸류에이션 방법론',
+                'section.weeklyData': '주간 데이터',
+                'section.models': '8개 모델',
+                'section.reference': '참고 자료',
+                'valuation.compositeFairValue': '종합 적정 가치',
+                'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. "신뢰도"는 학술적 근거와 실증적 검증 수준을 나타냅니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
+                'footer.disclaimer': '120초 자동 새로고침 · 정보 제공 목적 · 투자 조언이 아닙니다',
+                'method.reliability': '신뢰도',
+                'method.high': '높음',
+                'method.medium': '중간',
+                'method.low': '낮음',
+                'method.tvl.note': 'TVL에는 레버리지, 재귀적 예치, 프로토콜 간 중복 계산이 포함될 수 있음',
+                'method.tvl.desc': 'DeFi 프로토콜에 예치된 총 자산을 기반으로 ETH 가치를 산정합니다. 7배 배수는 균형 잡힌 시장 상황(2020-2023 평균)의 역사적 MC/TVL 비율에서 도출되었습니다. 높은 TVL은 이더리움 스마트 컨트랙트 생태계의 더 큰 네트워크 활용도, 채택률, 신뢰도를 나타냅니다.',
+                'method.staking.note': '이 대시보드를 위해 개발된 독자적 모델. 동료 검토나 학술적 검증 부재',
+                'method.staking.desc': '스테이킹으로 인해 유통 공급량이 감소할 때 희소성 프리미엄을 적용합니다. 더 많은 ETH가 검증자에 잠기면(현재 ~28%) 유동 공급이 줄어들어 이론적으로 가격 상승 압력이 발생합니다. 제곱근 함수는 희소성 효과를 포착하면서 극단적인 밸류에이션을 완화합니다.',
+                'method.mctvl.note': '크로스체인 밸류에이션 비교를 위한 업계 표준 지표',
+                'method.mctvl.desc': '시가총액 대비 TVL 비율이 역사적 평균인 6배로 회귀한다고 가정하는 평균회귀 모델입니다. 비율이 6배 이상이면 고평가, 6배 미만이면 저평가로 간주합니다. 전통적 주식 분석의 P/B 비율과 유사하며, Messari와 Delphi Digital을 포함한 기관 연구자들이 L1 블록체인 간 상대적 밸류에이션 비교에 널리 사용합니다.',
+                'method.metcalfe.note': '강력한 역사적 상관관계를 가진 학술적으로 검증된 모델',
+                'method.metcalfe.desc': '네트워크 가치는 활성 사용자/노드 수의 제곱에 비례하여 성장합니다. 원래 통신용으로 개발되었으며, 학술 연구자들(Alabi 2017, Peterson 2018)에 의해 비트코인과 이더리움에 대해 실증적으로 검증되었습니다. TVL을 네트워크 활동의 대리 지표로 사용합니다.',
+                'method.dcf.note': '할인율과 성장률 가정에 매우 민감',
+                'method.dcf.desc': '스테이킹 보상을 영구 현금흐름으로 취급하는 전통적인 할인현금흐름(DCF) 분석입니다. 현재 스테이킹 수익률(~3.5%)을 현금흐름률로, 10% 할인율(크립토 리스크 프리미엄), 3% 영구 성장률을 사용합니다. 이 접근법은 전통 금융 밸류에이션과 크립토 네이티브 수익 창출을 연결합니다.',
+                'method.l2.note': '2배 L2 가중치 배수는 실증적 근거 없는 독자적 설정',
+                'method.l2.desc': '이더리움의 레이어 2 스케일링 생태계(Arbitrum, Optimism, Base, zkSync 등)의 가치를 포착합니다. L2 TVL에 2배 가중치를 부여하는 이유는 L2 활동이 이더리움 메인넷에서 정산되어 블록스페이스를 소비하고 EIP-1559를 통해 ETH를 소각하기 때문입니다.',
+                'method.pe.note': '전통적인 주식 밸류에이션과 직접 비교 가능',
+                'method.pe.desc': '네트워크 거래 수수료를 "수익"으로 취급하고 성장 기술주에 준하는 P/E 배수(25배)를 적용합니다. 연간 수수료는 프로토콜이 포착한 실제 경제적 가치를 나타냅니다. EIP-1559 이후 수수료의 일부가 소각되어 ETH 공급에 직접 영향을 미치므로 이 지표가 더욱 관련성이 높아졌습니다.',
+                'method.yield.note': '기관 투자자들이 수용하는 채권형 방법론',
+                'method.yield.desc': '2.5%의 목표 프로토콜 수익률에서 적정 가치를 역산하여 ETH를 수익 창출 채권처럼 취급합니다. 이더리움이 연간 X의 수수료를 생성하고 투자자들이 2.5% 수익률을 요구한다면, 내재 시가총액은 X ÷ 0.025입니다. 이 접근법은 크립토를 대체 자산 클래스로 평가하는 TradFi 분석가들이 선호합니다.',
+                'valuation.undervalued': '저평가',
+                'valuation.overvalued': '고평가',
+                'valuation.fair': '적정',
+                'valuation.vsCurrent': '대비 현재가',
+                'valuation.currentPrice': '현재 가격',
+                'valuation.weightedAvg': '가중 평균',
+                'valuation.median': '중앙값',
+                'valuation.potential': '상승 여력',
+                'valuation.reliabilityWeighting': '신뢰도 가중치',
+                'signal.buy': '매수',
+                'signal.hold': '보유',
+                'signal.sell': '매도',
+                'method.med': '중'
+            },
+            zh: {
+                'status.live': '实时',
+                'status.updating': '更新中...',
+                'nav.price': '价格与市场',
+                'nav.onchain': '链上指标',
+                'nav.valuation': '估值分析',
+                'nav.methodology': '方法论',
+                'summary.title': '📊 执行摘要',
+                'summary.currentPrice': '当前价格',
+                'summary.fairValue': '公允价值 (8个模型)',
+                'summary.opportunity': '投资机会',
+                'summary.desc1': '本仪表板尝试使用8种不同的估值方法来推导以太坊的<strong>内在价值</strong>——从传统金融框架（DCF、P/E、Revenue Yield）到加密原生指标（TVL Multiple、Metcalfe\'s Law、Staking Scarcity）。',
+                'summary.desc2': '我们认为加密行业需要更严格的、基于基本面的估值方法。虽然这些模型有其局限性和假设，但它们提供了一个超越纯粹价格投机的思考价值的框架。',
+                'summary.feedback': '发现bug或有建议？随时联系我——非常欢迎反馈！',
+                'section.priceTitle': '价格与市场概览',
+                'section.onchainTitle': '链上指标与趋势',
+                'section.valuationTitle': '估值分析',
+                'section.methodologyTitle': '估值方法论',
+                'section.weeklyData': '周数据',
+                'section.models': '8个模型',
+                'section.reference': '参考',
+                'valuation.compositeFairValue': '综合公允价值',
+                'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。"可靠性"表示学术支持和实证验证的水平。投资决策应综合考虑多种因素。',
+                'footer.disclaimer': '自动刷新120秒 · 仅供信息参考 · 非投资建议',
+                'method.reliability': '可靠性',
+                'method.high': '高',
+                'method.medium': '中',
+                'method.low': '低',
+                'method.tvl.note': 'TVL可能包含杠杆、递归存款和跨协议的重复计算',
+                'method.tvl.desc': '基于DeFi协议中锁定的总资产来评估ETH价值。7倍乘数来源于平衡市场条件下（2020-2023年平均）的历史MC/TVL比率。更高的TVL表明以太坊智能合约生态系统具有更大的网络效用、采用率和信任度。',
+                'method.staking.note': '为本仪表板开发的专有模型，缺乏同行评审或学术验证',
+                'method.staking.desc': '当流通供应量因质押而减少时，应用稀缺性溢价。随着更多ETH被锁定在验证者中（目前约28%），流动供应减少，理论上会增加价格上涨压力。平方根函数在捕捉稀缺效应的同时抑制极端估值。',
+                'method.mctvl.note': '跨链估值比较的行业标准指标',
+                'method.mctvl.desc': '均值回归模型，假设市值与TVL比率回归到历史平均值6倍。当比率高于6倍时，ETH被认为是高估的；低于6倍则表示低估。类似于传统股票分析中的P/B比率。被Messari和Delphi Digital等机构研究人员广泛用于L1区块链之间的相对估值比较。',
+                'method.metcalfe.note': '具有强历史相关性的学术验证模型',
+                'method.metcalfe.desc': '网络价值与活跃用户/节点数量的平方成正比增长。最初为电信开发，该模型已被学术研究人员（Alabi 2017, Peterson 2018）对比特币和以太坊进行了实证验证。使用TVL作为网络活动的代理指标。',
+                'method.dcf.note': '对贴现率和增长率假设高度敏感',
+                'method.dcf.desc': '将质押奖励视为永续现金流的传统贴现现金流分析。使用当前质押收益率（约3.5%）作为现金流率，10%贴现率（加密风险溢价），3%永续增长率。这种方法将传统金融估值与加密原生收益生成联系起来。',
+                'method.l2.note': '2倍L2权重乘数是专有设定，缺乏实证基础',
+                'method.l2.desc': '捕捉以太坊Layer 2扩展生态系统（Arbitrum, Optimism, Base, zkSync等）的价值。L2 TVL加权2倍，因为L2活动在以太坊主网上结算，消耗区块空间并通过EIP-1559销毁ETH。',
+                'method.pe.note': '可直接与传统股票估值比较',
+                'method.pe.desc': '将网络交易费用视为"收益"，并应用与成长型科技股相当的P/E倍数（25倍）。年费代表协议捕获的实际经济价值。EIP-1559后，部分费用被销毁，直接影响ETH供应，使该指标更具相关性。',
+                'method.yield.note': '机构接受的债券型方法论',
+                'method.yield.desc': '从2.5%的目标协议收益率反向推导公允价值，将ETH视为收益型债券。如果以太坊产生X年费，投资者要求2.5%收益率，则隐含市值为X÷0.025。这种方法受到将加密货币评估为另类资产类别的TradFi分析师青睐。',
+                'valuation.undervalued': '低估',
+                'valuation.overvalued': '高估',
+                'valuation.fair': '合理',
+                'valuation.vsCurrent': '相较当前',
+                'valuation.currentPrice': '当前价格',
+                'valuation.weightedAvg': '加权平均',
+                'valuation.median': '中位数',
+                'valuation.potential': '潜在涨幅',
+                'valuation.reliabilityWeighting': '可靠性加权',
+                'signal.buy': '买入',
+                'signal.hold': '持有',
+                'signal.sell': '卖出',
+                'method.med': '中'
+            },
+            ja: {
+                'status.live': 'ライブ',
+                'status.updating': '更新中...',
+                'nav.price': '価格・市場',
+                'nav.onchain': 'オンチェーン指標',
+                'nav.valuation': 'バリュエーション',
+                'nav.methodology': '方法論',
+                'summary.title': '📊 エグゼクティブサマリー',
+                'summary.currentPrice': '現在価格',
+                'summary.fairValue': '適正価格 (8モデル)',
+                'summary.opportunity': '投資機会',
+                'summary.desc1': 'このダッシュボードは、伝統的な金融フレームワーク（DCF、P/E、Revenue Yield）から暗号ネイティブ指標（TVL Multiple、Metcalfe\'s Law、Staking Scarcity）まで、8つの異なるバリュエーション手法を用いてイーサリアムの<strong>本質的価値</strong>を導き出すことを試みています。',
+                'summary.desc2': '暗号産業には、より厳密なファンダメンタルズに基づくバリュエーションアプローチが必要だと考えています。これらのモデルには限界と仮定がありますが、純粋な価格投機を超えて価値について考えるためのフレームワークを提供します。',
+                'summary.feedback': 'バグを発見されたり、ご提案がありましたら、いつでもお知らせください — フィードバックは大歓迎です！',
+                'section.priceTitle': '価格・市場概要',
+                'section.onchainTitle': 'オンチェーン指標・トレンド',
+                'section.valuationTitle': 'バリュエーション分析',
+                'section.methodologyTitle': 'バリュエーション方法論',
+                'section.weeklyData': '週間データ',
+                'section.models': '8モデル',
+                'section.reference': '参考',
+                'valuation.compositeFairValue': '総合適正価格',
+                'disclaimer.text': '<strong>⚠️ 免責事項：</strong>これらのバリュエーションモデルは参考用です。各モデルには独自の仮定と限界があります。「信頼性」は学術的裏付けと実証的検証のレベルを示します。投資判断は複数の要因を総合的に考慮する必要があります。',
+                'footer.disclaimer': '120秒自動更新 · 情報提供のみ · 投資アドバイスではありません',
+                'method.reliability': '信頼性',
+                'method.high': '高',
+                'method.medium': '中',
+                'method.low': '低',
+                'method.tvl.note': 'TVLにはレバレッジ、再帰的預金、プロトコル間の二重計上が含まれる場合があります',
+                'method.tvl.desc': 'DeFiプロトコルにロックされた総資産に基づいてETHの価値を算出します。7倍の倍率は、バランスの取れた市場状況（2020-2023年平均）における過去のMC/TVL比率から導出されています。高いTVLは、イーサリアムのスマートコントラクトエコシステムのより大きなネットワーク有用性、採用、信頼を示しています。',
+                'method.staking.note': 'このダッシュボード用に開発された独自モデル。査読や学術的検証なし',
+                'method.staking.desc': 'ステーキングにより流通供給量が減少した場合に希少性プレミアムを適用します。より多くのETHがバリデーターにロックされると（現在約28%）、流動性供給が縮小し、理論的に価格上昇圧力が高まります。平方根関数は希少性効果を捉えながら極端なバリュエーションを抑制します。',
+                'method.mctvl.note': 'クロスチェーンバリュエーション比較のための業界標準指標',
+                'method.mctvl.desc': '時価総額対TVL比率が過去の平均6倍に回帰すると仮定する平均回帰モデル。比率が6倍を超えるとETHは過大評価、6倍を下回ると過小評価とみなされます。従来の株式分析におけるP/B比率に類似し、MessariやDelphi Digitalなどの機関投資家がL1ブロックチェーン間の相対的なバリュエーション比較に広く使用しています。',
+                'method.metcalfe.note': '強い過去の相関関係を持つ学術的に検証されたモデル',
+                'method.metcalfe.desc': 'ネットワーク価値はアクティブユーザー/ノード数の二乗に比例して成長します。元々は通信用に開発され、このモデルはビットコインとイーサリアムについて学術研究者（Alabi 2017、Peterson 2018）によって実証的に検証されています。TVLをネットワーク活動の代理指標として使用します。',
+                'method.dcf.note': '割引率と成長率の仮定に非常に敏感',
+                'method.dcf.desc': 'ステーキング報酬を永続的なキャッシュフローとして扱う従来の割引キャッシュフロー分析。現在のステーキング利回り（約3.5%）をキャッシュフロー率として、10%の割引率（暗号資産リスクプレミアム）、3%の永続成長率を使用します。このアプローチは、従来の金融バリュエーションと暗号ネイティブの利回り生成を橋渡しします。',
+                'method.l2.note': '2倍のL2重み付け乗数は実証的根拠のない独自設定',
+                'method.l2.desc': 'イーサリアムのレイヤー2スケーリングエコシステム（Arbitrum、Optimism、Base、zkSyncなど）からの価値を捉えます。L2 TVLに2倍の重み付けをするのは、L2の活動がイーサリアムメインネットで決済され、ブロックスペースを消費し、EIP-1559を通じてETHを焼却するためです。',
+                'method.pe.note': '従来の株式バリュエーションと直接比較可能',
+                'method.pe.desc': 'ネットワーク取引手数料を「収益」として扱い、成長テック株に匹敵するP/E倍率（25倍）を適用します。年間手数料は、プロトコルが獲得した実際の経済的価値を表します。EIP-1559以降、手数料の一部が焼却され、ETH供給に直接影響を与えるため、この指標はさらに関連性が高まっています。',
+                'method.yield.note': '機関投資家に受け入れられている債券型方法論',
+                'method.yield.desc': '2.5%の目標プロトコル利回りから適正価値を逆算し、ETHを利回りを生む債券のように扱います。イーサリアムが年間Xの手数料を生み出し、投資家が2.5%の利回りを要求する場合、暗黙の時価総額はX÷0.025です。このアプローチは、暗号資産をオルタナティブ資産クラスとして評価するTradFiアナリストに支持されています。',
+                'valuation.undervalued': '割安',
+                'valuation.overvalued': '割高',
+                'valuation.fair': '適正',
+                'valuation.vsCurrent': '現在価格比',
+                'valuation.currentPrice': '現在価格',
+                'valuation.weightedAvg': '加重平均',
+                'valuation.median': '中央値',
+                'valuation.potential': '上昇余地',
+                'valuation.reliabilityWeighting': '信頼性加重',
+                'signal.buy': '買い',
+                'signal.hold': '保有',
+                'signal.sell': '売り',
+                'method.med': '中'
+            }
+        };
+
+        let currentLang = 'en';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('ethval-lang', lang);
+            
+            // Update html lang attribute for proper font rendering
+            const langMap = { en: 'en', ko: 'ko', zh: 'zh-CN', ja: 'ja' };
+            document.documentElement.lang = langMap[lang] || 'en';
+            
+            // Update all elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+            
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Re-render valuation cards with translated labels
+            if (typeof renderValuations === 'function' && state.price > 0) {
+                renderValuations();
+            }
+        }
+
         // State
         const state = {
             price: 0, marketCap: 0, volume24h: 0, circulatingSupply: 0,
@@ -2621,8 +2959,11 @@
             }
         });
 
-        function setStatus(text, isError = false) {
+        function setStatus(key, isError = false) {
             document.getElementById('status-dot').style.background = isError ? '#cb2431' : '#22863a';
+            const text = translations[currentLang] && translations[currentLang][key] 
+                ? translations[currentLang][key] 
+                : key;
             document.getElementById('status-text').textContent = text;
         }
 
@@ -3975,18 +4316,32 @@
                 const isPositive = diff >= 0;
                 const diffClass = diff > 15 ? 'up' : diff < -15 ? 'down' : 'neutral';
                 const markerClass = diff > 15 ? 'positive' : diff < -15 ? 'negative' : 'neutral';
-                const label = diff > 15 ? 'Undervalued' : diff < -15 ? 'Overvalued' : 'Fair';
 
-                // Reliability badge
+                // Reliability badge - use translations
                 const reliabilityLevel = m.reliability >= 4 ? 'high' : m.reliability >= 3 ? 'medium' : 'low';
-                const reliabilityText = m.reliability >= 4 ? 'High' : m.reliability >= 3 ? 'Medium' : 'Low';
+                const reliabilityText = translations[currentLang] ? 
+                    (m.reliability >= 4 ? translations[currentLang]['method.high'] : 
+                     m.reliability >= 3 ? translations[currentLang]['method.medium'] : 
+                     translations[currentLang]['method.low']) : 
+                    (m.reliability >= 4 ? 'High' : m.reliability >= 3 ? 'Medium' : 'Low');
+                const reliabilityLabel = translations[currentLang] && translations[currentLang]['method.reliability'] 
+                    ? translations[currentLang]['method.reliability'] : 'Reliability';
+
+                // Valuation labels
+                const labelUndervalued = translations[currentLang] && translations[currentLang]['valuation.undervalued'] 
+                    ? translations[currentLang]['valuation.undervalued'] : 'Undervalued';
+                const labelOvervalued = translations[currentLang] && translations[currentLang]['valuation.overvalued'] 
+                    ? translations[currentLang]['valuation.overvalued'] : 'Overvalued';
+                const labelFair = translations[currentLang] && translations[currentLang]['valuation.fair'] 
+                    ? translations[currentLang]['valuation.fair'] : 'Fair';
+                const label = diff > 15 ? labelUndervalued : diff < -15 ? labelOvervalued : labelFair;
 
                 container.innerHTML += `
                     <div class="valuation-model">
                         <div class="model-row-1">
                             <div class="model-name">${m.name}</div>
                             <div class="model-reliability">
-                                <span class="reliability-label">Reliability</span>
+                                <span class="reliability-label">${reliabilityLabel}</span>
                                 <span class="reliability-badge ${reliabilityLevel}">${reliabilityText}</span>
                             </div>
                         </div>
@@ -4038,18 +4393,27 @@
 
             document.getElementById('composite-price').textContent = fmt.price(weightedAvgPrice);
             const diffEl = document.getElementById('composite-diff');
-            diffEl.textContent = fmt.pct(avgDiff) + ' vs Current';
+            const vsCurrent = translations[currentLang] && translations[currentLang]['valuation.vsCurrent'] 
+                ? translations[currentLang]['valuation.vsCurrent'] : 'vs Current';
+            diffEl.textContent = fmt.pct(avgDiff) + ' ' + vsCurrent;
             diffEl.className = 'conclusion-diff ' + (avgDiff >= 0 ? 'up' : 'down');
 
             const verdictEl = document.getElementById('verdict');
+            const undervaluedText = translations[currentLang] && translations[currentLang]['valuation.undervalued'] 
+                ? translations[currentLang]['valuation.undervalued'].toUpperCase() : 'UNDERVALUED';
+            const overvaluedText = translations[currentLang] && translations[currentLang]['valuation.overvalued'] 
+                ? translations[currentLang]['valuation.overvalued'].toUpperCase() : 'OVERVALUED';
+            const fairText = translations[currentLang] && translations[currentLang]['valuation.fair'] 
+                ? translations[currentLang]['valuation.fair'].toUpperCase() : 'FAIR VALUE';
+            
             if (avgDiff > 15) {
-                verdictEl.textContent = '▲ UNDERVALUED';
+                verdictEl.textContent = '▲ ' + undervaluedText;
                 verdictEl.className = 'conclusion-verdict bullish';
             } else if (avgDiff < -15) {
-                verdictEl.textContent = '▼ OVERVALUED';
+                verdictEl.textContent = '▼ ' + overvaluedText;
                 verdictEl.className = 'conclusion-verdict bearish';
             } else {
-                verdictEl.textContent = '◆ FAIR VALUE';
+                verdictEl.textContent = '◆ ' + fairText;
                 verdictEl.className = 'conclusion-verdict neutral';
             }
 
@@ -4307,7 +4671,7 @@
         // Main
         async function fetchAll() {
             console.log('========== fetchAll START ==========');
-            setStatus('Updating...');
+            setStatus('status.updating');
             try {
                 // 모든 API를 동시에 병렬 호출
                 console.log('1. Fetching all data in parallel...');
@@ -4360,7 +4724,7 @@
                 renderValuations();
                 
                 updateTime();
-                setStatus('Live');
+                setStatus('status.live');
                 console.log('========== fetchAll COMPLETE ==========');
             } catch (e) {
                 console.error('fetchAll error:', e);
@@ -4541,6 +4905,17 @@
             fetchAll();
             setInterval(fetchAll, 120000);
             setInterval(updateTime, 1000);
+
+            // Language selector
+            const savedLang = localStorage.getItem('ethval-lang') || 'en';
+            setLanguage(savedLang);
+            
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const lang = btn.getAttribute('data-lang');
+                    setLanguage(lang);
+                });
+            });
 
             // Navigation - update active state on scroll only
             const navItems = document.querySelectorAll('.nav-item');
