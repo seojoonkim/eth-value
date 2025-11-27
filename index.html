@@ -1634,6 +1634,14 @@
             text-decoration: underline;
         }
 
+        @media (max-width: 900px) {
+            .summary-valuation-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+        }
+
         @media (max-width: 600px) {
             .summary-content {
                 grid-template-columns: 1fr;
@@ -2202,7 +2210,7 @@
                     </p>
                     <div class="summary-cta">
                         <img src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px;">
-                        📧 <a href="/cdn-cgi/l/email-protection#6c1f050103022c040d1f040908420f0301"><span class="__cf_email__" data-cfemail="5a29333735341a323b29323f3e74393537">[email&#160;protected]</span></a> or 𝕏 <a href="https://x.com/simonkim_nft" target="_blank">@simonkim_nft</a>
+                        📧 <a href="mailto:simon@hashed.com">simon@hashed.com</a> or 𝕏 <a href="https://x.com/simonkim_nft" target="_blank">@simonkim_nft</a>
                     </div>
                 </div>
             </div>
@@ -3238,7 +3246,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> (<a href="/cdn-cgi/l/email-protection#7c0f151113123c141d0f141918521f1311"><span class="__cf_email__" data-cfemail="99eaf0f4f6f7d9f1f8eaf1fcfdb7faf6f4">[email&#160;protected]</span></a>) · v0.1.5
+                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.1.5
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -6068,61 +6076,101 @@
             console.log('========== fetchAll START ==========');
             setStatus('status.updating');
             try {
-                // 모든 API를 동시에 병렬 호출
-                console.log('1. Fetching all data in parallel...');
+                // ═══════════════════════════════════════════════════════════════════
+                // PHASE 0: 즉시 기본값 표시 (API 응답 전에 표시)
+                // ═══════════════════════════════════════════════════════════════════
+                const ETH_ATH = 4878.26; // 2021-11-10 기준
+                const ETH_SUPPLY_EST = 120400000;
+                document.getElementById('ath').textContent = fmt.price(ETH_ATH);
+                document.getElementById('circ-supply').textContent = fmt.num(ETH_SUPPLY_EST) + ' ETH';
+                state.ath = ETH_ATH;
                 
-                const [binancePrice, binanceHistory, coinGecko, defiLlama, staking, stakingYield, transactions, exchangeReserve] = await Promise.allSettled([
+                // ═══════════════════════════════════════════════════════════════════
+                // PHASE 1a: Binance 가격 (가장 빠름) - 먼저 실행
+                // ═══════════════════════════════════════════════════════════════════
+                console.log('1a. Binance price (fastest)...');
+                const binancePromise = Promise.allSettled([
                     fetchBinancePrice(),
-                    fetchBinanceHistory(365),
-                    fetchCoinGecko(),
-                    fetchDefiLlama(),
-                    fetchStaking(),
-                    fetchStakingYield(),
-                    fetchTransactions(),
-                    fetchExchangeReserve()
+                    fetchBinanceHistory(365)
                 ]);
                 
-                console.log('   All API calls completed');
-                
-                // 디버그: API 호출 결과 확인
-                console.log('   API Results:', {
-                    binancePrice: binancePrice.status,
-                    binanceHistory: binanceHistory.status,
-                    coinGecko: coinGecko.status,
-                    defiLlama: defiLlama.status,
-                    staking: staking.status,
-                    stakingYield: stakingYield.status,
-                    transactions: transactions.status,
-                    exchangeReserve: exchangeReserve.status
-                });
-                console.log('   State after API:', {
-                    price: state.price,
-                    marketCap: state.marketCap,
-                    volume24h: state.volume24h,
-                    circulatingSupply: state.circulatingSupply,
-                    stakingApr: state.stakingApr
+                // ═══════════════════════════════════════════════════════════════════
+                // PHASE 1b: CoinGecko (Market Cap, ATH 업데이트) - 병렬로 시작
+                // ═══════════════════════════════════════════════════════════════════
+                console.log('1b. CoinGecko (parallel, may be slower)...');
+                const coinGeckoPromise = fetchCoinGecko().then(() => {
+                    // CoinGecko 완료되면 ATH 업데이트
+                    if (state.price && state.ath) {
+                        const fromAth = ((state.price - state.ath) / state.ath) * 100;
+                        const fromAthEl = document.getElementById('from-ath');
+                        if (fromAthEl && fromAthEl.textContent === '--') {
+                            fromAthEl.textContent = fmt.pct(fromAth);
+                            fromAthEl.className = 'price-stat-tag ' + (fromAth >= 0 ? 'up' : 'down');
+                        }
+                    }
                 });
                 
-                // 2. Binance 데이터가 있으면 Dominance/ETH-BTC 업데이트
-                if (binanceHistory.status === 'fulfilled' && state.priceHistory?.length > 0) {
-                    console.log('2. Updating Dominance/ETH-BTC charts...');
-                    await fetchGlobal();
+                // Binance 먼저 기다림
+                await binancePromise;
+                console.log('   Binance complete - Price:', state.price);
+                
+                // Binance 가격으로 Market Cap 즉시 계산
+                if (state.price) {
+                    if (!state.marketCap) {
+                        state.circulatingSupply = ETH_SUPPLY_EST;
+                        state.marketCap = state.price * ETH_SUPPLY_EST;
+                        document.getElementById('market-cap').textContent = fmt.usd(state.marketCap);
+                    }
+                    // ATH 대비 계산
+                    const fromAth = ((state.price - ETH_ATH) / ETH_ATH) * 100;
+                    const fromAthEl = document.getElementById('from-ath');
+                    fromAthEl.textContent = fmt.pct(fromAth);
+                    fromAthEl.className = 'price-stat-tag ' + (fromAth >= 0 ? 'up' : 'down');
                 }
                 
-                // 3. Supply Distribution 업데이트
-                console.log('3. Updating supply distribution chart...');
+                // 가격 데이터 있으면 즉시 Dominance/ETH-BTC 업데이트
+                if (state.priceHistory?.length > 0) {
+                    fetchGlobal(); // await 없이 백그라운드 실행
+                }
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // PHASE 2: 온체인 데이터 (DeFiLlama + Staking) - 병렬
+                // Supply Distribution에 필요
+                // ═══════════════════════════════════════════════════════════════════
+                console.log('2. PHASE 2: On-chain data (DeFiLlama + Staking parallel)...');
+                await Promise.allSettled([
+                    fetchDefiLlama(),
+                    fetchStaking(),
+                    fetchStakingYield()
+                ]);
+                console.log('   PHASE 2 complete - TVL:', state.tvl, 'Staked:', state.stakedEth);
+                
+                // Supply Distribution 즉시 업데이트
                 updateSupplyDistributionChart();
                 
-                // 4. NVT & Active Addresses 계산
-                console.log('4. Calculating NVT and Active Addresses...');
+                // CoinGecko도 완료 대기 (이미 끝났을 수 있음)
+                await coinGeckoPromise;
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // PHASE 3: 보조 데이터 (느려도 됨) - 백그라운드
+                // ═══════════════════════════════════════════════════════════════════
+                console.log('3. PHASE 3: Secondary data (Transactions + Reserve)...');
+                Promise.allSettled([
+                    fetchTransactions(),
+                    fetchExchangeReserve()
+                ]).then(() => {
+                    console.log('   PHASE 3 complete');
+                    calculateAndUpdateNVT();
+                    calculateAndUpdateActiveAddr();
+                });
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // PHASE 4: 계산 및 렌더링 (Phase 2 완료 후 바로 실행)
+                // ═══════════════════════════════════════════════════════════════════
+                console.log('4. PHASE 4: Calculations and rendering...');
                 calculateAndUpdateNVT();
                 calculateAndUpdateActiveAddr();
-                
-                // 5. ETH in DeFi & Commitment Ratio 계산
-                console.log('5. Calculating ETH in DeFi and Commitment Ratio...');
                 calculateEthInDefiAndCommitment();
-                
-                console.log('6. Rendering valuations...');
                 renderValuations();
                 
                 updateTime();
