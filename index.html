@@ -772,7 +772,7 @@
             background: var(--bg-card);
             border: none;
             border-radius: 6px;
-            padding: 10px 14px;
+            padding: 12px 14px;
             min-width: 0;
             overflow: hidden;
         }
@@ -781,7 +781,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .model-row-2 {
@@ -789,11 +789,14 @@
             grid-template-columns: minmax(70px, 90px) 1fr minmax(60px, 80px);
             align-items: center;
             gap: 12px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .model-row-3 {
-            margin-top: 6px;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .model-name {
@@ -819,6 +822,93 @@
             flex-shrink: 0;
         }
 
+        .model-toggle {
+            position: relative;
+            width: 36px;
+            height: 16px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .model-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .model-toggle .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #E5E7EB;
+            border-radius: 16px;
+            transition: 0.2s;
+        }
+
+        .model-toggle .slider::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            left: 2px;
+            bottom: 2px;
+            background: #F9FAFB;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .model-toggle .slider::after {
+            content: 'Off';
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 7px;
+            font-weight: 600;
+            color: #9CA3AF;
+            transition: 0.2s;
+        }
+
+        .model-toggle input:checked + .slider {
+            background: #D1D5DB;
+        }
+
+        .model-toggle input:checked + .slider::before {
+            transform: translateX(20px);
+            background: white;
+        }
+
+        .model-toggle input:checked + .slider::after {
+            content: 'On';
+            right: auto;
+            left: 5px;
+            color: #6B7280;
+        }
+
+        .valuation-model.disabled {
+            opacity: 0.4;
+        }
+
+        .valuation-model.disabled .model-toggle {
+            opacity: 2.5; /* 부모의 0.4를 상쇄하여 1.0으로 */
+        }
+
+        .valuation-model.disabled .model-toggle .slider {
+            background: #F3F4F6;
+        }
+
+        .valuation-model.disabled .model-toggle .slider::before {
+            background: white;
+        }
+
+        .valuation-model.disabled .model-price,
+        .valuation-model.disabled .model-bar-container,
+        .valuation-model.disabled .model-diff {
+            opacity: 0.5;
+        }
+
         .reliability-label {
             font-size: 7px;
             color: var(--text-muted);
@@ -839,18 +929,18 @@
         }
 
         .reliability-badge.high {
-            background: #DDD6FE;
-            color: #5B21B6;
+            background: #C4B5FD;
+            color: #4C1D95;
         }
 
         .reliability-badge.medium {
-            background: #EDE9FE;
-            color: #9575CD;
+            background: #DDD6FE;
+            color: #7C3AED;
         }
 
         .reliability-badge.low {
-            background: #F5F3FF;
-            color: #A78BFA;
+            background: #EDE9FE;
+            color: #7C3AED;
         }
 
         .model-reliability .source {
@@ -888,7 +978,7 @@
             left: 50%;
             top: 0;
             bottom: 0;
-            width: 2px;
+            width: 1px;
             background: var(--text);
             transform: translateX(-50%);
             z-index: 3;
@@ -973,6 +1063,11 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 8px;
+        }
+
+        .active-models-count {
+            font-weight: 400;
+            opacity: 0.8;
         }
 
         .conclusion-price {
@@ -1497,7 +1592,7 @@
         .methodology-disclaimer {
             margin-top: 16px;
             margin-bottom: 0;
-            padding: 12px 0 4px 0;
+            padding: 12px 24px 4px 24px;
             background: transparent;
             border: none;
             border-radius: 0;
@@ -1558,6 +1653,15 @@
             border-bottom: none;
             padding-top: 12px;
             margin-top: 4px;
+        }
+
+        .summary-toggle-hint {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            opacity: 0.8;
         }
 
         .summary-label {
@@ -1931,15 +2035,15 @@
             }
 
             .valuation-model {
-                padding: 10px;
+                padding: 11px 10px;
             }
 
             .model-row-1 {
-                margin-bottom: 8px;
+                margin-bottom: 10px;
             }
 
             .model-row-2 {
-                margin-bottom: 6px;
+                margin-bottom: 8px;
             }
 
             .model-name {
@@ -1970,8 +2074,8 @@
 
             .model-row-2 {
                 display: grid;
-                grid-template-columns: 80px 1fr 70px;
-                gap: 8px;
+                grid-template-columns: 70px 1fr 60px;
+                gap: 6px;
             }
 
             .model-price {
@@ -1980,6 +2084,10 @@
 
             .model-bar-container {
                 height: 20px;
+            }
+
+            .model-bar-center {
+                width: 1px;
             }
 
             .model-bar-center::before {
@@ -2149,7 +2257,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.1.5</span>
+                <span class="version-badge">v0.2.1</span>
             </a>
             <div class="header-center">
                 <div class="status">
@@ -2188,18 +2296,21 @@
                         <span class="summary-value" id="summary-current-price">$--</span>
                     </div>
                     <div class="summary-valuation-row">
-                        <span class="summary-label" data-i18n="summary.fairValue">Fair Value (10 Models)</span>
+                        <span class="summary-label">Fair Value (<span id="active-model-count">12</span> Models)</span>
                         <span class="summary-value" id="summary-fair-value">$--</span>
                     </div>
                     <div class="summary-valuation-row">
                         <span class="summary-label" data-i18n="summary.opportunity">Opportunity</span>
                         <span class="summary-opportunity upside" id="summary-opportunity">-- %</span>
                     </div>
+                    <div class="summary-toggle-hint" data-i18n="summary.toggleHint">
+                        Toggle individual models on/off below to customize your valuation.
+                    </div>
                 </div>
                 <div class="summary-description">
                     <p class="summary-text" data-i18n="summary.desc1">
-                        This dashboard attempts to derive Ethereum's <strong>intrinsic value</strong> using 10 different valuation methodologies — 
-                        from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe's Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital).
+                        This dashboard attempts to derive Ethereum's <strong>intrinsic value</strong> using 12 different valuation methodologies — 
+                        from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe's Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer).
                     </p>
                     <p class="summary-text" data-i18n="summary.desc2">
                         We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. 
@@ -2636,14 +2747,14 @@
                 <div class="section-title" data-i18n="section.valuationTitle">
                     Valuation Analysis
                 </div>
-                <span class="section-badge" data-i18n="section.models">10 Models</span>
+                <span class="section-badge" data-i18n="section.models">12 Models</span>
             </div>
 
             <div class="valuation-layout">
                 <div class="valuation-models" id="valuation-models"></div>
 
                 <div class="conclusion-panel">
-                    <div class="conclusion-label" data-i18n="valuation.compositeFairValue">Composite Fair Value</div>
+                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="active-models-count">(<span id="conclusion-model-count">12</span>/12)</span></div>
                     <div class="conclusion-price" id="composite-price">$--</div>
                     <div class="conclusion-diff up" id="composite-diff">-- vs Current</div>
                     <div class="conclusion-verdict bullish" id="verdict">--</div>
@@ -2707,7 +2818,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">TVL × 7 ÷ Supply</div>
+                            <div class="method-formula">TVL × Multiple ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2749,7 +2860,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">Price × (6 ÷ Current Ratio)</div>
+                            <div class="method-formula">Price × (Target ÷ CurrentRatio)</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2770,7 +2881,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">2 × (TVL/1B)^1.5 × 1B ÷ Supply</div>
+                            <div class="method-formula">Coef × TVL^Exp ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2791,7 +2902,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">Price × (1 + APR) ÷ (0.10 - 0.03)</div>
+                            <div class="method-formula">Price × (1 + APR) ÷ (Discount - Growth)</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2812,7 +2923,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">(TVL + L2_TVL×2) × 6 ÷ Supply</div>
+                            <div class="method-formula">(TVL + L2×Weight) × Multiple ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2833,7 +2944,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">Annual_Fees × 25 ÷ Supply</div>
+                            <div class="method-formula">DailyFees × 365 × PSRatio ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2854,7 +2965,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">Annual_Revenue ÷ APR% ÷ Supply</div>
+                            <div class="method-formula">AnnualFees ÷ APR ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2875,7 +2986,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">Price × (Staked + DeFi) ÷ Supply × Multiplier</div>
+                            <div class="method-formula">Price × (1 + Commit% × Multiplier)</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2896,7 +3007,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">AppCapital ÷ Supply</div>
+                            <div class="method-formula">Stablecoins ÷ Ratio ÷ Supply</div>
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
@@ -2907,6 +3018,48 @@
                         </div>
                         <div class="method-right">
                             <div class="method-desc" data-i18n="method.appCapital.desc">App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. The 28% ratio (Stablecoins/AppCapital) has been stable since 2021. Formula: AppCapital ≈ Stablecoins ÷ 0.28. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (~$60B DeFi only), App Capital (~$600B) captures Ethereum's full settlement layer role.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-card">
+                    <div class="method-header">
+                        <span class="method-name">Validator Economics</span>
+                    </div>
+                    <div class="method-content">
+                        <div class="method-left">
+                            <div class="method-formula">Price × (Target ÷ APR)</div>
+                            <div class="method-meta">
+                                <div class="reliability-row">
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                </div>
+                            </div>
+                            <div class="method-note positive" data-i18n="method.validator.note">Target yield = Risk-free rate + Crypto risk premium; standard TradFi approach</div>
+                        </div>
+                        <div class="method-right">
+                            <div class="method-desc" data-i18n="method.validator.desc">Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Crypto risk premium (~1.5%). If current APR is below target, ETH is undervalued—validators earn less than what rational investors would demand given the risk. This mirrors how TradFi values dividend stocks relative to treasury yields plus equity risk premium.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-card">
+                    <div class="method-header">
+                        <span class="method-name">Settlement Layer</span>
+                    </div>
+                    <div class="method-content">
+                        <div class="method-left">
+                            <div class="method-formula">(DailyVol × 365 ÷ Velocity) ÷ Supply</div>
+                            <div class="method-meta">
+                                <div class="reliability-row">
+                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                </div>
+                            </div>
+                            <div class="method-note positive" data-i18n="method.settlement.note">MV=PQ equation from monetary economics; Velocity 6 benchmarked to USD M1 (~5.5x)</div>
+                        </div>
+                        <div class="method-right">
+                            <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers ($5.45B), L2 transfers ($4.16B), and bridge volume ($0.52B) totaling ~$10B/day. Velocity of 6 reflects ETH's Store-of-Value characteristics: 28% staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.</div>
                         </div>
                     </div>
                 </div>
@@ -2969,12 +3122,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="result-high">
-                                <td class="model-name-cell" data-i18n="criteria.model.revenueYield">Revenue Yield</td>
-                                <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.m">TradFi yield-based valuation widely used for bonds and dividend stocks</span></td>
-                                <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.d">Real-time Lido APR + on-chain fee revenue from DefiLlama</span></td>
-                                <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.a">No arbitrary multiples; directly uses market-derived yield</span></td>
-                                <td><span class="reliability-badge high" data-i18n="method.high">High</span></td>
+                            <tr class="result-low">
+                                <td class="model-name-cell" data-i18n="criteria.model.tvl">TVL Multiple</td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.tvl.m">Crypto-native convention; no TradFi equivalent or academic basis</span></td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.tvl.d">Real-time TVL from DefiLlama</span></td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.tvl.a">7x multiple is historical average; highly variable (3x-15x)</span></td>
+                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
+                            </tr>
+                            <tr class="result-low">
+                                <td class="model-name-cell" data-i18n="criteria.model.staking">Staking Scarcity</td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.staking.m">ETH-specific model; no peer review or validation</span></td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.staking.d">Real-time staked ETH from Beaconcha.in</span></td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.staking.a">Square root formula lacks theoretical justification</span></td>
+                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
                             </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.mctvl">MC/TVL Fair Value</td>
@@ -2997,6 +3157,13 @@
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.dcf.a">10% discount rate and 3% growth rate are subjective assumptions</span></td>
                                 <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
                             </tr>
+                            <tr class="result-low">
+                                <td class="model-name-cell" data-i18n="criteria.model.l2">L2 Ecosystem</td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.l2.m">Experimental model developed for this dashboard</span></td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.l2.d">Real-time L2 TVL aggregated from DefiLlama</span></td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.l2.a">2x L2 weight multiplier has no empirical basis</span></td>
+                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
+                            </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.ps">P/S Ratio (25x)</td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.ps.m">Standard TradFi metric; Token Terminal uses for protocol valuation</span></td>
@@ -3004,33 +3171,12 @@
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.ps.a">25x multiple based on high-growth SaaS; could be 15x-40x</span></td>
                                 <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
                             </tr>
-                            <tr class="result-medium">
-                                <td class="model-name-cell" data-i18n="criteria.model.appCapital">App Capital</td>
-                                <td><span class="partial">◐</span> <span data-i18n="criteria.appCapital.m">Logical framework for settlement layer value; limited precedent</span></td>
-                                <td><span class="check">✓</span> <span data-i18n="criteria.appCapital.d">Real-time stablecoin supply from DefiLlama</span></td>
-                                <td><span class="cross">✗</span> <span data-i18n="criteria.appCapital.a">28% stablecoin/AppCapital ratio is empirical estimate</span></td>
-                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
-                            </tr>
-                            <tr class="result-low">
-                                <td class="model-name-cell" data-i18n="criteria.model.tvl">TVL Multiple</td>
-                                <td><span class="cross">✗</span> <span data-i18n="criteria.tvl.m">Crypto-native convention; no TradFi equivalent or academic basis</span></td>
-                                <td><span class="check">✓</span> <span data-i18n="criteria.tvl.d">Real-time TVL from DefiLlama</span></td>
-                                <td><span class="cross">✗</span> <span data-i18n="criteria.tvl.a">7x multiple is historical average; highly variable (3x-15x)</span></td>
-                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
-                            </tr>
-                            <tr class="result-low">
-                                <td class="model-name-cell" data-i18n="criteria.model.staking">Staking Scarcity</td>
-                                <td><span class="cross">✗</span> <span data-i18n="criteria.staking.m">ETH-specific model; no peer review or validation</span></td>
-                                <td><span class="check">✓</span> <span data-i18n="criteria.staking.d">Real-time staked ETH from Beaconcha.in</span></td>
-                                <td><span class="cross">✗</span> <span data-i18n="criteria.staking.a">Square root formula lacks theoretical justification</span></td>
-                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
-                            </tr>
-                            <tr class="result-low">
-                                <td class="model-name-cell" data-i18n="criteria.model.l2">L2 Ecosystem</td>
-                                <td><span class="cross">✗</span> <span data-i18n="criteria.l2.m">Experimental model developed for this dashboard</span></td>
-                                <td><span class="check">✓</span> <span data-i18n="criteria.l2.d">Real-time L2 TVL aggregated from DefiLlama</span></td>
-                                <td><span class="cross">✗</span> <span data-i18n="criteria.l2.a">2x L2 weight multiplier has no empirical basis</span></td>
-                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
+                            <tr class="result-high">
+                                <td class="model-name-cell" data-i18n="criteria.model.revenueYield">Revenue Yield</td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.m">TradFi yield-based valuation widely used for bonds and dividend stocks</span></td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.d">Real-time Lido APR + on-chain fee revenue from DefiLlama</span></td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.a">No arbitrary multiples; directly uses market-derived yield</span></td>
+                                <td><span class="reliability-badge high" data-i18n="method.high">High</span></td>
                             </tr>
                             <tr class="result-low">
                                 <td class="model-name-cell" data-i18n="criteria.model.commitment">Commitment Premium</td>
@@ -3039,28 +3185,68 @@
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.commitment.a">1.5x commitment multiplier is arbitrary assumption</span></td>
                                 <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
                             </tr>
+                            <tr class="result-medium">
+                                <td class="model-name-cell" data-i18n="criteria.model.appCapital">App Capital</td>
+                                <td><span class="partial">◐</span> <span data-i18n="criteria.appCapital.m">Logical framework for settlement layer value; limited precedent</span></td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.appCapital.d">Real-time stablecoin supply from DefiLlama</span></td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.appCapital.a">28% stablecoin/AppCapital ratio is empirical estimate</span></td>
+                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                            </tr>
+                            <tr class="result-medium">
+                                <td class="model-name-cell" data-i18n="criteria.model.validator">Validator Economics</td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.validator.m">Standard TradFi approach: required return = risk-free + risk premium</span></td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.validator.d">Real-time staking APR from Lido API</span></td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.validator.a">Risk-free rate and risk premium assumptions vary (target 5-7%)</span></td>
+                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                            </tr>
+                            <tr class="result-medium">
+                                <td class="model-name-cell" data-i18n="criteria.model.settlement">Settlement Layer</td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.settlement.m">MV=PQ equation from monetary economics; Fisher's equation widely used</span></td>
+                                <td><span class="check">✓</span> <span data-i18n="criteria.settlement.d">L1 data from bitinfocharts; bridge data from DefiLlama API</span></td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.settlement.a">Velocity 6 assumes SoV behavior; could range 4-12x</span></td>
+                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- Mobile Cards Layout -->
                 <div class="criteria-cards">
-                    <div class="criteria-card result-high">
+                    <div class="criteria-card result-low">
                         <div class="criteria-card-header">
-                            <span class="criteria-card-model" data-i18n="criteria.model.revenueYield">Revenue Yield</span>
-                            <span class="reliability-badge high" data-i18n="method.high">High</span>
+                            <span class="criteria-card-model" data-i18n="criteria.model.tvl">TVL Multiple</span>
+                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
-                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.revenueYield.m">TradFi yield-based valuation widely used for bonds and dividend stocks</span></span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.tvl.m">Crypto-native; no TradFi or academic basis</span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
-                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.revenueYield.d">Real-time Lido APR + on-chain fee revenue from DefiLlama</span></span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.tvl.d">Real-time TVL from DefiLlama</span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
-                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.revenueYield.a">No arbitrary multiples; directly uses market-derived yield</span></span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.tvl.a">7x multiple highly variable (3x-15x)</span></span>
+                        </div>
+                    </div>
+
+                    <div class="criteria-card result-low">
+                        <div class="criteria-card-header">
+                            <span class="criteria-card-model" data-i18n="criteria.model.staking">Staking Scarcity</span>
+                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.staking.m">ETH-specific; no peer review</span></span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.staking.d">Real-time staked ETH from Beaconcha.in</span></span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.staking.a">√ formula lacks theoretical basis</span></span>
                         </div>
                     </div>
 
@@ -3121,6 +3307,25 @@
                         </div>
                     </div>
 
+                    <div class="criteria-card result-low">
+                        <div class="criteria-card-header">
+                            <span class="criteria-card-model" data-i18n="criteria.model.l2">L2 Ecosystem</span>
+                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.l2.m">Experimental model for this dashboard</span></span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.l2.d">Real-time L2 TVL from DefiLlama</span></span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.l2.a">2x L2 weight has no empirical basis</span></span>
+                        </div>
+                    </div>
+
                     <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.ps">P/S Ratio (25x)</span>
@@ -3137,6 +3342,44 @@
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
                             <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.ps.a">25x based on SaaS; could be 15x-40x</span></span>
+                        </div>
+                    </div>
+
+                    <div class="criteria-card result-high">
+                        <div class="criteria-card-header">
+                            <span class="criteria-card-model" data-i18n="criteria.model.revenueYield">Revenue Yield</span>
+                            <span class="reliability-badge high" data-i18n="method.high">High</span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.revenueYield.m">TradFi yield-based valuation widely used for bonds and dividend stocks</span></span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.revenueYield.d">Real-time Lido APR + on-chain fee revenue from DefiLlama</span></span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.revenueYield.a">No arbitrary multiples; directly uses market-derived yield</span></span>
+                        </div>
+                    </div>
+
+                    <div class="criteria-card result-low">
+                        <div class="criteria-card-header">
+                            <span class="criteria-card-model" data-i18n="criteria.model.commitment">Commitment Premium</span>
+                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.commitment.m">Novel concept; untested</span></span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.commitment.d">Real-time staked ETH + DeFi ETH</span></span>
+                        </div>
+                        <div class="criteria-card-row">
+                            <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.commitment.a">1.5x multiplier is arbitrary</span></span>
                         </div>
                     </div>
 
@@ -3159,79 +3402,41 @@
                         </div>
                     </div>
 
-                    <div class="criteria-card result-low">
+                    <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
-                            <span class="criteria-card-model" data-i18n="criteria.model.tvl">TVL Multiple</span>
-                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                            <span class="criteria-card-model" data-i18n="criteria.model.validator">Validator Economics</span>
+                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.tvl.m">Crypto-native; no TradFi or academic basis</span></span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.validator.m">TradFi: Rf + Risk Premium</span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
-                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.tvl.d">Real-time TVL from DefiLlama</span></span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.validator.d">Real-time Lido APR</span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.tvl.a">7x multiple highly variable (3x-15x)</span></span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.validator.a">Rf + RP assumptions vary</span></span>
                         </div>
                     </div>
 
-                    <div class="criteria-card result-low">
+                    <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
-                            <span class="criteria-card-model" data-i18n="criteria.model.staking">Staking Scarcity</span>
-                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                            <span class="criteria-card-model" data-i18n="criteria.model.settlement">Settlement Layer</span>
+                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.staking.m">ETH-specific; no peer review</span></span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.settlement.m">MV=PQ from monetary economics</span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
-                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.staking.d">Real-time staked ETH from Beaconcha.in</span></span>
+                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.settlement.d">bitinfocharts + DefiLlama API</span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.staking.a">√ formula lacks theoretical basis</span></span>
-                        </div>
-                    </div>
-
-                    <div class="criteria-card result-low">
-                        <div class="criteria-card-header">
-                            <span class="criteria-card-model" data-i18n="criteria.model.l2">L2 Ecosystem</span>
-                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
-                        </div>
-                        <div class="criteria-card-row">
-                            <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.l2.m">Experimental model for this dashboard</span></span>
-                        </div>
-                        <div class="criteria-card-row">
-                            <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
-                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.l2.d">Real-time L2 TVL from DefiLlama</span></span>
-                        </div>
-                        <div class="criteria-card-row">
-                            <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.l2.a">2x L2 weight has no empirical basis</span></span>
-                        </div>
-                    </div>
-
-                    <div class="criteria-card result-low">
-                        <div class="criteria-card-header">
-                            <span class="criteria-card-model" data-i18n="criteria.model.commitment">Commitment Premium</span>
-                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
-                        </div>
-                        <div class="criteria-card-row">
-                            <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.commitment.m">Novel concept; untested</span></span>
-                        </div>
-                        <div class="criteria-card-row">
-                            <span class="criteria-card-label" data-i18n="criteria.labelD">Data</span>
-                            <span class="criteria-card-value"><span class="check">✓</span> <span data-i18n="criteria.commitment.d">Real-time staked ETH + DeFi ETH</span></span>
-                        </div>
-                        <div class="criteria-card-row">
-                            <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.commitment.a">1.5x multiplier is arbitrary</span></span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.settlement.a">Velocity 6 assumes SoV; could be 4-12x</span></span>
                         </div>
                     </div>
                 </div>
@@ -3246,7 +3451,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.1.5
+                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.2.1
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -3258,7 +3463,7 @@
         </footer>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         // Translations
         const translations = {
             en: {
@@ -3270,9 +3475,10 @@
                 'nav.methodology': 'Methodology',
                 'summary.title': '📊 Executive Summary',
                 'summary.currentPrice': 'Current Price',
-                'summary.fairValue': 'Fair Value (10 Models)',
+                'summary.fairValue': 'Fair Value (12 Models)',
                 'summary.opportunity': 'Opportunity',
-                'summary.desc1': 'This dashboard attempts to derive Ethereum\'s <strong>intrinsic value</strong> using 10 different valuation methodologies — from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital).',
+                'summary.toggleHint': 'Toggle individual models on/off below to customize your valuation.',
+                'summary.desc1': 'This dashboard attempts to derive Ethereum\'s <strong>intrinsic value</strong> using 12 different valuation methodologies — from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer).',
                 'summary.desc2': 'We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. While these models have limitations and assumptions, they provide a framework for thinking about value beyond pure price speculation.',
                 'summary.feedback': 'Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
                 'section.priceTitle': 'Price & Market Overview',
@@ -3280,7 +3486,7 @@
                 'section.valuationTitle': 'Valuation Analysis',
                 'section.methodologyTitle': 'Valuation Methodology',
                 'section.weeklyData': 'Weekly Data',
-                'section.models': '10 Models',
+                'section.models': '12 Models',
                 'section.reference': 'Reference',
                 'valuation.compositeFairValue': 'Composite Fair Value',
                 'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. Investment decisions should consider multiple factors comprehensively.',
@@ -3333,6 +3539,14 @@
                 'criteria.appCapital.m': 'Logical framework for settlement layer value; limited precedent',
                 'criteria.appCapital.d': 'Real-time stablecoin supply from DefiLlama',
                 'criteria.appCapital.a': '28% stablecoin/AppCapital ratio is empirical estimate',
+                'criteria.settlement.m': 'MV=PQ equation from monetary economics; Fisher\'s equation widely used',
+                'criteria.settlement.d': 'L1 data from bitinfocharts; bridge data from DefiLlama API',
+                'criteria.settlement.a': 'Velocity 6 assumes SoV behavior; could range 4-12x',
+                'criteria.model.settlement': 'Settlement Layer',
+                'criteria.validator.m': 'Standard TradFi approach: required return = risk-free + risk premium',
+                'criteria.validator.d': 'Real-time staking APR from Lido API',
+                'criteria.validator.a': 'Risk-free rate and risk premium assumptions vary (target 5-7%)',
+                'criteria.model.validator': 'Validator Economics',
                 'criteria.tvl.m': 'Crypto-native convention; no TradFi equivalent or academic basis',
                 'criteria.tvl.d': 'Real-time TVL from DefiLlama',
                 'criteria.tvl.a': '7x multiple is historical average; highly variable (3x-15x)',
@@ -3369,6 +3583,10 @@
                 'method.appCapital.note': '⚠️ Proxy Estimate: DeFiLlama chainAssets API ($300/mo) provides current values only—no historical data available.',
                 'method.appCapital.desc': 'App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. The 28% ratio (Stablecoins/AppCapital) has been stable since 2021. Formula: AppCapital ≈ Stablecoins ÷ 0.28. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (~$60B DeFi only), App Capital (~$600B) captures Ethereum\'s full settlement layer role.',
                 'method.commitment.desc': 'Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. The multiplier (1.5x) reflects the value premium of committed vs. liquid assets. Inspired by the concept that L1 tokens should be valued as money (Store of Value) rather than stocks.',
+                'method.settlement.note': 'MV=PQ equation from monetary economics; Velocity 6 benchmarked to USD M1 (~5.5x)',
+                'method.settlement.desc': 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers ($5.45B), L2 transfers ($4.16B), and bridge volume ($0.52B) totaling ~$10B/day. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: 28% staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.',
+                'method.validator.note': 'Target yield = Risk-free rate + Crypto risk premium; standard TradFi approach',
+                'method.validator.desc': 'Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Crypto risk premium (~1.5%). If current APR is below target, ETH is undervalued—validators earn less than what rational investors would demand given the risk. This mirrors how TradFi values dividend stocks relative to treasury yields plus equity risk premium.',
                 'onchain.ethInDefi': 'ETH in DeFi',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH Price',
                 'onchain.commitmentRatio': 'Commitment Ratio',
@@ -3400,9 +3618,10 @@
                 'nav.methodology': '방법론',
                 'summary.title': '📊 핵심 요약',
                 'summary.currentPrice': '현재 가격',
-                'summary.fairValue': '적정 가치 (10개 모델)',
+                'summary.fairValue': '적정 가치 (12개 모델)',
                 'summary.opportunity': '투자 기회',
-                'summary.desc1': '이 대시보드는 전통 금융 프레임워크(DCF, P/S Ratio, Revenue Yield)부터 크립토 네이티브 지표(TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital)까지 10가지 밸류에이션 방법론을 활용하여 이더리움의 <strong>내재 가치</strong>를 도출하려는 시도입니다.',
+                'summary.toggleHint': '아래에서 개별 모델을 켜고 끄며 나만의 밸류에이션을 계산해 보세요.',
+                'summary.desc1': '이 대시보드는 전통 금융 프레임워크(DCF, P/S Ratio, Revenue Yield, Validator Economics)부터 크립토 네이티브 지표(TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer)까지 12가지 밸류에이션 방법론을 활용하여 이더리움의 <strong>내재 가치</strong>를 도출하려는 시도입니다.',
                 'summary.desc2': '크립토 산업에는 더욱 엄밀한 펀더멘털 기반의 가치평가 접근법이 필요하다고 생각합니다. 이 모델들은 한계와 가정이 있지만, 단순한 가격 투기를 넘어 가치에 대해 생각하는 프레임워크를 제공합니다.',
                 'summary.feedback': '버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
                 'section.priceTitle': '시세 & 시장 개요',
@@ -3410,7 +3629,7 @@
                 'section.valuationTitle': '밸류에이션 분석',
                 'section.methodologyTitle': '밸류에이션 방법론',
                 'section.weeklyData': '주간 데이터',
-                'section.models': '9개 모델',
+                'section.models': '12개 모델',
                 'section.reference': '참고 자료',
                 'valuation.compositeFairValue': '종합 적정 가치',
                 'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
@@ -3463,6 +3682,14 @@
                 'criteria.appCapital.m': '정산 레이어 가치를 위한 논리적 프레임워크; 선례 제한적',
                 'criteria.appCapital.d': 'DefiLlama의 실시간 스테이블코인 공급량',
                 'criteria.appCapital.a': '28% 스테이블코인/AppCapital 비율은 경험적 추정',
+                'criteria.settlement.m': '화폐경제학의 MV=PQ 방정식; 피셔 방정식 널리 사용',
+                'criteria.settlement.d': 'L1 데이터는 bitinfocharts; 브릿지 데이터는 DefiLlama API',
+                'criteria.settlement.a': 'Velocity 6은 SoV 가정; 4-12배 범위 가능',
+                'criteria.model.settlement': '정산 레이어',
+                'criteria.validator.m': '표준 TradFi 접근법: 요구수익률 = 무위험 + 리스크프리미엄',
+                'criteria.validator.d': 'Lido API의 실시간 스테이킹 APR',
+                'criteria.validator.a': '무위험수익률과 리스크프리미엄 가정 가변적 (목표 5-7%)',
+                'criteria.model.validator': '검증자 경제학',
                 'criteria.tvl.m': '크립토 네이티브 관행; TradFi 동등물이나 학술적 근거 없음',
                 'criteria.tvl.d': 'DefiLlama의 실시간 TVL',
                 'criteria.tvl.a': '7배 배수는 역사적 평균; 매우 가변적 (3-15배)',
@@ -3499,6 +3726,10 @@
                 'method.appCapital.note': '⚠️ 프록시 추정치: DeFiLlama chainAssets API ($300/월)는 현재 값만 제공—과거 데이터 없음.',
                 'method.appCapital.desc': 'App Capital은 온체인 총 자산을 나타냅니다: 스테이블코인, ERC-20 토큰, NFT, RWA, 브릿지된 자산. 28% 비율(스테이블코인/App Capital)은 2021년 이후 안정적입니다. 공식: App Capital ≈ 스테이블코인 ÷ 0.28. App Capital은 시가총액의 하한선 역할을 합니다—네트워크 보안(MC)은 모든 결제된 자산의 가치를 뒷받침해야 합니다. TVL(~$60B DeFi 전용)과 달리, App Capital(~$600B)은 이더리움의 전체 결제 레이어 역할을 포착합니다.',
                 'method.commitment.desc': '스테이킹과 DeFi 프로토콜에 예치된 ETH 비율에 따라 가격 프리미엄을 적용합니다. 높은 커밋먼트 비율은 더 강한 장기 보유 확신과 유동성 감소를 나타냅니다. 배수(1.5x)는 유동 자산 대비 커밋된 자산의 가치 프리미엄을 반영합니다. L1 토큰을 주식이 아닌 화폐(가치 저장)로 평가해야 한다는 개념에서 영감을 받았습니다.',
+                'method.settlement.note': '화폐경제학의 MV=PQ 방정식; Velocity 6은 USD M1 (~5.5x) 벤치마크',
+                'method.settlement.desc': '교환방정식(MV=PQ)을 적용하여 ETH를 이더리움 정산 레이어의 화폐로 취급합니다. 일일 정산량은 L1 이체($54.5억), L2 이체($41.6억), 브릿지 거래량($5.2억)을 합산한 약 $100억/일입니다. Velocity 6은 ETH의 가치저장(SoV) 특성을 반영합니다: 28% 스테이킹은 ETH를 velocity 0으로 고정, ETF 이후 비트코인과 유사한 기관 보유 패턴, USD M1 velocity (~5.5x) 벤치마크. 낮은 velocity = 더 높은 내재 가치 (화폐가 지출되지 않고 오래 보유됨).',
+                'method.validator.note': '목표 수익률 = 무위험수익률 + 크립토 리스크프리미엄; 표준 TradFi 접근법',
+                'method.validator.desc': '목표 스테이킹 수익률 대비 현재 APR 비율로 적정가치를 계산합니다. 목표 수익률(6%) = 미국 10년물 국채(~4.5%) + 크립토 리스크프리미엄(~1.5%). 현재 APR이 목표보다 낮으면 ETH가 저평가된 것입니다—검증자들이 위험 대비 합리적인 투자자들이 요구하는 수준보다 적게 받고 있다는 의미입니다. TradFi에서 배당주를 국채 수익률 + 주식 리스크프리미엄 대비 평가하는 방식과 동일합니다.',
                 'onchain.ethInDefi': 'DeFi 내 ETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH 가격',
                 'onchain.commitmentRatio': '커밋먼트 비율',
@@ -5534,38 +5765,40 @@
             if (tvl > 0 && cs > 0) {
                 models.push({ 
                     name: 'TVL Multiple', 
-                    formula: 'TVL × 7 ÷ Supply', 
+                    formula: 'TVL × Multiple ÷ Supply', 
                     price: (tvl * 7) / cs,
                     reliability: 1,
-                    source: 'DeFi Analysts'
+                    source: 'Multiple=7×'
                 });
             }
             if (stakedEth > 0 && cs > 0) {
                 const scarcity = cs / (cs - stakedEth);
+                const stakedPct = ((stakedEth / cs) * 100).toFixed(0);
                 models.push({ 
                     name: 'Staking Scarcity', 
                     formula: 'Price × √(Supply ÷ Liquid)', 
                     price: state.price * Math.pow(scarcity, 0.5),
                     reliability: 1,
-                    source: 'ETH-specific'
+                    source: `Staked=${stakedPct}%`
                 });
             }
             if (state.marketCap > 0 && tvl > 0) {
+                const currentRatio = (state.marketCap / tvl).toFixed(1);
                 models.push({ 
                     name: 'MC/TVL Fair Value', 
-                    formula: 'Price × (6 ÷ CurrentRatio)', 
+                    formula: 'Price × (Target ÷ Ratio)', 
                     price: state.price * (6 / (state.marketCap / tvl)),
                     reliability: 2,
-                    source: 'Messari, Delphi'
+                    source: `Target=6×, Current=${currentRatio}×`
                 });
             }
             if (tvl > 0 && cs > 0) {
                 models.push({ 
                     name: "Metcalfe's Law", 
-                    formula: '2 × TVL^1.5 ÷ Supply', 
+                    formula: 'Coef × TVL^Exp ÷ Supply', 
                     price: (Math.pow(tvl / 1e9, 1.5) * 1e9 * 2) / cs,
                     reliability: 2,
-                    source: 'Academic Research'
+                    source: 'Coef=2, Exp=1.5'
                 });
             }
             if (state.price > 0) {
@@ -5577,28 +5810,28 @@
                 const displayYield = (stakingYield * 100).toFixed(1);
                 models.push({ 
                     name: 'DCF (Staking)', 
-                    formula: `P × ${yieldMultiplier.toFixed(3)} ÷ (0.10 - 0.03)`, 
+                    formula: 'Price × (1+APR) ÷ (Discount - Growth)', 
                     price: Math.min(state.price * yieldMultiplier / (discountRate - growthRate), state.price * 3),
                     reliability: 2,
-                    source: `Lido APR: ${displayYield}%`
+                    source: `Discount=10%, Growth=3%, APR=${displayYield}%`
                 });
             }
             if (l2Tvl > 0 && tvl > 0 && cs > 0) {
                 models.push({ 
                     name: 'L2 Ecosystem', 
-                    formula: '(TVL + L2×2) × 6 ÷ Supply', 
+                    formula: '(TVL + L2×Weight) × Multiple ÷ Supply', 
                     price: (tvl + l2Tvl * 2) * 6 / cs,
                     reliability: 1,
-                    source: 'Experimental'
+                    source: 'Weight=2, Multiple=6'
                 });
             }
             if (fees > 0 && cs > 0) {
                 models.push({ 
                     name: 'P/S Ratio (25x)', 
-                    formula: 'AnnualFees × 25 ÷ Supply', 
+                    formula: 'DailyFees × 365 × PSRatio ÷ Supply', 
                     price: (fees * 365 * 25) / cs,
                     reliability: 2,
-                    source: 'TradFi Standard'
+                    source: 'PSRatio=25×'
                 });
             }
             
@@ -5610,10 +5843,10 @@
                 const displayYield = state.stakingApr.toFixed(2);
                 models.push({ 
                     name: 'Revenue Yield', 
-                    formula: `AnnualRev ÷ ${displayYield}% ÷ Supply`, 
+                    formula: 'AnnualFees ÷ APR ÷ Supply', 
                     price: (annualRevenue / targetYield) / cs,
                     reliability: 3,
-                    source: `Lido APR: ${displayYield}%`
+                    source: `APR=${displayYield}%`
                 });
             }
             
@@ -5625,12 +5858,13 @@
                 const commitmentRatio = committedEth / cs;
                 // 커밋된 ETH에 대한 가치 프리미엄 (1.5x multiplier)
                 const committedValueMultiplier = 1.5;
+                const commitPct = (commitmentRatio * 100).toFixed(0);
                 models.push({
                     name: 'Commitment Premium',
-                    formula: 'Price × (1 + Commit% × 1.5)',
+                    formula: 'Price × (1 + Commit% × Multiplier)',
                     price: state.price * (1 + (commitmentRatio * committedValueMultiplier)),
                     reliability: 1,
-                    source: 'SOV-inspired'
+                    source: `Multiplier=1.5, Commit=${commitPct}%`
                 });
             }
             
@@ -5641,10 +5875,44 @@
             if (appCapital > 0 && cs > 0) {
                 models.push({ 
                     name: 'App Capital', 
-                    formula: 'AppCapital ÷ Supply', 
+                    formula: 'Stables ÷ Ratio ÷ Supply', 
                     price: appCapital / cs,
                     reliability: 2,
-                    source: 'DeFiLlama chainAssets'
+                    source: 'Ratio=28%'
+                });
+            }
+            
+            // Validator Economics
+            // 목표 수익률 = 무위험수익률(US Treasury ~4.5%) + 크립토 리스크프리미엄(~1.5%) = 6%
+            // 논리: 스테이킹 수익률이 목표보다 낮으면 ETH가 저평가된 것
+            if (state.price > 0 && state.stakingApr > 0) {
+                const riskFreeRate = 4.5; // US 10Y Treasury ~4.5%
+                const riskPremium = 1.5;  // Crypto risk premium
+                const targetYield = riskFreeRate + riskPremium; // 6%
+                const currentApr = state.stakingApr;
+                models.push({ 
+                    name: 'Validator Economics', 
+                    formula: 'Price × (Target ÷ APR)', 
+                    price: state.price * (targetYield / currentApr),
+                    reliability: 2,
+                    source: `Rf=${riskFreeRate}%+RP=${riskPremium}%, APR=${currentApr.toFixed(2)}%`
+                });
+            }
+            
+            // Settlement Layer (MV=PQ)
+            // Daily settlement volume: L1 ($5.45B) + L2 ($4.16B) + Bridge ($0.52B) = $10.13B
+            // Velocity 6: SoV-heavy (28% staked, institutional holding, USD M1 ~5.5x benchmark)
+            const dailySettlement = state.dailySettlement || 10130000000; // $10.13B default
+            const velocity = state.settlementVelocity || 6; // SoV-heavy default
+            if (dailySettlement > 0 && cs > 0) {
+                const annualVolume = dailySettlement * 365;
+                const fairMarketCap = annualVolume / velocity;
+                models.push({ 
+                    name: 'Settlement Layer', 
+                    formula: '(DailyVol × 365 ÷ Velocity) ÷ Supply', 
+                    price: fairMarketCap / cs,
+                    reliability: 2,
+                    source: `Velocity=${velocity} (SoV-heavy)`
                 });
             }
             
@@ -5713,8 +5981,10 @@
                     ? translations[currentLang]['valuation.fair'] : 'Fair';
                 const label = diff > 15 ? labelUndervalued : diff < -15 ? labelOvervalued : labelFair;
 
+                const modelId = m.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
                 container.innerHTML += `
-                    <div class="valuation-model">
+                    <div class="valuation-model" data-model-id="${modelId}" data-price="${m.price}" data-reliability="${m.reliability}">
                         <div class="model-row-1">
                             <div class="model-name">${m.name}</div>
                             <div class="model-reliability">
@@ -5737,21 +6007,55 @@
                         </div>
                         <div class="model-row-3">
                             <div class="model-formula">${m.formula}</div>
+                            <label class="model-toggle">
+                                <input type="checkbox" checked data-model="${modelId}">
+                                <span class="slider"></span>
+                            </label>
                         </div>
                     </div>
                 `;
             });
 
-            // 신뢰도 가중 평균 계산
-            // reliability 값을 직접 가중치로 사용: 3 (High), 2 (Medium), 1 (Low)
+            // 토글 이벤트 리스너 추가
+            container.querySelectorAll('.model-toggle input').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const modelCard = this.closest('.valuation-model');
+                    if (this.checked) {
+                        modelCard.classList.remove('disabled');
+                    } else {
+                        modelCard.classList.add('disabled');
+                    }
+                    recalculateWeightedAverage();
+                });
+            });
+
+            // 초기 가중 평균 계산
+            recalculateWeightedAverage();
+        }
+
+        // 가중 평균 재계산 함수
+        function recalculateWeightedAverage() {
+            const modelCards = document.querySelectorAll('.valuation-model');
             let weightedSum = 0;
             let totalWeight = 0;
             const prices = [];
+            let buys = 0, holds = 0, sells = 0;
             
-            models.forEach(m => {
-                weightedSum += m.price * m.reliability;
-                totalWeight += m.reliability;
-                prices.push(m.price);
+            modelCards.forEach(card => {
+                const toggle = card.querySelector('.model-toggle input');
+                if (toggle && toggle.checked) {
+                    const price = parseFloat(card.dataset.price);
+                    const reliability = parseInt(card.dataset.reliability);
+                    weightedSum += price * reliability;
+                    totalWeight += reliability;
+                    prices.push(price);
+                    
+                    // Buy/Hold/Sell 카운트
+                    const diff = ((price - state.price) / state.price) * 100;
+                    if (diff > 15) buys++;
+                    else if (diff < -15) sells++;
+                    else holds++;
+                }
             });
             
             const weightedAvgPrice = totalWeight > 0 ? weightedSum / totalWeight : 0;
@@ -5759,7 +6063,7 @@
                 ? prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] 
                 : 0;
             
-            const avgDiff = ((weightedAvgPrice - state.price) / state.price) * 100;
+            const avgDiff = state.price > 0 ? ((weightedAvgPrice - state.price) / state.price) * 100 : 0;
 
             document.getElementById('composite-price').textContent = fmt.price(weightedAvgPrice);
             const diffEl = document.getElementById('composite-diff');
@@ -5797,7 +6101,7 @@
             upsideEl.style.color = avgDiff >= 0 ? 'var(--green)' : 'var(--red)';
             
             // Median 참고값 표시
-            const medianDiff = ((medianPrice - state.price) / state.price) * 100;
+            const medianDiff = state.price > 0 ? ((medianPrice - state.price) / state.price) * 100 : 0;
             const medianEl = document.getElementById('summary-median');
             if (medianEl) {
                 medianEl.textContent = fmt.price(medianPrice) + ' (' + fmt.pct(medianDiff) + ')';
@@ -5815,15 +6119,21 @@
                 summaryFairEl.textContent = fmt.price(weightedAvgPrice);
             }
             if (summaryOpportunityEl) {
-                const upsideText = translations[currentLang] && translations[currentLang]['valuation.undervalued'] 
-                    ? translations[currentLang]['valuation.undervalued'] : 'Upside';
-                const downsideText = translations[currentLang] && translations[currentLang]['valuation.overvalued'] 
-                    ? translations[currentLang]['valuation.overvalued'] : 'Downside';
-                const fairTextSummary = translations[currentLang] && translations[currentLang]['valuation.fair'] 
-                    ? translations[currentLang]['valuation.fair'] : 'Fair';
-                const opportunityLabel = avgDiff > 15 ? upsideText : avgDiff < -15 ? downsideText : fairTextSummary;
-                summaryOpportunityEl.textContent = (avgDiff >= 0 ? '▲ ' : '▼ ') + fmt.pct(avgDiff) + ' ' + opportunityLabel;
+                summaryOpportunityEl.textContent = fmt.pct(avgDiff);
                 summaryOpportunityEl.className = 'summary-opportunity ' + (avgDiff >= 0 ? 'upside' : 'downside');
+            }
+            
+            // 활성화된 모델 수 업데이트
+            const activeCount = prices.length;
+            const modelCountEl = document.getElementById('active-model-count');
+            if (modelCountEl) {
+                modelCountEl.textContent = activeCount;
+            }
+            
+            // Conclusion 패널의 모델 수 업데이트
+            const conclusionModelCountEl = document.getElementById('conclusion-model-count');
+            if (conclusionModelCountEl) {
+                conclusionModelCountEl.textContent = activeCount;
             }
         }
 
@@ -6076,101 +6386,61 @@
             console.log('========== fetchAll START ==========');
             setStatus('status.updating');
             try {
-                // ═══════════════════════════════════════════════════════════════════
-                // PHASE 0: 즉시 기본값 표시 (API 응답 전에 표시)
-                // ═══════════════════════════════════════════════════════════════════
-                const ETH_ATH = 4878.26; // 2021-11-10 기준
-                const ETH_SUPPLY_EST = 120400000;
-                document.getElementById('ath').textContent = fmt.price(ETH_ATH);
-                document.getElementById('circ-supply').textContent = fmt.num(ETH_SUPPLY_EST) + ' ETH';
-                state.ath = ETH_ATH;
+                // 모든 API를 동시에 병렬 호출
+                console.log('1. Fetching all data in parallel...');
                 
-                // ═══════════════════════════════════════════════════════════════════
-                // PHASE 1a: Binance 가격 (가장 빠름) - 먼저 실행
-                // ═══════════════════════════════════════════════════════════════════
-                console.log('1a. Binance price (fastest)...');
-                const binancePromise = Promise.allSettled([
+                const [binancePrice, binanceHistory, coinGecko, defiLlama, staking, stakingYield, transactions, exchangeReserve] = await Promise.allSettled([
                     fetchBinancePrice(),
-                    fetchBinanceHistory(365)
-                ]);
-                
-                // ═══════════════════════════════════════════════════════════════════
-                // PHASE 1b: CoinGecko (Market Cap, ATH 업데이트) - 병렬로 시작
-                // ═══════════════════════════════════════════════════════════════════
-                console.log('1b. CoinGecko (parallel, may be slower)...');
-                const coinGeckoPromise = fetchCoinGecko().then(() => {
-                    // CoinGecko 완료되면 ATH 업데이트
-                    if (state.price && state.ath) {
-                        const fromAth = ((state.price - state.ath) / state.ath) * 100;
-                        const fromAthEl = document.getElementById('from-ath');
-                        if (fromAthEl && fromAthEl.textContent === '--') {
-                            fromAthEl.textContent = fmt.pct(fromAth);
-                            fromAthEl.className = 'price-stat-tag ' + (fromAth >= 0 ? 'up' : 'down');
-                        }
-                    }
-                });
-                
-                // Binance 먼저 기다림
-                await binancePromise;
-                console.log('   Binance complete - Price:', state.price);
-                
-                // Binance 가격으로 Market Cap 즉시 계산
-                if (state.price) {
-                    if (!state.marketCap) {
-                        state.circulatingSupply = ETH_SUPPLY_EST;
-                        state.marketCap = state.price * ETH_SUPPLY_EST;
-                        document.getElementById('market-cap').textContent = fmt.usd(state.marketCap);
-                    }
-                    // ATH 대비 계산
-                    const fromAth = ((state.price - ETH_ATH) / ETH_ATH) * 100;
-                    const fromAthEl = document.getElementById('from-ath');
-                    fromAthEl.textContent = fmt.pct(fromAth);
-                    fromAthEl.className = 'price-stat-tag ' + (fromAth >= 0 ? 'up' : 'down');
-                }
-                
-                // 가격 데이터 있으면 즉시 Dominance/ETH-BTC 업데이트
-                if (state.priceHistory?.length > 0) {
-                    fetchGlobal(); // await 없이 백그라운드 실행
-                }
-                
-                // ═══════════════════════════════════════════════════════════════════
-                // PHASE 2: 온체인 데이터 (DeFiLlama + Staking) - 병렬
-                // Supply Distribution에 필요
-                // ═══════════════════════════════════════════════════════════════════
-                console.log('2. PHASE 2: On-chain data (DeFiLlama + Staking parallel)...');
-                await Promise.allSettled([
+                    fetchBinanceHistory(365),
+                    fetchCoinGecko(),
                     fetchDefiLlama(),
                     fetchStaking(),
-                    fetchStakingYield()
-                ]);
-                console.log('   PHASE 2 complete - TVL:', state.tvl, 'Staked:', state.stakedEth);
-                
-                // Supply Distribution 즉시 업데이트
-                updateSupplyDistributionChart();
-                
-                // CoinGecko도 완료 대기 (이미 끝났을 수 있음)
-                await coinGeckoPromise;
-                
-                // ═══════════════════════════════════════════════════════════════════
-                // PHASE 3: 보조 데이터 (느려도 됨) - 백그라운드
-                // ═══════════════════════════════════════════════════════════════════
-                console.log('3. PHASE 3: Secondary data (Transactions + Reserve)...');
-                Promise.allSettled([
+                    fetchStakingYield(),
                     fetchTransactions(),
                     fetchExchangeReserve()
-                ]).then(() => {
-                    console.log('   PHASE 3 complete');
-                    calculateAndUpdateNVT();
-                    calculateAndUpdateActiveAddr();
+                ]);
+                
+                console.log('   All API calls completed');
+                
+                // 디버그: API 호출 결과 확인
+                console.log('   API Results:', {
+                    binancePrice: binancePrice.status,
+                    binanceHistory: binanceHistory.status,
+                    coinGecko: coinGecko.status,
+                    defiLlama: defiLlama.status,
+                    staking: staking.status,
+                    stakingYield: stakingYield.status,
+                    transactions: transactions.status,
+                    exchangeReserve: exchangeReserve.status
+                });
+                console.log('   State after API:', {
+                    price: state.price,
+                    marketCap: state.marketCap,
+                    volume24h: state.volume24h,
+                    circulatingSupply: state.circulatingSupply,
+                    stakingApr: state.stakingApr
                 });
                 
-                // ═══════════════════════════════════════════════════════════════════
-                // PHASE 4: 계산 및 렌더링 (Phase 2 완료 후 바로 실행)
-                // ═══════════════════════════════════════════════════════════════════
-                console.log('4. PHASE 4: Calculations and rendering...');
+                // 2. Binance 데이터가 있으면 Dominance/ETH-BTC 업데이트
+                if (binanceHistory.status === 'fulfilled' && state.priceHistory?.length > 0) {
+                    console.log('2. Updating Dominance/ETH-BTC charts...');
+                    await fetchGlobal();
+                }
+                
+                // 3. Supply Distribution 업데이트
+                console.log('3. Updating supply distribution chart...');
+                updateSupplyDistributionChart();
+                
+                // 4. NVT & Active Addresses 계산
+                console.log('4. Calculating NVT and Active Addresses...');
                 calculateAndUpdateNVT();
                 calculateAndUpdateActiveAddr();
+                
+                // 5. ETH in DeFi & Commitment Ratio 계산
+                console.log('5. Calculating ETH in DeFi and Commitment Ratio...');
                 calculateEthInDefiAndCommitment();
+                
+                console.log('6. Rendering valuations...');
                 renderValuations();
                 
                 updateTime();
@@ -6421,17 +6691,10 @@
     // 여러 요소에서 스크롤 이벤트 감지
     window.addEventListener('scroll', navScrollHandler, true);
     document.addEventListener('scroll', navScrollHandler, true);
+    document.documentElement.addEventListener('scroll', navScrollHandler, true);
     
-    // 초기 실행 및 주기적 체크
-    document.addEventListener('DOMContentLoaded', function() {
-        navScrollHandler();
-        setInterval(navScrollHandler, 200);
-    });
-    
-    // 즉시 실행
-    if (document.readyState !== 'loading') {
-        navScrollHandler();
-    }
+    // 초기 실행
+    setTimeout(navScrollHandler, 100);
     </script>
 </body>
 </html>
