@@ -6,7 +6,7 @@
     <title>ETHval | Intrinsic Value Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Montserrat:wght@600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -68,12 +68,12 @@
             box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         }
 
-        /* Header - 더 얇게 */
+        /* Header */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 16px;
+            padding: 10px 16px;
             gap: 10px;
             flex-wrap: wrap;
             max-width: 1400px;
@@ -132,20 +132,21 @@
         }
 
         .logo-icon {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             background: linear-gradient(135deg, #627eea, #3b5998);
-            border-radius: 5px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
         }
 
-        .logo-icon svg { width: 14px; height: 14px; fill: white; }
+        .logo-icon svg { width: 15px; height: 15px; fill: white; }
 
         .logo-text {
-            font-size: 17px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
             font-weight: 700;
             color: var(--text);
             white-space: nowrap;
@@ -269,6 +270,7 @@
             border-radius: 0;
             padding: 0;
             margin-bottom: 40px;
+            padding-top: 32px;
         }
 
         .section:first-of-type {
@@ -287,7 +289,8 @@
         }
 
         .section-title {
-            font-size: 16px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 19px;
             font-weight: 700;
             color: var(--text);
             display: flex;
@@ -371,7 +374,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         .price-stat-label {
@@ -521,7 +524,7 @@
             height: 100% !important;
         }
 
-        /* Triple Chart Grid */
+        /* Triple Chart Grid - Price & Market (4열) */
         .triple-chart-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -616,10 +619,10 @@
         .legend-dot.defi { background: #00bcd4; }
         .legend-dot.staking { background: #8b5cf6; }
 
-        /* Section 2: Metrics */
+        /* Section 2: Metrics - On-Chain (4열) */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 12px;
             margin-bottom: 12px;
         }
@@ -715,7 +718,7 @@
 
         .metric-tab {
             padding: 2px 6px;
-            font-size: 8px;
+            font-size: 9px;
             font-weight: 500;
             border: none;
             background: transparent;
@@ -943,6 +946,54 @@
             color: #7C3AED;
         }
 
+        /* Reliability Gauge */
+        .reliability-gauge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reliability-gauge-svg {
+            width: 24px;
+            height: 15px;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: #e5e7eb;
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .gauge-fill.high {
+            stroke: #22c55e;
+        }
+
+        .gauge-fill.medium {
+            stroke: #f59e0b;
+        }
+
+        .gauge-fill.low {
+            stroke: #ef4444;
+        }
+
+        .gauge-needle {
+            fill: #374151;
+            transform-origin: 14px 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .gauge-center {
+            fill: #374151;
+        }
+
         .model-reliability .source {
             font-size: 8px;
             color: var(--text-muted);
@@ -982,19 +1033,6 @@
             background: var(--text);
             transform: translateX(-50%);
             z-index: 3;
-        }
-
-        .model-bar-center::before {
-            content: 'NOW';
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 7px;
-            font-weight: 600;
-            color: var(--text-muted);
-            white-space: nowrap;
-            margin-bottom: 2px;
         }
 
         .model-bar-fill {
@@ -1058,7 +1096,7 @@
         }
 
         .conclusion-label {
-            font-size: 9px;
+            font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -1172,7 +1210,7 @@
             display: flex;
             justify-content: center;
             gap: 12px;
-            font-size: 10px;
+            font-size: 11px;
         }
         
         .weight-item {
@@ -1348,14 +1386,15 @@
         }
 
         .criteria-header h3 {
-            font-size: 16px;
-            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
             color: var(--text);
             margin-bottom: 6px;
         }
 
         .criteria-subtitle {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-secondary);
         }
 
@@ -1450,15 +1489,15 @@
         }
 
         .result-high {
-            background: rgba(139, 92, 246, 0.08);
+            background: rgba(34, 197, 94, 0.08);
         }
 
         .result-medium {
-            background: rgba(139, 92, 246, 0.04);
+            background: rgba(251, 191, 36, 0.12);
         }
 
         .result-low {
-            background: rgba(139, 92, 246, 0.02);
+            background: rgba(239, 68, 68, 0.08);
         }
 
         .criteria-definitions {
@@ -1488,12 +1527,73 @@
         .definition-item {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 6px;
         }
 
         .definition-item strong {
             font-size: 11px;
-            color: var(--text);
+            font-weight: 500;
+            color: #24292e;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .definition-item strong span[data-i18n] {
+            color: #24292e;
+            font-size: 11px;
+        }
+
+        .definition-item > span {
+            padding-left: 22px;
+        }
+
+        .criteria-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 16px;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #627eea, #3b5998);
+            color: #ffffff !important;
+            font-size: 9px;
+            font-weight: 600;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 769px) and (max-width: 900px) {
+            .criteria-definitions-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .definition-item {
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .definition-item strong {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-shrink: 0;
+                min-width: 180px;
+                font-size: 11px;
+                font-weight: 500;
+                color: #24292e;
+            }
+            
+            .definition-item > span {
+                flex: 1;
+                font-size: 10px;
+                color: var(--text-muted);
+                padding-left: 0;
+            }
         }
 
         .definition-item span {
@@ -1531,6 +1631,19 @@
             font-weight: 700;
             font-size: 12px;
             color: var(--text);
+        }
+
+        .criteria-card-reliability {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .criteria-card-reliability .reliability-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
         .criteria-card-row {
@@ -1571,9 +1684,9 @@
         .criteria-card-value .cross { color: var(--red); }
         .criteria-card-value .partial { color: var(--yellow); }
 
-        .criteria-card.result-high { background: rgba(139, 92, 246, 0.08); }
-        .criteria-card.result-medium { background: rgba(139, 92, 246, 0.04); }
-        .criteria-card.result-low { background: rgba(139, 92, 246, 0.02); }
+        .criteria-card.result-high { background: rgba(34, 197, 94, 0.08); }
+        .criteria-card.result-medium { background: rgba(251, 191, 36, 0.12); }
+        .criteria-card.result-low { background: rgba(239, 68, 68, 0.08); }
 
         @media (max-width: 768px) {
             .criteria-table-wrapper {
@@ -1585,7 +1698,24 @@
             }
             
             .criteria-definitions-grid {
-                grid-template-columns: 1fr;
+                display: block;
+            }
+            
+            .definition-item {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                margin-bottom: 16px;
+            }
+            
+            .definition-item strong {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .definition-item > span {
+                padding-left: 24px;
             }
         }
 
@@ -1603,42 +1733,64 @@
 
         .methodology-disclaimer strong {
             color: var(--red);
+            font-weight: normal;
         }
 
         /* Summary Section */
         .summary-section {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 32px;
+            margin-top: 16px;
+            margin-bottom: 48px;
         }
 
         .summary-header {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
         }
 
         .summary-title {
-            font-size: 18px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 19px;
             font-weight: 700;
             color: var(--text);
         }
 
-        .summary-content {
+        .summary-layout {
             display: grid;
-            grid-template-columns: 1fr 1.5fr;
+            grid-template-columns: 2fr 3fr;
             gap: 24px;
             align-items: start;
+        }
+
+        .summary-valuation-box {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            max-width: 420px;
+        }
+
+        .summary-valuation-outer {
+            padding: 16px 0;
+            margin-bottom: 16px;
+        }
+
+        .summary-content {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 20px;
         }
 
         .summary-valuation {
             background: white;
             border-radius: 8px;
-            padding: 20px;
-            border: none;
+            padding: 16px;
+            border: 1px solid var(--border);
         }
 
         .summary-valuation-row {
@@ -1646,29 +1798,56 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            border-bottom: none;
+            gap: 16px;
         }
 
         .summary-valuation-row:last-child {
             border-bottom: none;
-            padding-top: 12px;
-            margin-top: 4px;
+            padding-top: 8px;
+            margin-top: 0;
         }
 
         .summary-toggle-hint {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-muted);
-            margin-top: 12px;
-            padding-top: 10px;
+            padding-top: 12px;
+            margin-top: 8px;
             border-top: 1px solid var(--border);
             opacity: 0.8;
         }
 
+        .summary-description {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .summary-desc-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         .summary-label {
             font-size: 11px;
-            color: var(--text-muted);
+            color: #586069;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .model-count-light {
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.7;
+            text-transform: lowercase;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 400px) {
+            .summary-label .model-count-light,
+            .conclusion-label .model-count-light {
+                display: block;
+            }
         }
 
         .summary-value {
@@ -1680,6 +1859,12 @@
 
         .summary-value.large {
             font-size: 24px;
+        }
+
+        .summary-opportunity-wrapper {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: nowrap;
         }
 
         .summary-opportunity {
@@ -1738,31 +1923,89 @@
             text-decoration: underline;
         }
 
-        @media (max-width: 900px) {
+        /* 중간 크기 화면 (600px ~ 1050px) - 가격 박스 3열 그리드 배치 */
+        @media (max-width: 1050px) and (min-width: 601px) {
+            .summary-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .summary-valuation-box {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                padding: 20px;
+                max-width: none;
+            }
+
             .summary-valuation-row {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 4px;
+                gap: 6px;
+            }
+
+            .summary-valuation-row .summary-value {
+                font-size: 22px !important;
+            }
+
+            .model-count-break {
+                display: block;
+                margin-top: 2px;
+            }
+
+            .summary-toggle-hint {
+                grid-column: 1 / -1;
+                margin-top: 8px;
+                padding-top: 12px;
+            }
+
+            .summary-content {
+                padding: 20px 24px;
+            }
+
+            .summary-description {
+                padding: 0 20px;
             }
         }
 
+        /* 모바일 뷰 (600px 이하) */
         @media (max-width: 600px) {
-            .summary-content {
-                grid-template-columns: 1fr;
+            .summary-section {
+                margin-bottom: 24px;
             }
-            
+
+            .summary-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .summary-valuation-box {
+                max-width: none;
+                min-width: 0;
+                padding: 16px;
+            }
+
             .summary-valuation-row {
                 flex-direction: row;
                 justify-content: space-between;
                 align-items: center;
                 gap: 8px;
             }
-        }
 
-        @media (max-width: 768px) {
-            .summary-section {
-                padding: 16px;
-                margin-bottom: 24px;
+            .summary-toggle-hint {
+                margin-top: 8px;
+            }
+
+            .summary-description {
+                padding: 0 12px;
+            }
+
+            .summary-valuation-outer {
+                padding: 12px 0;
+            }
+
+            .summary-content {
+                padding: 14px;
             }
 
             .summary-title {
@@ -1789,6 +2032,7 @@
                 justify-content: flex-start;
                 gap: 16px 24px;
                 margin-top: 12px;
+                max-width: 450px;
             }
             
             .price-stat {
@@ -1804,13 +2048,16 @@
                 max-height: 200px;
             }
             
-            .triple-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .valuation-layout { grid-template-columns: 1fr; }
             .methodology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         @media (max-width: 1000px) {
+            .triple-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 850px) {
             .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .methodology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
@@ -1931,7 +2178,7 @@
             }
 
             .section-title {
-                font-size: 14px;
+                font-size: 16px;
             }
 
             /* Price Card */
@@ -2257,7 +2504,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.2.1</span>
+                <span class="version-badge">v0.2.2</span>
             </a>
             <div class="header-center">
                 <div class="status">
@@ -2276,7 +2523,8 @@
             </div>
         </header>
         <nav class="nav-bar">
-            <a class="nav-item active" href="#section-price" data-i18n="nav.price">Price & Market</a>
+            <a class="nav-item active" href="#top" data-i18n="nav.overview">Overview</a>
+            <a class="nav-item" href="#section-price" data-i18n="nav.price">Price & Market</a>
             <a class="nav-item" href="#section-onchain" data-i18n="nav.onchain">On-Chain Metrics</a>
             <a class="nav-item" href="#section-valuation" data-i18n="nav.valuation">Valuation Analysis</a>
             <a class="nav-item" href="#section-methodology" data-i18n="nav.methodology">Methodology</a>
@@ -2287,26 +2535,35 @@
         <!-- SUMMARY SECTION -->
         <div class="summary-section" id="section-summary">
             <div class="summary-header">
-                <div class="summary-title" data-i18n="summary.title">📊 Executive Summary</div>
+                <div class="summary-title" data-i18n="summary.title">Overview</div>
             </div>
-            <div class="summary-content">
-                <div class="summary-valuation">
+            <!-- 가로 레이아웃 컨테이너 -->
+            <div class="summary-layout">
+                <!-- Valuation 영역 - 박스 안 -->
+                <div class="summary-valuation-box">
                     <div class="summary-valuation-row">
                         <span class="summary-label" data-i18n="summary.currentPrice">Current Price</span>
                         <span class="summary-value" id="summary-current-price">$--</span>
                     </div>
                     <div class="summary-valuation-row">
-                        <span class="summary-label">Fair Value (<span id="active-model-count">12</span> Models)</span>
-                        <span class="summary-value" id="summary-fair-value">$--</span>
+                        <span class="summary-label">
+                            <span data-i18n="valuation.compositeFairValue">Composite Fair Value</span>
+                            <span class="model-count-light model-count-break">(<span id="active-model-count">12</span> / 12 models)</span>
+                        </span>
+                        <span class="summary-value" id="summary-fair-value" style="font-size: 14px; color: #8b949e;">Calculating...</span>
                     </div>
                     <div class="summary-valuation-row">
                         <span class="summary-label" data-i18n="summary.opportunity">Opportunity</span>
-                        <span class="summary-opportunity upside" id="summary-opportunity">-- %</span>
+                        <span class="summary-opportunity-wrapper">
+                            <span id="summary-signal" style="font-size: 12px; font-weight: 600; margin-right: 8px; color: #8b949e;">--</span>
+                            <span class="summary-opportunity" id="summary-opportunity" style="background: #f1f3f4; color: #8b949e;">-- %</span>
+                        </span>
                     </div>
                     <div class="summary-toggle-hint" data-i18n="summary.toggleHint">
                         Toggle individual models on/off below to customize your valuation.
                     </div>
                 </div>
+                <!-- Description 영역 -->
                 <div class="summary-description">
                     <p class="summary-text" data-i18n="summary.desc1">
                         This dashboard attempts to derive Ethereum's <strong>intrinsic value</strong> using 12 different valuation methodologies — 
@@ -2331,7 +2588,6 @@
         <section class="section" id="section-price">
             <div class="section-header">
                 <div class="section-title" data-i18n="section.priceTitle">Price & Market Overview</div>
-                <span class="section-badge" data-i18n="status.live">Live</span>
             </div>
 
             <!-- Price Card - Combined -->
@@ -2467,7 +2723,6 @@
                 <div class="section-title" data-i18n="section.onchainTitle">
                     On-Chain Metrics & Trends
                 </div>
-                <span class="section-badge" data-i18n="section.weeklyData">Weekly Data</span>
             </div>
 
             <div class="metrics-grid">
@@ -2747,14 +3002,13 @@
                 <div class="section-title" data-i18n="section.valuationTitle">
                     Valuation Analysis
                 </div>
-                <span class="section-badge" data-i18n="section.models">12 Models</span>
             </div>
 
             <div class="valuation-layout">
                 <div class="valuation-models" id="valuation-models"></div>
 
                 <div class="conclusion-panel">
-                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="active-models-count">(<span id="conclusion-model-count">12</span>/12)</span></div>
+                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="model-count-light">(<span id="conclusion-model-count">12</span> / 12 models)</span></div>
                     <div class="conclusion-price" id="composite-price">$--</div>
                     <div class="conclusion-diff up" id="composite-diff">-- vs Current</div>
                     <div class="conclusion-verdict bullish" id="verdict">--</div>
@@ -2796,9 +3050,9 @@
                     <div class="weighting-method">
                         <div class="weighting-title" data-i18n="valuation.reliabilityWeighting">Reliability Weighting</div>
                         <div class="weighting-items">
-                            <span class="weight-item"><span class="reliability-badge high" data-i18n="method.high">High</span> ×3</span>
-                            <span class="weight-item"><span class="reliability-badge medium" data-i18n="method.med">Med</span> ×2</span>
-                            <span class="weight-item"><span class="reliability-badge low" data-i18n="method.low">Low</span> ×1</span>
+                            <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span> ×3</span>
+                            <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span> ×2</span>
+                            <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span> ×1</span>
                         </div>
                     </div>
                 </div>
@@ -2809,7 +3063,6 @@
         <section class="section methodology-section" id="section-methodology">
             <div class="section-header">
                 <div class="section-title" data-i18n="section.methodologyTitle">Valuation Methodology</div>
-                <span class="section-badge" data-i18n="section.reference">Reference</span>
             </div>
             <div class="methodology-grid">
                 <div class="method-card">
@@ -2822,7 +3075,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note caution" data-i18n="method.tvl.note">TVL may include leverage, recursive deposits, and double-counting across protocols</div>
@@ -2843,7 +3096,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note caution" data-i18n="method.staking.note">Proprietary model developed for this dashboard. Lacks peer review or academic validation</div>
@@ -2864,7 +3117,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note positive" data-i18n="method.mctvl.note">Industry-standard metric for cross-chain valuation comparisons</div>
@@ -2885,7 +3138,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note positive" data-i18n="method.metcalfe.note">Academically validated model with strong historical correlation</div>
@@ -2906,7 +3159,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note caution" data-i18n="method.dcf.note">Highly sensitive to discount rate and growth rate assumptions</div>
@@ -2927,7 +3180,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note caution" data-i18n="method.l2.note">2x L2 weight multiplier is proprietary without empirical basis</div>
@@ -2948,7 +3201,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note positive" data-i18n="method.ps.note">Industry standard for L1 protocol valuation</div>
@@ -2969,7 +3222,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge high" data-i18n="method.high">High</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note positive" data-i18n="method.yield.note">Bond-like methodology with institutional acceptance</div>
@@ -2990,7 +3243,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note caution" data-i18n="method.commitment.note">Inspired by Store of Value demand concepts, adapted for free data sources</div>
@@ -3011,7 +3264,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note caution" data-i18n="method.appCapital.note">⚠️ Proxy Estimate: DeFiLlama chainAssets API ($300/mo) provides current values only—no historical data available.</div>
@@ -3032,7 +3285,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note positive" data-i18n="method.validator.note">Target yield = Risk-free rate + Crypto risk premium; standard TradFi approach</div>
@@ -3053,7 +3306,7 @@
                             <div class="method-meta">
                                 <div class="reliability-row">
                                     <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
                                 </div>
                             </div>
                             <div class="method-note positive" data-i18n="method.settlement.note">MV=PQ equation from monetary economics; Velocity 6 benchmarked to USD M1 (~5.5x)</div>
@@ -3068,7 +3321,7 @@
             <!-- Reliability Criteria Table -->
             <div class="reliability-criteria-section">
                 <div class="criteria-header">
-                    <h3 data-i18n="criteria.title">📊 Reliability Assessment Criteria</h3>
+                    <h3 data-i18n="criteria.title">🎯 Reliability Assessment Criteria</h3>
                     <p class="criteria-subtitle" data-i18n="criteria.subtitle">Each model is evaluated across three dimensions to determine its reliability level</p>
                 </div>
 
@@ -3079,15 +3332,15 @@
                     </div>
                     <div class="criteria-definitions-grid">
                         <div class="definition-item">
-                            <strong data-i18n="criteria.methodology">① Methodology Validation</strong>
+                            <strong><span class="criteria-number">1</span> <span data-i18n="criteria.methodology">Methodology Validation</span></strong>
                             <span data-i18n="criteria.methodologyDesc">Established in TradFi or validated by academic research</span>
                         </div>
                         <div class="definition-item">
-                            <strong data-i18n="criteria.data">② Data Objectivity</strong>
+                            <strong><span class="criteria-number">2</span> <span data-i18n="criteria.data">Data Objectivity</span></strong>
                             <span data-i18n="criteria.dataDesc">All inputs are real-time, on-chain measurable data</span>
                         </div>
                         <div class="definition-item">
-                            <strong data-i18n="criteria.assumption">③ Low Assumption Sensitivity</strong>
+                            <strong><span class="criteria-number">3</span> <span data-i18n="criteria.assumption">Low Assumption Sensitivity</span></strong>
                             <span data-i18n="criteria.assumptionDesc">Arbitrary parameters (multiples, ratios) have minimal impact on results</span>
                         </div>
                     </div>
@@ -3096,15 +3349,15 @@
                 <!-- 2. H/M/L 레전드 -->
                 <div class="criteria-legend">
                     <div class="legend-item">
-                        <span class="reliability-badge high" data-i18n="method.high">High</span>
+                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span>
                         <span class="legend-desc" data-i18n="criteria.high3">3 criteria met</span>
                     </div>
                     <div class="legend-item">
-                        <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
                         <span class="legend-desc" data-i18n="criteria.med2">2 criteria met</span>
                     </div>
                     <div class="legend-item">
-                        <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
                         <span class="legend-desc" data-i18n="criteria.low1">≤1 criteria met</span>
                     </div>
                 </div>
@@ -3118,7 +3371,7 @@
                                 <th data-i18n="criteria.thMethodology">Methodology Validation</th>
                                 <th data-i18n="criteria.thData">Data Objectivity</th>
                                 <th data-i18n="criteria.thAssumption">Low Assumption Sensitivity</th>
-                                <th data-i18n="criteria.thResult">Result</th>
+                                <th data-i18n="criteria.thResult">Reliability</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -3127,84 +3380,84 @@
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.tvl.m">Crypto-native convention; no TradFi equivalent or academic basis</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.tvl.d">Real-time TVL from DefiLlama</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.tvl.a">7x multiple is historical average; highly variable (3x-15x)</span></td>
-                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span></td>
                             </tr>
                             <tr class="result-low">
                                 <td class="model-name-cell" data-i18n="criteria.model.staking">Staking Scarcity</td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.staking.m">ETH-specific model; no peer review or validation</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.staking.d">Real-time staked ETH from Beaconcha.in</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.staking.a">Square root formula lacks theoretical justification</span></td>
-                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span></td>
                             </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.mctvl">MC/TVL Fair Value</td>
                                 <td><span class="partial">◐</span> <span data-i18n="criteria.mctvl.m">Used by Messari, Delphi Digital for L1 comparisons; not academically validated</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.mctvl.d">Real-time Market Cap and TVL from CoinGecko/DefiLlama</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.mctvl.a">6x target ratio is historical average; varies significantly across cycles</span></td>
-                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></td>
                             </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.metcalfe">Metcalfe's Law</td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.metcalfe.m">Academic validation (Alabi 2017, Peterson 2018) for crypto networks</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.metcalfe.d">Real-time TVL as proxy for network activity</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.metcalfe.a">1.5 exponent is modified from original n²; coefficient 2 is fitted</span></td>
-                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></td>
                             </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.dcf">DCF (Staking)</td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.dcf.m">Standard TradFi discounted cash flow; Gordon Growth Model</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.dcf.d">Real-time staking APR from Lido API</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.dcf.a">10% discount rate and 3% growth rate are subjective assumptions</span></td>
-                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></td>
                             </tr>
                             <tr class="result-low">
                                 <td class="model-name-cell" data-i18n="criteria.model.l2">L2 Ecosystem</td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.l2.m">Experimental model developed for this dashboard</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.l2.d">Real-time L2 TVL aggregated from DefiLlama</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.l2.a">2x L2 weight multiplier has no empirical basis</span></td>
-                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span></td>
                             </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.ps">P/S Ratio (25x)</td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.ps.m">Standard TradFi metric; Token Terminal uses for protocol valuation</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.ps.d">Real-time daily fees from DefiLlama, annualized</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.ps.a">25x multiple based on high-growth SaaS; could be 15x-40x</span></td>
-                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></td>
                             </tr>
                             <tr class="result-high">
                                 <td class="model-name-cell" data-i18n="criteria.model.revenueYield">Revenue Yield</td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.m">TradFi yield-based valuation widely used for bonds and dividend stocks</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.d">Real-time Lido APR + on-chain fee revenue from DefiLlama</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.revenueYield.a">No arbitrary multiples; directly uses market-derived yield</span></td>
-                                <td><span class="reliability-badge high" data-i18n="method.high">High</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span></td>
                             </tr>
                             <tr class="result-low">
                                 <td class="model-name-cell" data-i18n="criteria.model.commitment">Commitment Premium</td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.commitment.m">Novel concept inspired by Store of Value thesis; untested</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.commitment.d">Real-time staked ETH + ETH in DeFi protocols</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.commitment.a">1.5x commitment multiplier is arbitrary assumption</span></td>
-                                <td><span class="reliability-badge low" data-i18n="method.low">Low</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span></td>
                             </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.appCapital">App Capital</td>
                                 <td><span class="partial">◐</span> <span data-i18n="criteria.appCapital.m">Logical framework for settlement layer value; limited precedent</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.appCapital.d">Real-time stablecoin supply from DefiLlama</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.appCapital.a">28% stablecoin/AppCapital ratio is empirical estimate</span></td>
-                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></td>
                             </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.validator">Validator Economics</td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.validator.m">Standard TradFi approach: required return = risk-free + risk premium</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.validator.d">Real-time staking APR from Lido API</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.validator.a">Risk-free rate and risk premium assumptions vary (target 5-7%)</span></td>
-                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></td>
                             </tr>
                             <tr class="result-medium">
                                 <td class="model-name-cell" data-i18n="criteria.model.settlement">Settlement Layer</td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.settlement.m">MV=PQ equation from monetary economics; Fisher's equation widely used</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.settlement.d">L1 data from bitinfocharts; bridge data from DefiLlama API</span></td>
                                 <td><span class="cross">✗</span> <span data-i18n="criteria.settlement.a">Velocity 6 assumes SoV behavior; could range 4-12x</span></td>
-                                <td><span class="reliability-badge medium" data-i18n="method.medium">Medium</span></td>
+                                <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -3215,7 +3468,7 @@
                     <div class="criteria-card result-low">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.tvl">TVL Multiple</span>
-                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3234,7 +3487,7 @@
                     <div class="criteria-card result-low">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.staking">Staking Scarcity</span>
-                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3253,7 +3506,7 @@
                     <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.mctvl">MC/TVL Fair Value</span>
-                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3272,7 +3525,7 @@
                     <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.metcalfe">Metcalfe's Law</span>
-                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3291,7 +3544,7 @@
                     <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.dcf">DCF (Staking)</span>
-                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3310,7 +3563,7 @@
                     <div class="criteria-card result-low">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.l2">L2 Ecosystem</span>
-                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3329,7 +3582,7 @@
                     <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.ps">P/S Ratio (25x)</span>
-                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3348,7 +3601,7 @@
                     <div class="criteria-card result-high">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.revenueYield">Revenue Yield</span>
-                            <span class="reliability-badge high" data-i18n="method.high">High</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3367,7 +3620,7 @@
                     <div class="criteria-card result-low">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.commitment">Commitment Premium</span>
-                            <span class="reliability-badge low" data-i18n="method.low">Low</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3386,7 +3639,7 @@
                     <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.appCapital">App Capital</span>
-                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3405,7 +3658,7 @@
                     <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.validator">Validator Economics</span>
-                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3424,7 +3677,7 @@
                     <div class="criteria-card result-medium">
                         <div class="criteria-card-header">
                             <span class="criteria-card-model" data-i18n="criteria.model.settlement">Settlement Layer</span>
-                            <span class="reliability-badge medium" data-i18n="method.medium">Medium</span>
+                            <span class="criteria-card-reliability"><span class="reliability-label" data-i18n="method.reliability">Reliability</span><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></span>
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelM">Methodology</span>
@@ -3451,7 +3704,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.2.1
+                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.2.2
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -3469,11 +3722,12 @@
             en: {
                 'status.live': 'Live',
                 'status.updating': 'Updating...',
+                'nav.overview': 'Overview',
                 'nav.price': 'Price & Market',
                 'nav.onchain': 'On-Chain Metrics',
                 'nav.valuation': 'Valuation Analysis',
                 'nav.methodology': 'Methodology',
-                'summary.title': '📊 Executive Summary',
+                'summary.title': 'Overview',
                 'summary.currentPrice': 'Current Price',
                 'summary.fairValue': 'Fair Value (12 Models)',
                 'summary.opportunity': 'Opportunity',
@@ -3491,14 +3745,14 @@
                 'valuation.compositeFairValue': 'Composite Fair Value',
                 'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. Investment decisions should consider multiple factors comprehensively.',
                 'footer.disclaimer': 'Auto-refresh 120s · For informational purposes only · Not financial advice',
-                'criteria.title': '📊 Reliability Assessment Criteria',
+                'criteria.title': '🎯 Reliability Assessment Criteria',
                 'criteria.subtitle': 'Each model is evaluated across three dimensions to determine its reliability level',
                 'criteria.defTitle': '📐 Assessment Criteria Definitions',
-                'criteria.methodology': '① Methodology Validation',
+                'criteria.methodology': 'Methodology Validation',
                 'criteria.methodologyDesc': 'Established in TradFi or validated by academic research',
-                'criteria.data': '② Data Objectivity',
+                'criteria.data': 'Data Objectivity',
                 'criteria.dataDesc': 'All inputs are real-time, on-chain measurable data',
-                'criteria.assumption': '③ Low Assumption Sensitivity',
+                'criteria.assumption': 'Low Assumption Sensitivity',
                 'criteria.assumptionDesc': 'Arbitrary parameters (multiples, ratios) have minimal impact on results',
                 'criteria.high3': '3 criteria met',
                 'criteria.med2': '2 criteria met',
@@ -3507,7 +3761,7 @@
                 'criteria.thMethodology': 'Methodology Validation',
                 'criteria.thData': 'Data Objectivity',
                 'criteria.thAssumption': 'Low Assumption Sensitivity',
-                'criteria.thResult': 'Result',
+                'criteria.thResult': 'Reliability',
                 'criteria.labelM': 'Methodology',
                 'criteria.labelD': 'Data',
                 'criteria.labelA': 'Assumption',
@@ -3612,11 +3866,12 @@
             ko: {
                 'status.live': '실시간',
                 'status.updating': '업데이트 중...',
+                'nav.overview': '개요',
                 'nav.price': '시세 & 시장',
                 'nav.onchain': '온체인 지표',
                 'nav.valuation': '밸류에이션',
                 'nav.methodology': '방법론',
-                'summary.title': '📊 핵심 요약',
+                'summary.title': '개요',
                 'summary.currentPrice': '현재 가격',
                 'summary.fairValue': '적정 가치 (12개 모델)',
                 'summary.opportunity': '투자 기회',
@@ -3634,14 +3889,14 @@
                 'valuation.compositeFairValue': '종합 적정 가치',
                 'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
                 'footer.disclaimer': '120초 자동 새로고침 · 정보 제공 목적 · 투자 조언이 아닙니다',
-                'criteria.title': '📊 신뢰도 평가 기준',
+                'criteria.title': '🎯 신뢰도 평가 기준',
                 'criteria.subtitle': '각 모델은 3가지 기준으로 평가되어 신뢰도 수준이 결정됩니다',
                 'criteria.defTitle': '📐 평가 기준 정의',
-                'criteria.methodology': '① 방법론 검증도',
+                'criteria.methodology': '방법론 검증도',
                 'criteria.methodologyDesc': 'TradFi에서 확립되었거나 학술적으로 검증된 방법론',
-                'criteria.data': '② 데이터 객관성',
+                'criteria.data': '데이터 객관성',
                 'criteria.dataDesc': '모든 입력값이 실시간, 온체인 측정 가능한 데이터',
-                'criteria.assumption': '③ 가정 민감도 낮음',
+                'criteria.assumption': '가정 민감도 낮음',
                 'criteria.assumptionDesc': '임의 파라미터(배수, 비율)가 결과에 미치는 영향이 최소',
                 'criteria.high3': '3개 기준 충족',
                 'criteria.med2': '2개 기준 충족',
@@ -3650,20 +3905,20 @@
                 'criteria.thMethodology': '방법론 검증',
                 'criteria.thData': '데이터 객관성',
                 'criteria.thAssumption': '가정 민감도',
-                'criteria.thResult': '결과',
+                'criteria.thResult': '신뢰도',
                 'criteria.labelM': '방법론',
                 'criteria.labelD': '데이터',
                 'criteria.labelA': '가정',
-                'criteria.model.revenueYield': '수익률 기반',
-                'criteria.model.mctvl': 'MC/TVL 적정가',
-                'criteria.model.metcalfe': '메칼프 법칙',
-                'criteria.model.dcf': 'DCF (스테이킹)',
-                'criteria.model.ps': 'P/S 비율 (25배)',
+                'criteria.model.revenueYield': 'Revenue Yield',
+                'criteria.model.mctvl': 'MC/TVL Fair Value',
+                'criteria.model.metcalfe': 'Metcalfe\'s Law',
+                'criteria.model.dcf': 'DCF (Staking)',
+                'criteria.model.ps': 'P/S Ratio (25x)',
                 'criteria.model.appCapital': 'App Capital',
-                'criteria.model.tvl': 'TVL 배수',
-                'criteria.model.staking': '스테이킹 희소성',
-                'criteria.model.l2': 'L2 생태계',
-                'criteria.model.commitment': '커미트먼트 프리미엄',
+                'criteria.model.tvl': 'TVL Multiple',
+                'criteria.model.staking': 'Staking Scarcity',
+                'criteria.model.l2': 'L2 Ecosystem',
+                'criteria.model.commitment': 'Commitment Premium',
                 'criteria.revenueYield.m': '채권, 배당주에 널리 사용되는 TradFi 수익률 기반 밸류에이션',
                 'criteria.revenueYield.d': '실시간 Lido APR + DefiLlama 온체인 수수료 수익',
                 'criteria.revenueYield.a': '임의 배수 없음; 시장 파생 수익률 직접 사용',
@@ -3685,11 +3940,11 @@
                 'criteria.settlement.m': '화폐경제학의 MV=PQ 방정식; 피셔 방정식 널리 사용',
                 'criteria.settlement.d': 'L1 데이터는 bitinfocharts; 브릿지 데이터는 DefiLlama API',
                 'criteria.settlement.a': 'Velocity 6은 SoV 가정; 4-12배 범위 가능',
-                'criteria.model.settlement': '정산 레이어',
+                'criteria.model.settlement': 'Settlement Layer',
                 'criteria.validator.m': '표준 TradFi 접근법: 요구수익률 = 무위험 + 리스크프리미엄',
                 'criteria.validator.d': 'Lido API의 실시간 스테이킹 APR',
                 'criteria.validator.a': '무위험수익률과 리스크프리미엄 가정 가변적 (목표 5-7%)',
-                'criteria.model.validator': '검증자 경제학',
+                'criteria.model.validator': 'Validator Economics',
                 'criteria.tvl.m': '크립토 네이티브 관행; TradFi 동등물이나 학술적 근거 없음',
                 'criteria.tvl.d': 'DefiLlama의 실시간 TVL',
                 'criteria.tvl.a': '7배 배수는 역사적 평균; 매우 가변적 (3-15배)',
@@ -3755,11 +4010,12 @@
             zh: {
                 'status.live': '实时',
                 'status.updating': '更新中...',
+                'nav.overview': '概览',
                 'nav.price': '价格与市场',
                 'nav.onchain': '链上指标',
                 'nav.valuation': '估值分析',
                 'nav.methodology': '方法论',
-                'summary.title': '📊 执行摘要',
+                'summary.title': '概览',
                 'summary.currentPrice': '当前价格',
                 'summary.fairValue': '公允价值 (10个模型)',
                 'summary.opportunity': '投资机会',
@@ -3776,14 +4032,14 @@
                 'valuation.compositeFairValue': '综合公允价值',
                 'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应综合考虑多种因素。',
                 'footer.disclaimer': '自动刷新120秒 · 仅供信息参考 · 非投资建议',
-                'criteria.title': '📊 可靠性评估标准',
+                'criteria.title': '🎯 可靠性评估标准',
                 'criteria.subtitle': '每个模型通过三个维度进行评估，以确定其可靠性级别',
                 'criteria.defTitle': '📐 评估标准定义',
-                'criteria.methodology': '① 方法论验证',
+                'criteria.methodology': '方法论验证',
                 'criteria.methodologyDesc': '在TradFi中已建立或经过学术验证',
-                'criteria.data': '② 数据客观性',
+                'criteria.data': '数据客观性',
                 'criteria.dataDesc': '所有输入均为实时、链上可测量数据',
-                'criteria.assumption': '③ 假设敏感度低',
+                'criteria.assumption': '假设敏感度低',
                 'criteria.assumptionDesc': '任意参数（倍数、比率）对结果的影响最小',
                 'criteria.high3': '满足3项标准',
                 'criteria.med2': '满足2项标准',
@@ -3792,20 +4048,20 @@
                 'criteria.thMethodology': '方法论验证',
                 'criteria.thData': '数据客观性',
                 'criteria.thAssumption': '假设敏感度',
-                'criteria.thResult': '结果',
+                'criteria.thResult': '可靠性',
                 'criteria.labelM': '方法论',
                 'criteria.labelD': '数据',
                 'criteria.labelA': '假设',
-                'criteria.model.revenueYield': '收益率',
-                'criteria.model.mctvl': 'MC/TVL公允价值',
-                'criteria.model.metcalfe': '梅特卡夫定律',
-                'criteria.model.dcf': 'DCF（质押）',
-                'criteria.model.ps': 'P/S比率（25倍）',
+                'criteria.model.revenueYield': 'Revenue Yield',
+                'criteria.model.mctvl': 'MC/TVL Fair Value',
+                'criteria.model.metcalfe': 'Metcalfe\'s Law',
+                'criteria.model.dcf': 'DCF (Staking)',
+                'criteria.model.ps': 'P/S Ratio (25x)',
                 'criteria.model.appCapital': 'App Capital',
-                'criteria.model.tvl': 'TVL倍数',
-                'criteria.model.staking': '质押稀缺性',
-                'criteria.model.l2': 'L2生态系统',
-                'criteria.model.commitment': '承诺溢价',
+                'criteria.model.tvl': 'TVL Multiple',
+                'criteria.model.staking': 'Staking Scarcity',
+                'criteria.model.l2': 'L2 Ecosystem',
+                'criteria.model.commitment': 'Commitment Premium',
                 'criteria.revenueYield.m': '广泛用于债券和股息股票的TradFi收益率估值',
                 'criteria.revenueYield.d': '实时Lido APR + DefiLlama链上手续费收入',
                 'criteria.revenueYield.a': '无任意倍数；直接使用市场衍生收益率',
@@ -3885,11 +4141,12 @@
             ja: {
                 'status.live': 'ライブ',
                 'status.updating': '更新中...',
+                'nav.overview': '概要',
                 'nav.price': '価格・市場',
                 'nav.onchain': 'オンチェーン指標',
                 'nav.valuation': 'バリュエーション',
                 'nav.methodology': '方法論',
-                'summary.title': '📊 エグゼクティブサマリー',
+                'summary.title': '概要',
                 'summary.currentPrice': '現在価格',
                 'summary.fairValue': '適正価格 (10モデル)',
                 'summary.opportunity': '投資機会',
@@ -3906,14 +4163,14 @@
                 'valuation.compositeFairValue': '総合適正価格',
                 'disclaimer.text': '<strong>⚠️ 免責事項：</strong>これらのバリュエーションモデルは参考用です。各モデルには独自の仮定と限界があります。投資判断は複数の要因を総合的に考慮する必要があります。',
                 'footer.disclaimer': '120秒自動更新 · 情報提供のみ · 投資アドバイスではありません',
-                'criteria.title': '📊 信頼性評価基準',
+                'criteria.title': '🎯 信頼性評価基準',
                 'criteria.subtitle': '各モデルは3つの基準で評価され、信頼性レベルが決定されます',
                 'criteria.defTitle': '📐 評価基準の定義',
-                'criteria.methodology': '① 方法論の検証',
+                'criteria.methodology': '方法論の検証',
                 'criteria.methodologyDesc': 'TradFiで確立されているか、学術的に検証されている',
-                'criteria.data': '② データの客観性',
+                'criteria.data': 'データの客観性',
                 'criteria.dataDesc': 'すべての入力値がリアルタイムでオンチェーン測定可能',
-                'criteria.assumption': '③ 仮定感度の低さ',
+                'criteria.assumption': '仮定感度の低さ',
                 'criteria.assumptionDesc': '任意のパラメータ（倍率、比率）が結果に与える影響が最小',
                 'criteria.high3': '3基準充足',
                 'criteria.med2': '2基準充足',
@@ -3922,20 +4179,20 @@
                 'criteria.thMethodology': '方法論検証',
                 'criteria.thData': 'データ客観性',
                 'criteria.thAssumption': '仮定感度',
-                'criteria.thResult': '結果',
+                'criteria.thResult': '信頼性',
                 'criteria.labelM': '方法論',
                 'criteria.labelD': 'データ',
                 'criteria.labelA': '仮定',
-                'criteria.model.revenueYield': '収益利回り',
-                'criteria.model.mctvl': 'MC/TVL適正価格',
-                'criteria.model.metcalfe': 'メトカーフの法則',
-                'criteria.model.dcf': 'DCF（ステーキング）',
-                'criteria.model.ps': 'P/S比率（25倍）',
+                'criteria.model.revenueYield': 'Revenue Yield',
+                'criteria.model.mctvl': 'MC/TVL Fair Value',
+                'criteria.model.metcalfe': 'Metcalfe\'s Law',
+                'criteria.model.dcf': 'DCF (Staking)',
+                'criteria.model.ps': 'P/S Ratio (25x)',
                 'criteria.model.appCapital': 'App Capital',
-                'criteria.model.tvl': 'TVL倍率',
-                'criteria.model.staking': 'ステーキング希少性',
-                'criteria.model.l2': 'L2エコシステム',
-                'criteria.model.commitment': 'コミットメントプレミアム',
+                'criteria.model.tvl': 'TVL Multiple',
+                'criteria.model.staking': 'Staking Scarcity',
+                'criteria.model.l2': 'L2 Ecosystem',
+                'criteria.model.commitment': 'Commitment Premium',
                 'criteria.revenueYield.m': '債券・配当株で広く使用されるTradFi利回りベースのバリュエーション',
                 'criteria.revenueYield.d': 'リアルタイムLido APR + DefiLlamaオンチェーン手数料収益',
                 'criteria.revenueYield.a': '任意の倍率なし；市場派生利回りを直接使用',
@@ -4248,8 +4505,12 @@
             try {
                 console.log('   Fetching Binance price data...');
                 
-                // 현재 가격 + 24h 변화 (ETHUSDT)
-                const tickerRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT');
+                // 두 API를 병렬로 호출
+                const [tickerRes, ethbtcRes] = await Promise.all([
+                    fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT'),
+                    fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHBTC')
+                ]);
+                
                 if (!tickerRes.ok) throw new Error('Binance ticker failed');
                 const ticker = await tickerRes.json();
                 
@@ -4257,15 +4518,23 @@
                 state.volume24h = parseFloat(ticker.quoteVolume);
                 const change24h = parseFloat(ticker.priceChangePercent);
                 
+                // 메인 가격 표시
                 document.getElementById('current-price').textContent = fmt.price(state.price);
                 document.getElementById('volume-24h').textContent = fmt.usd(state.volume24h);
+                
+                // Executive Summary 가격도 즉시 업데이트
+                const summaryPriceEl = document.getElementById('summary-current-price');
+                if (summaryPriceEl) {
+                    summaryPriceEl.textContent = fmt.price(state.price);
+                    summaryPriceEl.style.fontSize = '';
+                    summaryPriceEl.style.color = '';
+                }
                 
                 const changeEl = document.getElementById('price-change');
                 document.getElementById('price-change-text').textContent = fmt.pct(change24h) + ' (24h)';
                 changeEl.className = 'price-change ' + (change24h >= 0 ? 'up' : 'down');
                 
-                // ETH/BTC 비율 가져오기
-                const ethbtcRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHBTC');
+                // ETH/BTC 비율
                 if (ethbtcRes.ok) {
                     const ethbtcTicker = await ethbtcRes.json();
                     state.ethBtcRatio = parseFloat(ethbtcTicker.lastPrice);
@@ -5919,6 +6188,36 @@
             return models;
         }
 
+        // Reliability Gauge SVG 생성 함수
+        function createReliabilityGauge(level) {
+            // level: 1 (Low), 2 (Medium), 3 (High)
+            // 바늘 각도: Low = -60°, Medium = 0°, High = 60° (왼쪽에서 오른쪽)
+            const angle = level === 1 ? -60 : level === 2 ? 0 : 60;
+            const levelClass = level === 3 ? 'high' : level === 2 ? 'medium' : 'low';
+            const levelColor = level === 3 ? '#22c55e' : level === 2 ? '#f59e0b' : '#ef4444';
+            
+            return `
+                <svg class="reliability-gauge-svg" viewBox="0 0 28 16" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 배경 호 -->
+                    <path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- 색상 구간들 -->
+                    <path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+                    <path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+                    <path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+                    <!-- 활성 구간 강조 -->
+                    ${level === 1 ? '<path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>' : ''}
+                    ${level === 2 ? '<path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>' : ''}
+                    ${level === 3 ? '<path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>' : ''}
+                    <!-- 바늘 -->
+                    <g transform="rotate(${angle}, 14, 14)">
+                        <line x1="14" y1="14" x2="14" y2="6" stroke="${levelColor}" stroke-width="1.5" stroke-linecap="round"/>
+                    </g>
+                    <!-- 중심점 -->
+                    <circle cx="14" cy="14" r="2" fill="${levelColor}"/>
+                </svg>
+            `;
+        }
+
         function renderValuations() {
             const models = calculateValuations();
             const container = document.getElementById('valuation-models');
@@ -5972,6 +6271,9 @@
                 const reliabilityLabel = translations[currentLang] && translations[currentLang]['method.reliability'] 
                     ? translations[currentLang]['method.reliability'] : 'Reliability';
 
+                // Reliability Gauge SVG
+                const reliabilityGauge = createReliabilityGauge(m.reliability);
+
                 // Valuation labels
                 const labelUndervalued = translations[currentLang] && translations[currentLang]['valuation.undervalued'] 
                     ? translations[currentLang]['valuation.undervalued'] : 'Undervalued';
@@ -5989,7 +6291,7 @@
                             <div class="model-name">${m.name}</div>
                             <div class="model-reliability">
                                 <span class="reliability-label">${reliabilityLabel}</span>
-                                <span class="reliability-badge ${reliabilityLevel}">${reliabilityText}</span>
+                                <span class="reliability-gauge">${reliabilityGauge}</span>
                             </div>
                         </div>
                         <div class="model-row-2">
@@ -6117,10 +6419,33 @@
             }
             if (summaryFairEl) {
                 summaryFairEl.textContent = fmt.price(weightedAvgPrice);
+                summaryFairEl.style.fontSize = '';
+                summaryFairEl.style.color = '';
             }
             if (summaryOpportunityEl) {
                 summaryOpportunityEl.textContent = fmt.pct(avgDiff);
                 summaryOpportunityEl.className = 'summary-opportunity ' + (avgDiff >= 0 ? 'upside' : 'downside');
+                summaryOpportunityEl.style.background = '';
+                summaryOpportunityEl.style.color = '';
+            }
+            
+            // Signal 텍스트 업데이트 (Undervalued / Fair Value / Overvalued)
+            const summarySignalEl = document.getElementById('summary-signal');
+            if (summarySignalEl) {
+                const undervaluedLabel = translations[currentLang]?.['valuation.undervalued'] || 'Undervalued';
+                const overvaluedLabel = translations[currentLang]?.['valuation.overvalued'] || 'Overvalued';
+                const fairLabel = translations[currentLang]?.['valuation.fair'] || 'Fair Value';
+                
+                if (avgDiff > 15) {
+                    summarySignalEl.textContent = undervaluedLabel;
+                    summarySignalEl.style.color = 'var(--green)';
+                } else if (avgDiff < -15) {
+                    summarySignalEl.textContent = overvaluedLabel;
+                    summarySignalEl.style.color = 'var(--red)';
+                } else {
+                    summarySignalEl.textContent = fairLabel;
+                    summarySignalEl.style.color = 'var(--yellow)';
+                }
             }
             
             // 활성화된 모델 수 업데이트
@@ -6386,46 +6711,41 @@
             console.log('========== fetchAll START ==========');
             setStatus('status.updating');
             try {
-                // 모든 API를 동시에 병렬 호출
-                console.log('1. Fetching all data in parallel...');
+                // Phase 1: 가격 데이터 먼저 (가장 빠름, 사용자에게 가장 중요)
+                console.log('Phase 1: Fetching price data first...');
+                const pricePromise = fetchBinancePrice();
                 
-                const [binancePrice, binanceHistory, coinGecko, defiLlama, staking, stakingYield, transactions, exchangeReserve] = await Promise.allSettled([
-                    fetchBinancePrice(),
+                // Phase 2: 나머지 데이터 병렬 시작 (Phase 1 완료 기다리지 않음)
+                console.log('Phase 2: Starting all other fetches in parallel...');
+                const otherDataPromise = Promise.allSettled([
                     fetchBinanceHistory(365),
                     fetchCoinGecko(),
                     fetchDefiLlama(),
                     fetchStaking(),
                     fetchStakingYield(),
                     fetchTransactions(),
-                    fetchExchangeReserve()
+                    fetchExchangeReserve(),
+                    fetchGlobal()  // Dominance/ETH-BTC도 병렬로
                 ]);
                 
-                console.log('   All API calls completed');
+                // Phase 1 완료되면 즉시 가격 표시
+                await pricePromise;
+                console.log('   Price displayed:', state.price);
                 
-                // 디버그: API 호출 결과 확인
+                // Phase 2 완료 대기
+                const [binanceHistory, coinGecko, defiLlama, staking, stakingYield, transactions, exchangeReserve, global] = await otherDataPromise;
+                
+                console.log('   All API calls completed');
                 console.log('   API Results:', {
-                    binancePrice: binancePrice.status,
                     binanceHistory: binanceHistory.status,
                     coinGecko: coinGecko.status,
                     defiLlama: defiLlama.status,
                     staking: staking.status,
                     stakingYield: stakingYield.status,
                     transactions: transactions.status,
-                    exchangeReserve: exchangeReserve.status
+                    exchangeReserve: exchangeReserve.status,
+                    global: global.status
                 });
-                console.log('   State after API:', {
-                    price: state.price,
-                    marketCap: state.marketCap,
-                    volume24h: state.volume24h,
-                    circulatingSupply: state.circulatingSupply,
-                    stakingApr: state.stakingApr
-                });
-                
-                // 2. Binance 데이터가 있으면 Dominance/ETH-BTC 업데이트
-                if (binanceHistory.status === 'fulfilled' && state.priceHistory?.length > 0) {
-                    console.log('2. Updating Dominance/ETH-BTC charts...');
-                    await fetchGlobal();
-                }
                 
                 // 3. Supply Distribution 업데이트
                 console.log('3. Updating supply distribution chart...');
@@ -6651,50 +6971,38 @@
                     }
                 });
             });
+
+            // 스크롤 감지 - setInterval로 체크
+            setInterval(function() {
+                var scrollTop = document.body.scrollTop || document.documentElement.scrollTop || 0;
+                var headerHeight = 200;
+                
+                var sectionPrice = document.getElementById('section-price');
+                var sectionOnchain = document.getElementById('section-onchain');
+                var sectionValuation = document.getElementById('section-valuation');
+                var sectionMethodology = document.getElementById('section-methodology');
+                
+                var current = 'top';
+                
+                if (sectionMethodology && scrollTop >= sectionMethodology.offsetTop - headerHeight) {
+                    current = 'section-methodology';
+                } else if (sectionValuation && scrollTop >= sectionValuation.offsetTop - headerHeight) {
+                    current = 'section-valuation';
+                } else if (sectionOnchain && scrollTop >= sectionOnchain.offsetTop - headerHeight) {
+                    current = 'section-onchain';
+                } else if (sectionPrice && scrollTop >= sectionPrice.offsetTop - headerHeight) {
+                    current = 'section-price';
+                }
+                
+                document.querySelectorAll('.nav-bar .nav-item').forEach(function(nav) {
+                    if (nav.getAttribute('href') === '#' + current) {
+                        nav.className = 'nav-item active';
+                    } else {
+                        nav.className = 'nav-item';
+                    }
+                });
+            }, 100);
         });
-    </script>
-    
-    <!-- 네비게이션 스크롤 감지 (onscroll 직접 사용) -->
-    <script>
-    var navScrollHandler = function() {
-        var navItems = document.querySelectorAll('.nav-bar .nav-item');
-        var sections = document.querySelectorAll('#section-price, #section-onchain, #section-valuation, #section-methodology');
-        
-        if (!navItems.length || !sections.length) {
-            return;
-        }
-        
-        var scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-        var headerHeight = 120;
-        
-        var currentId = 'section-price';
-        
-        for (var i = 0; i < sections.length; i++) {
-            var sec = sections[i];
-            var rect = sec.getBoundingClientRect();
-            var top = rect.top + scrollY - headerHeight;
-            if (scrollY >= top) {
-                currentId = sec.id;
-            }
-        }
-        
-        for (var j = 0; j < navItems.length; j++) {
-            var nav = navItems[j];
-            if (nav.getAttribute('href') === '#' + currentId) {
-                nav.className = 'nav-item active';
-            } else {
-                nav.className = 'nav-item';
-            }
-        }
-    };
-    
-    // 여러 요소에서 스크롤 이벤트 감지
-    window.addEventListener('scroll', navScrollHandler, true);
-    document.addEventListener('scroll', navScrollHandler, true);
-    document.documentElement.addEventListener('scroll', navScrollHandler, true);
-    
-    // 초기 실행
-    setTimeout(navScrollHandler, 100);
     </script>
 </body>
 </html>
