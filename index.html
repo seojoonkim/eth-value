@@ -1095,6 +1095,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
         }
 
         .conclusion-label {
@@ -1148,6 +1149,7 @@
             padding-top: 16px;
             padding-bottom: 4px;
             border-top: 1px solid var(--border);
+            width: 100%;
         }
 
         .signal-item { text-align: center; }
@@ -1174,6 +1176,7 @@
             background: var(--bg);
             border-radius: 6px;
             border: none;
+            width: 100%;
         }
 
         .current-vs-model-row {
@@ -1231,18 +1234,21 @@
             margin-top: 16px;
             padding-top: 16px;
             border-top: 1px solid var(--border);
+            width: 100%;
         }
 
         .conclusion-footer .weighting-method {
             margin-top: 0;
             padding-top: 0;
             border-top: none;
+            padding-left: 8px;
         }
 
         .conclusion-footer .share-btn {
             padding: 6px 12px;
             font-size: 11px;
             border-radius: 16px;
+            margin-right: 8px;
         }
 
         .conclusion-footer .share-btn svg {
@@ -1481,7 +1487,7 @@
         }
 
         .criteria-table td {
-            padding: 8px;
+            padding: 12px 8px;
             border-bottom: 1px solid var(--border);
             color: var(--text-secondary);
             line-height: 1.4;
@@ -1967,12 +1973,14 @@
             font-weight: 600;
             color: var(--text);
             font-size: 12px;
+            white-space: nowrap;
         }
 
         .contact-title {
             font-size: 10px;
             color: var(--text-muted);
             font-weight: 400;
+            white-space: nowrap;
         }
 
         .contact-link {
@@ -2038,10 +2046,11 @@
             top: 0;
             width: 600px;
             padding: 32px;
-            background: #1a1f2e;
+            background: #ffffff;
             border-radius: 16px;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: white;
+            color: #24292e;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
         }
 
         .share-card-header {
@@ -2060,7 +2069,7 @@
         .share-card-logo-icon {
             width: 36px;
             height: 36px;
-            background: #627EEA;
+            background: linear-gradient(135deg, #627eea, #3b5998);
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -2071,29 +2080,31 @@
         }
 
         .share-card-logo-text {
+            font-family: 'Outfit', sans-serif;
             font-size: 22px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            color: white;
+            color: #24292e;
         }
 
         .share-card-date {
             font-size: 13px;
-            color: #8b949e;
+            color: #586069;
         }
 
         .share-card-main {
-            background: #252d3d;
+            background: #f8f9fa;
             border-radius: 12px;
             padding: 28px;
             margin-bottom: 24px;
+            text-align: center;
         }
 
         .share-card-label {
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #8b949e;
+            color: #586069;
             margin-bottom: 12px;
         }
 
@@ -2102,74 +2113,114 @@
             font-size: 48px;
             font-weight: 700;
             margin-bottom: 8px;
-            color: #22c55e;
+            color: #0366d6;
         }
 
         .share-card-price.bearish {
-            color: #ef4444;
+            color: #cb2431;
         }
 
         .share-card-price.neutral {
-            color: #f59e0b;
+            color: #b08800;
         }
 
         .share-card-current {
             font-size: 16px;
-            color: #8b949e;
-            margin-bottom: 20px;
+            color: #586069;
+            margin-bottom: 12px;
+        }
+
+        .share-card-diff-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: #22863a;
+            margin-bottom: 16px;
+        }
+
+        .share-card-diff-text.down {
+            color: #cb2431;
+        }
+
+        .share-card-verdict {
+            display: inline-block;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .share-card-verdict.bullish {
+            background: #dcffe4;
+            color: #22863a;
+        }
+
+        .share-card-verdict.bearish {
+            background: #ffeef0;
+            color: #cb2431;
+        }
+
+        .share-card-verdict.neutral {
+            background: #fff5b1;
+            color: #b08800;
         }
 
         .share-card-opportunity {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 10px 24px;
             border-radius: 8px;
-            font-weight: 600;
-            font-size: 18px;
+            font-weight: 700;
+            font-size: 14px;
         }
 
         .share-card-opportunity.bullish {
-            background: #166534;
-            color: #4ade80;
+            background: #dcffe4;
+            color: #22863a;
         }
 
         .share-card-opportunity.bearish {
-            background: #7f1d1d;
-            color: #fca5a5;
+            background: #ffeef0;
+            color: #cb2431;
         }
 
         .share-card-opportunity.neutral {
-            background: #713f12;
-            color: #fde047;
+            background: #fff5b1;
+            color: #b08800;
         }
 
         .share-card-stats {
             display: flex;
-            justify-content: space-between;
-            gap: 16px;
+            justify-content: center;
+            gap: 24px;
             margin-bottom: 24px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
         }
 
         .share-card-stat {
-            flex: 1;
             text-align: center;
-            padding: 16px 12px;
-            background: #1e2433;
-            border-radius: 8px;
+            padding: 0 24px;
+        }
+
+        .share-card-stat:not(:last-child) {
+            border-right: 1px solid #e1e4e8;
         }
 
         .share-card-stat-value {
-            font-size: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
-        .share-card-stat-value.buy { color: #22c55e; }
-        .share-card-stat-value.hold { color: #eab308; }
-        .share-card-stat-value.sell { color: #ef4444; }
+        .share-card-stat-value.buy { color: #22863a; }
+        .share-card-stat-value.hold { color: #b08800; }
+        .share-card-stat-value.sell { color: #cb2431; }
 
         .share-card-stat-label {
-            font-size: 12px;
-            color: #6b7280;
+            font-size: 11px;
+            color: #8b949e;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -2179,17 +2230,17 @@
             align-items: center;
             justify-content: space-between;
             padding-top: 20px;
-            border-top: 1px solid #374151;
+            border-top: 1px solid #e1e4e8;
         }
 
         .share-card-models {
             font-size: 13px;
-            color: #6b7280;
+            color: #586069;
         }
 
         .share-card-url {
             font-size: 14px;
-            color: #9ca3af;
+            color: #0366d6;
             font-weight: 600;
         }
 
@@ -7519,28 +7570,29 @@
             const modelCount = document.getElementById('conclusion-model-count').textContent;
             
             const priceEl = document.getElementById('share-fair-value');
+            const diffEl = document.getElementById('share-diff');
+            const verdictEl = document.getElementById('share-verdict');
+            
             priceEl.textContent = fairValue;
             document.getElementById('share-current-price').textContent = 'Current: ' + currentPrice;
-            document.getElementById('share-diff').textContent = diff;
+            diffEl.textContent = diff;
+            verdictEl.textContent = verdict;
             document.getElementById('share-buy-count').textContent = buyCount;
             document.getElementById('share-hold-count').textContent = holdCount;
             document.getElementById('share-sell-count').textContent = sellCount;
             document.getElementById('share-model-count').textContent = modelCount + ' / 12 models analyzed';
             
-            // Update opportunity class and price color
-            const oppEl = document.getElementById('share-opportunity');
-            oppEl.className = 'share-card-opportunity';
-            priceEl.className = 'share-card-price';
+            // Update verdict class and diff color
+            verdictEl.className = 'share-card-verdict';
+            diffEl.className = 'share-card-diff-text';
             
-            if (verdict.includes('Bullish') || verdict.includes('강세') || verdict.includes('看涨') || verdict.includes('強気')) {
-                oppEl.classList.add('bullish');
-                // price stays green (default)
-            } else if (verdict.includes('Bearish') || verdict.includes('약세') || verdict.includes('看跌') || verdict.includes('弱気')) {
-                oppEl.classList.add('bearish');
-                priceEl.classList.add('bearish');
+            if (verdict.includes('Bullish') || verdict.includes('강세') || verdict.includes('看涨') || verdict.includes('強気') || verdict.includes('UNDERVALUED')) {
+                verdictEl.classList.add('bullish');
+            } else if (verdict.includes('Bearish') || verdict.includes('약세') || verdict.includes('看跌') || verdict.includes('弱気') || verdict.includes('OVERVALUED')) {
+                verdictEl.classList.add('bearish');
+                diffEl.classList.add('down');
             } else {
-                oppEl.classList.add('neutral');
-                priceEl.classList.add('neutral');
+                verdictEl.classList.add('neutral');
             }
             
             // Update date
@@ -7615,9 +7667,8 @@ Check out ETHval 👇`;
             <div class="share-card-label">Composite Fair Value</div>
             <div class="share-card-price" id="share-fair-value">$--</div>
             <div class="share-card-current" id="share-current-price">Current: $--</div>
-            <div class="share-card-opportunity bullish" id="share-opportunity">
-                <span id="share-diff">-- vs Current</span>
-            </div>
+            <div class="share-card-diff-text" id="share-diff">+--% vs Current</div>
+            <div class="share-card-verdict bullish" id="share-verdict">▲ UNDERVALUED</div>
         </div>
         <div class="share-card-stats">
             <div class="share-card-stat">
