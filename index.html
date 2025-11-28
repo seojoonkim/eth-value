@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root {
             --bg: #ffffff;
@@ -121,7 +122,7 @@
 
         /* Scroll offset for sticky header */
         .section[id] {
-            scroll-margin-top: 100px;
+            scroll-margin-top: 75px;
         }
 
         .logo {
@@ -758,7 +759,7 @@
         /* Section 3: Valuation */
         .valuation-layout {
             display: grid;
-            grid-template-columns: 1fr minmax(250px, 300px);
+            grid-template-columns: 1fr minmax(280px, 340px);
             gap: 16px;
         }
 
@@ -1082,7 +1083,6 @@
             font-weight: 500;
             color: inherit;
             text-transform: uppercase;
-            opacity: 0.85;
         }
 
         /* Conclusion Panel */
@@ -1092,14 +1092,17 @@
             border-radius: 8px;
             padding: 16px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .conclusion-label {
-            font-size: 11px;
-            color: var(--text-muted);
+            font-size: 13px;
+            color: #586069;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .active-models-count {
@@ -1112,14 +1115,14 @@
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
             color: var(--primary);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .conclusion-diff {
             font-size: 14px;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .conclusion-diff.up { color: var(--green); }
@@ -1131,7 +1134,7 @@
             border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .conclusion-verdict.bullish { background: var(--green-bg); color: var(--green); }
@@ -1142,7 +1145,8 @@
             display: flex;
             justify-content: center;
             gap: 20px;
-            padding-top: 12px;
+            padding-top: 16px;
+            padding-bottom: 4px;
             border-top: 1px solid var(--border);
         }
 
@@ -1165,8 +1169,8 @@
         }
 
         .current-vs-model {
-            margin-top: 12px;
-            padding: 10px;
+            margin-top: 16px;
+            padding: 12px;
             background: var(--bg);
             border-radius: 6px;
             border: none;
@@ -1175,7 +1179,7 @@
         .current-vs-model-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
+            padding: 6px 0;
             font-size: 11px;
         }
 
@@ -1202,12 +1206,12 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 6px;
-            text-align: center;
+            text-align: left;
         }
         
         .weighting-items {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 12px;
             font-size: 11px;
         }
@@ -1217,6 +1221,33 @@
             align-items: center;
             gap: 4px;
             color: var(--text-secondary);
+        }
+
+        /* Conclusion Panel Footer */
+        .conclusion-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .conclusion-footer .weighting-method {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .conclusion-footer .share-btn {
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 16px;
+        }
+
+        .conclusion-footer .share-btn svg {
+            width: 14px;
+            height: 14px;
         }
 
         /* Footer */
@@ -1277,18 +1308,19 @@
             background: var(--bg);
             border: none;
             border-radius: 6px;
-            padding: 14px;
+            padding: 16px 14px;
             font-size: 10px;
             min-width: 0;
             overflow: hidden;
+            min-height: 190px;
         }
 
         .method-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border);
         }
 
@@ -1301,13 +1333,13 @@
         .method-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 18px;
         }
 
         .method-left {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .method-right {
@@ -1798,13 +1830,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 12px 0;
             gap: 16px;
         }
 
         .summary-valuation-row:last-child {
             border-bottom: none;
-            padding-top: 8px;
+            padding-top: 12px;
             margin-top: 0;
         }
 
@@ -1830,7 +1862,7 @@
         }
 
         .summary-label {
-            font-size: 11px;
+            font-size: 13px;
             color: #586069;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -1853,13 +1885,13 @@
 
         .summary-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--text);
         }
 
         .summary-value.large {
-            font-size: 24px;
+            font-size: 26px;
         }
 
         .summary-opportunity-wrapper {
@@ -1874,7 +1906,7 @@
             gap: 6px;
             padding: 6px 12px;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
         }
@@ -1903,15 +1935,15 @@
 
         .summary-text strong {
             color: var(--text);
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .summary-cta {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
             font-size: 11px;
-            color: var(--primary);
+            color: var(--text-secondary);
             font-weight: 500;
         }
 
@@ -1922,6 +1954,360 @@
 
         .summary-cta a:hover {
             text-decoration: underline;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            line-height: 1.2;
+        }
+
+        .contact-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 12px;
+        }
+
+        .contact-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .contact-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-secondary) !important;
+            transition: color 0.15s ease;
+        }
+
+        .contact-link:hover {
+            color: var(--primary) !important;
+            text-decoration: none !important;
+        }
+
+        .contact-link svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        .contact-divider {
+            color: var(--text-muted);
+            margin: 0 6px;
+        }
+
+        /* Share Button */
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #1DA1F2;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .share-btn:hover {
+            background: #1a91da;
+            transform: translateY(-1px);
+        }
+
+        .share-btn:active {
+            transform: translateY(0);
+        }
+
+        .share-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Share Card (Hidden, for capture) */
+        .share-card {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 600px;
+            padding: 32px;
+            background: #1a1f2e;
+            border-radius: 16px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: white;
+        }
+
+        .share-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .share-card-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .share-card-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #627EEA;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: white;
+        }
+
+        .share-card-logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: white;
+        }
+
+        .share-card-date {
+            font-size: 13px;
+            color: #8b949e;
+        }
+
+        .share-card-main {
+            background: #252d3d;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .share-card-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8b949e;
+            margin-bottom: 12px;
+        }
+
+        .share-card-price {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #22c55e;
+        }
+
+        .share-card-price.bearish {
+            color: #ef4444;
+        }
+
+        .share-card-price.neutral {
+            color: #f59e0b;
+        }
+
+        .share-card-current {
+            font-size: 16px;
+            color: #8b949e;
+            margin-bottom: 20px;
+        }
+
+        .share-card-opportunity {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .share-card-opportunity.bullish {
+            background: #166534;
+            color: #4ade80;
+        }
+
+        .share-card-opportunity.bearish {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .share-card-opportunity.neutral {
+            background: #713f12;
+            color: #fde047;
+        }
+
+        .share-card-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .share-card-stat {
+            flex: 1;
+            text-align: center;
+            padding: 16px 12px;
+            background: #1e2433;
+            border-radius: 8px;
+        }
+
+        .share-card-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .share-card-stat-value.buy { color: #22c55e; }
+        .share-card-stat-value.hold { color: #eab308; }
+        .share-card-stat-value.sell { color: #ef4444; }
+
+        .share-card-stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .share-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid #374151;
+        }
+
+        .share-card-models {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .share-card-url {
+            font-size: 14px;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+
+        /* Share Modal */
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .share-modal.active {
+            display: flex;
+        }
+
+        .share-modal-content {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 640px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .share-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .share-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .share-modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-card);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .share-modal-close:hover {
+            background: var(--bg-card-alt);
+        }
+
+        .share-modal-preview {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .share-modal-preview img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .share-modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .share-modal-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .share-modal-btn.twitter {
+            background: #1DA1F2;
+            color: white;
+        }
+
+        .share-modal-btn.twitter:hover {
+            background: #1a91da;
+        }
+
+        .share-modal-btn.download {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .share-modal-btn.download:hover {
+            background: var(--bg-card-alt);
+        }
+
+        .share-modal-btn svg {
+            width: 18px;
+            height: 18px;
         }
 
         /* 중간 크기 화면 (600px ~ 900px) - 가격 박스 3열 그리드 배치 */
@@ -1943,6 +2329,19 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 6px;
+                padding: 6px 0;
+            }
+
+            .summary-label {
+                font-size: 11px;
+            }
+
+            .summary-value {
+                font-size: 16px;
+            }
+
+            .summary-opportunity {
+                font-size: 14px;
             }
 
             .summary-valuation-row .summary-value {
@@ -1991,6 +2390,7 @@
                 justify-content: space-between;
                 align-items: center;
                 gap: 8px;
+                padding: 5px 0;
             }
 
             .summary-toggle-hint {
@@ -2049,11 +2449,11 @@
                 max-height: 200px;
             }
             
-            .valuation-layout { grid-template-columns: 1fr; }
             .methodology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         @media (max-width: 1000px) {
+            .valuation-layout { grid-template-columns: 1fr; }
             .triple-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
@@ -2171,7 +2571,12 @@
             /* Section */
             .section {
                 padding: 0;
-                margin-bottom: 28px;
+                padding-top: 24px;
+                margin-bottom: 32px;
+            }
+
+            .section[id] {
+                scroll-margin-top: 60px;
             }
 
             .section-header {
@@ -2384,12 +2789,13 @@
             }
 
             .method-card {
-                padding: 10px;
+                padding: 12px 10px;
+                min-height: 170px;
             }
 
             .method-content {
                 grid-template-columns: 1fr 1fr;
-                gap: 12px;
+                gap: 14px;
             }
 
             .method-name {
@@ -2415,6 +2821,11 @@
         @media (max-width: 400px) {
             .container {
                 padding: 6px;
+            }
+
+            .section {
+                padding-top: 20px;
+                margin-bottom: 28px;
             }
 
             .header {
@@ -2506,7 +2917,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.2.2</span>
+                <span class="version-badge">v0.2.4</span>
             </a>
             <div class="header-center">
                 <div class="status">
@@ -2568,7 +2979,7 @@
                 <!-- Description 영역 -->
                 <div class="summary-description">
                     <p class="summary-text" data-i18n="summary.desc1">
-                        This dashboard attempts to derive Ethereum's <strong>intrinsic value</strong> using 12 different valuation methodologies — 
+                        This dashboard attempts to derive <strong>Ethereum's intrinsic value</strong> using 12 different valuation methodologies — 
                         from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe's Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer).
                     </p>
                     <p class="summary-text" data-i18n="summary.desc2">
@@ -2579,8 +2990,21 @@
                         Found a bug or have suggestions? Let me know anytime — feedback is always welcome!
                     </p>
                     <div class="summary-cta">
-                        <img src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px;">
-                        📧 <a href="mailto:simon@hashed.com">simon@hashed.com</a> or 𝕏 <a href="https://x.com/simonkim_nft" target="_blank">@simonkim_nft</a>
+                        <img src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;">
+                        <div class="contact-info">
+                            <span class="contact-name">Simon Kim</span>
+                            <span class="contact-title">CEO, Hashed</span>
+                        </div>
+                        <span class="contact-divider">|</span>
+                        <a href="https://x.com/simonkim_nft" target="_blank" class="contact-link">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            @simonkim_nft
+                        </a>
+                        <span class="contact-divider">·</span>
+                        <a href="mailto:simon@hashed.com" class="contact-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            simon@hashed.com
+                        </a>
                     </div>
                 </div>
             </div>
@@ -2921,7 +3345,7 @@
                 <div class="metric-card" data-metric="ethInDefi">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="onchain.ethInDefi">ETH in DeFi</h4>
+                            <h4>ETH in DeFi</h4>
                             <div class="metric-value-large" id="eth-defi-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs">
@@ -2940,7 +3364,7 @@
                 <div class="metric-card" data-metric="commitmentRatio">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="onchain.commitmentRatio">Commitment Ratio</h4>
+                            <h4>Commitment Ratio</h4>
                             <div class="metric-value-large" id="commitment-ratio-value">--%</div>
                         </div>
                         <div class="metric-tabs">
@@ -2960,7 +3384,7 @@
                 <div class="metric-card" data-metric="appCapital">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="onchain.appCapital">App Capital (Est.)</h4>
+                            <h4>App Capital</h4>
                             <div class="metric-value-large" id="app-capital-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -2980,7 +3404,7 @@
                 <div class="metric-card" data-metric="stakingApr">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="onchain.stakingYield">Staking Yield (APR)</h4>
+                            <h4>Staking Yield (APR)</h4>
                             <div class="metric-value-large" id="staking-yield-value">--%</div>
                         </div>
                         <div class="metric-tabs">
@@ -3049,13 +3473,19 @@
                         </div>
                     </div>
                     
-                    <div class="weighting-method">
-                        <div class="weighting-title" data-i18n="valuation.reliabilityWeighting">Reliability Weighting</div>
-                        <div class="weighting-items">
-                            <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span> ×3</span>
-                            <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span> ×2</span>
-                            <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span> ×1</span>
+                    <div class="conclusion-footer">
+                        <div class="weighting-method">
+                            <div class="weighting-title" data-i18n="valuation.reliabilityWeighting">Reliability Weighting</div>
+                            <div class="weighting-items">
+                                <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span> ×3</span>
+                                <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span> ×2</span>
+                                <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span> ×1</span>
+                            </div>
                         </div>
+                        <button class="share-btn" onclick="openShareModal()">
+                            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            <span data-i18n="share.button">Share</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -3706,7 +4136,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.2.2
+                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.2.4
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -3718,7 +4148,7 @@
         </footer>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // Translations
         const translations = {
             en: {
@@ -3734,9 +4164,13 @@
                 'summary.fairValue': 'Fair Value (12 Models)',
                 'summary.opportunity': 'Opportunity',
                 'summary.toggleHint': 'Toggle individual models on/off below to customize your valuation.',
-                'summary.desc1': 'This dashboard attempts to derive Ethereum\'s <strong>intrinsic value</strong> using 12 different valuation methodologies — from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer).',
+                'summary.desc1': 'This dashboard attempts to derive <strong>Ethereum\'s intrinsic value</strong> using 12 different valuation methodologies — from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer).',
                 'summary.desc2': 'We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. While these models have limitations and assumptions, they provide a framework for thinking about value beyond pure price speculation.',
                 'summary.feedback': 'Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
+                'share.button': 'Share',
+                'share.modalTitle': 'Share Your Analysis',
+                'share.postToX': 'Post to 𝕏',
+                'share.download': 'Download Image',
                 'section.priceTitle': 'Price & Market Overview',
                 'section.onchainTitle': 'On-Chain Metrics & Trends',
                 'section.valuationTitle': 'Valuation Analysis',
@@ -3847,7 +4281,7 @@
                 'onchain.ethInDefiNote': 'TVL ÷ ETH Price',
                 'onchain.commitmentRatio': 'Commitment Ratio',
                 'onchain.commitmentRatioNote': '(Staked + DeFi) ÷ Supply',
-                'onchain.appCapital': 'App Capital (Est.)',
+                'onchain.appCapital': 'App Capital',
                 'onchain.appCapitalNote': 'Stablecoins ÷ 0.28 · Proxy',
                 'onchain.stakingYield': 'Staking Yield (APR)',
                 'onchain.stakingYieldNote': 'Lido stETH APR · Live',
@@ -3878,9 +4312,13 @@
                 'summary.fairValue': '적정 가치 (12개 모델)',
                 'summary.opportunity': '투자 기회',
                 'summary.toggleHint': '아래에서 개별 모델을 켜고 끄며 나만의 밸류에이션을 계산해 보세요.',
-                'summary.desc1': '이 대시보드는 전통 금융 프레임워크(DCF, P/S Ratio, Revenue Yield, Validator Economics)부터 크립토 네이티브 지표(TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer)까지 12가지 밸류에이션 방법론을 활용하여 이더리움의 <strong>내재 가치</strong>를 도출하려는 시도입니다.',
+                'summary.desc1': '이 대시보드는 전통 금융 프레임워크(DCF, P/S Ratio, Revenue Yield, Validator Economics)부터 크립토 네이티브 지표(TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer)까지 12가지 밸류에이션 방법론을 활용하여 <strong>이더리움의 내재 가치</strong>를 도출하려는 시도입니다.',
                 'summary.desc2': '크립토 산업에는 더욱 엄밀한 펀더멘털 기반의 가치평가 접근법이 필요하다고 생각합니다. 이 모델들은 한계와 가정이 있지만, 단순한 가격 투기를 넘어 가치에 대해 생각하는 프레임워크를 제공합니다.',
                 'summary.feedback': '버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
+                'share.button': '공유',
+                'share.modalTitle': '분석 결과 공유하기',
+                'share.postToX': '𝕏에 포스트',
+                'share.download': '이미지 다운로드',
                 'section.priceTitle': '시세 & 시장 개요',
                 'section.onchainTitle': '온체인 지표 & 트렌드',
                 'section.valuationTitle': '밸류에이션 분석',
@@ -3991,7 +4429,7 @@
                 'onchain.ethInDefiNote': 'TVL ÷ ETH 가격',
                 'onchain.commitmentRatio': '커밋먼트 비율',
                 'onchain.commitmentRatioNote': '(스테이킹 + DeFi) ÷ 공급량',
-                'onchain.appCapital': 'App Capital (추정)',
+                'onchain.appCapital': 'App Capital',
                 'onchain.appCapitalNote': '스테이블코인 ÷ 0.28 · 프록시',
                 'onchain.stakingYield': '스테이킹 수익률 (APR)',
                 'onchain.stakingYieldNote': 'Lido stETH APR · 실시간',
@@ -4022,9 +4460,13 @@
                 'summary.fairValue': '公允价值 (10个模型)',
                 'summary.opportunity': '投资机会',
                 'summary.toggleHint': '在下方开关各个模型，自定义您的估值计算。',
-                'summary.desc1': '本仪表板尝试使用10种不同的估值方法来推导以太坊的<strong>内在价值</strong>——从传统金融框架（DCF、P/S Ratio、Revenue Yield）到加密原生指标（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）。',
+                'summary.desc1': '本仪表板尝试使用10种不同的估值方法来推导<strong>以太坊的内在价值</strong>——从传统金融框架（DCF、P/S Ratio、Revenue Yield）到加密原生指标（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）。',
                 'summary.desc2': '我们认为加密行业需要更严格的、基于基本面的估值方法。虽然这些模型有其局限性和假设，但它们提供了一个超越纯粹价格投机的思考价值的框架。',
                 'summary.feedback': '发现bug或有建议？随时联系我——非常欢迎反馈！',
+                'share.button': '分享',
+                'share.modalTitle': '分享您的分析',
+                'share.postToX': '发布到 𝕏',
+                'share.download': '下载图片',
                 'section.priceTitle': '价格与市场概览',
                 'section.onchainTitle': '链上指标与趋势',
                 'section.valuationTitle': '估值分析',
@@ -4117,13 +4559,15 @@
                 'method.yield.desc': '从实时质押APR反向推导公允价值，将ETH视为收益型债券。如果以太坊产生X年费，当前质押收益率为Y%，则隐含市值为X÷Y%。使用Lido stETH实时APR而非固定目标收益率。这种方法受到将加密货币评估为另类资产类别的TradFi分析师青睐。',
                 'method.commitment.note': '灵感来自价值储存(Store of Value)需求概念，适配免费数据源',
                 'method.appCapital.note': '⚠️ 代理估算：DeFiLlama chainAssets API ($300/月) 仅提供当前值—无历史数据。',
+                'method.validator.note': '目标收益率 = 无风险利率 + 加密风险溢价；标准TradFi方法',
+                'method.settlement.note': '货币经济学的MV=PQ方程；Velocity 6基于USD M1 (~5.5x)基准',
                 'method.appCapital.desc': 'App Capital代表链上总资产：稳定币、ERC-20代币、NFT、RWA和跨链资产。28%比率（稳定币/App Capital）自2021年以来保持稳定。公式：App Capital ≈ 稳定币 ÷ 0.28。App Capital作为市值下限——网络安全（MC）必须支撑所有结算资产的价值。与TVL（仅~$60B DeFi）不同，App Capital（~$600B）捕获了以太坊完整的结算层角色。',
                 'method.commitment.desc': '根据质押和DeFi协议中锁定的ETH比例应用价格溢价。更高的承诺比率表明更强的长期持有信念和更低的流动性供应。乘数（1.5x）反映承诺资产相对于流动资产的价值溢价。灵感来自L1代币应被视为货币（价值储存）而非股票的概念。',
                 'onchain.ethInDefi': 'DeFi中的ETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH价格',
                 'onchain.commitmentRatio': '承诺比率',
                 'onchain.commitmentRatioNote': '(质押 + DeFi) ÷ 供应量',
-                'onchain.appCapital': 'App Capital (估计)',
+                'onchain.appCapital': 'App Capital',
                 'onchain.appCapitalNote': '稳定币 ÷ 0.28 · 代理',
                 'onchain.stakingYield': '质押收益率 (APR)',
                 'onchain.stakingYieldNote': 'Lido stETH APR · 实时',
@@ -4154,9 +4598,13 @@
                 'summary.fairValue': '適正価格 (10モデル)',
                 'summary.opportunity': '投資機会',
                 'summary.toggleHint': '下記の各モデルをオン・オフして、独自のバリュエーションを計算してみましょう。',
-                'summary.desc1': 'このダッシュボードは、伝統的な金融フレームワーク（DCF、P/S Ratio、Revenue Yield）から暗号ネイティブ指標（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）まで、10種類の異なるバリュエーション手法を用いてイーサリアムの<strong>本質的価値</strong>を導き出すことを試みています。',
+                'summary.desc1': 'このダッシュボードは、伝統的な金融フレームワーク（DCF、P/S Ratio、Revenue Yield）から暗号ネイティブ指標（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）まで、10種類の異なるバリュエーション手法を用いて<strong>イーサリアムの本質的価値</strong>を導き出すことを試みています。',
                 'summary.desc2': '暗号産業には、より厳密なファンダメンタルズに基づくバリュエーションアプローチが必要だと考えています。これらのモデルには限界と仮定がありますが、純粋な価格投機を超えて価値について考えるためのフレームワークを提供します。',
                 'summary.feedback': 'バグを発見されたり、ご提案がありましたら、いつでもお知らせください — フィードバックは大歓迎です！',
+                'share.button': 'シェア',
+                'share.modalTitle': '分析結果をシェア',
+                'share.postToX': '𝕏に投稿',
+                'share.download': '画像をダウンロード',
                 'section.priceTitle': '価格・市場概要',
                 'section.onchainTitle': 'オンチェーン指標・トレンド',
                 'section.valuationTitle': 'バリュエーション分析',
@@ -4249,13 +4697,15 @@
                 'method.yield.desc': 'ライブステーキングAPRから適正価値を逆算し、ETHを利回りを生む債券のように扱います。イーサリアムが年間Xの手数料を生み出し、現在のステーキング利回りがY%の場合、暗黙の時価総額はX÷Y%です。固定目標利回りの代わりにLido stETHのリアルタイムAPRを使用します。このアプローチは、暗号資産をオルタナティブ資産クラスとして評価するTradFiアナリストに支持されています。',
                 'method.commitment.note': '価値貯蔵(Store of Value)需要の概念に着想を得て、無料データソースに適応',
                 'method.appCapital.note': '⚠️ プロキシ推定：DeFiLlama chainAssets API ($300/月) は現在値のみ提供—履歴データなし。',
+                'method.validator.note': '目標利回り = リスクフリーレート + クリプトリスクプレミアム；標準TradFiアプローチ',
+                'method.settlement.note': '貨幣経済学のMV=PQ方程式；Velocity 6はUSD M1 (~5.5x)ベンチマーク',
                 'method.appCapital.desc': 'App Capitalはオンチェーン総資産を表します：ステーブルコイン、ERC-20トークン、NFT、RWA、ブリッジ資産。28%比率（ステーブルコイン/App Capital）は2021年以降安定しています。公式：App Capital ≈ ステーブルコイン ÷ 0.28。App Capitalは時価総額の下限として機能します—ネットワークセキュリティ（MC）はすべての決済資産の価値を裏付ける必要があります。TVL（〜$60B DeFiのみ）とは異なり、App Capital（〜$600B）はイーサリアムの完全な決済レイヤーの役割を捉えます。',
                 'method.commitment.desc': 'ステーキングとDeFiプロトコルにコミットされたETHの割合に基づいて価格プレミアムを適用します。高いコミットメント率は、より強い長期保有信念と流動性供給の減少を示します。乗数（1.5x）は、流動資産に対するコミットされた資産の価値プレミアムを反映します。L1トークンを株式ではなく通貨（価値貯蔵）として評価すべきという概念に着想を得ています。',
                 'onchain.ethInDefi': 'DeFi内ETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH価格',
                 'onchain.commitmentRatio': 'コミットメント率',
                 'onchain.commitmentRatioNote': '(ステーキング + DeFi) ÷ 供給量',
-                'onchain.appCapital': 'App Capital (推定)',
+                'onchain.appCapital': 'App Capital',
                 'onchain.appCapitalNote': 'ステーブルコイン ÷ 0.28 · プロキシ',
                 'onchain.stakingYield': 'ステーキング利回り (APR)',
                 'onchain.stakingYieldNote': 'Lido stETH APR · ライブ',
@@ -7014,6 +7464,194 @@
                 });
             }, 100);
         });
+
+        // ===== SHARE FUNCTIONALITY =====
+        function openShareModal() {
+            const modal = document.getElementById('share-modal');
+            const previewImg = document.getElementById('share-preview-img');
+            
+            // Update share card with current values
+            updateShareCard();
+            
+            // Show modal with loading state
+            modal.classList.add('active');
+            previewImg.src = '';
+            previewImg.alt = 'Generating preview...';
+            
+            // Capture the share card
+            const shareCard = document.getElementById('share-card');
+            shareCard.style.left = '0';
+            shareCard.style.opacity = '1';
+            
+            setTimeout(() => {
+                html2canvas(shareCard, {
+                    backgroundColor: null,
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true
+                }).then(canvas => {
+                    shareCard.style.left = '-9999px';
+                    const imageUrl = canvas.toDataURL('image/png');
+                    previewImg.src = imageUrl;
+                    previewImg.alt = 'ETHval Share Card';
+                    
+                    // Store for download
+                    window.shareImageData = imageUrl;
+                }).catch(err => {
+                    console.error('Share card capture failed:', err);
+                    shareCard.style.left = '-9999px';
+                });
+            }, 100);
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.remove('active');
+        }
+
+        function updateShareCard() {
+            const fairValue = document.getElementById('composite-price').textContent;
+            const currentPrice = document.getElementById('summary-current').textContent;
+            const diff = document.getElementById('composite-diff').textContent;
+            const verdict = document.getElementById('verdict').textContent;
+            const buyCount = document.getElementById('buy-count').textContent;
+            const holdCount = document.getElementById('hold-count').textContent;
+            const sellCount = document.getElementById('sell-count').textContent;
+            const modelCount = document.getElementById('conclusion-model-count').textContent;
+            
+            const priceEl = document.getElementById('share-fair-value');
+            priceEl.textContent = fairValue;
+            document.getElementById('share-current-price').textContent = 'Current: ' + currentPrice;
+            document.getElementById('share-diff').textContent = diff;
+            document.getElementById('share-buy-count').textContent = buyCount;
+            document.getElementById('share-hold-count').textContent = holdCount;
+            document.getElementById('share-sell-count').textContent = sellCount;
+            document.getElementById('share-model-count').textContent = modelCount + ' / 12 models analyzed';
+            
+            // Update opportunity class and price color
+            const oppEl = document.getElementById('share-opportunity');
+            oppEl.className = 'share-card-opportunity';
+            priceEl.className = 'share-card-price';
+            
+            if (verdict.includes('Bullish') || verdict.includes('강세') || verdict.includes('看涨') || verdict.includes('強気')) {
+                oppEl.classList.add('bullish');
+                // price stays green (default)
+            } else if (verdict.includes('Bearish') || verdict.includes('약세') || verdict.includes('看跌') || verdict.includes('弱気')) {
+                oppEl.classList.add('bearish');
+                priceEl.classList.add('bearish');
+            } else {
+                oppEl.classList.add('neutral');
+                priceEl.classList.add('neutral');
+            }
+            
+            // Update date
+            const now = new Date();
+            document.getElementById('share-date').textContent = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function shareToTwitter() {
+            const fairValue = document.getElementById('composite-price').textContent;
+            const currentPrice = document.getElementById('summary-current').textContent;
+            const upside = document.getElementById('summary-upside').textContent;
+            const modelCount = document.getElementById('conclusion-model-count').textContent;
+            
+            const text = `📊 ETH Intrinsic Value Analysis
+
+Current: ${currentPrice}
+Fair Value: ${fairValue}
+Potential: ${upside}
+
+Based on ${modelCount}/12 valuation models.
+
+Check out ETHval 👇`;
+            
+            const url = 'https://ethval.io'; // Replace with actual URL
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+            
+            window.open(twitterUrl, '_blank', 'width=550,height=420');
+            closeShareModal();
+        }
+
+        function downloadShareImage() {
+            if (window.shareImageData) {
+                const link = document.createElement('a');
+                link.download = 'ethval-analysis-' + new Date().toISOString().split('T')[0] + '.png';
+                link.href = window.shareImageData;
+                link.click();
+            }
+        }
+
+        // Close modal on background click
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('share-modal');
+            if (e.target === modal) {
+                closeShareModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeShareModal();
+            }
+        });
     </script>
-</body>
-</html>
+
+    <!-- Share Card (Hidden, for capture) -->
+    <div class="share-card" id="share-card">
+        <div class="share-card-header">
+            <div class="share-card-logo">
+                <div class="share-card-logo-icon">Ξ</div>
+                <div class="share-card-logo-text">ETHval</div>
+            </div>
+            <div class="share-card-date" id="share-date">--</div>
+        </div>
+        <div class="share-card-main">
+            <div class="share-card-label">Composite Fair Value</div>
+            <div class="share-card-price" id="share-fair-value">$--</div>
+            <div class="share-card-current" id="share-current-price">Current: $--</div>
+            <div class="share-card-opportunity bullish" id="share-opportunity">
+                <span id="share-diff">-- vs Current</span>
+            </div>
+        </div>
+        <div class="share-card-stats">
+            <div class="share-card-stat">
+                <div class="share-card-stat-value buy" id="share-buy-count">-</div>
+                <div class="share-card-stat-label">Buy</div>
+            </div>
+            <div class="share-card-stat">
+                <div class="share-card-stat-value hold" id="share-hold-count">-</div>
+                <div class="share-card-stat-label">Hold</div>
+            </div>
+            <div class="share-card-stat">
+                <div class="share-card-stat-value sell" id="share-sell-count">-</div>
+                <div class="share-card-stat-label">Sell</div>
+            </div>
+        </div>
+        <div class="share-card-footer">
+            <div class="share-card-models" id="share-model-count">12 / 12 models analyzed</div>
+            <div class="share-card-url">ethval.io</div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="share-modal" id="share-modal">
+        <div class="share-modal-content">
+            <div class="share-modal-header">
+                <div class="share-modal-title" data-i18n="share.modalTitle">Share Your Analysis</div>
+                <button class="share-modal-close" onclick="closeShareModal()">×</button>
+            </div>
+            <div class="share-modal-preview">
+                <img id="share-preview-img" src="" alt="Generating preview...">
+            </div>
+            <div class="share-modal-actions">
+                <button class="share-modal-btn twitter" onclick="shareToTwitter()">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <span data-i18n="share.postToX">Post to 𝕏</span>
+                </button>
+                <button class="share-modal-btn download" oncl
