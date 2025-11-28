@@ -4019,6 +4019,7 @@
                 'summary.currentPrice': '当前价格',
                 'summary.fairValue': '公允价值 (10个模型)',
                 'summary.opportunity': '投资机会',
+                'summary.toggleHint': '在下方开关各个模型，自定义您的估值计算。',
                 'summary.desc1': '本仪表板尝试使用10种不同的估值方法来推导以太坊的<strong>内在价值</strong>——从传统金融框架（DCF、P/S Ratio、Revenue Yield）到加密原生指标（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）。',
                 'summary.desc2': '我们认为加密行业需要更严格的、基于基本面的估值方法。虽然这些模型有其局限性和假设，但它们提供了一个超越纯粹价格投机的思考价值的框架。',
                 'summary.feedback': '发现bug或有建议？随时联系我——非常欢迎反馈！',
@@ -4150,6 +4151,7 @@
                 'summary.currentPrice': '現在価格',
                 'summary.fairValue': '適正価格 (10モデル)',
                 'summary.opportunity': '投資機会',
+                'summary.toggleHint': '下記の各モデルをオン・オフして、独自のバリュエーションを計算してみましょう。',
                 'summary.desc1': 'このダッシュボードは、伝統的な金融フレームワーク（DCF、P/S Ratio、Revenue Yield）から暗号ネイティブ指標（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）まで、10種類の異なるバリュエーション手法を用いてイーサリアムの<strong>本質的価値</strong>を導き出すことを試みています。',
                 'summary.desc2': '暗号産業には、より厳密なファンダメンタルズに基づくバリュエーションアプローチが必要だと考えています。これらのモデルには限界と仮定がありますが、純粋な価格投機を超えて価値について考えるためのフレームワークを提供します。',
                 'summary.feedback': 'バグを発見されたり、ご提案がありましたら、いつでもお知らせください — フィードバックは大歓迎です！',
@@ -4280,6 +4282,13 @@
             // Update html lang attribute for proper font rendering
             const langMap = { en: 'en', ko: 'ko', zh: 'zh-CN', ja: 'ja' };
             document.documentElement.lang = langMap[lang] || 'en';
+            
+            // 한국어일 때 폰트 사이즈 1px 증가
+            if (lang === 'ko') {
+                document.body.style.fontSize = '13px';
+            } else {
+                document.body.style.fontSize = '12px';
+            }
             
             // Update all elements with data-i18n attribute
             document.querySelectorAll('[data-i18n]').forEach(el => {
