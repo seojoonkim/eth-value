@@ -1760,8 +1760,8 @@
 
         .summary-layout {
             display: grid;
-            grid-template-columns: 2fr 3fr;
-            gap: 24px;
+            grid-template-columns: auto 1fr;
+            gap: 32px;
             align-items: start;
         }
 
@@ -1923,8 +1923,8 @@
             text-decoration: underline;
         }
 
-        /* 중간 크기 화면 (600px ~ 1050px) - 가격 박스 3열 그리드 배치 */
-        @media (max-width: 1050px) and (min-width: 601px) {
+        /* 중간 크기 화면 (600px ~ 900px) - 가격 박스 3열 그리드 배치 */
+        @media (max-width: 900px) and (min-width: 601px) {
             .summary-layout {
                 grid-template-columns: 1fr;
                 gap: 16px;
@@ -2162,7 +2162,7 @@
             }
 
             .nav-item {
-                padding: 4px 10px;
+                padding: 4px 6px;
                 font-size: 10px;
             }
 
