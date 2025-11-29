@@ -195,6 +195,10 @@
             scroll-margin-top: 75px;
         }
 
+        #top {
+            scroll-margin-top: 100px;
+        }
+
         .logo {
             display: flex;
             align-items: center;
@@ -1314,6 +1318,9 @@
             margin-top: 12px;
             padding-top: 12px;
             border-top: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .weighting-title {
@@ -1322,12 +1329,12 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 6px;
-            text-align: left;
+            text-align: center;
         }
         
         .weighting-items {
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
             gap: 12px;
             font-size: 11px;
         }
@@ -1342,8 +1349,8 @@
         /* Conclusion Panel Footer */
         .conclusion-footer {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+            flex-direction: column;
+            align-items: center;
             margin-top: 16px;
             padding-top: 16px;
             border-top: 1px solid var(--border);
@@ -1354,7 +1361,7 @@
             margin-top: 0;
             padding-top: 0;
             border-top: none;
-            padding-left: 8px;
+            padding-left: 0;
         }
 
         .conclusion-footer .share-btn {
@@ -1516,9 +1523,41 @@
 
         .method-footer {
             display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .method-footer-row {
+            display: flex;
             align-items: center;
             gap: 12px;
-            margin-top: 10px;
+        }
+
+        .method-references {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .method-ref-link {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.15s ease;
+            line-height: 1.4;
+        }
+
+        .method-ref-link::before {
+            content: '→ ';
+            color: var(--text-muted);
+        }
+
+        .method-ref-link:hover {
+            color: var(--accent);
         }
 
         /* Method Card Mini Chart */
@@ -2007,7 +2046,7 @@
 
         /* Summary Section */
         .summary-section {
-            margin-top: 16px;
+            margin-top: 8px;
             margin-bottom: 48px;
         }
 
@@ -2732,6 +2771,24 @@
             
             .methodology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
+        
+        /* 중간 해상도(650px~1000px)에서만 4열 배치 */
+        @media (min-width: 650px) and (max-width: 1000px) {
+            .current-vs-model {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 16px !important;
+            }
+            
+            .current-vs-model-row {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
+                gap: 4px !important;
+                padding: 0 !important;
+            }
+        }
 
         @media (max-width: 1000px) {
             .valuation-layout { grid-template-columns: 1fr; }
@@ -2750,6 +2807,15 @@
 
         /* Responsive - Tablet (768px ~ 1024px) */
         @media (min-width: 769px) and (max-width: 1024px) {
+            .method-chart-header > div:first-child {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            
+            .method-chart-diff {
+                margin-left: 0;
+            }
+            
             .method-chart-value {
                 font-size: 14px;
             }
@@ -2768,15 +2834,21 @@
             }
             
             .method-note {
-                font-size: 9px;
+                font-size: 10px;
             }
             
             .method-meta {
-                font-size: 8px;
+                font-size: 9px;
             }
             
             .method-meta .reliability-label {
-                font-size: 7px;
+                font-size: 8px;
+            }
+            
+            .method-footer-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
             }
         }
 
@@ -3855,6 +3927,22 @@
                 height: 100px;
             }
         }
+
+        /* Calculating dots animation */
+        .calculating-dots::after {
+            content: '...';
+            display: inline-block;
+            width: 1.2em;
+            text-align: left;
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
     </style>
 </head>
 <body>
@@ -3873,7 +3961,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.3.2</span>
+                <span class="version-badge">v0.3.3</span>
             </a>
             <div class="header-center">
                 <div class="status">
@@ -3919,7 +4007,7 @@
                             <span data-i18n="valuation.compositeFairValue">Composite Fair Value</span>
                             <span class="model-count-light model-count-break">(<span id="active-model-count">12</span> / 12 models)</span>
                         </span>
-                        <span class="summary-value" id="summary-fair-value" style="font-size: 14px; color: #8b949e;">Calculating...</span>
+                        <span class="summary-value" id="summary-fair-value" style="font-size: 14px; color: #8b949e;"><span class="calculating-dots">Calculating</span></span>
                     </div>
                     <div class="summary-valuation-row">
                         <span class="summary-label" data-i18n="summary.opportunity">Opportunity</span>
@@ -4591,10 +4679,6 @@
                                 <span class="weight-item"><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span> ×1</span>
                             </div>
                         </div>
-                        <button class="share-btn" onclick="openShareModal()">
-                            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                            <span data-i18n="share.button">Share</span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -4744,15 +4828,20 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.tvl.note">TVL may include leverage, recursive deposits, and double-counting across protocols</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.tvl.note">TVL may include leverage, recursive deposits, and double-counting across protocols</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://arxiv.org/abs/2404.11745" target="_blank" class="method-ref-link">arXiv: Piercing the Veil of TVL: DeFi Reappraised (2024)</a>
                     </div>
                 </div>
 
@@ -4783,15 +4872,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.staking.note">Proprietary model developed for this dashboard. Lacks peer review or academic validation</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.staking.note">Proprietary model developed for this dashboard. Lacks peer review or academic validation</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4905828" target="_blank" class="method-ref-link">SSRN: Exploring Ethereum Staking (Krause, 2024)</a>
+                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4839567" target="_blank" class="method-ref-link">SSRN: Refining Metcalfe's Law for Blockchain (Alabi & Eick, 2024)</a>
                     </div>
                 </div>
 
@@ -4822,15 +4917,20 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.mctvl.note">Industry-standard metric for cross-chain valuation comparisons</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.mctvl.note">Industry-standard metric for cross-chain valuation comparisons</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://arxiv.org/abs/2404.11745" target="_blank" class="method-ref-link">arXiv: Piercing the Veil of TVL: DeFi Reappraised (2024)</a>
                     </div>
                 </div>
 
@@ -4861,15 +4961,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.metcalfe.note">Academically validated model with strong historical correlation</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.metcalfe.note">Academically validated model with strong historical correlation</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3078248" target="_blank" class="method-ref-link">SSRN: Metcalfe's Law as a Model for Bitcoin's Value (Peterson, 2018)</a>
+                        <a href="https://royalsocietypublishing.org/doi/10.1098/rsos.180538" target="_blank" class="method-ref-link">Royal Society: Speculative Bubble and Metcalfe's Law (Wheatley et al., 2019)</a>
                     </div>
                 </div>
 
@@ -4880,7 +4986,7 @@
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (1 + APR) ÷ (Discount - Growth)</div>
-                            <div class="method-desc" data-i18n="method.dcf.desc">Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 10% discount rate (crypto risk premium), and 3% perpetual growth rate. This approach bridges traditional finance valuation with crypto-native yield generation, making ETH comparable to dividend-paying assets.</div>
+                            <div class="method-desc" data-i18n="method.dcf.desc">Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 9% discount rate (4.5% risk-free rate + 4.5% crypto equity risk premium), and 3% perpetual growth rate. The higher risk premium reflects full ETH price exposure including volatility, regulatory, and smart contract risks.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -4900,15 +5006,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.dcf.note">Highly sensitive to discount rate and growth rate assumptions</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.dcf.note">Highly sensitive to discount rate and growth rate assumptions</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://samuelandrew.substack.com/p/crypto-dcf-non-sense" target="_blank" class="method-ref-link">Sam Andrew: Crypto DCF (Non)-Sense (2022)</a>
+                        <a href="https://www.mdpi.com/2674-1032/3/1/8" target="_blank" class="method-ref-link">MDPI: Cryptocurrency Yield Valuation Model (2024)</a>
                     </div>
                 </div>
 
@@ -4939,15 +5051,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.l2.note">2x L2 weight multiplier is proprietary without empirical basis</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.l2.note">2x L2 weight multiplier is proprietary without empirical basis</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://www.fidelitydigitalassets.com/research-and-insights/rise-layer-2-scaling-ethereum" target="_blank" class="method-ref-link">Fidelity Digital Assets: The Rise of Layer 2 Scaling on Ethereum</a>
+                        <a href="https://ietresearch.onlinelibrary.wiley.com/doi/full/10.1049/blc2.70014" target="_blank" class="method-ref-link">IET Blockchain: EIP-4844 Proto-Danksharding Analysis</a>
                     </div>
                 </div>
 
@@ -4978,15 +5096,20 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.ps.note">Industry standard for L1 protocol valuation</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.ps.note">Industry standard for L1 protocol valuation</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://tokenterminal.com/resources/articles/price-to-earnings-ratio" target="_blank" class="method-ref-link">Token Terminal: Price-to-Earnings Ratio Methodology</a>
                     </div>
                 </div>
 
@@ -5017,15 +5140,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.yield.note">Bond-like methodology with institutional acceptance</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.yield.note">Bond-like methodology with institutional acceptance</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://www.mdpi.com/2674-1032/3/1/8" target="_blank" class="method-ref-link">MDPI: Cryptocurrency Yield Valuation Model (2024)</a>
+                        <a href="https://thedefireport.substack.com/p/ethereum-valuation-framework" target="_blank" class="method-ref-link">The DeFi Report: Ethereum Valuation Framework</a>
                     </div>
                 </div>
 
@@ -5056,15 +5185,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.commitment.note">Inspired by Store of Value demand concepts, adapted for free data sources</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.commitment.note">Inspired by Store of Value demand concepts, adapted for free data sources</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://insights.glassnode.com/bitcoin-liquid-supply/" target="_blank" class="method-ref-link">Glassnode: Bitcoin Liquid and Illiquid Supply</a>
+                        <a href="https://www.nber.org/system/files/working_papers/w33640/w33640.pdf" target="_blank" class="method-ref-link">NBER: Tokenomics of Staking (Working Paper, 2024)</a>
                     </div>
                 </div>
 
@@ -5075,7 +5210,7 @@
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Stablecoins ÷ Ratio ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.appCapital.desc">App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. The 28% ratio (Stablecoins/AppCapital) has been stable since 2021. Formula: AppCapital ≈ Stablecoins ÷ 0.28. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (~$60B DeFi only), App Capital (~$600B) captures Ethereum's full settlement layer role.</div>
+                            <div class="method-desc" data-i18n="method.appCapital.desc">App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. The 28% ratio (Stablecoins/AppCapital) has been stable since 2021. Formula: AppCapital ≈ Stablecoins ÷ 0.28. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (DeFi only), App Capital captures Ethereum's full settlement layer role.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -5095,15 +5230,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.appCapital.note">Proxy Estimate: DeFiLlama chainAssets API provides current values only—no historical data available</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.appCapital.note">Proxy Estimate: DeFiLlama chainAssets API provides current values only—no historical data available</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://yewjin.com/blog/2025/ethereum-as-financial-infra/" target="_blank" class="method-ref-link">Yewjin: Ethereum as Financial Infrastructure (TVS Framework)</a>
+                        <a href="https://medium.com/@dipanshuchaudhry9/ignore-this-ethereum-insight-at-your-own-risk-tvs-could-redefine-eth-forever-d34bfcfd278a" target="_blank" class="method-ref-link">Dipanshu: TVS Could Redefine ETH Forever</a>
                     </div>
                 </div>
 
@@ -5114,7 +5255,7 @@
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (Target ÷ APR)</div>
-                            <div class="method-desc" data-i18n="method.validator.desc">Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Crypto risk premium (~1.5%). If current APR is below target, ETH is undervalued—validators earn less than what rational investors would demand given the risk. This mirrors how TradFi values dividend stocks relative to treasury yields plus equity risk premium.</div>
+                            <div class="method-desc" data-i18n="method.validator.desc">Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Staking risk premium (~1.5%). The lower premium (vs. 4.5% in DCF) reflects staking's reduced risk profile: predictable validator rewards, no impermanent loss, and protocol-level security. If current APR is below target, ETH is undervalued.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -5134,15 +5275,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.validator.note">Target yield = Risk-free rate + Crypto risk premium; standard TradFi approach</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.validator.note">Target yield = Risk-free rate + Crypto risk premium; standard TradFi approach</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://arxiv.org/html/2405.03357v2" target="_blank" class="method-ref-link">arXiv: Game Theory of Validator Economics (2024)</a>
+                        <a href="https://arxiv.org/html/2405.14617v1" target="_blank" class="method-ref-link">arXiv: Optimal Staking Mechanism Design (2024)</a>
                     </div>
                 </div>
 
@@ -5153,7 +5300,7 @@
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(DailyVol × 365 ÷ Velocity) ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers ($5.45B), L2 transfers ($4.16B), and bridge volume ($0.52B) totaling ~$10B/day. Velocity of 6 reflects ETH's Store-of-Value characteristics: 28% staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.</div>
+                            <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH's Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -5173,15 +5320,21 @@
                                 </div>
                             </div>
                             <div class="method-footer">
-                                <div class="method-meta">
-                                    <div class="reliability-row">
-                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                        <div class="reliability-row">
+                                            <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                            <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                        </div>
                                     </div>
+                                    <div class="method-note" data-i18n="method.settlement.note">MV=PQ equation from monetary economics; Velocity 6 benchmarked to USD M1 (~5.5x)</div>
                                 </div>
-                                <div class="method-note" data-i18n="method.settlement.note">MV=PQ equation from monetary economics; Velocity 6 benchmarked to USD M1 (~5.5x)</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://woobull.com/introducing-nvt-ratio-bitcoins-pe-ratio-use-it-to-detect-bubbles/" target="_blank" class="method-ref-link">Willy Woo: Introducing NVT Ratio - Bitcoin's PE Ratio (2017)</a>
+                        <a href="https://medium.com/@cburniske/cryptoasset-valuations-ac83479ffca7" target="_blank" class="method-ref-link">Chris Burniske: Cryptoasset Valuations (MV=PQ Framework)</a>
                     </div>
                 </div>
             </div>
@@ -5300,7 +5453,7 @@
                                 <td class="model-name-cell" data-i18n="criteria.model.dcf">DCF (Staking)</td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.dcf.m">Standard TradFi discounted cash flow; Gordon Growth Model</span></td>
                                 <td><span class="check">✓</span> <span data-i18n="criteria.dcf.d">Real-time staking APR from Lido API</span></td>
-                                <td><span class="cross">✗</span> <span data-i18n="criteria.dcf.a">10% discount rate and 3% growth rate are subjective assumptions</span></td>
+                                <td><span class="cross">✗</span> <span data-i18n="criteria.dcf.a">9% discount rate and 3% growth rate are subjective assumptions</span></td>
                                 <td><span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span></td>
                             </tr>
                             <tr class="result-low">
@@ -5449,7 +5602,7 @@
                         </div>
                         <div class="criteria-card-row">
                             <span class="criteria-card-label" data-i18n="criteria.labelA">Assumption</span>
-                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.dcf.a">10% discount, 3% growth are subjective</span></span>
+                            <span class="criteria-card-value"><span class="cross">✗</span> <span data-i18n="criteria.dcf.a">9% discount, 3% growth are subjective</span></span>
                         </div>
                     </div>
 
@@ -5597,7 +5750,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.3.2
+                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.3.3
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -5690,7 +5843,7 @@
                 'criteria.metcalfe.a': '1.5 exponent is modified from original n²; coefficient 2 is fitted',
                 'criteria.dcf.m': 'Standard TradFi discounted cash flow; Gordon Growth Model',
                 'criteria.dcf.d': 'Real-time staking APR from Lido API',
-                'criteria.dcf.a': '10% discount rate and 3% growth rate are subjective assumptions',
+                'criteria.dcf.a': '9% discount rate and 3% growth rate are subjective assumptions',
                 'criteria.ps.m': 'Standard TradFi metric; Token Terminal uses for protocol valuation',
                 'criteria.ps.d': 'Real-time daily fees from DefiLlama, annualized',
                 'criteria.ps.a': '25x multiple based on high-growth SaaS; could be 15x-40x',
@@ -5730,7 +5883,7 @@
                 'method.metcalfe.note': 'Academically validated model with strong historical correlation',
                 'method.metcalfe.desc': 'Network value grows proportionally to the square of active users/nodes. Originally developed for telecommunications, this model has been empirically validated for Bitcoin and Ethereum by academic researchers (Alabi 2017, Peterson 2018). Uses TVL as a proxy for network activity. The 1.5 exponent (between linear and quadratic) accounts for real-world network friction.',
                 'method.dcf.note': 'Highly sensitive to discount rate and growth rate assumptions',
-                'method.dcf.desc': 'Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 10% discount rate (crypto risk premium), and 3% perpetual growth rate. This approach bridges traditional finance valuation with crypto-native yield generation, making ETH comparable to dividend-paying assets.',
+                'method.dcf.desc': 'Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 9% discount rate (4.5% risk-free rate + 4.5% crypto equity risk premium), and 3% perpetual growth rate. The higher risk premium reflects full ETH price exposure including volatility, regulatory, and smart contract risks.',
                 'method.l2.note': '2x L2 weight multiplier is proprietary without empirical basis',
                 'method.l2.desc': 'Captures value from Ethereum\'s Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum\'s value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.',
                 'method.ps.note': 'Industry standard for L1 protocol valuation',
@@ -5739,12 +5892,12 @@
                 'method.yield.desc': 'Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class.',
                 'method.commitment.note': 'Inspired by Store of Value demand concepts, adapted for free data sources',
                 'method.appCapital.note': '⚠️ Proxy Estimate: DeFiLlama chainAssets API ($300/mo) provides current values only—no historical data available.',
-                'method.appCapital.desc': 'App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. The 28% ratio (Stablecoins/AppCapital) has been stable since 2021. Formula: AppCapital ≈ Stablecoins ÷ 0.28. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (~$60B DeFi only), App Capital (~$600B) captures Ethereum\'s full settlement layer role.',
+                'method.appCapital.desc': 'App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. The 28% ratio (Stablecoins/AppCapital) has been stable since 2021. Formula: AppCapital ≈ Stablecoins ÷ 0.28. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (DeFi only), App Capital captures Ethereum\'s full settlement layer role.',
                 'method.commitment.desc': 'Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. The multiplier (1.5x) reflects the value premium of committed vs. liquid assets. Inspired by the concept that L1 tokens should be valued as money (Store of Value) rather than stocks.',
                 'method.settlement.note': 'MV=PQ equation from monetary economics; Velocity 6 benchmarked to USD M1 (~5.5x)',
-                'method.settlement.desc': 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers ($5.45B), L2 transfers ($4.16B), and bridge volume ($0.52B) totaling ~$10B/day. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: 28% staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.',
+                'method.settlement.desc': 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.',
                 'method.validator.note': 'Target yield = Risk-free rate + Crypto risk premium; standard TradFi approach',
-                'method.validator.desc': 'Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Crypto risk premium (~1.5%). If current APR is below target, ETH is undervalued—validators earn less than what rational investors would demand given the risk. This mirrors how TradFi values dividend stocks relative to treasury yields plus equity risk premium.',
+                'method.validator.desc': 'Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Staking risk premium (~1.5%). The lower premium (vs. 4.5% in DCF) reflects staking\'s reduced risk profile: predictable validator rewards, no impermanent loss, and protocol-level security. If current APR is below target, ETH is undervalued.',
                 'onchain.ethInDefi': 'ETH in DeFi',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH Price',
                 'onchain.commitmentRatio': 'Commitment Ratio',
@@ -5753,8 +5906,8 @@
                 'onchain.appCapitalNote': 'Stablecoins ÷ 0.28 · Proxy',
                 'onchain.stakingYield': 'Staking Yield (APR)',
                 'onchain.stakingYieldNote': 'Lido stETH APR · Live',
-                'valuation.undervalued': 'Under',
-                'valuation.overvalued': 'Over',
+                'valuation.undervalued': 'Undervalued',
+                'valuation.overvalued': 'Overvalued',
                 'valuation.fair': 'Fair',
                 'valuation.vsCurrent': 'vs Current',
                 'valuation.currentPrice': 'Current Price',
@@ -5845,7 +5998,7 @@
                 'criteria.metcalfe.a': '1.5 지수는 원래 n²에서 수정; 계수 2는 피팅된 값',
                 'criteria.dcf.m': '표준 TradFi 할인현금흐름; Gordon 성장 모델',
                 'criteria.dcf.d': 'Lido API의 실시간 스테이킹 APR',
-                'criteria.dcf.a': '10% 할인율과 3% 성장률은 주관적 가정',
+                'criteria.dcf.a': '9% 할인율과 3% 성장률은 주관적 가정',
                 'criteria.ps.m': '표준 TradFi 지표; Token Terminal이 프로토콜 밸류에이션에 사용',
                 'criteria.ps.d': 'DefiLlama의 실시간 일일 수수료, 연간화',
                 'criteria.ps.a': '25배 배수는 고성장 SaaS 기준; 15-40배 가능',
@@ -5885,7 +6038,7 @@
                 'method.metcalfe.note': '강력한 역사적 상관관계를 가진 학술적으로 검증된 모델',
                 'method.metcalfe.desc': '네트워크 가치는 활성 사용자/노드 수의 제곱에 비례하여 성장합니다. 원래 통신용으로 개발되었으며, 학술 연구자들(Alabi 2017, Peterson 2018)에 의해 비트코인과 이더리움에 대해 실증적으로 검증되었습니다. TVL을 네트워크 활동의 대리 지표로 사용합니다.',
                 'method.dcf.note': '할인율과 성장률 가정에 매우 민감',
-                'method.dcf.desc': '스테이킹 보상을 영구 현금흐름으로 취급하는 전통적인 할인현금흐름(DCF) 분석입니다. Lido API에서 가져온 실시간 스테이킹 APR을 현금흐름률로, 10% 할인율(크립토 리스크 프리미엄), 3% 영구 성장률을 사용합니다. 이 접근법은 전통 금융 밸류에이션과 크립토 네이티브 수익 창출을 연결합니다.',
+                'method.dcf.desc': '스테이킹 보상을 영구 현금흐름으로 취급하는 전통적인 DCF 분석입니다. Lido API의 실시간 스테이킹 APR을 현금흐름률로, 9% 할인율(4.5% 무위험수익률 + 4.5% 크립토 주식 리스크 프리미엄), 3% 영구 성장률을 사용합니다. 높은 리스크 프리미엄은 변동성, 규제, 스마트 컨트랙트 리스크를 포함한 전체 ETH 가격 노출을 반영합니다.',
                 'method.l2.note': '2배 L2 가중치 배수는 실증적 근거 없는 독자적 설정',
                 'method.l2.desc': '이더리움의 레이어 2 스케일링 생태계(Arbitrum, Optimism, Base, zkSync 등)의 가치를 포착합니다. L2 TVL에 2배 가중치를 부여하는 이유는 L2 활동이 이더리움 메인넷에서 정산되어 블록스페이스를 소비하고 EIP-1559를 통해 ETH를 소각하기 때문입니다.',
                 'method.ps.note': 'L1 프로토콜 밸류에이션의 업계 표준',
@@ -5894,12 +6047,12 @@
                 'method.yield.desc': '실시간 스테이킹 APR에서 적정 가치를 역산하여 ETH를 수익 창출 채권처럼 취급합니다. 이더리움이 연간 X의 수수료를 생성하고 현재 스테이킹 수익률이 Y%라면, 내재 시가총액은 X ÷ Y%입니다. 고정 목표 수익률 대신 Lido stETH의 실시간 APR을 사용합니다. 이 접근법은 크립토를 대체 자산 클래스로 평가하는 TradFi 분석가들이 선호합니다.',
                 'method.commitment.note': '가치 저장(Store of Value) 수요 개념에서 영감을 받아 무료 데이터 소스에 맞게 조정',
                 'method.appCapital.note': '⚠️ 프록시 추정치: DeFiLlama chainAssets API ($300/월)는 현재 값만 제공—과거 데이터 없음.',
-                'method.appCapital.desc': 'App Capital은 온체인 총 자산을 나타냅니다: 스테이블코인, ERC-20 토큰, NFT, RWA, 브릿지된 자산. 28% 비율(스테이블코인/App Capital)은 2021년 이후 안정적입니다. 공식: App Capital ≈ 스테이블코인 ÷ 0.28. App Capital은 시가총액의 하한선 역할을 합니다—네트워크 보안(MC)은 모든 결제된 자산의 가치를 뒷받침해야 합니다. TVL(~$60B DeFi 전용)과 달리, App Capital(~$600B)은 이더리움의 전체 결제 레이어 역할을 포착합니다.',
+                'method.appCapital.desc': 'App Capital은 온체인 총 자산을 나타냅니다: 스테이블코인, ERC-20 토큰, NFT, RWA, 브릿지된 자산. 28% 비율(스테이블코인/App Capital)은 2021년 이후 안정적입니다. 공식: App Capital ≈ 스테이블코인 ÷ 0.28. App Capital은 시가총액의 하한선 역할을 합니다—네트워크 보안(MC)은 모든 결제된 자산의 가치를 뒷받침해야 합니다. TVL(DeFi 전용)과 달리, App Capital은 이더리움의 전체 결제 레이어 역할을 포착합니다.',
                 'method.commitment.desc': '스테이킹과 DeFi 프로토콜에 예치된 ETH 비율에 따라 가격 프리미엄을 적용합니다. 높은 커밋먼트 비율은 더 강한 장기 보유 확신과 유동성 감소를 나타냅니다. 배수(1.5x)는 유동 자산 대비 커밋된 자산의 가치 프리미엄을 반영합니다. L1 토큰을 주식이 아닌 화폐(가치 저장)로 평가해야 한다는 개념에서 영감을 받았습니다.',
                 'method.settlement.note': '화폐경제학의 MV=PQ 방정식; Velocity 6은 USD M1 (~5.5x) 벤치마크',
-                'method.settlement.desc': '교환방정식(MV=PQ)을 적용하여 ETH를 이더리움 정산 레이어의 화폐로 취급합니다. 일일 정산량은 L1 이체($54.5억), L2 이체($41.6억), 브릿지 거래량($5.2억)을 합산한 약 $100억/일입니다. Velocity 6은 ETH의 가치저장(SoV) 특성을 반영합니다: 28% 스테이킹은 ETH를 velocity 0으로 고정, ETF 이후 비트코인과 유사한 기관 보유 패턴, USD M1 velocity (~5.5x) 벤치마크. 낮은 velocity = 더 높은 내재 가치 (화폐가 지출되지 않고 오래 보유됨).',
+                'method.settlement.desc': '교환방정식(MV=PQ)을 적용하여 ETH를 이더리움 정산 레이어의 화폐로 취급합니다. 일일 정산량은 L1 이체, L2 이체, 브릿지 거래량을 합산합니다. Velocity 6은 ETH의 가치저장(SoV) 특성을 반영합니다: 스테이킹은 ETH를 velocity 0으로 고정, ETF 이후 비트코인과 유사한 기관 보유 패턴, USD M1 velocity (~5.5x) 벤치마크. 낮은 velocity = 더 높은 내재 가치 (화폐가 지출되지 않고 오래 보유됨).',
                 'method.validator.note': '목표 수익률 = 무위험수익률 + 크립토 리스크프리미엄; 표준 TradFi 접근법',
-                'method.validator.desc': '목표 스테이킹 수익률 대비 현재 APR 비율로 적정가치를 계산합니다. 목표 수익률(6%) = 미국 10년물 국채(~4.5%) + 크립토 리스크프리미엄(~1.5%). 현재 APR이 목표보다 낮으면 ETH가 저평가된 것입니다—검증자들이 위험 대비 합리적인 투자자들이 요구하는 수준보다 적게 받고 있다는 의미입니다. TradFi에서 배당주를 국채 수익률 + 주식 리스크프리미엄 대비 평가하는 방식과 동일합니다.',
+                'method.validator.desc': '목표 스테이킹 수익률 대비 현재 APR 비율로 적정가치를 계산합니다. 목표 수익률(6%) = 미국 10년물 국채(~4.5%) + 스테이킹 리스크 프리미엄(~1.5%). 낮은 프리미엄(DCF의 4.5% 대비)은 스테이킹의 낮은 리스크를 반영합니다: 예측 가능한 검증자 보상, 비영구적 손실 없음, 프로토콜 수준 보안. 현재 APR이 목표보다 낮으면 ETH가 저평가된 것입니다.',
                 'onchain.ethInDefi': 'DeFi 내 ETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH 가격',
                 'onchain.commitmentRatio': '커밋먼트 비율',
@@ -6000,7 +6153,7 @@
                 'criteria.metcalfe.a': '1.5指数从原始n²修改；系数2为拟合值',
                 'criteria.dcf.m': '标准TradFi贴现现金流；戈登增长模型',
                 'criteria.dcf.d': '来自Lido API的实时质押APR',
-                'criteria.dcf.a': '10%贴现率和3%增长率是主观假设',
+                'criteria.dcf.a': '9%贴现率和3%增长率是主观假设',
                 'criteria.ps.m': '标准TradFi指标；Token Terminal用于协议估值',
                 'criteria.ps.d': '来自DefiLlama的实时日手续费，年化',
                 'criteria.ps.a': '25倍基于高增长SaaS；可能15-40倍',
@@ -6032,7 +6185,7 @@
                 'method.metcalfe.note': '具有强历史相关性的学术验证模型',
                 'method.metcalfe.desc': '网络价值与活跃用户/节点数量的平方成正比增长。最初为电信开发，该模型已被学术研究人员（Alabi 2017, Peterson 2018）对比特币和以太坊进行了实证验证。使用TVL作为网络活动的代理指标。',
                 'method.dcf.note': '对贴现率和增长率假设高度敏感',
-                'method.dcf.desc': '将质押奖励视为永续现金流的传统贴现现金流分析。使用来自Lido API的实时质押APR作为现金流率，10%贴现率（加密风险溢价），3%永续增长率。这种方法将传统金融估值与加密原生收益生成联系起来。',
+                'method.dcf.desc': '将质押奖励视为永续现金流的传统DCF分析。使用Lido API的实时质押APR作为现金流率，9%贴现率（4.5%无风险利率 + 4.5%加密股权风险溢价），3%永续增长率。较高的风险溢价反映了完整的ETH价格敞口，包括波动性、监管和智能合约风险。',
                 'method.l2.note': '2倍L2权重乘数是专有设定，缺乏实证基础',
                 'method.l2.desc': '捕捉以太坊Layer 2扩展生态系统（Arbitrum, Optimism, Base, zkSync等）的价值。L2 TVL加权2倍，因为L2活动在以太坊主网上结算，消耗区块空间并通过EIP-1559销毁ETH。',
                 'method.ps.note': 'L1协议估值的行业标准',
@@ -6042,9 +6195,9 @@
                 'method.commitment.note': '灵感来自价值储存(Store of Value)需求概念，适配免费数据源',
                 'method.appCapital.note': '⚠️ 代理估算：DeFiLlama chainAssets API ($300/月) 仅提供当前值—无历史数据。',
                 'method.validator.note': '目标收益率 = 无风险利率 + 加密风险溢价；标准TradFi方法',
-                'method.validator.desc': '基于目标质押收益率与当前APR的比率计算公允价值。目标收益率(6%) = 美国10年期国债(~4.5%) + 加密风险溢价(~1.5%)。如果当前APR低于目标，ETH被低估——验证者获得的回报低于理性投资者在考虑风险后应要求的水平。这反映了TradFi如何相对于国债收益率加股权风险溢价来评估派息股票。',
+                'method.validator.desc': '基于目标质押收益率与当前APR的比率计算公允价值。目标收益率(6%) = 美国10年期国债(~4.5%) + 质押风险溢价(~1.5%)。较低的溢价（相比DCF的4.5%）反映了质押较低的风险特征：可预测的验证者奖励、无无常损失、协议级安全性。如果当前APR低于目标，ETH被低估。',
                 'method.settlement.note': '货币经济学的MV=PQ方程；Velocity 6基于USD M1 (~5.5x)基准',
-                'method.settlement.desc': '应用交换方程(MV=PQ)，将ETH视为以太坊结算层的货币。每日结算量包括L1转账($54.5亿)、L2转账($41.6亿)和跨链交易量($5.2亿)，总计约$100亿/天。Velocity 6反映了ETH的价值储存(SoV)特性：28%质押将ETH锁定在velocity 0，类似ETF后比特币的机构持有模式，以及USD M1 velocity (~5.5x)基准。更低的velocity = 更高的隐含价值（货币被更长时间持有而非消费）。',
+                'method.settlement.desc': '应用交换方程(MV=PQ)，将ETH视为以太坊结算层的货币。每日结算量包括L1转账、L2转账和跨链交易量。Velocity 6反映了ETH的价值储存(SoV)特性：质押将ETH锁定在velocity 0，类似ETF后比特币的机构持有模式，以及USD M1 velocity (~5.5x)基准。更低的velocity = 更高的隐含价值（货币被更长时间持有而非消费）。',
                 'criteria.model.settlement': 'Settlement Layer',
                 'criteria.model.validator': 'Validator Economics',
                 'criteria.settlement.m': '货币经济学的MV=PQ方程；费雪方程广泛使用',
@@ -6053,7 +6206,7 @@
                 'criteria.validator.m': '标准TradFi方法：要求回报率 = 无风险 + 风险溢价',
                 'criteria.validator.d': '来自Lido API的实时质押APR',
                 'criteria.validator.a': '无风险利率和风险溢价假设可变（目标5-7%）',
-                'method.appCapital.desc': 'App Capital代表链上总资产：稳定币、ERC-20代币、NFT、RWA和跨链资产。28%比率（稳定币/App Capital）自2021年以来保持稳定。公式：App Capital ≈ 稳定币 ÷ 0.28。App Capital作为市值下限——网络安全（MC）必须支撑所有结算资产的价值。与TVL（仅~$60B DeFi）不同，App Capital（~$600B）捕获了以太坊完整的结算层角色。',
+                'method.appCapital.desc': 'App Capital代表链上总资产：稳定币、ERC-20代币、NFT、RWA和跨链资产。28%比率（稳定币/App Capital）自2021年以来保持稳定。公式：App Capital ≈ 稳定币 ÷ 0.28。App Capital作为市值下限——网络安全（MC）必须支撑所有结算资产的价值。与TVL（仅DeFi）不同，App Capital捕获了以太坊完整的结算层角色。',
                 'method.commitment.desc': '根据质押和DeFi协议中锁定的ETH比例应用价格溢价。更高的承诺比率表明更强的长期持有信念和更低的流动性供应。乘数（1.5x）反映承诺资产相对于流动资产的价值溢价。灵感来自L1代币应被视为货币（价值储存）而非股票的概念。',
                 'onchain.ethInDefi': 'DeFi中的ETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH价格',
@@ -6155,7 +6308,7 @@
                 'criteria.metcalfe.a': '1.5しすうはもとのn²からしゅうせい；けいすう2はフィッティング',
                 'criteria.dcf.m': 'ひょうじゅんTradFiわりびきキャッシュフロー；ゴードンせいちょうモデル',
                 'criteria.dcf.d': 'Lido APIからのリアルタイムステーキングAPR',
-                'criteria.dcf.a': '10%わりびきりつと3%せいちょうりつはしゅかんてきかてい',
+                'criteria.dcf.a': '9%わりびきりつと3%せいちょうりつはしゅかんてきかてい',
                 'criteria.ps.m': 'ひょうじゅんTradFiしひょう；Token Terminalがプロトコルひょうかにしよう',
                 'criteria.ps.d': 'DefiLlamaからのリアルタイムにちじてすうりょう、ねんかんさん',
                 'criteria.ps.a': '25ばいはこうせいちょうSaaSきじゅん；15-40ばいのかのうせい',
@@ -6187,7 +6340,7 @@
                 'method.metcalfe.note': 'つよいかこのそうかんかんけいをもつがくじゅつてきにけんしょうされたモデル',
                 'method.metcalfe.desc': 'ネットワークかちはアクティブユーザー/ノードすうのにじょうにひれいしてせいちょうします。もともとはつうしんようにかいはつされ、このモデルはビットコインとイーサリアムについてがくじゅつけんきゅうしゃ（Alabi 2017、Peterson 2018）によってじっしょうてきにけんしょうされています。TVLをネットワークかつどうのだいりしひょうとしてしようします。',
                 'method.dcf.note': 'わりびきりつとせいちょうりつのかていにひじょうにびんかん',
-                'method.dcf.desc': 'ステーキングほうしゅうをえいぞくてきなキャッシュフローとしてあつかうじゅうらいのわりびきキャッシュフローぶんせき。Lido APIからのライブステーキングAPRをキャッシュフローりつとして、10%のわりびきりつ（クリプトしさんリスクプレミアム）、3%のえいぞくせいちょうりつをしようします。このアプローチは、じゅうらいのきんゆうバリュエーションとクリプトネイティブのイールドせいせいをはしわたしします。',
+                'method.dcf.desc': 'ステーキングほうしゅうをえいぞくキャッシュフローとしてあつかうじゅうらいのDCFぶんせき。Lido APIのライブステーキングAPRをキャッシュフローりつとして、9%わりびきりつ（4.5%むリスクりりつ + 4.5%クリプトかぶしきリスクプレミアム）、3%えいぞくせいちょうりつをしよう。たかいリスクプレミアムは、ボラティリティ、きせい、スマートコントラクトリスクをふくむかんぜんなETHかかくエクスポージャーをはんえいします。',
                 'method.l2.note': '2ばいのL2おもみづけじょうすうはじっしょうてきこんきょのないどくじせってい',
                 'method.l2.desc': 'イーサリアムのレイヤー2スケーリングエコシステム（Arbitrum、Optimism、Base、zkSyncなど）からのかちをとらえます。L2 TVLに2ばいのおもみづけをするのは、L2のかつどうがイーサリアムメインネットでけっさいされ、ブロックスペースをしょうひし、EIP-1559をつうじてETHをしょうきゃくするためです。',
                 'method.ps.note': 'L1プロトコルバリュエーションのぎょうかいひょうじゅん',
@@ -6197,9 +6350,9 @@
                 'method.commitment.note': 'かちちょぞう(Store of Value)じゅようのがいねんにちゃくそうをえて、むりょうデータソースにてきおう',
                 'method.appCapital.note': '⚠️ プロキシすいてい：DeFiLlama chainAssets API ($300/つき) はげんざいちのみていきょう—りれきデータなし。',
                 'method.validator.note': 'もくひょうイールド = リスクフリーレート + クリプトリスクプレミアム；ひょうじゅんTradFiアプローチ',
-                'method.validator.desc': 'もくひょうステーキングイールドたいげんざいAPRのひりつでてきせいかちをけいさんします。もくひょうイールド(6%) = アメリカ10ねんものこくさい(~4.5%) + クリプトリスクプレミアム(~1.5%)。げんざいAPRがもくひょうよりひくければ、ETHはかしょうひょうかです—バリデーターがリスクをこうりょしたごうりてきなとうしかがようきゅうするすいじゅんよりすくなくうけとっていることをいみします。TradFiがはいとうかぶをこくさいイールド + かぶしきリスクプレミアムたいひでひょうかするほうほうとどういつです。',
+                'method.validator.desc': 'もくひょうステーキングイールドたいげんざいAPRのひりつでてきせいかちをけいさん。もくひょうイールド(6%) = アメリカ10ねんものこくさい(~4.5%) + ステーキングリスクプレミアム(~1.5%)。ひくいプレミアム（DCFの4.5%たいひ）は、ステーキングのていリスクとくせいをはんえい：よそくかのうなバリデーターほうしゅう、インパーマネントロスなし、プロトコルレベルセキュリティ。げんざいAPRがもくひょうよりひくければETHはかしょうひょうか。',
                 'method.settlement.note': 'かへいけいざいがくのMV=PQほうていしき；Velocity 6はUSD M1 (~5.5x)ベンチマーク',
-                'method.settlement.desc': 'こうかんほうていしき(MV=PQ)をてきようし、ETHをイーサリアムけっさいレイヤーのかへいとしてあつかいます。にちじけっさいりょうはL1そうきん($54.5おく)、L2そうきん($41.6おく)、ブリッジとりひきりょう($5.2おく)をごうさんしたやく$100おく/にちです。Velocity 6はETHのかちちょぞう(SoV)とくせいをはんえいします：28%ステーキングはETHをvelocity 0でこてい、ETFいこうビットコインとるいじのきかんほゆうパターン、USD M1 velocity (~5.5x)ベンチマーク。ひくいvelocity = たかいないざいかち（かへいがしょうひされずながくほゆうされる）。',
+                'method.settlement.desc': 'こうかんほうていしき(MV=PQ)をてきようし、ETHをイーサリアムけっさいレイヤーのかへいとしてあつかいます。にちじけっさいりょうはL1そうきん、L2そうきん、ブリッジとりひきりょうをごうさんします。Velocity 6はETHのかちちょぞう(SoV)とくせいをはんえいします：ステーキングはETHをvelocity 0でこてい、ETFいこうビットコインとるいじのきかんほゆうパターン、USD M1 velocity (~5.5x)ベンチマーク。ひくいvelocity = たかいないざいかち（かへいがしょうひされずながくほゆうされる）。',
                 'criteria.model.settlement': 'Settlement Layer',
                 'criteria.model.validator': 'Validator Economics',
                 'criteria.settlement.m': 'かへいけいざいがくのMV=PQほうていしき；フィッシャーほうていしきひろくしよう',
@@ -6208,7 +6361,7 @@
                 'criteria.validator.m': 'ひょうじゅんTradFiアプローチ：ようきゅうリターン = リスクフリー + リスクプレミアム',
                 'criteria.validator.d': 'Lido APIからのリアルタイムステーキングAPR',
                 'criteria.validator.a': 'リスクフリーりつとリスクプレミアムかていはかへんてき（もくひょう5-7%）',
-                'method.appCapital.desc': 'App Capitalはオンチェーンそうしさんをあらわします：ステーブルコイン、ERC-20トークン、NFT、RWA、ブリッジしさん。28%ひりつ（ステーブルコイン/App Capital）は2021ねんいこうあんていしています。こうしき：App Capital ≈ ステーブルコイン ÷ 0.28。App Capitalはじかそうがくのかげんとしてきのうします—ネットワークセキュリティ（MC）はすべてのけっさいしさんのかちをうらづけるひつようがあります。TVL（〜$60B DeFiのみ）とはことなり、App Capital（〜$600B）はイーサリアムのかんぜんなけっさいレイヤーのやくわりをとらえます。',
+                'method.appCapital.desc': 'App Capitalはオンチェーンそうしさんをあらわします：ステーブルコイン、ERC-20トークン、NFT、RWA、ブリッジしさん。28%ひりつ（ステーブルコイン/App Capital）は2021ねんいこうあんていしています。こうしき：App Capital ≈ ステーブルコイン ÷ 0.28。App Capitalはじかそうがくのかげんとしてきのうします—ネットワークセキュリティ（MC）はすべてのけっさいしさんのかちをうらづけるひつようがあります。TVL（DeFiのみ）とはことなり、App Capitalはイーサリアムのかんぜんなけっさいレイヤーのやくわりをとらえます。',
                 'method.commitment.desc': 'ステーキングとDeFiプロトコルにコミットされたETHのわりあいにもとづいてかかくプレミアムをてきようします。たかいコミットメントりつは、よりつよいちょうきほゆうしんねんとりゅうどうせいきょうきゅうのげんしょうをしめします。じょうすう（1.5x）は、りゅうどうしさんにたいするコミットされたしさんのかちプレミアムをはんえいします。L1トークンをかぶしきではなくつうか（かちちょぞう）としてひょうかすべきというがいねんにちゃくそうをえています。',
                 'onchain.ethInDefi': 'DeFiないETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETHかかく',
@@ -6294,7 +6447,7 @@
                 else if (diff < -5) statusKey = 'valuation.overvalued';
                 else statusKey = 'valuation.fair';
                 
-                const statusText = translations[currentLang]?.[statusKey] || (diff > 5 ? 'Under' : diff < -5 ? 'Over' : 'Fair');
+                const statusText = translations[currentLang]?.[statusKey] || (diff > 5 ? 'Undervalued' : diff < -5 ? 'Overvalued' : 'Fair');
                 
                 const diffEl = document.getElementById(`method-diff-${model}`);
                 if (diffEl) {
@@ -9174,7 +9327,7 @@
                 // Use live staking APR from Lido, fallback to 3.5%
                 const stakingYield = state.stakingApr > 0 ? state.stakingApr / 100 : 0.035;
                 const yieldMultiplier = 1 + stakingYield;
-                const discountRate = 0.10; // 10% discount rate
+                const discountRate = 0.09; // 9% discount rate (4.5% Rf + 4.5% crypto equity RP)
                 const growthRate = 0.03;   // 3% perpetual growth
                 const displayYield = (stakingYield * 100).toFixed(1);
                 models.push({ 
@@ -9183,7 +9336,7 @@
                     formula: 'Price × (1+APR) ÷ (Discount - Growth)', 
                     price: Math.min(state.price * yieldMultiplier / (discountRate - growthRate), state.price * 3),
                     reliability: 2,
-                    source: `Discount=10%, Growth=3%, APR=${displayYield}%`
+                    source: `Discount=9%, Growth=3%, APR=${displayYield}%`
                 });
             }
             if (l2Tvl > 0 && tvl > 0 && cs > 0) {
@@ -10455,7 +10608,7 @@ Check out ETHval 👇`;
             const statusEl = document.getElementById('historical-status');
             const statusTextEl = document.getElementById('historical-status-text');
             if (statusEl) statusEl.className = 'data-status loading';
-            if (statusTextEl) statusTextEl.textContent = 'Calculating...';
+            if (statusTextEl) statusTextEl.innerHTML = '<span class="calculating-dots">Calculating</span>';
             
             // Ensure we have necessary data
             if (!state.priceHistory || state.priceHistory.length === 0) {
@@ -10559,7 +10712,7 @@ Check out ETHval 👇`;
                 if (price > 0 && stakingApr > 0) {
                     const stakingYield = stakingApr / 100;
                     const yieldMultiplier = 1 + stakingYield;
-                    const discountRate = 0.10;
+                    const discountRate = 0.09;
                     const growthRate = 0.03;
                     const dcfValue = Math.min(price * yieldMultiplier / (discountRate - growthRate), price * 3);
                     results.dcf.push({ date, value: dcfValue });
@@ -10691,7 +10844,7 @@ Check out ETHval 👇`;
             valuation.metcalfe = (Math.pow(state.tvl / 1e9, 1.5) * 1e9 * 2) / cs;
             // DCF
             const stakingYield = state.stakingApr / 100;
-            valuation.dcf = Math.min(state.price * (1 + stakingYield) / 0.07, state.price * 3);
+            valuation.dcf = Math.min(state.price * (1 + stakingYield) / 0.06, state.price * 3);
             // L2 Ecosystem
             valuation.l2Ecosystem = (state.tvl + state.l2Tvl * 2) * 6 / cs;
             // P/S
@@ -11358,16 +11511,14 @@ Check out ETHval 👇`;
                 <div class="share-preview" id="share-preview"></div>
                 <div class="share-actions">
                     <button class="share-btn download" onclick="downloadShareCard()">
-                        <span>📥</span> <span data-i18n="share.download">Download Image</span>
+                        <span>📥</span> <span data-i18n="share.download">Download</span>
                     </button>
                     <button class="share-btn twitter" onclick="shareToTwitter()">
-                        <span>𝕏</span> <span data-i18n="share.twitter">Share on X</span>
+                        <span>𝕏</span> <span data-i18n="share.postToX">Post to 𝕏</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
-
 </body>
 </html>
