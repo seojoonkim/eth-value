@@ -1004,7 +1004,7 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
             font-weight: 600;
-            color: var(--primary);
+            color: var(--text);
         }
 
         .model-bar-container {
@@ -1311,10 +1311,10 @@
         }
 
         .method-card {
-            background: var(--bg);
+            background: var(--bg-card);
             border: none;
-            border-radius: 6px;
-            padding: 16px 14px;
+            border-radius: 10px;
+            padding: 16px;
             font-size: 10px;
             min-width: 0;
             overflow: hidden;
@@ -1326,8 +1326,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border);
         }
 
         .method-name {
@@ -1338,25 +1336,28 @@
 
         .method-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 16px;
         }
 
         .method-left {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+            min-width: 0;
         }
 
         .method-right {
             display: flex;
             flex-direction: column;
+            gap: 8px;
+            min-width: 0;
         }
 
         .method-formula {
             font-family: 'JetBrains Mono', monospace;
             font-size: 9px;
-            background: var(--bg-card-alt);
+            background: var(--bg);
             padding: 6px 8px;
             border-radius: 4px;
             color: var(--primary);
@@ -1374,6 +1375,7 @@
             gap: 4px;
             font-size: 9px;
             color: var(--text-muted);
+            flex-shrink: 0;
         }
 
         .method-meta .reliability-row {
@@ -1394,19 +1396,92 @@
             padding: 0;
             color: var(--text-muted);
             font-style: italic;
-            border-left: 2px solid var(--border);
-            padding-left: 8px;
-            line-height: 1.5;
+            line-height: 1.4;
+            flex: 1;
         }
 
-        .method-note.positive {
-            border-left-color: var(--green);
+        .method-footer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        /* Method Card Mini Chart */
+        .method-chart-inline {
+            margin-top: 0;
+        }
+
+        .method-chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .method-chart-header > div:first-child {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .method-chart-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .method-chart-diff {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            margin-left: 8px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .method-chart-diff.up {
+            background: rgba(34, 197, 94, 0.12);
             color: var(--green);
         }
 
-        .method-note.caution {
-            border-left-color: var(--yellow);
+        .method-chart-diff.down {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red);
+        }
+
+        .method-chart-tabs {
+            display: flex;
+            gap: 3px;
+            margin-left: auto;
+        }
+
+        .method-chart-tab {
+            padding: 2px 5px;
+            font-size: 8px;
+            font-weight: 500;
+            background: var(--bg-card-alt);
+            border: none;
+            border-radius: 3px;
             color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .method-chart-tab:hover {
+            color: var(--text-secondary);
+        }
+
+        .method-chart-tab.active {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .method-chart-area {
+            height: 80px;
         }
 
         /* Reliability Criteria Section */
@@ -1418,7 +1493,7 @@
         }
 
         .criteria-header {
-            text-align: center;
+            text-align: left;
             margin-bottom: 16px;
         }
 
@@ -1552,7 +1627,7 @@
 
         .criteria-definitions-header h4 {
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 400;
             color: var(--text);
             margin: 0;
         }
@@ -1734,6 +1809,10 @@
             
             .criteria-cards {
                 display: block;
+            }
+            
+            .criteria-card-model {
+                font-size: 11px;
             }
             
             .criteria-definitions-grid {
@@ -2850,7 +2929,7 @@
             }
 
             .method-content {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                 gap: 14px;
             }
 
@@ -2955,6 +3034,602 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ========================================
+           HISTORICAL ANALYSIS SECTION
+           ======================================== */
+        .historical-section {
+            margin-top: 32px;
+        }
+
+        .historical-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .historical-tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-card-alt);
+            padding: 2px;
+            border-radius: 4px;
+            width: fit-content;
+            margin-left: auto;
+        }
+
+        .historical-tab {
+            padding: 3px 8px;
+            font-size: 9px;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .historical-tab:hover {
+            color: var(--text);
+        }
+
+        .historical-tab.active {
+            background: var(--bg);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .model-selector {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .model-chip {
+            padding: 5px 10px;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .model-chip:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .model-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .historical-main-chart {
+            background: var(--bg-card);
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .historical-chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .historical-chart-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .historical-chart-header .historical-tabs {
+            margin-left: auto;
+        }
+
+        /* Chart Price Display */
+        .chart-price-display {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 16px;
+            padding: 12px 0;
+        }
+
+        .chart-price-item {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .chart-price-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .chart-price-value {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text);
+        }
+
+        .chart-price-diff {
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .chart-price-diff.up {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+
+        .chart-price-diff.down {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+
+        @media (max-width: 600px) {
+            .chart-price-display {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            
+            .chart-price-item {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: baseline;
+                gap: 6px;
+            }
+            
+            .chart-price-label {
+                font-size: 10px;
+                width: 100%;
+            }
+            
+            .chart-price-value {
+                font-size: 18px;
+            }
+            
+            .chart-price-diff {
+                font-size: 10px;
+                padding: 2px 6px;
+            }
+        }
+
+        .historical-chart-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .historical-chart-area {
+            height: 480px;
+        }
+
+        /* Interactive Legend Container */
+        .historical-legend-container {
+            margin-top: 20px;
+            padding-top: 16px;
+        }
+
+        .legend-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: flex-start;
+        }
+
+        .legend-row-primary {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+
+        .legend-row-primary .legend-item-fixed {
+            max-width: none;
+        }
+
+        @media (max-width: 1200px) {
+            .legend-row-primary {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .legend-row-primary {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .legend-row-primary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .legend-row-models {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+        }
+
+        @media (max-width: 1200px) {
+            .legend-row-models {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .legend-row-models {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .legend-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            padding-left: 2px;
+        }
+
+        /* Shared legend item base style */
+        .legend-item-fixed,
+        .legend-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 10px;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-card-alt);
+            border-radius: 10px;
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Fixed legend items (always visible) */
+        .legend-item-fixed {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .legend-item-fixed .legend-color {
+            width: 14px;
+            height: 3px;
+            flex-shrink: 0;
+        }
+
+        .legend-item-fixed .legend-color.dashed {
+            background: repeating-linear-gradient(
+                90deg,
+                #8b949e 0px,
+                #8b949e 3px,
+                transparent 3px,
+                transparent 5px
+            ) !important;
+        }
+
+        /* Toggleable legend buttons */
+        .legend-btn {
+            border: 1px solid rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: all 0.12s ease;
+            user-select: none;
+        }
+
+        .legend-btn:hover {
+            background: var(--bg);
+            border-color: rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+
+        .legend-btn.active {
+            background: var(--bg);
+            color: var(--text);
+            border-color: rgba(0,0,0,0.1);
+        }
+
+        .legend-btn:not(.active) {
+            opacity: 0.45;
+        }
+
+        .legend-btn:not(.active) .legend-color {
+            opacity: 0.3;
+        }
+
+        .legend-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+
+        .legend-btn.active .legend-name {
+            color: var(--text);
+        }
+
+        .legend-value {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .legend-btn.active .legend-value {
+            color: var(--text-muted);
+        }
+
+        .model-count-badge {
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: rgba(0,0,0,0.05);
+            padding: 2px 5px;
+            border-radius: 6px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        }
+
+        .legend-color {
+            display: inline-block;
+            width: 14px;
+            height: 3px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .legend-btn .legend-color {
+            display: inline-block;
+            width: 14px;
+            height: 3px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .legend-btn-primary .legend-color {
+            width: 18px;
+            height: 4px;
+        }
+
+        .historical-chart-area {
+            height: 360px;
+            position: relative;
+        }
+
+        .historical-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .historical-stat-card {
+            background: var(--bg-card-alt);
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .historical-stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .historical-stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .historical-stat-change {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .historical-stat-change.up { color: var(--green); }
+        .historical-stat-change.down { color: var(--red); }
+
+        /* Model Grid for individual model charts */
+        .model-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .model-chart-card {
+            background: var(--bg-card);
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .model-chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .model-chart-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .model-chart-value {
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .model-chart-value.up { color: var(--green); }
+        .model-chart-value.down { color: var(--red); }
+
+        .model-chart-area {
+            height: 120px;
+        }
+
+        .model-chart-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Loading state */
+        .historical-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-muted);
+        }
+
+        .historical-loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Data status badge */
+        .data-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: var(--bg-card-alt);
+        }
+
+        .data-status.live {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+        }
+
+        .data-status.loading {
+            background: rgba(234, 179, 8, 0.1);
+            color: var(--yellow);
+        }
+
+        .data-status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .historical-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .model-selector {
+                max-width: 100%;
+                overflow-x: auto;
+            }
+
+            .historical-chart-area {
+                height: 260px;
+            }
+
+            .historical-legend-container {
+                margin-top: 12px;
+                padding-top: 10px;
+            }
+
+            .legend-row-primary {
+                gap: 8px;
+            }
+
+            .legend-row-primary .legend-item-fixed {
+                font-size: 9px;
+                padding: 4px 8px;
+            }
+
+            .legend-hint {
+                font-size: 8px;
+                margin: 6px 0;
+            }
+
+            .legend-btn {
+                padding: 4px 6px;
+                font-size: 8px;
+                gap: 3px;
+                border-radius: 6px;
+            }
+
+            .legend-btn .legend-color {
+                width: 10px;
+                height: 1px;
+            }
+
+            .legend-value {
+                font-size: 8px;
+            }
+
+            .model-charts-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .historical-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .model-charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .historical-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .model-chart-area {
+                height: 100px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2973,7 +3648,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.2.2</span>
+                <span class="version-badge">v0.3.1</span>
             </a>
             <div class="header-center">
                 <div class="status">
@@ -3545,7 +4220,118 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Historical Chart (integrated) -->
+            <div class="historical-main-chart" style="margin-top: 24px;">
+                <div class="historical-chart-header">
+                    <div class="historical-chart-title">Market Price vs Composite Fair Value <span id="chart-title-model-count" style="color: var(--text-muted); font-weight: 400; font-size: 11px; margin-left: 6px;">12 / 12 models</span></div>
+                </div>
+                
+                <!-- Price Display Row -->
+                <div class="chart-price-display">
+                    <div class="chart-price-item">
+                        <span class="chart-price-label">Market Price</span>
+                        <span class="chart-price-value" id="chart-market-price">$--</span>
+                    </div>
+                    <div class="chart-price-item">
+                        <span class="chart-price-label">Composite Fair Value</span>
+                        <span class="chart-price-value chart-price-composite" id="chart-composite-value">$--</span>
+                        <span class="chart-price-diff" id="chart-price-diff">--</span>
+                    </div>
+                </div>
+                
+                <!-- Period tabs (below price) -->
+                <div class="historical-tabs" style="margin-bottom: 12px;">
+                    <button class="historical-tab" data-period="30">30D</button>
+                    <button class="historical-tab" data-period="90">90D</button>
+                    <button class="historical-tab active" data-period="365">1Y</button>
+                </div>
+                
+                <div class="historical-chart-area">
+                    <canvas id="historical-main-chart"></canvas>
+                </div>
+                
+                <!-- Interactive Legend -->
+                <div class="historical-legend-container">
+                    <div class="legend-row legend-row-primary">
+                        <div class="legend-item-fixed">
+                            <span class="legend-color" style="background:repeating-linear-gradient(90deg,#24292e 0px,#24292e 4px,transparent 4px,transparent 7px);height:3px;"></span>
+                            <span class="legend-name">Market Price</span>
+                        </div>
+                        <div class="legend-item-fixed">
+                            <span class="legend-color" style="background:#24292e;height:4px;"></span>
+                            <span class="legend-name">Composite Fair Value</span>
+                            <span class="model-count-badge" id="legend-model-count">12 / 12</span>
+                        </div>
+                    </div>
+                    <div class="legend-hint">Click model buttons below to toggle visibility</div>
+                    <div class="legend-row legend-row-models">
+                        <div class="legend-btn active" data-model="tvlMultiple">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#ef4444;"></span>
+                            <span class="legend-name" style="color:#ef4444;">TVL Multiple</span>
+                            <span class="legend-value" id="legend-val-tvlMultiple">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="stakingScarcity">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#f97316;"></span>
+                            <span class="legend-name" style="color:#f97316;">Staking Scarcity</span>
+                            <span class="legend-value" id="legend-val-stakingScarcity">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="mctvl">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#f59e0b;"></span>
+                            <span class="legend-name" style="color:#f59e0b;">MC/TVL Fair Value</span>
+                            <span class="legend-value" id="legend-val-mctvl">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="metcalfe">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#eab308;"></span>
+                            <span class="legend-name" style="color:#eab308;">Metcalfe's Law</span>
+                            <span class="legend-value" id="legend-val-metcalfe">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="dcf">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#84cc16;"></span>
+                            <span class="legend-name" style="color:#84cc16;">DCF (Staking)</span>
+                            <span class="legend-value" id="legend-val-dcf">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="l2Ecosystem">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#22c55e;"></span>
+                            <span class="legend-name" style="color:#22c55e;">L2 Ecosystem</span>
+                            <span class="legend-value" id="legend-val-l2Ecosystem">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="ps">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#14b8a6;"></span>
+                            <span class="legend-name" style="color:#14b8a6;">P/S Ratio (25x)</span>
+                            <span class="legend-value" id="legend-val-ps">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="revenueYield">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#06b6d4;"></span>
+                            <span class="legend-name" style="color:#06b6d4;">Revenue Yield</span>
+                            <span class="legend-value" id="legend-val-revenueYield">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="commitmentPremium">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#0ea5e9;"></span>
+                            <span class="legend-name" style="color:#0ea5e9;">Commitment Premium</span>
+                            <span class="legend-value" id="legend-val-commitmentPremium">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="appCapital">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#6366f1;"></span>
+                            <span class="legend-name" style="color:#6366f1;">App Capital</span>
+                            <span class="legend-value" id="legend-val-appCapital">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="validatorEcon">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#8b5cf6;"></span>
+                            <span class="legend-name" style="color:#8b5cf6;">Validator Economics</span>
+                            <span class="legend-value" id="legend-val-validatorEcon">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="settlementLayer">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#a855f7;"></span>
+                            <span class="legend-name" style="color:#a855f7;">Settlement Layer</span>
+                            <span class="legend-value" id="legend-val-settlementLayer">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
+
+        <!-- Methodology Section -->
 
         <!-- Methodology Section -->
         <section class="section methodology-section" id="section-methodology">
@@ -3553,254 +4339,470 @@
                 <div class="section-title" data-i18n="section.methodologyTitle">Valuation Methodology</div>
             </div>
             <div class="methodology-grid">
-                <div class="method-card">
+                <div class="method-card" data-model="tvlMultiple">
                     <div class="method-header">
                         <span class="method-name">TVL Multiple</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">TVL × Multiple ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note caution" data-i18n="method.tvl.note">TVL may include leverage, recursive deposits, and double-counting across protocols</div>
+                            <div class="method-desc" data-i18n="method.tvl.desc">Values ETH based on total assets locked in DeFi protocols. The 7x multiple is derived from historical MC/TVL ratios during balanced market conditions (2020-2023 average). Higher TVL indicates greater network utility, adoption, and trust in Ethereum's smart contract ecosystem. This model assumes DeFi activity is a primary value driver for ETH.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.tvl.desc">Values ETH based on total assets locked in DeFi protocols. The 7x multiple is derived from historical MC/TVL ratios during balanced market conditions (2020-2023 average). Higher TVL indicates greater network utility, adoption, and trust in Ethereum's smart contract ecosystem. This model assumes DeFi activity is a primary value driver for ETH.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-tvlMultiple" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-tvlMultiple">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="tvlMultiple">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-tvlMultiple"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.tvl.note">TVL may include leverage, recursive deposits, and double-counting across protocols</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="stakingScarcity">
                     <div class="method-header">
                         <span class="method-name">Staking Scarcity</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × √(Supply ÷ Liquid)</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note caution" data-i18n="method.staking.note">Proprietary model developed for this dashboard. Lacks peer review or academic validation</div>
+                            <div class="method-desc" data-i18n="method.staking.desc">Applies a scarcity premium when circulating supply decreases due to staking. As more ETH is locked in validators (currently ~28%), liquid supply shrinks, theoretically increasing price pressure. The square root function dampens extreme valuations while still capturing the scarcity effect. This model gained relevance post-Merge with ETH's transition to Proof-of-Stake.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.staking.desc">Applies a scarcity premium when circulating supply decreases due to staking. As more ETH is locked in validators (currently ~28%), liquid supply shrinks, theoretically increasing price pressure. The square root function dampens extreme valuations while still capturing the scarcity effect. This model gained relevance post-Merge with ETH's transition to Proof-of-Stake.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-stakingScarcity" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-stakingScarcity">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="stakingScarcity">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-stakingScarcity"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.staking.note">Proprietary model developed for this dashboard. Lacks peer review or academic validation</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="mctvl">
                     <div class="method-header">
                         <span class="method-name">MC/TVL Fair Value</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (Target ÷ CurrentRatio)</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note positive" data-i18n="method.mctvl.note">Industry-standard metric for cross-chain valuation comparisons</div>
+                            <div class="method-desc" data-i18n="method.mctvl.desc">Mean-reversion model assuming Market Cap to TVL ratio returns to historical average of 6x. When ratio is above 6x, ETH is considered overvalued; below 6x indicates undervaluation. Similar to P/B ratio in traditional equity analysis. Widely used by institutional researchers including Messari and Delphi Digital for relative valuation comparisons across L1 blockchains.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.mctvl.desc">Mean-reversion model assuming Market Cap to TVL ratio returns to historical average of 6x. When ratio is above 6x, ETH is considered overvalued; below 6x indicates undervaluation. Similar to P/B ratio in traditional equity analysis. Widely used by institutional researchers including Messari and Delphi Digital for relative valuation comparisons across L1 blockchains.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-mctvl" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-mctvl">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="mctvl">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-mctvl"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.mctvl.note">Industry-standard metric for cross-chain valuation comparisons</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="metcalfe">
                     <div class="method-header">
                         <span class="method-name">Metcalfe's Law</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Coef × TVL^Exp ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note positive" data-i18n="method.metcalfe.note">Academically validated model with strong historical correlation</div>
+                            <div class="method-desc" data-i18n="method.metcalfe.desc">Network value grows proportionally to the square of active users/nodes. Originally developed for telecommunications, this model has been empirically validated for Bitcoin and Ethereum by academic researchers (Alabi 2017, Peterson 2018). Uses TVL as a proxy for network activity. The 1.5 exponent (between linear and quadratic) accounts for real-world network friction.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.metcalfe.desc">Network value grows proportionally to the square of active users/nodes. Originally developed for telecommunications, this model has been empirically validated for Bitcoin and Ethereum by academic researchers (Alabi 2017, Peterson 2018). Uses TVL as a proxy for network activity. The 1.5 exponent (between linear and quadratic) accounts for real-world network friction.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-metcalfe" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-metcalfe">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="metcalfe">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-metcalfe"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.metcalfe.note">Academically validated model with strong historical correlation</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="dcf">
                     <div class="method-header">
                         <span class="method-name">DCF (Staking Yield)</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (1 + APR) ÷ (Discount - Growth)</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note caution" data-i18n="method.dcf.note">Highly sensitive to discount rate and growth rate assumptions</div>
+                            <div class="method-desc" data-i18n="method.dcf.desc">Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 10% discount rate (crypto risk premium), and 3% perpetual growth rate. This approach bridges traditional finance valuation with crypto-native yield generation, making ETH comparable to dividend-paying assets.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.dcf.desc">Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 10% discount rate (crypto risk premium), and 3% perpetual growth rate. This approach bridges traditional finance valuation with crypto-native yield generation, making ETH comparable to dividend-paying assets.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-dcf" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-dcf">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="dcf">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-dcf"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.dcf.note">Highly sensitive to discount rate and growth rate assumptions</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="l2Ecosystem">
                     <div class="method-header">
                         <span class="method-name">L2 Ecosystem</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(TVL + L2×Weight) × Multiple ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note caution" data-i18n="method.l2.note">2x L2 weight multiplier is proprietary without empirical basis</div>
+                            <div class="method-desc" data-i18n="method.l2.desc">Captures value from Ethereum's Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum's value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.l2.desc">Captures value from Ethereum's Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum's value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-l2Ecosystem" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-l2Ecosystem">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="l2Ecosystem">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-l2Ecosystem"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.l2.note">2x L2 weight multiplier is proprietary without empirical basis</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="ps">
                     <div class="method-header">
                         <span class="method-name">P/S Ratio (25x)</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">DailyFees × 365 × PSRatio ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note positive" data-i18n="method.ps.note">Industry standard for L1 protocol valuation</div>
+                            <div class="method-desc" data-i18n="method.ps.desc">Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.ps.desc">Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-ps" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-ps">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="ps">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-ps"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.ps.note">Industry standard for L1 protocol valuation</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="revenueYield">
                     <div class="method-header">
                         <span class="method-name">Revenue Yield</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">AnnualFees ÷ APR ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note positive" data-i18n="method.yield.note">Bond-like methodology with institutional acceptance</div>
+                            <div class="method-desc" data-i18n="method.yield.desc">Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.yield.desc">Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-revenueYield" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-revenueYield">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="revenueYield">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-revenueYield"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.yield.note">Bond-like methodology with institutional acceptance</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="commitmentPremium">
                     <div class="method-header">
                         <span class="method-name">Commitment Premium</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (1 + Commit% × Multiplier)</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note caution" data-i18n="method.commitment.note">Inspired by Store of Value demand concepts, adapted for free data sources</div>
+                            <div class="method-desc" data-i18n="method.commitment.desc">Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. The multiplier (1.5x) reflects the value premium of committed vs. liquid assets. Inspired by the concept that L1 tokens should be valued as money (Store of Value) rather than stocks.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.commitment.desc">Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. The multiplier (1.5x) reflects the value premium of committed vs. liquid assets. Inspired by the concept that L1 tokens should be valued as money (Store of Value) rather than stocks.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-commitmentPremium" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-commitmentPremium">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="commitmentPremium">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-commitmentPremium"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.commitment.note">Inspired by Store of Value demand concepts, adapted for free data sources</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="appCapital">
                     <div class="method-header">
                         <span class="method-name">App Capital</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Stablecoins ÷ Ratio ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note caution" data-i18n="method.appCapital.note">⚠️ Proxy Estimate: DeFiLlama chainAssets API ($300/mo) provides current values only—no historical data available.</div>
+                            <div class="method-desc" data-i18n="method.appCapital.desc">App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. The 28% ratio (Stablecoins/AppCapital) has been stable since 2021. Formula: AppCapital ≈ Stablecoins ÷ 0.28. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (~$60B DeFi only), App Capital (~$600B) captures Ethereum's full settlement layer role.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.appCapital.desc">App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. The 28% ratio (Stablecoins/AppCapital) has been stable since 2021. Formula: AppCapital ≈ Stablecoins ÷ 0.28. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (~$60B DeFi only), App Capital (~$600B) captures Ethereum's full settlement layer role.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-appCapital" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-appCapital">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="appCapital">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-appCapital"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.appCapital.note">Proxy Estimate: DeFiLlama chainAssets API provides current values only—no historical data available</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="validatorEcon">
                     <div class="method-header">
                         <span class="method-name">Validator Economics</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (Target ÷ APR)</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note positive" data-i18n="method.validator.note">Target yield = Risk-free rate + Crypto risk premium; standard TradFi approach</div>
+                            <div class="method-desc" data-i18n="method.validator.desc">Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Crypto risk premium (~1.5%). If current APR is below target, ETH is undervalued—validators earn less than what rational investors would demand given the risk. This mirrors how TradFi values dividend stocks relative to treasury yields plus equity risk premium.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.validator.desc">Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Crypto risk premium (~1.5%). If current APR is below target, ETH is undervalued—validators earn less than what rational investors would demand given the risk. This mirrors how TradFi values dividend stocks relative to treasury yields plus equity risk premium.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-validatorEcon" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-validatorEcon">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="validatorEcon">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-validatorEcon"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.validator.note">Target yield = Risk-free rate + Crypto risk premium; standard TradFi approach</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="method-card">
+                <div class="method-card" data-model="settlementLayer">
                     <div class="method-header">
                         <span class="method-name">Settlement Layer</span>
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(DailyVol × 365 ÷ Velocity) ÷ Supply</div>
-                            <div class="method-meta">
-                                <div class="reliability-row">
-                                    <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
-                                    <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
-                                </div>
-                            </div>
-                            <div class="method-note positive" data-i18n="method.settlement.note">MV=PQ equation from monetary economics; Velocity 6 benchmarked to USD M1 (~5.5x)</div>
+                            <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers ($5.45B), L2 transfers ($4.16B), and bridge volume ($0.52B) totaling ~$10B/day. Velocity of 6 reflects ETH's Store-of-Value characteristics: 28% staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.</div>
                         </div>
                         <div class="method-right">
-                            <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers ($5.45B), L2 transfers ($4.16B), and bridge volume ($0.52B) totaling ~$10B/day. Velocity of 6 reflects ETH's Store-of-Value characteristics: 28% staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.</div>
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-settlementLayer" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-settlementLayer">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="settlementLayer">
+                                        <button class="method-chart-tab" data-period="30">30D</button>
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="365">1Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-settlementLayer"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-meta">
+                                    <div class="reliability-row">
+                                        <span class="reliability-label" data-i18n="method.reliability">Reliability</span>
+                                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                    </div>
+                                </div>
+                                <div class="method-note" data-i18n="method.settlement.note">MV=PQ equation from monetary economics; Velocity 6 benchmarked to USD M1 (~5.5x)</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3809,14 +4811,14 @@
             <!-- Reliability Criteria Table -->
             <div class="reliability-criteria-section">
                 <div class="criteria-header">
-                    <h3 data-i18n="criteria.title">🎯 Reliability Assessment Criteria</h3>
+                    <h3 data-i18n="criteria.title">Appendix: Reliability Assessment Criteria</h3>
                     <p class="criteria-subtitle" data-i18n="criteria.subtitle">Each model is evaluated across three dimensions to determine its reliability level</p>
                 </div>
 
                 <!-- 1. 기준 정의 먼저 -->
                 <div class="criteria-definitions">
                     <div class="criteria-definitions-header">
-                        <h4 data-i18n="criteria.defTitle">📐 Assessment Criteria Definitions</h4>
+                        <h4 data-i18n="criteria.defTitle">Assessment Criteria Definitions</h4>
                     </div>
                     <div class="criteria-definitions-grid">
                         <div class="definition-item">
@@ -4192,7 +5194,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.2.2
+                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.3.1
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -4204,7 +5206,7 @@
         </footer>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // Translations
         const translations = {
             en: {
@@ -4214,7 +5216,9 @@
                 'nav.price': 'Price & Market',
                 'nav.onchain': 'On-Chain Metrics',
                 'nav.valuation': 'Valuation Analysis',
+                'nav.historical': 'Historical',
                 'nav.methodology': 'Methodology',
+                'section.historicalTitle': 'Historical Fair Value Analysis',
                 'summary.title': 'Overview',
                 'summary.currentPrice': 'Current Price',
                 'summary.fairValue': 'Fair Value (12 Models)',
@@ -4237,9 +5241,9 @@
                 'valuation.compositeFairValue': 'Composite Fair Value',
                 'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. Investment decisions should consider multiple factors comprehensively.',
                 'footer.disclaimer': 'Auto-refresh 120s · For informational purposes only · Not financial advice',
-                'criteria.title': '🎯 Reliability Assessment Criteria',
+                'criteria.title': 'Appendix: Reliability Assessment Criteria',
                 'criteria.subtitle': 'Each model is evaluated across three dimensions to determine its reliability level',
-                'criteria.defTitle': '📐 Assessment Criteria Definitions',
+                'criteria.defTitle': 'Assessment Criteria Definitions',
                 'criteria.methodology': 'Methodology Validation',
                 'criteria.methodologyDesc': 'Established in TradFi or validated by academic research',
                 'criteria.data': 'Data Objectivity',
@@ -4362,7 +5366,9 @@
                 'nav.price': '시세 & 시장',
                 'nav.onchain': '온체인 지표',
                 'nav.valuation': '밸류에이션',
+                'nav.historical': '히스토리',
                 'nav.methodology': '방법론',
+                'section.historicalTitle': '시계열 적정가치 분석',
                 'summary.title': '개요',
                 'summary.currentPrice': '현재 가격',
                 'summary.fairValue': '적정 가치 (12개 모델)',
@@ -4385,9 +5391,9 @@
                 'valuation.compositeFairValue': '종합 적정 가치',
                 'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
                 'footer.disclaimer': '120초 자동 새로고침 · 정보 제공 목적 · 투자 조언이 아닙니다',
-                'criteria.title': '🎯 신뢰도 평가 기준',
+                'criteria.title': '부록: 신뢰도 평가 기준',
                 'criteria.subtitle': '각 모델은 3가지 기준으로 평가되어 신뢰도 수준이 결정됩니다',
-                'criteria.defTitle': '📐 평가 기준 정의',
+                'criteria.defTitle': '평가 기준 정의',
                 'criteria.methodology': '방법론 검증도',
                 'criteria.methodologyDesc': 'TradFi에서 확립되었거나 학술적으로 검증된 방법론',
                 'criteria.data': '데이터 객관성',
@@ -4510,7 +5516,9 @@
                 'nav.price': '价格与市场',
                 'nav.onchain': '链上指标',
                 'nav.valuation': '估值分析',
+                'nav.historical': '历史分析',
                 'nav.methodology': '方法论',
+                'section.historicalTitle': '历史公允价值分析',
                 'summary.title': '概览',
                 'summary.currentPrice': '当前价格',
                 'summary.fairValue': '公允价值 (10个模型)',
@@ -4533,9 +5541,9 @@
                 'valuation.compositeFairValue': '综合公允价值',
                 'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应综合考虑多种因素。',
                 'footer.disclaimer': '自动刷新120秒 · 仅供信息参考 · 非投资建议',
-                'criteria.title': '🎯 可靠性评估标准',
+                'criteria.title': '附录：可靠性评估标准',
                 'criteria.subtitle': '每个模型通过三个维度进行评估，以确定其可靠性级别',
-                'criteria.defTitle': '📐 评估标准定义',
+                'criteria.defTitle': '评估标准定义',
                 'criteria.methodology': '方法论验证',
                 'criteria.methodologyDesc': '在TradFi中已建立或经过学术验证',
                 'criteria.data': '数据客观性',
@@ -4648,7 +5656,9 @@
                 'nav.price': '価格・市場',
                 'nav.onchain': 'オンチェーン指標',
                 'nav.valuation': 'バリュエーション',
+                'nav.historical': '履歴分析',
                 'nav.methodology': '方法論',
+                'section.historicalTitle': '履歴適正価格分析',
                 'summary.title': '概要',
                 'summary.currentPrice': '現在価格',
                 'summary.fairValue': '適正価格 (10モデル)',
@@ -4671,9 +5681,9 @@
                 'valuation.compositeFairValue': '総合適正価格',
                 'disclaimer.text': '<strong>⚠️ 免責事項：</strong>これらのバリュエーションモデルは参考用です。各モデルには独自の仮定と限界があります。投資判断は複数の要因を総合的に考慮する必要があります。',
                 'footer.disclaimer': '120秒自動更新 · 情報提供のみ · 投資アドバイスではありません',
-                'criteria.title': '🎯 信頼性評価基準',
+                'criteria.title': '付録：信頼性評価基準',
                 'criteria.subtitle': '各モデルは3つの基準で評価され、信頼性レベルが決定されます',
-                'criteria.defTitle': '📐 評価基準の定義',
+                'criteria.defTitle': '評価基準の定義',
                 'criteria.methodology': '方法論の検証',
                 'criteria.methodologyDesc': 'TradFiで確立されているか、学術的に検証されている',
                 'criteria.data': 'データの客観性',
@@ -4855,7 +5865,24 @@
             // Staking Yield (from Lido API)
             stakingApr: 0,
             stakingAprSma: 0,
-            stakingAprHistory: []
+            stakingAprHistory: [],
+            // Historical Fair Value Analysis
+            historicalFairValues: {
+                dcf: [],
+                ps: [],
+                revenueYield: [],
+                validatorEcon: [],
+                tvlMultiple: [],
+                mctvl: [],
+                metcalfe: [],
+                stakingScarcity: [],
+                l2Ecosystem: [],
+                commitmentPremium: [],
+                appCapital: [],
+                settlementLayer: [],
+                composite: []
+            },
+            historicalDataLoaded: false
         };
 
         // Formatters
@@ -4872,6 +5899,9 @@
         let txEthChart, txTotalChart;
         let nvtChart, activeAddrChart;
         let ethDefiChart, commitmentRatioChart, appCapitalChart, stakingAprChart;
+        // Historical Analysis Charts
+        let historicalMainChart;
+        let modelCharts = {};
 
         const chartConfig = (color, data, labels, formatFn, yAxisFormat) => ({
             type: 'line',
@@ -6878,6 +7908,7 @@
             });
             
             const weightedAvgPrice = totalWeight > 0 ? weightedSum / totalWeight : 0;
+            state.compositeFairValue = weightedAvgPrice; // Store for chart display
             const medianPrice = prices.length > 0 
                 ? prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] 
                 : 0;
@@ -7280,6 +8311,10 @@
                 console.log('6. Rendering valuations...');
                 renderValuations();
                 
+                // 7. Historical Analysis 계산 및 렌더링
+                console.log('7. Calculating Historical Fair Values...');
+                initHistoricalAnalysis();
+                
                 updateTime();
                 setStatus('status.live');
                 console.log('========== fetchAll COMPLETE ==========');
@@ -7497,12 +8532,15 @@
                 var sectionPrice = document.getElementById('section-price');
                 var sectionOnchain = document.getElementById('section-onchain');
                 var sectionValuation = document.getElementById('section-valuation');
+                var sectionHistorical = document.getElementById('section-historical');
                 var sectionMethodology = document.getElementById('section-methodology');
                 
                 var current = 'top';
                 
                 if (sectionMethodology && scrollTop >= sectionMethodology.offsetTop - headerHeight) {
                     current = 'section-methodology';
+                } else if (sectionHistorical && scrollTop >= sectionHistorical.offsetTop - headerHeight) {
+                    current = 'section-historical';
                 } else if (sectionValuation && scrollTop >= sectionValuation.offsetTop - headerHeight) {
                     current = 'section-valuation';
                 } else if (sectionOnchain && scrollTop >= sectionOnchain.offsetTop - headerHeight) {
@@ -7657,6 +8695,883 @@ Check out ETHval 👇`;
                 closeShareModal();
             }
         });
+
+        // ========================================
+        // HISTORICAL FAIR VALUE ANALYSIS
+        // ========================================
+        
+        const MODEL_COLORS = {
+            price: '#8b949e',      // Gray for market price
+            composite: '#24292e',  // Black for composite
+            // Rainbow spectrum order (12 models)
+            tvlMultiple: '#ef4444',      // 1. Red
+            stakingScarcity: '#f97316',  // 2. Orange
+            mctvl: '#f59e0b',            // 3. Amber
+            metcalfe: '#eab308',          // 4. Yellow
+            dcf: '#84cc16',              // 5. Lime
+            l2Ecosystem: '#22c55e',      // 6. Green
+            ps: '#14b8a6',               // 7. Teal
+            revenueYield: '#06b6d4',     // 8. Cyan
+            commitmentPremium: '#0ea5e9', // 9. Sky
+            appCapital: '#6366f1',       // 10. Indigo
+            validatorEcon: '#8b5cf6',    // 11. Violet
+            settlementLayer: '#a855f7'   // 12. Purple
+        };
+
+        const MODEL_NAMES = {
+            tvlMultiple: 'TVL Multiple',
+            stakingScarcity: 'Staking Scarcity',
+            mctvl: 'MC/TVL Fair Value',
+            metcalfe: "Metcalfe's Law",
+            dcf: 'DCF (Staking Yield)',
+            l2Ecosystem: 'L2 Ecosystem',
+            ps: 'P/S Ratio (25x)',
+            revenueYield: 'Revenue Yield',
+            commitmentPremium: 'Commitment Premium',
+            appCapital: 'App Capital',
+            validatorEcon: 'Validator Economics',
+            settlementLayer: 'Settlement Layer',
+            composite: 'Composite'
+        };
+        
+        // Model order matching methodology section
+        const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 
+                            'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
+
+        // Calculate historical fair values for all 12 models
+        async function calculateHistoricalFairValues() {
+            console.log('📊 Calculating historical fair values...');
+            
+            const statusEl = document.getElementById('historical-status');
+            const statusTextEl = document.getElementById('historical-status-text');
+            if (statusEl) statusEl.className = 'data-status loading';
+            if (statusTextEl) statusTextEl.textContent = 'Calculating...';
+            
+            // Ensure we have necessary data
+            if (!state.priceHistory || state.priceHistory.length === 0) {
+                console.warn('No price history available');
+                return;
+            }
+            
+            const supply = state.circulatingSupply || 120000000;
+            const results = {
+                dcf: [],
+                ps: [],
+                revenueYield: [],
+                validatorEcon: [],
+                tvlMultiple: [],
+                mctvl: [],
+                metcalfe: [],
+                stakingScarcity: [],
+                l2Ecosystem: [],
+                commitmentPremium: [],
+                appCapital: [],
+                settlementLayer: [],
+                composite: []
+            };
+            
+            // Helper: find closest value in history array
+            const findClosest = (history, date) => {
+                if (!history || history.length === 0) return null;
+                let closest = history[0];
+                let minDiff = Math.abs(date - history[0].date);
+                for (const item of history) {
+                    const diff = Math.abs(date - item.date);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closest = item;
+                    }
+                }
+                return closest.value;
+            };
+            
+            // Calculate for each price point
+            for (let idx = 0; idx < state.priceHistory.length; idx++) {
+                const pricePoint = state.priceHistory[idx];
+                const date = pricePoint.date;
+                const isLastPoint = (idx === state.priceHistory.length - 1);
+                
+                // For the LAST data point, use EXACT current state values to match Valuation section
+                // For historical points, use findClosest
+                const price = isLastPoint ? state.price : pricePoint.value;
+                const tvl = isLastPoint ? state.tvl : (findClosest(state.tvlHistory, date) || state.tvl);
+                const stakedEth = isLastPoint ? state.stakedEth : (findClosest(state.stakingHistory, date) || state.stakedEth);
+                const l2Tvl = isLastPoint ? state.l2Tvl : (findClosest(state.l2History, date) || state.l2Tvl);
+                const fees = isLastPoint ? state.fees : (findClosest(state.feesHistory, date) || state.fees);
+                const stables = isLastPoint ? state.stablecoins : (findClosest(state.stablesHistory, date) || state.stablecoins);
+                const volume = isLastPoint ? (state.volume24h || 15000000000) : (findClosest(state.volumeHistory, date) || state.volume24h || 15000000000);
+                
+                // Use actual staking APR for the last point, estimate for historical
+                const stakedRatio = stakedEth / supply;
+                let stakingApr;
+                
+                if (isLastPoint && state.stakingApr > 0) {
+                    stakingApr = state.stakingApr;
+                } else {
+                    const daysSincePoint = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
+                    if (daysSincePoint < 7 && state.stakingApr > 0) {
+                        stakingApr = state.stakingApr;
+                    } else {
+                        stakingApr = stakedRatio > 0 ? Math.max(2.5, Math.min(5.5, 0.85 / stakedRatio)) : 3.2;
+                    }
+                }
+                
+                // 1. TVL Multiple (matches: price = TVL × 7 ÷ Supply)
+                if (tvl > 0) {
+                    const tvlMultValue = (tvl * 7) / supply;
+                    results.tvlMultiple.push({ date, value: tvlMultValue });
+                }
+                
+                // 2. Staking Scarcity (matches: Price × √(Supply ÷ Liquid))
+                if (stakedEth > 0 && price > 0) {
+                    const liquidSupply = supply - stakedEth;
+                    const scarcityFactor = supply / liquidSupply;
+                    const stakingValue = price * Math.pow(scarcityFactor, 0.5);
+                    results.stakingScarcity.push({ date, value: stakingValue });
+                }
+                
+                // 3. MC/TVL Fair Value (matches: Price × (Target ÷ Ratio))
+                if (tvl > 0 && price > 0) {
+                    const currentMcTvl = (price * supply) / tvl;
+                    const targetMcTvl = 6;
+                    const mctvlValue = price * (targetMcTvl / currentMcTvl);
+                    results.mctvl.push({ date, value: mctvlValue });
+                }
+                
+                // 4. Metcalfe's Law (matches: Coef × TVL^Exp ÷ Supply)
+                if (tvl > 0) {
+                    const networkValue = 2 * Math.pow(tvl / 1e9, 1.5) * 1e9;
+                    const metcalfeValue = networkValue / supply;
+                    results.metcalfe.push({ date, value: metcalfeValue });
+                }
+                
+                // 5. DCF (Staking Yield) - matches: Price × (1+APR) ÷ (Discount - Growth)
+                if (price > 0 && stakingApr > 0) {
+                    const stakingYield = stakingApr / 100;
+                    const yieldMultiplier = 1 + stakingYield;
+                    const discountRate = 0.10;
+                    const growthRate = 0.03;
+                    const dcfValue = Math.min(price * yieldMultiplier / (discountRate - growthRate), price * 3);
+                    results.dcf.push({ date, value: dcfValue });
+                }
+                
+                // 6. L2 Ecosystem (matches: (TVL + L2×Weight) × Multiple ÷ Supply)
+                if (l2Tvl > 0 && tvl > 0) {
+                    const l2Value = (tvl + l2Tvl * 2) * 6 / supply;
+                    results.l2Ecosystem.push({ date, value: l2Value });
+                }
+                
+                // 7. P/S Ratio (25x) (matches: DailyFees × 365 × PSRatio ÷ Supply)
+                // Note: feesHistory stores weekly values, state.fees is daily
+                if (fees > 0) {
+                    const dailyFees = isLastPoint ? fees : fees / 7;
+                    const psValue = (dailyFees * 365 * 25) / supply;
+                    results.ps.push({ date, value: psValue });
+                }
+                
+                // 8. Revenue Yield (matches: AnnualFees ÷ APR ÷ Supply)
+                // Note: feesHistory stores weekly values, state.fees is daily
+                if (fees > 0 && stakingApr > 0) {
+                    const dailyFees = isLastPoint ? fees : fees / 7;
+                    const annualRev = dailyFees * 365;
+                    const targetYield = stakingApr / 100;
+                    const revYieldValue = (annualRev / targetYield) / supply;
+                    results.revenueYield.push({ date, value: revYieldValue });
+                }
+                
+                // 9. Commitment Premium (matches: Price × (1 + Commit% × Multiplier))
+                const ethInDefi = price > 0 ? tvl / price : 0;
+                if (stakedEth > 0 && ethInDefi > 0 && price > 0) {
+                    const committed = stakedEth + ethInDefi;
+                    const commitRatio = committed / supply;
+                    const commitValue = price * (1 + commitRatio * 1.5);
+                    results.commitmentPremium.push({ date, value: commitValue });
+                }
+                
+                // 10. App Capital (matches: Stables ÷ Ratio ÷ Supply)
+                const appCap = stables > 0 ? stables / 0.28 : 0;
+                if (appCap > 0) {
+                    const appCapValue = appCap / supply;
+                    results.appCapital.push({ date, value: appCapValue });
+                }
+                
+                // 11. Validator Economics (matches: Price × (Target ÷ APR))
+                if (price > 0 && stakingApr > 0) {
+                    const riskFreeRate = 4.5;
+                    const riskPremium = 1.5;
+                    const targetYield = riskFreeRate + riskPremium; // 6%
+                    const valEconValue = price * (targetYield / stakingApr);
+                    results.validatorEcon.push({ date, value: valEconValue });
+                }
+                
+                // 12. Settlement Layer (MV=PQ)
+                // Uses daily settlement volume with velocity assumption
+                // Historical: estimate based on price and TVL correlation with baseline
+                const velocity = 6;
+                if (isLastPoint) {
+                    const dailySettlement = state.dailySettlement || 10130000000;
+                    const settlementValue = (dailySettlement * 365 / velocity) / supply;
+                    results.settlementLayer.push({ date, value: settlementValue });
+                } else if (tvl > 0 && price > 0) {
+                    // Historical estimation: scale baseline settlement by TVL ratio
+                    // Current baseline: $10.13B daily when TVL ~$58B
+                    const currentTvl = state.tvl || 58000000000;
+                    const baselineSettlement = 10130000000;
+                    const tvlRatio = tvl / currentTvl;
+                    const estimatedSettlement = baselineSettlement * Math.pow(tvlRatio, 0.7); // dampened scaling
+                    const settlementValue = (estimatedSettlement * 365 / velocity) / supply;
+                    results.settlementLayer.push({ date, value: settlementValue });
+                }
+            }
+            
+            // Calculate Composite (weighted average)
+            for (let i = 0; i < state.priceHistory.length; i++) {
+                const date = state.priceHistory[i].date;
+                let weightedSum = 0;
+                let totalWeight = 0;
+                
+                // Reliability weights: High=3, Medium=2, Low=1
+                const weights = {
+                    dcf: 3, ps: 2, revenueYield: 3, validatorEcon: 2,
+                    tvlMultiple: 1, mctvl: 2, metcalfe: 2, stakingScarcity: 1,
+                    l2Ecosystem: 1, commitmentPremium: 1, appCapital: 2, settlementLayer: 2
+                };
+                
+                for (const [model, data] of Object.entries(results)) {
+                    if (model === 'composite') continue;
+                    if (data[i] && data[i].value > 0 && isFinite(data[i].value)) {
+                        const w = weights[model] || 1;
+                        weightedSum += data[i].value * w;
+                        totalWeight += w;
+                    }
+                }
+                
+                if (totalWeight > 0) {
+                    results.composite.push({
+                        date,
+                        value: weightedSum / totalWeight
+                    });
+                }
+            }
+            
+            state.historicalFairValues = results;
+            state.historicalDataLoaded = true;
+            
+            // Debug: Compare Historical last values with Valuation
+            console.log('📊 Historical vs Valuation Comparison:');
+            console.log('┌─────────────────────────┬──────────────────┬──────────────────┬────────┐');
+            console.log('│ Model                   │ Historical Last  │ Valuation        │ Match  │');
+            console.log('├─────────────────────────┼──────────────────┼──────────────────┼────────┤');
+            
+            const modelKeys = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 
+                              'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
+            
+            // Calculate Valuation values using same formulas
+            const cs = state.circulatingSupply;
+            const valuation = {};
+            
+            // TVL Multiple
+            valuation.tvlMultiple = (state.tvl * 6) / cs;
+            // Staking Scarcity
+            valuation.stakingScarcity = state.price * (1 + state.stakedEth / cs);
+            // MC/TVL
+            const mctvlRatio = (state.price * cs) / state.tvl;
+            valuation.mctvl = state.price * (6 / mctvlRatio);
+            // Metcalfe
+            valuation.metcalfe = (Math.pow(state.tvl / 1e9, 1.5) * 1e9 * 2) / cs;
+            // DCF
+            const stakingYield = state.stakingApr / 100;
+            valuation.dcf = Math.min(state.price * (1 + stakingYield) / 0.07, state.price * 3);
+            // L2 Ecosystem
+            valuation.l2Ecosystem = (state.tvl + state.l2Tvl * 2) * 6 / cs;
+            // P/S
+            valuation.ps = (state.fees * 365 * 25) / cs;
+            // Revenue Yield
+            valuation.revenueYield = (state.fees * 365 / (state.stakingApr / 100)) / cs;
+            // Commitment Premium
+            const ethInDefi = state.tvl / state.price;
+            const commitRatio = (state.stakedEth + ethInDefi) / cs;
+            valuation.commitmentPremium = state.price * (1 + commitRatio * 1.5);
+            // App Capital
+            valuation.appCapital = (state.stablecoins / 0.28) / cs;
+            // Validator Economics
+            valuation.validatorEcon = state.price * (6 / state.stakingApr);
+            // Settlement Layer
+            const dailySettlement = state.dailySettlement || 10130000000;
+            valuation.settlementLayer = (dailySettlement * 365 / 6) / cs;
+            
+            modelKeys.forEach(key => {
+                const histData = results[key];
+                const histLast = histData && histData.length > 0 ? histData[histData.length - 1].value : 0;
+                const valLast = valuation[key] || 0;
+                const match = Math.abs(histLast - valLast) < 0.01 || (valLast > 0 && Math.abs((histLast - valLast) / valLast) < 0.001);
+                const matchStr = match ? '✅' : '❌';
+                console.log(`│ ${key.padEnd(23)} │ $${histLast.toFixed(2).padStart(14)} │ $${valLast.toFixed(2).padStart(14)} │ ${matchStr}      │`);
+            });
+            console.log('└─────────────────────────┴──────────────────┴──────────────────┴────────┘');
+            
+            console.log('✅ Historical fair values calculated:', {
+                pricePoints: state.priceHistory.length,
+                compositePoints: results.composite.length
+            });
+            
+            // Update status
+            if (statusEl) statusEl.className = 'data-status live';
+            if (statusTextEl) statusTextEl.textContent = 'Live';
+            
+            // Calculate and store fixed Y-axis max
+            state.yAxisMax = calculateYAxisMax();
+            
+            // Render charts
+            renderHistoricalMainChart();
+            renderModelCharts();
+        }
+        
+        // Store current period for reuse
+        let currentHistoricalPeriod = 365;
+        
+        // Render main historical chart
+        function renderHistoricalMainChart(period = null) {
+            if (period !== null) {
+                currentHistoricalPeriod = period;
+            }
+            
+            const ctx = document.getElementById('historical-main-chart');
+            if (!ctx) return;
+            
+            // Filter data by period
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - currentHistoricalPeriod);
+            
+            const priceData = state.priceHistory.filter(d => d.date >= cutoffDate);
+            
+            // Sample data for performance, but ALWAYS include the last point
+            const sampleRate = Math.max(1, Math.floor(priceData.length / 100));
+            const sampledPrice = priceData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            
+            const labels = sampledPrice.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            
+            // All 12 models
+            // Use MODEL_ORDER for consistent ordering
+            const allModels = MODEL_ORDER;
+            
+            // Check which models are active
+            const getActiveModels = () => {
+                const active = [];
+                allModels.forEach(model => {
+                    const btn = document.querySelector(`.legend-btn[data-model="${model}"]`);
+                    if (btn && btn.classList.contains('active')) {
+                        active.push(model);
+                    }
+                });
+                return active;
+            };
+            
+            const activeModels = getActiveModels();
+            
+            // Update model count badge
+            const countBadge = document.getElementById('legend-model-count');
+            if (countBadge) {
+                countBadge.textContent = `${activeModels.length} / 12`;
+            }
+            
+            // Calculate dynamic composite based on active models only
+            const calculateDynamicComposite = () => {
+                const weights = {
+                    dcf: 3, ps: 2, revenueYield: 3, validatorEcon: 2,
+                    tvlMultiple: 1, mctvl: 2, metcalfe: 2, stakingScarcity: 1,
+                    l2Ecosystem: 1, commitmentPremium: 1, appCapital: 2, settlementLayer: 2
+                };
+                
+                const compositeData = [];
+                const filteredPrice = priceData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+                
+                for (let i = 0; i < filteredPrice.length; i++) {
+                    let weightedSum = 0;
+                    let totalWeight = 0;
+                    
+                    activeModels.forEach(model => {
+                        const modelData = state.historicalFairValues[model];
+                        if (modelData) {
+                            const filtered = modelData.filter(d => d.date >= cutoffDate);
+                            const sampled = filtered.filter((_, j, arr) => j % sampleRate === 0 || j === arr.length - 1);
+                            if (sampled[i] && sampled[i].value > 0 && isFinite(sampled[i].value)) {
+                                const w = weights[model] || 1;
+                                weightedSum += sampled[i].value * w;
+                                totalWeight += w;
+                            }
+                        }
+                    });
+                    
+                    compositeData.push(totalWeight > 0 ? weightedSum / totalWeight : 0);
+                }
+                
+                return compositeData;
+            };
+            
+            // Build all datasets
+            const datasets = [];
+            
+            // Price dataset - Black dashed line (reference), ALWAYS visible
+            datasets.push({
+                label: 'Market Price',
+                data: sampledPrice.map(d => d.value),
+                borderColor: '#24292e',
+                backgroundColor: 'transparent',
+                borderWidth: 3,
+                borderDash: [6, 4],
+                fill: false,
+                tension: 0.3,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                order: 1
+            });
+            
+            // Composite dataset - Black solid line (key output), ALWAYS visible
+            datasets.push({
+                label: 'Composite',
+                data: calculateDynamicComposite(),
+                borderColor: '#24292e',
+                backgroundColor: 'transparent',
+                borderWidth: 3,
+                fill: false,
+                tension: 0.3,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                order: 0
+            });
+            
+            // Individual model datasets - thin solid lines
+            allModels.forEach((model, index) => {
+                const modelData = state.historicalFairValues[model];
+                if (modelData && modelData.length > 0) {
+                    const filteredData = modelData.filter(d => d.date >= cutoffDate);
+                    const sampledModel = filteredData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+                    const btn = document.querySelector(`.legend-btn[data-model="${model}"]`);
+                    
+                    datasets.push({
+                        label: MODEL_NAMES[model] || model,
+                        data: sampledModel.map(d => d.value),
+                        borderColor: MODEL_COLORS[model] || '#888',
+                        backgroundColor: 'transparent',
+                        borderWidth: 1,
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        pointHoverRadius: 3,
+                        order: index + 2,
+                        hidden: !(btn && btn.classList.contains('active'))
+                    });
+                }
+            });
+            
+            // Destroy and recreate chart (but with animation disabled)
+            if (historicalMainChart) {
+                historicalMainChart.destroy();
+            }
+            
+            historicalMainChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 400,
+                        easing: 'easeOutQuart'
+                    },
+                    elements: {
+                        point: {
+                            radius: 0,
+                            hoverRadius: 0,
+                            hitRadius: 0
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: false,
+                            external: function(context) {
+                                // Get or create tooltip element
+                                let tooltipEl = document.getElementById('chartjs-tooltip');
+                                if (!tooltipEl) {
+                                    tooltipEl = document.createElement('div');
+                                    tooltipEl.id = 'chartjs-tooltip';
+                                    tooltipEl.style.cssText = 'position:absolute;background:#fff;border-radius:8px;padding:10px 12px;pointer-events:none;opacity:0;transition:opacity 0.15s ease;font-family:Inter,sans-serif;z-index:1000;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.08);';
+                                    document.body.appendChild(tooltipEl);
+                                }
+                                
+                                const tooltipModel = context.tooltip;
+                                
+                                // Hide if no tooltip
+                                if (tooltipModel.opacity === 0) {
+                                    tooltipEl.style.opacity = 0;
+                                    return;
+                                }
+                                
+                                // Set content
+                                if (tooltipModel.body) {
+                                    const dataPoints = tooltipModel.dataPoints || [];
+                                    
+                                    // Sort by value descending
+                                    const sortedPoints = [...dataPoints].sort((a, b) => (b.raw || 0) - (a.raw || 0));
+                                    
+                                    let html = '<div style="color:#24292e;font-size:11px;font-weight:600;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(0,0,0,0.1);">' + tooltipModel.title[0] + '</div>';
+                                    
+                                    sortedPoints.forEach(point => {
+                                        const color = point.dataset.borderColor || '#888';
+                                        let label = point.dataset.label || '';
+                                        const value = fmt.price(point.raw);
+                                        const isMain = label === 'Market Price' || label === 'Composite';
+                                        const isMarketPrice = label === 'Market Price';
+                                        const lineHeight = isMain ? '3px' : '1px';
+                                        const fontWeight = isMain ? '600' : '400';
+                                        if (label === 'Composite') label = 'Composite Fair Value';
+                                        
+                                        html += '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;">';
+                                        if (isMarketPrice) {
+                                            html += '<span style="display:inline-block;width:12px;height:' + lineHeight + ';border-radius:1px;background:repeating-linear-gradient(90deg,' + color + ' 0px,' + color + ' 3px,transparent 3px,transparent 5px);flex-shrink:0;"></span>';
+                                        } else {
+                                            html += '<span style="display:inline-block;width:12px;height:' + lineHeight + ';border-radius:1px;background:' + color + ';flex-shrink:0;"></span>';
+                                        }
+                                        html += '<span style="flex:1;color:' + color + ';font-weight:' + fontWeight + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + label + '</span>';
+                                        html += '<span style="color:#24292e;font-family:\'JetBrains Mono\',monospace;font-size:9px;font-weight:' + fontWeight + ';">' + value + '</span>';
+                                        html += '</div>';
+                                    });
+                                    
+                                    tooltipEl.innerHTML = html;
+                                }
+                                
+                                // Position
+                                const position = context.chart.canvas.getBoundingClientRect();
+                                tooltipEl.style.opacity = 1;
+                                tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+                                tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY - 10 + 'px';
+                                tooltipEl.style.transform = 'translateX(-50%)';
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 9 },
+                                color: '#8b949e',
+                                maxTicksLimit: 8,
+                                maxRotation: 0
+                            }
+                        },
+                        y: {
+                            display: true,
+                            position: 'right',
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            min: 0,
+                            suggestedMax: state.yAxisMax || 12000,
+                            ticks: {
+                                font: { size: 9 },
+                                color: '#8b949e',
+                                callback: v => '$' + (v/1000).toFixed(1) + 'K'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update legend values with the LAST value from each model's chart data
+            updateLegendValues();
+        }
+        
+        // Calculate and store fixed Y-axis max based on all models
+        function calculateYAxisMax() {
+            if (!state.historicalFairValues) return 12000;
+            
+            let maxValue = 0;
+            MODEL_ORDER.forEach(model => {
+                const data = state.historicalFairValues[model];
+                if (data && data.length > 0) {
+                    const modelMax = Math.max(...data.map(d => d.value));
+                    if (modelMax > maxValue) maxValue = modelMax;
+                }
+            });
+            
+            // Add 10% padding and round up
+            return Math.ceil(maxValue * 1.1 / 1000) * 1000;
+        }
+        
+        // Update legend with actual chart last values
+        function updateLegendValues() {
+            if (!state.historicalFairValues) return;
+            
+            MODEL_ORDER.forEach(model => {
+                const data = state.historicalFairValues[model];
+                if (data && data.length > 0) {
+                    const lastValue = data[data.length - 1].value;
+                    const el = document.getElementById(`legend-val-${model}`);
+                    if (el) {
+                        el.textContent = '$' + lastValue.toFixed(0);
+                    }
+                }
+            });
+            
+            // Update chart price display
+            const marketPriceEl = document.getElementById('chart-market-price');
+            const compositeEl = document.getElementById('chart-composite-value');
+            const diffEl = document.getElementById('chart-price-diff');
+            
+            if (marketPriceEl && state.price) {
+                marketPriceEl.textContent = '$' + state.price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+            }
+            
+            if (compositeEl && state.compositeFairValue) {
+                compositeEl.textContent = '$' + state.compositeFairValue.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+            }
+            
+            if (diffEl && state.price && state.compositeFairValue) {
+                const diff = ((state.compositeFairValue - state.price) / state.price) * 100;
+                const isUp = diff >= 0;
+                diffEl.textContent = (isUp ? '+' : '') + diff.toFixed(1) + '%';
+                diffEl.className = 'chart-price-diff ' + (isUp ? 'up' : 'down');
+            }
+        }
+        
+        // Render individual model charts in methodology cards
+        let modelChartPeriods = {}; // Store period for each model
+        let methodCharts = {}; // Store chart instances
+        
+        function renderModelCharts() {
+            // Render charts in methodology cards
+            for (const model of MODEL_ORDER) {
+                const data = state.historicalFairValues[model];
+                if (!data || data.length === 0) continue;
+                
+                // Initialize period if not set
+                if (!modelChartPeriods[model]) modelChartPeriods[model] = 365;
+                
+                const latestValue = data[data.length - 1]?.value || 0;
+                const diff = state.price > 0 ? ((latestValue - state.price) / state.price) * 100 : 0;
+                
+                // Update value and diff display in methodology card
+                const valueEl = document.getElementById(`method-value-${model}`);
+                const diffEl = document.getElementById(`method-diff-${model}`);
+                
+                if (valueEl) {
+                    valueEl.textContent = fmt.price(latestValue);
+                    valueEl.style.color = MODEL_COLORS[model] || 'var(--text)';
+                }
+                if (diffEl) {
+                    diffEl.textContent = fmt.pct(diff) + ' vs Price';
+                    diffEl.className = 'method-chart-diff ' + (diff >= 0 ? 'up' : 'down');
+                }
+                
+                // Add tab click handlers for methodology cards
+                const card = document.querySelector(`.method-card[data-model="${model}"]`);
+                if (card) {
+                    card.querySelectorAll('.method-chart-tab').forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            card.querySelectorAll('.method-chart-tab').forEach(t => t.classList.remove('active'));
+                            tab.classList.add('active');
+                            const period = parseInt(tab.dataset.period);
+                            modelChartPeriods[model] = period;
+                            renderSingleModelChart(model, period);
+                        });
+                    });
+                }
+                
+                // Render initial chart
+                renderSingleModelChart(model, modelChartPeriods[model]);
+            }
+        }
+        
+        function renderSingleModelChart(model, period) {
+            const data = state.historicalFairValues[model];
+            if (!data || data.length === 0) return;
+            
+            const ctx = document.getElementById(`method-chart-${model}`);
+            if (!ctx) return;
+            
+            // Filter by period
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - period);
+            const filteredData = data.filter(d => d.date >= cutoffDate);
+            
+            const sampleRate = Math.max(1, Math.floor(filteredData.length / 50));
+            const sampledData = filteredData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            
+            if (methodCharts[model]) methodCharts[model].destroy();
+            
+            const labels = sampledData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            
+            methodCharts[model] = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: sampledData.map(d => d.value),
+                        borderColor: MODEL_COLORS[model] || '#888',
+                        backgroundColor: 'transparent',
+                        borderWidth: 1,
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: MODEL_COLORS[model] || '#888',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: '#24292e',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            titleFont: { size: 9, weight: '600' },
+                            bodyFont: { size: 10, family: 'JetBrains Mono' },
+                            padding: 6,
+                            cornerRadius: 3,
+                            displayColors: false,
+                            callbacks: {
+                                title: (items) => items[0]?.label || '',
+                                label: (item) => fmt.price(item.raw)
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: { color: '#8b949e', maxTicksLimit: 3, font: { size: 7 } }
+                        },
+                        y: {
+                            display: true,
+                            position: 'right',
+                            grid: { display: false },
+                            ticks: {
+                                color: '#8b949e',
+                                font: { size: 7 },
+                                maxTicksLimit: 3,
+                                callback: v => '$' + (v/1000).toFixed(1) + 'K'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Historical tabs event listeners
+        document.querySelectorAll('.historical-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                renderHistoricalMainChart(period);
+            });
+        });
+
+        // Legend button click handlers
+        document.querySelectorAll('.legend-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                // Update chart data smoothly instead of re-rendering
+                updateChartData();
+            });
+        });
+        
+        // Update chart data without destroying/recreating
+        function updateChartData() {
+            if (!historicalMainChart || !state.historicalFairValues) return;
+            
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - currentHistoricalPeriod);
+            const priceData = state.priceHistory.filter(d => d.date >= cutoffDate);
+            const sampleRate = Math.max(1, Math.floor(priceData.length / 100));
+            
+            // Get active models
+            const activeModels = [];
+            MODEL_ORDER.forEach(model => {
+                const btn = document.querySelector(`.legend-btn[data-model="${model}"]`);
+                if (btn && btn.classList.contains('active')) {
+                    activeModels.push(model);
+                }
+            });
+            
+            // Update model count badge
+            const countBadge = document.getElementById('legend-model-count');
+            if (countBadge) {
+                countBadge.textContent = `${activeModels.length} / 12`;
+            }
+            
+            // Update chart title model count
+            const titleCount = document.getElementById('chart-title-model-count');
+            if (titleCount) {
+                titleCount.textContent = `${activeModels.length} / 12 models`;
+            }
+            
+            // Recalculate composite with active models only
+            const weights = {
+                dcf: 3, ps: 2, revenueYield: 3, validatorEcon: 2,
+                tvlMultiple: 1, mctvl: 2, metcalfe: 2, stakingScarcity: 1,
+                l2Ecosystem: 1, commitmentPremium: 1, appCapital: 2, settlementLayer: 2
+            };
+            
+            const filteredPrice = priceData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            const newCompositeData = [];
+            
+            for (let i = 0; i < filteredPrice.length; i++) {
+                let weightedSum = 0;
+                let totalWeight = 0;
+                
+                activeModels.forEach(model => {
+                    const modelData = state.historicalFairValues[model];
+                    if (modelData) {
+                        const filtered = modelData.filter(d => d.date >= cutoffDate);
+                        const sampled = filtered.filter((_, j, arr) => j % sampleRate === 0 || j === arr.length - 1);
+                        if (sampled[i] && sampled[i].value > 0 && isFinite(sampled[i].value)) {
+                            const w = weights[model] || 1;
+                            weightedSum += sampled[i].value * w;
+                            totalWeight += w;
+                        }
+                    }
+                });
+                
+                newCompositeData.push(totalWeight > 0 ? weightedSum / totalWeight : 0);
+            }
+            
+            // Update composite dataset (index 1)
+            historicalMainChart.data.datasets[1].data = newCompositeData;
+            
+            // Update individual model visibility
+            MODEL_ORDER.forEach((model, index) => {
+                const datasetIndex = index + 2; // Skip price and composite
+                if (historicalMainChart.data.datasets[datasetIndex]) {
+                    const btn = document.querySelector(`.legend-btn[data-model="${model}"]`);
+                    historicalMainChart.data.datasets[datasetIndex].hidden = !(btn && btn.classList.contains('active'));
+                }
+            });
+            
+            // Trigger smooth update without showing points
+            historicalMainChart.update();
+        }
+
+        // Trigger historical calculation after data is loaded
+        // This will be called from the main data loading flow
+        function initHistoricalAnalysis() {
+            if (state.priceHistory.length > 0 && !state.historicalDataLoaded) {
+                setTimeout(() => {
+                    calculateHistoricalFairValues();
+                }, 1000);
+            }
+        }
     </script>
 
     <!-- Share Card (Hidden, for capture) -->
@@ -7707,7 +9622,4 @@ Check out ETHval 👇`;
             </div>
             <div class="share-modal-actions">
                 <button class="share-modal-btn twitter" onclick="shareToTwitter()">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    <span data-i18n="share.postToX">Post to 𝕏</span>
-                </button>
-                <button class="share-modal-btn download" oncl
+                    <svg viewBox
