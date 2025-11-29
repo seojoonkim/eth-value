@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ETHval | Intrinsic Value Dashboard</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PX7DBZL3ND"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PX7DBZL3ND');
+    </script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Montserrat:wght@600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
@@ -13,24 +23,85 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root {
-            --bg: #ffffff;
-            --bg-card: #f8f9fa;
-            --bg-card-alt: #f1f3f4;
-            --border: #e1e4e8;
-            --border-dark: #d0d4d9;
-            --text: #24292e;
-            --text-secondary: #586069;
-            --text-muted: #8b949e;
-            --primary: #0366d6;
-            --primary-light: #e6f0ff;
-            --green: #22863a;
-            --green-bg: #dcffe4;
-            --red: #cb2431;
-            --red-bg: #ffeef0;
-            --yellow: #b08800;
-            --yellow-bg: #fff5b1;
-            --purple: #6f42c1;
-            --cyan: #0598bc;
+            /* ========================================
+               DESIGN SYSTEM - Colors & Typography
+               ======================================== */
+            
+            /* Background Colors */
+            --bg: #fafafa;
+            --bg-card: #ffffff;
+            --bg-card-alt: #f8f9fa;
+            --bg-subtle: #f4f4f5;
+            --bg-elevated: #ffffff;
+            
+            /* Border Colors */
+            --border: #e4e4e7;
+            --border-light: #f0f0f2;
+            --border-dark: #d4d4d8;
+            
+            /* Text Colors */
+            --text: #18181b;
+            --text-secondary: #52525b;
+            --text-muted: #a1a1aa;
+            --text-placeholder: #d4d4d8;
+            
+            /* Semantic Colors - Positive */
+            --green: #16a34a;
+            --green-bg: #f0fdf4;
+            --positive: #16a34a;
+            --positive-bg: #f0fdf4;
+            
+            /* Semantic Colors - Negative */
+            --red: #dc2626;
+            --red-bg: #fef2f2;
+            --negative: #dc2626;
+            --negative-bg: #fef2f2;
+            
+            /* Semantic Colors - Neutral */
+            --yellow: #ca8a04;
+            --yellow-bg: #fefce8;
+            --neutral: #ca8a04;
+            --neutral-bg: #fefce8;
+            
+            /* Accent Colors */
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --accent: #2563eb;
+            --accent-bg: #eff6ff;
+            
+            /* Additional Colors */
+            --purple: #7c3aed;
+            --cyan: #0891b2;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            
+            /* Border Radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            
+            /* Typography - PC */
+            --font-h1: 32px;
+            --font-h2: 16px;
+            --font-h3: 13px;
+            --font-body: 12px;
+            --font-caption: 10px;
+            --font-tiny: 8px;
+        }
+        
+        /* Typography - Mobile */
+        @media (max-width: 768px) {
+            :root {
+                --font-h1: 24px;
+                --font-h2: 14px;
+                --font-h3: 12px;
+                --font-body: 11px;
+                --font-caption: 9px;
+                --font-tiny: 7px;
+            }
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,9 +118,9 @@
         body {
             font-family: 'Inter', 'Pretendard Variable', Pretendard, 'Noto Sans JP', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg);
-            color: var(--text);
-            font-size: 12px;
-            line-height: 1.4;
+            color: var(--text-secondary);
+            font-size: var(--font-body);
+            line-height: 1.5;
             overflow-x: hidden;
             min-width: 320px;
         }
@@ -65,8 +136,8 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: var(--bg);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
         }
 
         /* Header */
@@ -93,17 +164,17 @@
             max-width: 1400px;
             margin-left: auto;
             margin-right: auto;
-            background: var(--bg);
+            background: var(--bg-card);
         }
 
         .nav-item {
             padding: 5px 14px;
-            font-size: 11px;
+            font-size: var(--font-body);
             font-weight: 500;
             color: var(--text-secondary);
             background: transparent;
             border: none;
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
             transition: all 0.15s ease;
             white-space: nowrap;
@@ -112,12 +183,12 @@
 
         .nav-item:hover {
             color: var(--text);
-            background: var(--bg-card-alt);
+            background: var(--bg-subtle);
         }
 
         .nav-item.active {
-            color: var(--primary);
-            background: var(--primary-light);
+            color: var(--accent);
+            background: var(--accent-bg);
         }
 
         /* Scroll offset for sticky header */
@@ -284,15 +355,15 @@
             align-items: center;
             margin-bottom: 16px;
             padding-bottom: 10px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border-light);
             flex-wrap: wrap;
             gap: 8px;
         }
 
         .section-title {
             font-family: 'Outfit', sans-serif;
-            font-size: 19px;
-            font-weight: 700;
+            font-size: var(--font-h2);
+            font-weight: 600;
             color: var(--text);
             display: flex;
             align-items: center;
@@ -300,11 +371,11 @@
         }
 
         .section-badge {
-            font-size: 9px;
+            font-size: var(--font-tiny);
             padding: 3px 8px;
-            background: var(--primary-light);
-            color: var(--primary);
-            border-radius: 10px;
+            background: var(--accent-bg);
+            color: var(--accent);
+            border-radius: var(--radius-sm);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -329,7 +400,7 @@
         }
 
         .price-label {
-            font-size: 10px;
+            font-size: var(--font-caption);
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -344,7 +415,7 @@
         }
 
         .price-value {
-            font-size: 29px;
+            font-size: var(--font-h1);
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
             color: var(--text);
@@ -355,14 +426,14 @@
             align-items: center;
             gap: 4px;
             padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-body);
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .price-change.up { background: var(--green-bg); color: var(--green); }
-        .price-change.down { background: var(--red-bg); color: var(--red); }
+        .price-change.up { background: var(--positive-bg); color: var(--positive); }
+        .price-change.down { background: var(--negative-bg); color: var(--negative); }
 
         .price-stats {
             display: flex;
@@ -414,9 +485,9 @@
         .mini-tabs {
             display: flex;
             gap: 2px;
-            background: var(--bg-card-alt);
+            background: var(--bg-subtle);
             padding: 2px;
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
             width: fit-content;
             margin-bottom: 8px;
             margin-left: auto;
@@ -424,24 +495,25 @@
 
         .mini-tab {
             padding: 3px 8px;
-            font-size: 9px;
+            font-size: var(--font-caption);
             font-weight: 500;
             border: none;
             background: transparent;
             color: var(--text-muted);
             cursor: pointer;
-            border-radius: 3px;
-            transition: all 0.2s;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s ease;
         }
 
         .mini-tab:hover {
-            color: var(--text);
+            color: var(--text-secondary);
         }
 
         .mini-tab.active {
-            background: var(--bg);
-            color: var(--primary);
+            background: var(--bg-card);
+            color: var(--accent);
             font-weight: 600;
+            box-shadow: var(--shadow-sm);
         }
 
         .price-chart-area {
@@ -584,8 +656,8 @@
         }
 
         .chart-card-body {
-            height: 70px;
-            margin-top: 6px;
+            height: 85px;
+            margin-top: 4px;
             position: relative;
         }
 
@@ -662,11 +734,12 @@
         /* Section 2: Metrics */
         .metric-card {
             background: var(--bg-card);
-            border-radius: 6px;
+            border-radius: var(--radius-md);
             padding: 12px;
-            border: none;
+            border: 1px solid var(--border-light);
             min-width: 0;
             overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
 
         .metric-header {
@@ -679,32 +752,32 @@
         }
 
         .metric-info h4 {
-            font-size: 12px;
+            font-size: var(--font-body);
             font-weight: 600;
             color: var(--text);
             margin-bottom: 2px;
         }
 
         .metric-value-large {
-            font-size: 16px;
+            font-size: var(--font-h2);
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
             color: var(--text);
         }
 
         .metric-badge {
-            font-size: 8px;
+            font-size: var(--font-tiny);
             padding: 2px 6px;
-            border-radius: 3px;
+            border-radius: var(--radius-sm);
             font-weight: 600;
             text-transform: uppercase;
         }
 
-        .metric-badge.tvl { background: var(--green-bg); color: var(--green); }
-        .metric-badge.staking { background: var(--primary-light); color: var(--primary); }
+        .metric-badge.tvl { background: var(--positive-bg); color: var(--positive); }
+        .metric-badge.staking { background: var(--accent-bg); color: var(--accent); }
         .metric-badge.l2 { background: #f3e8ff; color: var(--purple); }
         .metric-badge.fees { background: #fff3e0; color: #e65100; }
-        .metric-badge.supply { background: var(--yellow-bg); color: var(--yellow); }
+        .metric-badge.supply { background: var(--neutral-bg); color: var(--neutral); }
         .metric-badge.activity { background: #e0f7fa; color: var(--cyan); }
 
         .metric-tabs {
@@ -772,11 +845,12 @@
 
         .valuation-model {
             background: var(--bg-card);
-            border: none;
-            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
             padding: 12px 14px;
             min-width: 0;
             overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
 
         .model-row-1 {
@@ -802,18 +876,18 @@
         }
 
         .model-name {
-            font-size: 12px;
+            font-size: var(--font-h3);
             font-weight: 600;
             color: var(--text);
         }
 
         .model-formula {
-            font-size: 9px;
+            font-size: var(--font-caption);
             font-family: 'JetBrains Mono', monospace;
             color: var(--text-muted);
-            background: var(--bg-card-alt);
+            background: var(--bg-subtle);
             padding: 2px 6px;
-            border-radius: 3px;
+            border-radius: var(--radius-sm);
             display: inline-block;
         }
 
@@ -912,7 +986,7 @@
         }
 
         .reliability-label {
-            font-size: 7px;
+            font-size: var(--font-tiny);
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -955,6 +1029,11 @@
         .reliability-gauge-svg {
             width: 24px;
             height: 15px;
+        }
+
+        .reliability-gauge-lg .reliability-gauge-svg {
+            width: 32px;
+            height: 20px;
         }
 
         .gauge-bg {
@@ -1002,7 +1081,7 @@
 
         .model-price {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: var(--font-h3);
             font-weight: 600;
             color: var(--text);
         }
@@ -1018,6 +1097,8 @@
             position: absolute;
             left: 0;
             right: 0;
+            top: 50%;
+            transform: translateY(-50%);
             height: 4px;
             background: var(--border);
             border-radius: 2px;
@@ -1026,60 +1107,65 @@
         .model-bar-center {
             position: absolute;
             left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 1px;
-            background: var(--text);
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 0.5px;
+            height: 12px;
+            background: var(--text-muted);
             z-index: 3;
         }
 
         .model-bar-fill {
             position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
             height: 4px;
             border-radius: 2px;
             z-index: 1;
+            transition: width 0.6s ease-out;
         }
 
         .model-bar-fill.positive {
             left: 50%;
-            background: var(--green);
+            background: var(--positive);
         }
 
         .model-bar-fill.negative {
             right: 50%;
-            background: var(--red);
+            background: var(--negative);
         }
 
         .model-bar-marker {
             position: absolute;
+            top: 50%;
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             z-index: 2;
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            border: 1.5px solid white;
+            box-shadow: var(--shadow-sm);
+            transition: left 0.6s ease-out;
         }
 
-        .model-bar-marker.positive { background: var(--green); }
-        .model-bar-marker.negative { background: var(--red); }
-        .model-bar-marker.neutral { background: var(--yellow); }
+        .model-bar-marker.positive { background: var(--positive); }
+        .model-bar-marker.negative { background: var(--negative); }
+        .model-bar-marker.neutral { background: var(--neutral); }
 
         .model-diff {
             text-align: right;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: var(--font-h3);
             font-weight: 700;
         }
 
-        .model-diff.up { color: var(--green); }
-        .model-diff.down { color: var(--red); }
-        .model-diff.neutral { color: var(--yellow); }
+        .model-diff.up { color: var(--positive); }
+        .model-diff.down { color: var(--negative); }
+        .model-diff.neutral { color: var(--neutral); }
 
         .model-diff small {
             display: block;
-            font-size: 8px;
+            font-size: var(--font-tiny);
             font-weight: 500;
             color: inherit;
             text-transform: uppercase;
@@ -1088,8 +1174,8 @@
         /* Conclusion Panel */
         .conclusion-panel {
             background: var(--bg-card);
-            border: none;
-            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
             padding: 16px;
             text-align: center;
             display: flex;
@@ -1115,7 +1201,7 @@
             font-size: 32px;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
-            color: var(--primary);
+            color: var(--text);
             margin-bottom: 6px;
         }
 
@@ -1261,19 +1347,19 @@
             text-align: center;
             padding: 16px;
             color: var(--text-muted);
-            font-size: 10px;
-            border-top: 1px solid var(--border);
+            font-size: var(--font-caption);
+            border-top: 1px solid var(--border-light);
             margin-top: 16px;
         }
 
         .footer-brand {
-            font-size: 11px;
+            font-size: var(--font-body);
             margin-bottom: 8px;
             color: var(--text-secondary);
         }
 
         .footer-brand strong {
-            color: var(--primary);
+            color: var(--accent);
             font-weight: 600;
         }
 
@@ -1295,7 +1381,7 @@
             content: '';
             width: 5px;
             height: 5px;
-            background: var(--green);
+            background: var(--positive);
             border-radius: 50%;
         }
 
@@ -1312,13 +1398,14 @@
 
         .method-card {
             background: var(--bg-card);
-            border: none;
-            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
             padding: 16px;
-            font-size: 10px;
+            font-size: var(--font-caption);
             min-width: 0;
             overflow: hidden;
             min-height: 190px;
+            box-shadow: var(--shadow-sm);
         }
 
         .method-header {
@@ -1330,7 +1417,7 @@
 
         .method-name {
             font-weight: 600;
-            font-size: 12px;
+            font-size: var(--font-h3);
             color: var(--text);
         }
 
@@ -1356,17 +1443,17 @@
 
         .method-formula {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 9px;
-            background: var(--bg);
+            font-size: var(--font-caption);
+            background: var(--bg-subtle);
             padding: 6px 8px;
-            border-radius: 4px;
-            color: var(--primary);
+            border-radius: var(--radius-sm);
+            color: var(--accent);
         }
 
         .method-desc {
             color: var(--text-secondary);
             line-height: 1.65;
-            font-size: 11px;
+            font-size: var(--font-body);
         }
 
         .method-meta {
@@ -1385,14 +1472,14 @@
         }
 
         .method-meta .reliability-label {
-            font-size: 8px;
+            font-size: var(--font-tiny);
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
 
         .method-note {
-            font-size: 9px;
+            font-size: 10px;
             padding: 0;
             color: var(--text-muted);
             font-style: italic;
@@ -1429,43 +1516,47 @@
 
         .method-chart-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
+            color: var(--text);
         }
 
         .method-chart-diff {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 9px;
+            font-size: 11px;
             margin-left: 8px;
             padding: 2px 6px;
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
             font-weight: 500;
             white-space: nowrap;
         }
 
         .method-chart-diff.up {
-            background: rgba(34, 197, 94, 0.12);
-            color: var(--green);
+            background: var(--positive-bg);
+            color: var(--positive);
         }
 
         .method-chart-diff.down {
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--red);
+            background: var(--negative-bg);
+            color: var(--negative);
         }
 
         .method-chart-tabs {
             display: flex;
-            gap: 3px;
+            gap: 2px;
+            background: var(--bg-subtle);
+            padding: 2px;
+            border-radius: var(--radius-sm);
             margin-left: auto;
         }
 
         .method-chart-tab {
-            padding: 2px 5px;
-            font-size: 8px;
+            padding: 2px 6px;
+            font-size: var(--font-tiny);
             font-weight: 500;
-            background: var(--bg-card-alt);
+            background: transparent;
             border: none;
-            border-radius: 3px;
+            border-radius: var(--radius-sm);
             color: var(--text-muted);
             cursor: pointer;
             transition: all 0.15s ease;
@@ -1476,12 +1567,19 @@
         }
 
         .method-chart-tab.active {
-            background: var(--primary-light);
-            color: var(--primary);
+            background: var(--bg-card);
+            color: var(--accent);
+            box-shadow: var(--shadow-sm);
         }
 
         .method-chart-area {
-            height: 80px;
+            height: 120px;
+        }
+
+        @media (max-width: 768px) {
+            .method-chart-area {
+                height: 90px;
+            }
         }
 
         /* Reliability Criteria Section */
@@ -1498,35 +1596,15 @@
         }
 
         .criteria-header h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
         }
 
         .criteria-subtitle {
             font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .criteria-legend {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .legend-desc {
-            font-size: 11px;
-            color: var(--text-secondary);
+            color: var(--text-muted);
         }
 
         .criteria-table-wrapper {
@@ -1538,7 +1616,7 @@
         .criteria-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
+            font-size: 12px;
             background: white;
             border-radius: 8px;
             overflow: hidden;
@@ -1566,7 +1644,7 @@
             border-bottom: 1px solid var(--border);
             color: var(--text-secondary);
             line-height: 1.4;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         .criteria-table td:last-child {
@@ -1581,23 +1659,23 @@
         .criteria-table .model-name-cell {
             font-weight: 600;
             color: var(--text);
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .criteria-table .check {
-            color: var(--green);
+            color: var(--positive);
             font-weight: 700;
             margin-right: 3px;
         }
 
         .criteria-table .cross {
-            color: var(--red);
+            color: var(--negative);
             font-weight: 700;
             margin-right: 3px;
         }
 
         .criteria-table .partial {
-            color: var(--yellow);
+            color: var(--neutral);
             font-weight: 700;
             margin-right: 3px;
         }
@@ -1621,99 +1699,136 @@
             margin-bottom: 16px;
         }
 
-        .criteria-definitions-header {
-            margin-bottom: 10px;
+        .criteria-section {
+            margin-bottom: 0;
         }
 
-        .criteria-definitions-header h4 {
+        .criteria-section h4 {
             font-size: 12px;
-            font-weight: 400;
+            font-weight: 500;
             color: var(--text);
-            margin: 0;
+            margin: 0 0 12px 0;
+        }
+
+        .criteria-divider {
+            height: 1px;
+            background: var(--border-light);
+            margin: 16px 0;
         }
 
         .criteria-definitions-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         .definition-item {
             display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .definition-item .criteria-number {
+            flex-shrink: 0;
+        }
+
+        .definition-item .definition-content {
+            display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 2px;
         }
 
         .definition-item strong {
             font-size: 11px;
-            font-weight: 500;
-            color: #24292e;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-weight: 600;
+            color: var(--text);
         }
 
-        .definition-item strong span[data-i18n] {
-            color: #24292e;
-            font-size: 11px;
-        }
-
-        .definition-item > span {
-            padding-left: 22px;
+        .definition-item .definition-desc {
+            font-size: 10px;
+            color: var(--text-muted);
+            line-height: 1.4;
         }
 
         .criteria-number {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 16px;
-            width: 16px;
-            height: 16px;
-            background: linear-gradient(135deg, #627eea, #3b5998);
-            color: #ffffff !important;
-            font-size: 9px;
+            min-width: 20px;
+            width: 20px;
+            height: 20px;
+            background: var(--bg-subtle);
+            color: var(--text-secondary) !important;
+            font-size: 10px;
             font-weight: 600;
-            border-radius: 50%;
+            border-radius: 6px;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+
+        /* Reliability Legend Grid */
+        .reliability-legend-grid {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .reliability-legend-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .reliability-legend-item .reliability-gauge {
             flex-shrink: 0;
         }
 
-        @media (min-width: 769px) and (max-width: 900px) {
+        .reliability-legend-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .reliability-legend-text strong {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .reliability-legend-text span {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        @media (min-width: 769px) {
             .criteria-definitions-grid {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 24px;
             }
             
             .definition-item {
-                display: flex;
-                flex-direction: row;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            
-            .definition-item strong {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                flex-shrink: 0;
-                min-width: 180px;
-                font-size: 11px;
-                font-weight: 500;
-                color: #24292e;
-            }
-            
-            .definition-item > span {
                 flex: 1;
-                font-size: 10px;
-                color: var(--text-muted);
-                padding-left: 0;
+            }
+            
+            .reliability-legend-grid {
+                gap: 32px;
             }
         }
 
-        .definition-item span {
-            font-size: 10px;
-            color: var(--text-muted);
-            line-height: 1.4;
+        @media (max-width: 480px) {
+            .reliability-legend-grid {
+                gap: 16px;
+            }
+            
+            .reliability-legend-text strong {
+                font-size: 10px;
+            }
+            
+            .reliability-legend-text span {
+                font-size: 9px;
+            }
         }
 
         /* Mobile Cards Layout */
@@ -1754,7 +1869,7 @@
         }
 
         .criteria-card-reliability .reliability-label {
-            font-size: 9px;
+            font-size: var(--font-tiny);
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -1816,24 +1931,33 @@
             }
             
             .criteria-definitions-grid {
-                display: block;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
             }
             
             .definition-item {
                 display: flex;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .definition-item .criteria-number {
+                flex-shrink: 0;
+            }
+            
+            .definition-item .definition-content {
+                display: flex;
                 flex-direction: column;
-                gap: 4px;
-                margin-bottom: 16px;
+                gap: 2px;
             }
             
             .definition-item strong {
-                display: flex;
-                align-items: center;
-                gap: 8px;
+                font-size: 11px;
             }
             
-            .definition-item > span {
-                padding-left: 24px;
+            .definition-item .definition-desc {
+                font-size: 10px;
             }
         }
 
@@ -2597,6 +2721,38 @@
             /* triple-chart-grid도 metrics-grid처럼 2열 유지 */
         }
 
+        /* Responsive - Tablet (768px ~ 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .method-chart-value {
+                font-size: 14px;
+            }
+            
+            .method-chart-diff {
+                font-size: 10px;
+            }
+            
+            .method-formula {
+                font-size: 8px;
+                padding: 4px 6px;
+            }
+            
+            .method-desc {
+                font-size: 11px;
+            }
+            
+            .method-note {
+                font-size: 9px;
+            }
+            
+            .method-meta {
+                font-size: 8px;
+            }
+            
+            .method-meta .reliability-label {
+                font-size: 7px;
+            }
+        }
+
         /* Responsive - Mobile */
         @media (max-width: 768px) {
             .container {
@@ -2790,7 +2946,7 @@
             }
 
             .chart-card-body {
-                height: 60px;
+                height: 70px;
             }
 
             /* Metrics - 768px에서도 2열 유지 */
@@ -2853,10 +3009,6 @@
                 padding: 2px 5px;
             }
 
-            .reliability-label {
-                font-size: 6px;
-            }
-
             .model-reliability .source {
                 font-size: 7px;
             }
@@ -2877,6 +3029,7 @@
 
             .model-bar-center {
                 width: 1px;
+                height: 10px;
             }
 
             .model-bar-center::before {
@@ -2933,11 +3086,25 @@
                 gap: 14px;
             }
 
+            .method-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
             .method-name {
                 font-size: 11px;
             }
 
             .method-desc {
+                font-size: 10px;
+            }
+            
+            .method-chart-value {
+                font-size: 14px;
+            }
+            
+            .method-chart-diff {
                 font-size: 10px;
             }
 
@@ -3027,7 +3194,13 @@
             }
             
             .method-note {
-                font-size: 8px;
+                font-size: 9px;
+            }
+            
+            .method-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
             }
             
             .valuation-models {
@@ -3054,33 +3227,34 @@
         .historical-tabs {
             display: flex;
             gap: 2px;
-            background: var(--bg-card-alt);
-            padding: 2px;
-            border-radius: 4px;
+            background: var(--bg-subtle);
+            padding: 3px;
+            border-radius: var(--radius-sm);
             width: fit-content;
             margin-left: auto;
         }
 
         .historical-tab {
-            padding: 3px 8px;
-            font-size: 9px;
+            padding: 4px 10px;
+            font-size: var(--font-caption);
             font-weight: 500;
             border: none;
             background: transparent;
             color: var(--text-muted);
             cursor: pointer;
-            border-radius: 3px;
-            transition: all 0.2s;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s ease;
         }
 
         .historical-tab:hover {
-            color: var(--text);
+            color: var(--text-secondary);
         }
 
         .historical-tab.active {
-            background: var(--bg);
-            color: var(--primary);
+            background: var(--bg-card);
+            color: var(--accent);
             font-weight: 600;
+            box-shadow: var(--shadow-sm);
         }
 
         .model-selector {
@@ -3154,7 +3328,7 @@
         }
 
         .chart-price-label {
-            font-size: 12px;
+            font-size: var(--font-body);
             color: var(--text-secondary);
             font-weight: 500;
         }
@@ -3167,21 +3341,21 @@
         }
 
         .chart-price-diff {
-            font-size: 12px;
+            font-size: var(--font-body);
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
             padding: 3px 8px;
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
         }
 
         .chart-price-diff.up {
-            background: var(--green-bg);
-            color: var(--green);
+            background: var(--positive-bg);
+            color: var(--positive);
         }
 
         .chart-price-diff.down {
-            background: var(--red-bg);
-            color: var(--red);
+            background: var(--negative-bg);
+            color: var(--negative);
         }
 
         @media (max-width: 600px) {
@@ -3199,7 +3373,7 @@
             }
             
             .chart-price-label {
-                font-size: 10px;
+                font-size: var(--font-caption);
                 width: 100%;
             }
             
@@ -3208,13 +3382,13 @@
             }
             
             .chart-price-diff {
-                font-size: 10px;
+                font-size: var(--font-caption);
                 padding: 2px 6px;
             }
         }
 
         .historical-chart-subtitle {
-            font-size: 11px;
+            font-size: var(--font-body);
             color: var(--text-muted);
             margin-top: 4px;
         }
@@ -3311,6 +3485,13 @@
         .legend-item-fixed {
             font-weight: 600;
             color: var(--text);
+        }
+        
+        .legend-item-fixed .legend-name {
+            white-space: nowrap;
+            overflow: visible;
+            text-overflow: clip;
+            flex-shrink: 0;
         }
 
         .legend-item-fixed .legend-color {
@@ -3529,6 +3710,17 @@
             to { transform: rotate(360deg); }
         }
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Data status badge */
         .data-status {
             display: inline-flex;
@@ -3648,7 +3840,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.3.1</span>
+                <span class="version-badge">v0.3.2</span>
             </a>
             <div class="header-center">
                 <div class="status">
@@ -3732,9 +3924,9 @@
                             @simonkim_nft
                         </a>
                         <span class="contact-divider">·</span>
-                        <a href="mailto:simon@hashed.com" class="contact-link">
+                        <a href="/cdn-cgi/l/email-protection#22514b4f4d4c624a43514a47460c414d4f" class="contact-link">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                            simon@hashed.com
+                            <span class="__cf_email__" data-cfemail="8bf8e2e6e4e5cbe3eaf8e3eeefa5e8e4e6">[email&#160;protected]</span>
                         </a>
                     </div>
                 </div>
@@ -4815,40 +5007,65 @@
                     <p class="criteria-subtitle" data-i18n="criteria.subtitle">Each model is evaluated across three dimensions to determine its reliability level</p>
                 </div>
 
-                <!-- 1. 기준 정의 먼저 -->
+                <!-- 1. 기준 정의 + 신뢰도 레전드 통합 박스 -->
                 <div class="criteria-definitions">
-                    <div class="criteria-definitions-header">
+                    <!-- 평가 기준 정의 -->
+                    <div class="criteria-section">
                         <h4 data-i18n="criteria.defTitle">Assessment Criteria Definitions</h4>
-                    </div>
-                    <div class="criteria-definitions-grid">
-                        <div class="definition-item">
-                            <strong><span class="criteria-number">1</span> <span data-i18n="criteria.methodology">Methodology Validation</span></strong>
-                            <span data-i18n="criteria.methodologyDesc">Established in TradFi or validated by academic research</span>
+                        <div class="criteria-definitions-grid">
+                            <div class="definition-item">
+                                <span class="criteria-number">1</span>
+                                <div class="definition-content">
+                                    <strong data-i18n="criteria.methodology">Methodology Validation</strong>
+                                    <span class="definition-desc" data-i18n="criteria.methodologyDesc">Established in TradFi or validated by academic research</span>
+                                </div>
+                            </div>
+                            <div class="definition-item">
+                                <span class="criteria-number">2</span>
+                                <div class="definition-content">
+                                    <strong data-i18n="criteria.data">Data Objectivity</strong>
+                                    <span class="definition-desc" data-i18n="criteria.dataDesc">All inputs are real-time, on-chain measurable data</span>
+                                </div>
+                            </div>
+                            <div class="definition-item">
+                                <span class="criteria-number">3</span>
+                                <div class="definition-content">
+                                    <strong data-i18n="criteria.assumption">Low Assumption Sensitivity</strong>
+                                    <span class="definition-desc" data-i18n="criteria.assumptionDesc">Arbitrary parameters (multiples, ratios) have minimal impact on results</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="definition-item">
-                            <strong><span class="criteria-number">2</span> <span data-i18n="criteria.data">Data Objectivity</span></strong>
-                            <span data-i18n="criteria.dataDesc">All inputs are real-time, on-chain measurable data</span>
+                    </div>
+                    
+                    <!-- 구분선 -->
+                    <div class="criteria-divider"></div>
+                    
+                    <!-- 신뢰도 레전드 -->
+                    <div class="criteria-section">
+                        <h4 data-i18n="criteria.reliabilityLabel">Reliability</h4>
+                        <div class="reliability-legend-grid">
+                            <div class="reliability-legend-item">
+                                <span class="reliability-gauge reliability-gauge-lg"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span>
+                                <div class="reliability-legend-text">
+                                    <strong data-i18n="criteria.levelHigh">High</strong>
+                                    <span data-i18n="criteria.high3">3 criteria met</span>
+                                </div>
+                            </div>
+                            <div class="reliability-legend-item">
+                                <span class="reliability-gauge reliability-gauge-lg"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
+                                <div class="reliability-legend-text">
+                                    <strong data-i18n="criteria.levelMed">Medium</strong>
+                                    <span data-i18n="criteria.med2">2 criteria met</span>
+                                </div>
+                            </div>
+                            <div class="reliability-legend-item">
+                                <span class="reliability-gauge reliability-gauge-lg"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
+                                <div class="reliability-legend-text">
+                                    <strong data-i18n="criteria.levelLow">Low</strong>
+                                    <span data-i18n="criteria.low1">≤1 criteria met</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="definition-item">
-                            <strong><span class="criteria-number">3</span> <span data-i18n="criteria.assumption">Low Assumption Sensitivity</span></strong>
-                            <span data-i18n="criteria.assumptionDesc">Arbitrary parameters (multiples, ratios) have minimal impact on results</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. H/M/L 레전드 -->
-                <div class="criteria-legend">
-                    <div class="legend-item">
-                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#22c55e"/></svg></span>
-                        <span class="legend-desc" data-i18n="criteria.high3">3 criteria met</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(0, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#f59e0b"/></svg></span>
-                        <span class="legend-desc" data-i18n="criteria.med2">2 criteria met</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="reliability-gauge"><svg class="reliability-gauge-svg" viewBox="0 0 28 16"><path d="M 4 14 A 10 10 0 0 1 24 14" fill="none" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/><path d="M 4 14 A 10 10 0 0 1 8.5 6" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><path d="M 9.5 5.5 A 10 10 0 0 1 18.5 5.5" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><path d="M 19.5 6 A 10 10 0 0 1 24 14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/><g transform="rotate(-60, 14, 14)"><line x1="14" y1="14" x2="14" y2="6" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></g><circle cx="14" cy="14" r="2" fill="#ef4444"/></svg></span>
-                        <span class="legend-desc" data-i18n="criteria.low1">≤1 criteria met</span>
                     </div>
                 </div>
 
@@ -5194,7 +5411,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.3.1
+                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · v0.3.2
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -5206,7 +5423,7 @@
         </footer>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         // Translations
         const translations = {
             en: {
@@ -5215,7 +5432,7 @@
                 'nav.overview': 'Overview',
                 'nav.price': 'Price & Market',
                 'nav.onchain': 'On-Chain Metrics',
-                'nav.valuation': 'Valuation Analysis',
+                'nav.valuation': 'Valuation',
                 'nav.historical': 'Historical',
                 'nav.methodology': 'Methodology',
                 'section.historicalTitle': 'Historical Fair Value Analysis',
@@ -5253,6 +5470,10 @@
                 'criteria.high3': '3 criteria met',
                 'criteria.med2': '2 criteria met',
                 'criteria.low1': '≤1 criteria met',
+                'criteria.reliabilityLabel': 'Reliability',
+                'criteria.levelHigh': 'High',
+                'criteria.levelMed': 'Medium',
+                'criteria.levelLow': 'Low',
                 'criteria.thModel': 'Model',
                 'criteria.thMethodology': 'Methodology Validation',
                 'criteria.thData': 'Data Objectivity',
@@ -5345,8 +5566,8 @@
                 'onchain.appCapitalNote': 'Stablecoins ÷ 0.28 · Proxy',
                 'onchain.stakingYield': 'Staking Yield (APR)',
                 'onchain.stakingYieldNote': 'Lido stETH APR · Live',
-                'valuation.undervalued': 'Undervalued',
-                'valuation.overvalued': 'Overvalued',
+                'valuation.undervalued': 'Under',
+                'valuation.overvalued': 'Over',
                 'valuation.fair': 'Fair',
                 'valuation.vsCurrent': 'vs Current',
                 'valuation.currentPrice': 'Current Price',
@@ -5403,6 +5624,10 @@
                 'criteria.high3': '3개 기준 충족',
                 'criteria.med2': '2개 기준 충족',
                 'criteria.low1': '1개 이하 충족',
+                'criteria.reliabilityLabel': '신뢰도',
+                'criteria.levelHigh': '높음',
+                'criteria.levelMed': '중간',
+                'criteria.levelLow': '낮음',
                 'criteria.thModel': '모델',
                 'criteria.thMethodology': '방법론 검증',
                 'criteria.thData': '데이터 객관성',
@@ -5553,6 +5778,10 @@
                 'criteria.high3': '满足3项标准',
                 'criteria.med2': '满足2项标准',
                 'criteria.low1': '满足≤1项标准',
+                'criteria.reliabilityLabel': '可靠性',
+                'criteria.levelHigh': '高',
+                'criteria.levelMed': '中',
+                'criteria.levelLow': '低',
                 'criteria.thModel': '模型',
                 'criteria.thMethodology': '方法论验证',
                 'criteria.thData': '数据客观性',
@@ -5624,7 +5853,17 @@
                 'method.commitment.note': '灵感来自价值储存(Store of Value)需求概念，适配免费数据源',
                 'method.appCapital.note': '⚠️ 代理估算：DeFiLlama chainAssets API ($300/月) 仅提供当前值—无历史数据。',
                 'method.validator.note': '目标收益率 = 无风险利率 + 加密风险溢价；标准TradFi方法',
+                'method.validator.desc': '基于目标质押收益率与当前APR的比率计算公允价值。目标收益率(6%) = 美国10年期国债(~4.5%) + 加密风险溢价(~1.5%)。如果当前APR低于目标，ETH被低估——验证者获得的回报低于理性投资者在考虑风险后应要求的水平。这反映了TradFi如何相对于国债收益率加股权风险溢价来评估派息股票。',
                 'method.settlement.note': '货币经济学的MV=PQ方程；Velocity 6基于USD M1 (~5.5x)基准',
+                'method.settlement.desc': '应用交换方程(MV=PQ)，将ETH视为以太坊结算层的货币。每日结算量包括L1转账($54.5亿)、L2转账($41.6亿)和跨链交易量($5.2亿)，总计约$100亿/天。Velocity 6反映了ETH的价值储存(SoV)特性：28%质押将ETH锁定在velocity 0，类似ETF后比特币的机构持有模式，以及USD M1 velocity (~5.5x)基准。更低的velocity = 更高的隐含价值（货币被更长时间持有而非消费）。',
+                'criteria.model.settlement': 'Settlement Layer',
+                'criteria.model.validator': 'Validator Economics',
+                'criteria.settlement.m': '货币经济学的MV=PQ方程；费雪方程广泛使用',
+                'criteria.settlement.d': 'L1数据来自bitinfocharts；跨链数据来自DefiLlama API',
+                'criteria.settlement.a': 'Velocity 6是SoV假设；可能范围4-12倍',
+                'criteria.validator.m': '标准TradFi方法：要求回报率 = 无风险 + 风险溢价',
+                'criteria.validator.d': '来自Lido API的实时质押APR',
+                'criteria.validator.a': '无风险利率和风险溢价假设可变（目标5-7%）',
                 'method.appCapital.desc': 'App Capital代表链上总资产：稳定币、ERC-20代币、NFT、RWA和跨链资产。28%比率（稳定币/App Capital）自2021年以来保持稳定。公式：App Capital ≈ 稳定币 ÷ 0.28。App Capital作为市值下限——网络安全（MC）必须支撑所有结算资产的价值。与TVL（仅~$60B DeFi）不同，App Capital（~$600B）捕获了以太坊完整的结算层角色。',
                 'method.commitment.desc': '根据质押和DeFi协议中锁定的ETH比例应用价格溢价。更高的承诺比率表明更强的长期持有信念和更低的流动性供应。乘数（1.5x）反映承诺资产相对于流动资产的价值溢价。灵感来自L1代币应被视为货币（价值储存）而非股票的概念。',
                 'onchain.ethInDefi': 'DeFi中的ETH',
@@ -5651,56 +5890,60 @@
             },
             ja: {
                 'status.live': 'ライブ',
-                'status.updating': '更新中...',
-                'nav.overview': '概要',
-                'nav.price': '価格・市場',
-                'nav.onchain': 'オンチェーン指標',
+                'status.updating': 'こうしんちゅう...',
+                'nav.overview': 'がいよう',
+                'nav.price': 'かかく・マーケット',
+                'nav.onchain': 'オンチェーンしひょう',
                 'nav.valuation': 'バリュエーション',
-                'nav.historical': '履歴分析',
-                'nav.methodology': '方法論',
-                'section.historicalTitle': '履歴適正価格分析',
-                'summary.title': '概要',
-                'summary.currentPrice': '現在価格',
-                'summary.fairValue': '適正価格 (10モデル)',
-                'summary.opportunity': '投資機会',
-                'summary.toggleHint': '下記の各モデルをオン・オフして、独自のバリュエーションを計算してみましょう。',
-                'summary.desc1': 'このダッシュボードは、伝統的な金融フレームワーク（DCF、P/S Ratio、Revenue Yield）から暗号ネイティブ指標（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）まで、10種類の異なるバリュエーション手法を用いて<strong>イーサリアムの本質的価値</strong>を導き出すことを試みています。',
-                'summary.desc2': '暗号産業には、より厳密なファンダメンタルズに基づくバリュエーションアプローチが必要だと考えています。これらのモデルには限界と仮定がありますが、純粋な価格投機を超えて価値について考えるためのフレームワークを提供します。',
-                'summary.feedback': 'バグを発見されたり、ご提案がありましたら、いつでもお知らせください — フィードバックは大歓迎です！',
+                'nav.historical': 'りれきぶんせき',
+                'nav.methodology': 'ほうほうろん',
+                'section.historicalTitle': 'りれきてきせいかかくぶんせき',
+                'summary.title': 'がいよう',
+                'summary.currentPrice': 'げんざいかかく',
+                'summary.fairValue': 'てきせいかかく (10モデル)',
+                'summary.opportunity': 'とうしきかい',
+                'summary.toggleHint': 'したのかくモデルをオン・オフして、どくじのバリュエーションをけいさんしてみましょう。',
+                'summary.desc1': 'このダッシュボードは、でんとうてきなきんゆうフレームワーク（DCF、P/S Ratio、Revenue Yield）からクリプトネイティブしひょう（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）まで、10しゅるいのことなるバリュエーションしゅほうをもちいて<strong>イーサリアムのほんしつてきかち</strong>をみちびきだすことをこころみています。',
+                'summary.desc2': 'クリプトさんぎょうには、よりげんみつなファンダメンタルズにもとづくバリュエーションアプローチがひつようだとかんがえています。これらのモデルにはげんかいとかていがありますが、じゅんすいなかかくとうきをこえてかちについてかんがえるためのフレームワークをていきょうします。',
+                'summary.feedback': 'バグをはっけんされたり、ごていあんがありましたら、いつでもおしらせください — フィードバックはだいかんげいです！',
                 'share.button': 'シェア',
-                'share.modalTitle': '分析結果をシェア',
-                'share.postToX': '𝕏に投稿',
-                'share.download': '画像をダウンロード',
-                'section.priceTitle': '価格・市場概要',
-                'section.onchainTitle': 'オンチェーン指標・トレンド',
-                'section.valuationTitle': 'バリュエーション分析',
-                'section.methodologyTitle': 'バリュエーション方法論',
-                'section.weeklyData': '週間データ',
+                'share.modalTitle': 'ぶんせきけっかをシェア',
+                'share.postToX': '𝕏にとうこう',
+                'share.download': 'がぞうをダウンロード',
+                'section.priceTitle': 'かかく・マーケットがいよう',
+                'section.onchainTitle': 'オンチェーンしひょう・トレンド',
+                'section.valuationTitle': 'バリュエーションぶんせき',
+                'section.methodologyTitle': 'バリュエーションほうほうろん',
+                'section.weeklyData': 'しゅうかんデータ',
                 'section.models': '9モデル',
-                'section.reference': '参考',
-                'valuation.compositeFairValue': '総合適正価格',
-                'disclaimer.text': '<strong>⚠️ 免責事項：</strong>これらのバリュエーションモデルは参考用です。各モデルには独自の仮定と限界があります。投資判断は複数の要因を総合的に考慮する必要があります。',
-                'footer.disclaimer': '120秒自動更新 · 情報提供のみ · 投資アドバイスではありません',
-                'criteria.title': '付録：信頼性評価基準',
-                'criteria.subtitle': '各モデルは3つの基準で評価され、信頼性レベルが決定されます',
-                'criteria.defTitle': '評価基準の定義',
-                'criteria.methodology': '方法論の検証',
-                'criteria.methodologyDesc': 'TradFiで確立されているか、学術的に検証されている',
-                'criteria.data': 'データの客観性',
-                'criteria.dataDesc': 'すべての入力値がリアルタイムでオンチェーン測定可能',
-                'criteria.assumption': '仮定感度の低さ',
-                'criteria.assumptionDesc': '任意のパラメータ（倍率、比率）が結果に与える影響が最小',
-                'criteria.high3': '3基準充足',
-                'criteria.med2': '2基準充足',
-                'criteria.low1': '1基準以下',
+                'section.reference': 'さんこう',
+                'valuation.compositeFairValue': 'そうごうてきせいかかく',
+                'disclaimer.text': '<strong>⚠️ めんせきじこう：</strong>これらのバリュエーションモデルはさんこうようです。かくモデルにはどくじのかていとげんかいがあります。とうしはんだんはふくすうのようそをそうごうてきにこうりょするひつようがあります。',
+                'footer.disclaimer': '120びょうじどうこうしん · じょうほうていきょうのみ · とうしアドバイスではありません',
+                'criteria.title': 'ふろく：しんらいせいひょうかきじゅん',
+                'criteria.subtitle': 'かくモデルは3つのきじゅんでひょうかされ、しんらいせいレベルがけっていされます',
+                'criteria.defTitle': 'ひょうかきじゅんのていぎ',
+                'criteria.methodology': 'ほうほうろんのけんしょう',
+                'criteria.methodologyDesc': 'TradFiでかくりつされているか、がくじゅつてきにけんしょうされている',
+                'criteria.data': 'データのきゃっかんせい',
+                'criteria.dataDesc': 'すべてのにゅうりょくちがリアルタイムでオンチェーンそくていかのう',
+                'criteria.assumption': 'かていかんどのひくさ',
+                'criteria.assumptionDesc': 'にんいのパラメータ（ばいりつ、ひりつ）がけっかにあたえるえいきょうがさいしょう',
+                'criteria.high3': '3きじゅんじゅうそく',
+                'criteria.med2': '2きじゅんじゅうそく',
+                'criteria.low1': '1きじゅんいか',
+                'criteria.reliabilityLabel': 'しんらいせい',
+                'criteria.levelHigh': 'たかい',
+                'criteria.levelMed': 'ちゅう',
+                'criteria.levelLow': 'ひくい',
                 'criteria.thModel': 'モデル',
-                'criteria.thMethodology': '方法論検証',
-                'criteria.thData': 'データ客観性',
-                'criteria.thAssumption': '仮定感度',
-                'criteria.thResult': '信頼性',
-                'criteria.labelM': '方法論',
+                'criteria.thMethodology': 'ほうほうろんけんしょう',
+                'criteria.thData': 'データきゃっかんせい',
+                'criteria.thAssumption': 'かていかんど',
+                'criteria.thResult': 'しんらいせい',
+                'criteria.labelM': 'ほうほうろん',
                 'criteria.labelD': 'データ',
-                'criteria.labelA': '仮定',
+                'criteria.labelA': 'かてい',
                 'criteria.model.revenueYield': 'Revenue Yield',
                 'criteria.model.mctvl': 'MC/TVL Fair Value',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
@@ -5711,83 +5954,93 @@
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
                 'criteria.model.commitment': 'Commitment Premium',
-                'criteria.revenueYield.m': '債券・配当株で広く使用されるTradFi利回りベースのバリュエーション',
-                'criteria.revenueYield.d': 'リアルタイムLido APR + DefiLlamaオンチェーン手数料収益',
-                'criteria.revenueYield.a': '任意の倍率なし；市場派生利回りを直接使用',
-                'criteria.mctvl.m': 'Messari、Delphi DigitalがL1比較に使用；学術的検証なし',
-                'criteria.mctvl.d': 'CoinGecko/DefiLlamaからのリアルタイム時価総額とTVL',
-                'criteria.mctvl.a': '6倍目標比率は過去平均；サイクルにより大きく変動',
-                'criteria.metcalfe.m': '暗号ネットワークの学術検証（Alabi 2017、Peterson 2018）',
-                'criteria.metcalfe.d': 'ネットワーク活動の代理としてリアルタイムTVL',
-                'criteria.metcalfe.a': '1.5指数は元のn²から修正；係数2はフィッティング',
-                'criteria.dcf.m': '標準TradFi割引キャッシュフロー；ゴードン成長モデル',
+                'criteria.revenueYield.m': 'さいけん・はいとうかぶでひろくしようされるTradFiイールドベースのバリュエーション',
+                'criteria.revenueYield.d': 'リアルタイムLido APR + DefiLlamaオンチェーンてすうりょうしゅうえき',
+                'criteria.revenueYield.a': 'にんいのばいりつなし；マーケットはせいイールドをちょくせつしよう',
+                'criteria.mctvl.m': 'Messari、Delphi DigitalがL1ひかくにしよう；がくじゅつてきけんしょうなし',
+                'criteria.mctvl.d': 'CoinGecko/DefiLlamaからのリアルタイムじかそうがくとTVL',
+                'criteria.mctvl.a': '6ばいもくひょうひりつはかこへいきん；サイクルによりおおきくへんどう',
+                'criteria.metcalfe.m': 'クリプトネットワークのがくじゅつけんしょう（Alabi 2017、Peterson 2018）',
+                'criteria.metcalfe.d': 'ネットワークかつどうのだいりとしてリアルタイムTVL',
+                'criteria.metcalfe.a': '1.5しすうはもとのn²からしゅうせい；けいすう2はフィッティング',
+                'criteria.dcf.m': 'ひょうじゅんTradFiわりびきキャッシュフロー；ゴードンせいちょうモデル',
                 'criteria.dcf.d': 'Lido APIからのリアルタイムステーキングAPR',
-                'criteria.dcf.a': '10%割引率と3%成長率は主観的仮定',
-                'criteria.ps.m': '標準TradFi指標；Token Terminalがプロトコル評価に使用',
-                'criteria.ps.d': 'DefiLlamaからのリアルタイム日次手数料、年換算',
-                'criteria.ps.a': '25倍は高成長SaaS基準；15-40倍の可能性',
-                'criteria.appCapital.m': '決済層価値の論理的フレームワーク；先例限定的',
-                'criteria.appCapital.d': 'DefiLlamaからのリアルタイムステーブルコイン供給',
-                'criteria.appCapital.a': '28%ステーブルコイン/AppCapital比率は経験的推定',
-                'criteria.tvl.m': '暗号ネイティブ慣行；TradFi同等物や学術的根拠なし',
+                'criteria.dcf.a': '10%わりびきりつと3%せいちょうりつはしゅかんてきかてい',
+                'criteria.ps.m': 'ひょうじゅんTradFiしひょう；Token Terminalがプロトコルひょうかにしよう',
+                'criteria.ps.d': 'DefiLlamaからのリアルタイムにちじてすうりょう、ねんかんさん',
+                'criteria.ps.a': '25ばいはこうせいちょうSaaSきじゅん；15-40ばいのかのうせい',
+                'criteria.appCapital.m': 'けっさいそうかちのろんりてきフレームワーク；せんれいげんていてき',
+                'criteria.appCapital.d': 'DefiLlamaからのリアルタイムステーブルコインきょうきゅう',
+                'criteria.appCapital.a': '28%ステーブルコイン/AppCapitalひりつはけいけんてきすいてい',
+                'criteria.tvl.m': 'クリプトネイティブかんこう；TradFiどうとうぶつやがくじゅつてきこんきょなし',
                 'criteria.tvl.d': 'DefiLlamaからのリアルタイムTVL',
-                'criteria.tvl.a': '7倍は過去平均；非常に変動的（3-15倍）',
-                'criteria.staking.m': 'ETH専用モデル；ピアレビューや検証なし',
+                'criteria.tvl.a': '7ばいはかこへいきん；ひじょうにへんどうてき（3-15ばい）',
+                'criteria.staking.m': 'ETHせんようモデル；ピアレビューやけんしょうなし',
                 'criteria.staking.d': 'Beaconcha.inからのリアルタイムステーキングETH',
-                'criteria.staking.a': '平方根公式の理論的正当化不足',
-                'criteria.l2.m': 'このダッシュボード用に開発された実験的モデル',
-                'criteria.l2.d': 'DefiLlamaから集約されたリアルタイムL2 TVL',
-                'criteria.l2.a': '2倍L2重み乗数に経験的根拠なし',
-                'criteria.commitment.m': '価値保存論に触発された新概念；未検証',
-                'criteria.commitment.d': 'リアルタイムステーキングETH + DeFiプロトコル内ETH',
-                'criteria.commitment.a': '1.5倍コミットメント乗数は任意仮定',
-                'method.reliability': '信頼性',
-                'method.high': '高',
-                'method.medium': '中',
-                'method.low': '低',
-                'method.tvl.note': 'TVLにはレバレッジ、再帰的預金、プロトコル間の二重計上が含まれる場合があります',
-                'method.tvl.desc': 'DeFiプロトコルにロックされた総資産に基づいてETHの価値を算出します。7倍の倍率は、バランスの取れた市場状況（2020-2023年平均）における過去のMC/TVL比率から導出されています。高いTVLは、イーサリアムのスマートコントラクトエコシステムのより大きなネットワーク有用性、採用、信頼を示しています。',
-                'method.staking.note': 'このダッシュボード用に開発された独自モデル。査読や学術的検証なし',
-                'method.staking.desc': 'ステーキングにより流通供給量が減少した場合に希少性プレミアムを適用します。より多くのETHがバリデーターにロックされると（現在約28%）、流動性供給が縮小し、理論的に価格上昇圧力が高まります。平方根関数は希少性効果を捉えながら極端なバリュエーションを抑制します。',
-                'method.mctvl.note': 'クロスチェーンバリュエーション比較のための業界標準指標',
-                'method.mctvl.desc': '時価総額対TVL比率が過去の平均6倍に回帰すると仮定する平均回帰モデル。比率が6倍を超えるとETHは過大評価、6倍を下回ると過小評価とみなされます。従来の株式分析におけるP/B比率に類似し、MessariやDelphi Digitalなどの機関投資家がL1ブロックチェーン間の相対的なバリュエーション比較に広く使用しています。',
-                'method.metcalfe.note': '強い過去の相関関係を持つ学術的に検証されたモデル',
-                'method.metcalfe.desc': 'ネットワーク価値はアクティブユーザー/ノード数の二乗に比例して成長します。元々は通信用に開発され、このモデルはビットコインとイーサリアムについて学術研究者（Alabi 2017、Peterson 2018）によって実証的に検証されています。TVLをネットワーク活動の代理指標として使用します。',
-                'method.dcf.note': '割引率と成長率の仮定に非常に敏感',
-                'method.dcf.desc': 'ステーキング報酬を永続的なキャッシュフローとして扱う従来の割引キャッシュフロー分析。Lido APIからのライブステーキングAPRをキャッシュフロー率として、10%の割引率（暗号資産リスクプレミアム）、3%の永続成長率を使用します。このアプローチは、従来の金融バリュエーションと暗号ネイティブの利回り生成を橋渡しします。',
-                'method.l2.note': '2倍のL2重み付け乗数は実証的根拠のない独自設定',
-                'method.l2.desc': 'イーサリアムのレイヤー2スケーリングエコシステム（Arbitrum、Optimism、Base、zkSyncなど）からの価値を捉えます。L2 TVLに2倍の重み付けをするのは、L2の活動がイーサリアムメインネットで決済され、ブロックスペースを消費し、EIP-1559を通じてETHを焼却するためです。',
-                'method.ps.note': 'L1プロトコルバリュエーションの業界標準',
-                'method.ps.desc': 'P/S（株価売上高比率）は時価総額を年間取引手数料収益と比較します。従来の企業とは異なり、イーサリアムのようなL1プロトコルにはプロトコルレベルでの「純利益」がありません — すべての手数料はバリデーターに流れます。そのため、Token Terminalが使用しているように、P/E（ではなく）P/Sが業界標準です。25倍の乗数は成長テック株のバリュエーションを反映しています。',
-                'method.yield.note': '機関投資家に受け入れられている債券型方法論',
-                'method.yield.desc': 'ライブステーキングAPRから適正価値を逆算し、ETHを利回りを生む債券のように扱います。イーサリアムが年間Xの手数料を生み出し、現在のステーキング利回りがY%の場合、暗黙の時価総額はX÷Y%です。固定目標利回りの代わりにLido stETHのリアルタイムAPRを使用します。このアプローチは、暗号資産をオルタナティブ資産クラスとして評価するTradFiアナリストに支持されています。',
-                'method.commitment.note': '価値貯蔵(Store of Value)需要の概念に着想を得て、無料データソースに適応',
-                'method.appCapital.note': '⚠️ プロキシ推定：DeFiLlama chainAssets API ($300/月) は現在値のみ提供—履歴データなし。',
-                'method.validator.note': '目標利回り = リスクフリーレート + クリプトリスクプレミアム；標準TradFiアプローチ',
-                'method.settlement.note': '貨幣経済学のMV=PQ方程式；Velocity 6はUSD M1 (~5.5x)ベンチマーク',
-                'method.appCapital.desc': 'App Capitalはオンチェーン総資産を表します：ステーブルコイン、ERC-20トークン、NFT、RWA、ブリッジ資産。28%比率（ステーブルコイン/App Capital）は2021年以降安定しています。公式：App Capital ≈ ステーブルコイン ÷ 0.28。App Capitalは時価総額の下限として機能します—ネットワークセキュリティ（MC）はすべての決済資産の価値を裏付ける必要があります。TVL（〜$60B DeFiのみ）とは異なり、App Capital（〜$600B）はイーサリアムの完全な決済レイヤーの役割を捉えます。',
-                'method.commitment.desc': 'ステーキングとDeFiプロトコルにコミットされたETHの割合に基づいて価格プレミアムを適用します。高いコミットメント率は、より強い長期保有信念と流動性供給の減少を示します。乗数（1.5x）は、流動資産に対するコミットされた資産の価値プレミアムを反映します。L1トークンを株式ではなく通貨（価値貯蔵）として評価すべきという概念に着想を得ています。',
-                'onchain.ethInDefi': 'DeFi内ETH',
-                'onchain.ethInDefiNote': 'TVL ÷ ETH価格',
-                'onchain.commitmentRatio': 'コミットメント率',
-                'onchain.commitmentRatioNote': '(ステーキング + DeFi) ÷ 供給量',
+                'criteria.staking.a': 'へいほうこんこうしきのりろんてきせいとうかふそく',
+                'criteria.l2.m': 'このダッシュボードようにかいはつされたじっけんてきモデル',
+                'criteria.l2.d': 'DefiLlamaからしゅうやくされたリアルタイムL2 TVL',
+                'criteria.l2.a': '2ばいL2おもみじょうすうにけいけんてきこんきょなし',
+                'criteria.commitment.m': 'かちほぞんろんにはっそくをえたしんがいねん；みけんしょう',
+                'criteria.commitment.d': 'リアルタイムステーキングETH + DeFiプロトコルないETH',
+                'criteria.commitment.a': '1.5ばいコミットメントじょうすうはにんいかてい',
+                'method.reliability': 'しんらいせい',
+                'method.high': 'たかい',
+                'method.medium': 'ちゅう',
+                'method.low': 'ひくい',
+                'method.tvl.note': 'TVLにはレバレッジ、さいきてきよきん、プロトコルかんのにじゅうけいじょうがふくまれるばあいがあります',
+                'method.tvl.desc': 'DeFiプロトコルにロックされたそうしさんにもとづいてETHのかちをさんしゅつします。7ばいのばいりつは、バランスのとれたマーケットじょうきょう（2020-2023ねんへいきん）におけるかこのMC/TVLひりつからどうしゅつされています。たかいTVLは、イーサリアムのスマートコントラクトエコシステムのよりおおきなネットワークゆうようせい、さいよう、しんらいをしめしています。',
+                'method.staking.note': 'このダッシュボードようにかいはつされたどくじモデル。さてつやがくじゅつてきけんしょうなし',
+                'method.staking.desc': 'ステーキングによりりゅうつうきょうきゅうりょうがげんしょうしたばあいにきしょうせいプレミアムをてきようします。よりおおくのETHがバリデーターにロックされると（げんざいやく28%）、りゅうどうせいきょうきゅうがしゅくしょうし、りろんてきにかかくじょうしょうあつりょくがたかまります。へいほうこんかんすうはきしょうせいこうかをとらえながらきょくたんなバリュエーションをよくせいします。',
+                'method.mctvl.note': 'クロスチェーンバリュエーションひかくのためのぎょうかいひょうじゅんしひょう',
+                'method.mctvl.desc': 'じかそうがくたいTVLひりつがかこのへいきん6ばいにかいきするとかていするへいきんかいきモデル。ひりつが6ばいをこえるとETHはかだいひょうか、6ばいをしたまわるとかしょうひょうかとみなされます。じゅうらいのかぶしきぶんせきにおけるP/Bひりつにるいじし、MessariやDelphi Digitalなどのきかんとうしかがいちブロックチェーンかんのそうたいてきなバリュエーションひかくにひろくしようしています。',
+                'method.metcalfe.note': 'つよいかこのそうかんかんけいをもつがくじゅつてきにけんしょうされたモデル',
+                'method.metcalfe.desc': 'ネットワークかちはアクティブユーザー/ノードすうのにじょうにひれいしてせいちょうします。もともとはつうしんようにかいはつされ、このモデルはビットコインとイーサリアムについてがくじゅつけんきゅうしゃ（Alabi 2017、Peterson 2018）によってじっしょうてきにけんしょうされています。TVLをネットワークかつどうのだいりしひょうとしてしようします。',
+                'method.dcf.note': 'わりびきりつとせいちょうりつのかていにひじょうにびんかん',
+                'method.dcf.desc': 'ステーキングほうしゅうをえいぞくてきなキャッシュフローとしてあつかうじゅうらいのわりびきキャッシュフローぶんせき。Lido APIからのライブステーキングAPRをキャッシュフローりつとして、10%のわりびきりつ（クリプトしさんリスクプレミアム）、3%のえいぞくせいちょうりつをしようします。このアプローチは、じゅうらいのきんゆうバリュエーションとクリプトネイティブのイールドせいせいをはしわたしします。',
+                'method.l2.note': '2ばいのL2おもみづけじょうすうはじっしょうてきこんきょのないどくじせってい',
+                'method.l2.desc': 'イーサリアムのレイヤー2スケーリングエコシステム（Arbitrum、Optimism、Base、zkSyncなど）からのかちをとらえます。L2 TVLに2ばいのおもみづけをするのは、L2のかつどうがイーサリアムメインネットでけっさいされ、ブロックスペースをしょうひし、EIP-1559をつうじてETHをしょうきゃくするためです。',
+                'method.ps.note': 'L1プロトコルバリュエーションのぎょうかいひょうじゅん',
+                'method.ps.desc': 'P/S（かぶかうりあげだかひりつ）はじかそうがくをねんかんとりひきてすうりょうしゅうえきとひかくします。じゅうらいのきぎょうとはことなり、イーサリアムのようなL1プロトコルにはプロトコルレベルでの「じゅんりえき」がありません — すべてのてすうりょうはバリデーターにながれます。そのため、Token Terminalがしようしているように、P/E（ではなく）P/Sがぎょうかいひょうじゅんです。25ばいのじょうすうはせいちょうテックかぶのバリュエーションをはんえいしています。',
+                'method.yield.note': 'きかんとうしかにうけいれられているさいけんがたほうほうろん',
+                'method.yield.desc': 'ライブステーキングAPRからてきせいかちをぎゃくさんし、ETHをイールドをうむさいけんのようにあつかいます。イーサリアムがねんかんXのてすうりょうをうみだし、げんざいのステーキングイールドがY%のばあい、あんもくのじかそうがくはX÷Y%です。こていもくひょうイールドのかわりにLido stETHのリアルタイムAPRをしようします。このアプローチは、クリプトしさんをオルタナティブしさんクラスとしてひょうかするTradFiアナリストにしじされています。',
+                'method.commitment.note': 'かちちょぞう(Store of Value)じゅようのがいねんにちゃくそうをえて、むりょうデータソースにてきおう',
+                'method.appCapital.note': '⚠️ プロキシすいてい：DeFiLlama chainAssets API ($300/つき) はげんざいちのみていきょう—りれきデータなし。',
+                'method.validator.note': 'もくひょうイールド = リスクフリーレート + クリプトリスクプレミアム；ひょうじゅんTradFiアプローチ',
+                'method.validator.desc': 'もくひょうステーキングイールドたいげんざいAPRのひりつでてきせいかちをけいさんします。もくひょうイールド(6%) = アメリカ10ねんものこくさい(~4.5%) + クリプトリスクプレミアム(~1.5%)。げんざいAPRがもくひょうよりひくければ、ETHはかしょうひょうかです—バリデーターがリスクをこうりょしたごうりてきなとうしかがようきゅうするすいじゅんよりすくなくうけとっていることをいみします。TradFiがはいとうかぶをこくさいイールド + かぶしきリスクプレミアムたいひでひょうかするほうほうとどういつです。',
+                'method.settlement.note': 'かへいけいざいがくのMV=PQほうていしき；Velocity 6はUSD M1 (~5.5x)ベンチマーク',
+                'method.settlement.desc': 'こうかんほうていしき(MV=PQ)をてきようし、ETHをイーサリアムけっさいレイヤーのかへいとしてあつかいます。にちじけっさいりょうはL1そうきん($54.5おく)、L2そうきん($41.6おく)、ブリッジとりひきりょう($5.2おく)をごうさんしたやく$100おく/にちです。Velocity 6はETHのかちちょぞう(SoV)とくせいをはんえいします：28%ステーキングはETHをvelocity 0でこてい、ETFいこうビットコインとるいじのきかんほゆうパターン、USD M1 velocity (~5.5x)ベンチマーク。ひくいvelocity = たかいないざいかち（かへいがしょうひされずながくほゆうされる）。',
+                'criteria.model.settlement': 'Settlement Layer',
+                'criteria.model.validator': 'Validator Economics',
+                'criteria.settlement.m': 'かへいけいざいがくのMV=PQほうていしき；フィッシャーほうていしきひろくしよう',
+                'criteria.settlement.d': 'L1データはbitinfocharts；ブリッジデータはDefiLlama API',
+                'criteria.settlement.a': 'Velocity 6はSoVかてい；4-12ばいはんいかのう',
+                'criteria.validator.m': 'ひょうじゅんTradFiアプローチ：ようきゅうリターン = リスクフリー + リスクプレミアム',
+                'criteria.validator.d': 'Lido APIからのリアルタイムステーキングAPR',
+                'criteria.validator.a': 'リスクフリーりつとリスクプレミアムかていはかへんてき（もくひょう5-7%）',
+                'method.appCapital.desc': 'App Capitalはオンチェーンそうしさんをあらわします：ステーブルコイン、ERC-20トークン、NFT、RWA、ブリッジしさん。28%ひりつ（ステーブルコイン/App Capital）は2021ねんいこうあんていしています。こうしき：App Capital ≈ ステーブルコイン ÷ 0.28。App Capitalはじかそうがくのかげんとしてきのうします—ネットワークセキュリティ（MC）はすべてのけっさいしさんのかちをうらづけるひつようがあります。TVL（〜$60B DeFiのみ）とはことなり、App Capital（〜$600B）はイーサリアムのかんぜんなけっさいレイヤーのやくわりをとらえます。',
+                'method.commitment.desc': 'ステーキングとDeFiプロトコルにコミットされたETHのわりあいにもとづいてかかくプレミアムをてきようします。たかいコミットメントりつは、よりつよいちょうきほゆうしんねんとりゅうどうせいきょうきゅうのげんしょうをしめします。じょうすう（1.5x）は、りゅうどうしさんにたいするコミットされたしさんのかちプレミアムをはんえいします。L1トークンをかぶしきではなくつうか（かちちょぞう）としてひょうかすべきというがいねんにちゃくそうをえています。',
+                'onchain.ethInDefi': 'DeFiないETH',
+                'onchain.ethInDefiNote': 'TVL ÷ ETHかかく',
+                'onchain.commitmentRatio': 'コミットメントりつ',
+                'onchain.commitmentRatioNote': '(ステーキング + DeFi) ÷ きょうきゅうりょう',
                 'onchain.appCapital': 'App Capital',
                 'onchain.appCapitalNote': 'ステーブルコイン ÷ 0.28 · プロキシ',
-                'onchain.stakingYield': 'ステーキング利回り (APR)',
+                'onchain.stakingYield': 'ステーキングイールド (APR)',
                 'onchain.stakingYieldNote': 'Lido stETH APR · ライブ',
-                'valuation.undervalued': '割安',
-                'valuation.overvalued': '割高',
-                'valuation.fair': '適正',
-                'valuation.vsCurrent': '現在価格比',
-                'valuation.currentPrice': '現在価格',
-                'valuation.weightedAvg': '加重平均',
-                'valuation.median': '中央値',
-                'valuation.potential': '上昇余地',
-                'valuation.reliabilityWeighting': '信頼性加重',
-                'signal.buy': '買い',
-                'signal.hold': '保有',
-                'signal.sell': '売り',
-                'method.med': '中'
+                'valuation.undervalued': 'わりやす',
+                'valuation.overvalued': 'わりだか',
+                'valuation.fair': 'てきせい',
+                'valuation.vsCurrent': 'げんざいかかくひ',
+                'valuation.currentPrice': 'げんざいかかく',
+                'valuation.weightedAvg': 'かじゅうへいきん',
+                'valuation.median': 'ちゅうおうち',
+                'valuation.potential': 'じょうしょうよち',
+                'valuation.reliabilityWeighting': 'しんらいせいかじゅう',
+                'signal.buy': 'かい',
+                'signal.hold': 'ほゆう',
+                'signal.sell': 'うり',
+                'method.med': 'ちゅう'
             }
         };
 
@@ -5828,6 +6081,36 @@
             if (typeof renderValuations === 'function' && state.price > 0) {
                 renderValuations();
             }
+            
+            // Update methodology card diff labels (Under/Over/Fair)
+            updateMethodologyDiffLabels();
+        }
+        
+        // Update methodology diff labels for current language
+        function updateMethodologyDiffLabels() {
+            if (!state.historicalFairValues || state.price <= 0) return;
+            
+            const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
+            
+            MODEL_ORDER.forEach(model => {
+                const data = state.historicalFairValues[model];
+                if (!data || data.length === 0) return;
+                
+                const latestValue = data[data.length - 1]?.value || 0;
+                const diff = state.price > 0 ? ((latestValue - state.price) / state.price) * 100 : 0;
+                
+                let statusKey;
+                if (diff > 5) statusKey = 'valuation.undervalued';
+                else if (diff < -5) statusKey = 'valuation.overvalued';
+                else statusKey = 'valuation.fair';
+                
+                const statusText = translations[currentLang]?.[statusKey] || (diff > 5 ? 'Under' : diff < -5 ? 'Over' : 'Fair');
+                
+                const diffEl = document.getElementById(`method-diff-${model}`);
+                if (diffEl) {
+                    diffEl.textContent = fmt.pct(diff) + ' ' + statusText;
+                }
+            });
         }
 
         // State
@@ -5893,6 +6176,27 @@
             price: (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
         };
 
+        // Animate number countup (lightweight requestAnimationFrame version)
+        function animateValue(element, start, end, duration, formatter) {
+            if (!element || isNaN(end)) return;
+            const startTime = performance.now();
+            const diff = end - start;
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // easeOutQuart easing
+                const eased = 1 - Math.pow(1 - progress, 4);
+                const current = start + (diff * eased);
+                element.textContent = formatter(current);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
         // Charts
         let priceChart, volumeChart, tvlChart, stakingChart, l2Chart, dexChart, feesChart, stablesChart;
         let supplyChart, dominanceChart, ethbtcChart, reserveChart;
@@ -5903,7 +6207,16 @@
         let historicalMainChart;
         let modelCharts = {};
 
-        const chartConfig = (color, data, labels, formatFn, yAxisFormat) => ({
+        // Chart axis font sizes (responsive)
+        const getChartAxisFontSize = () => {
+            const width = window.innerWidth;
+            if (width > 1024) return { x: 9, y: 8 };  // PC
+            return { x: 8, y: 7 };  // Tablet & Mobile
+        };
+
+        const chartConfig = (color, data, labels, formatFn, yAxisFormat) => {
+            const axisFontSize = getChartAxisFontSize();
+            return {
             type: 'line',
             data: {
                 labels,
@@ -5924,6 +6237,10 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 800,
+                    easing: 'easeOutQuart'
+                },
                 interaction: { intersect: false, mode: 'index' },
                 plugins: {
                     legend: { display: false },
@@ -5943,11 +6260,21 @@
                         }
                     }
                 },
+                layout: {
+                    padding: { left: 0, right: 0, top: 0, bottom: 0 }
+                },
                 scales: {
                     x: {
                         display: true,
                         grid: { display: false },
-                        ticks: { color: '#8b949e', maxTicksLimit: 4, font: { size: 8 } }
+                        ticks: { 
+                            color: '#8b949e', 
+                            maxTicksLimit: 4, 
+                            font: { size: axisFontSize.x }, 
+                            padding: 0,
+                            maxRotation: 0,
+                            minRotation: 0
+                        }
                     },
                     y: { 
                         display: true,
@@ -5955,8 +6282,10 @@
                         grid: { display: false },
                         ticks: { 
                             color: '#9ca3af', 
-                            font: { size: 7 },
+                            font: { size: axisFontSize.y },
                             maxTicksLimit: 3,
+                            padding: 0,
+                            mirror: false,
                             callback: function(value) {
                                 if (yAxisFormat === 'pct') return value.toFixed(0) + '%';
                                 if (yAxisFormat === 'ratio') return value.toFixed(3);
@@ -5975,7 +6304,7 @@
                     }
                 }
             }
-        });
+        };};
 
         const priceChartConfig = (data, labels) => ({
             type: 'line',
@@ -7833,7 +8162,7 @@
                 const modelId = m.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
 
                 container.innerHTML += `
-                    <div class="valuation-model" data-model-id="${modelId}" data-price="${m.price}" data-reliability="${m.reliability}">
+                    <div class="valuation-model" data-model-id="${modelId}" data-price="${m.price}" data-reliability="${m.reliability}" data-bar-width="${barWidth}" data-marker-pos="${markerPos}">
                         <div class="model-row-1">
                             <div class="model-name">${m.name}</div>
                             <div class="model-reliability">
@@ -7846,8 +8175,8 @@
                             <div class="model-bar-container">
                                 <div class="model-bar-bg"></div>
                                 <div class="model-bar-center"></div>
-                                <div class="model-bar-fill ${isPositive ? 'positive' : 'negative'}" style="width: ${barWidth}%"></div>
-                                <div class="model-bar-marker ${markerClass}" style="left: ${markerPos}%"></div>
+                                <div class="model-bar-fill ${isPositive ? 'positive' : 'negative'}" style="width: 0%"></div>
+                                <div class="model-bar-marker ${markerClass}" style="left: 50%"></div>
                             </div>
                             <div class="model-diff ${diffClass}">
                                 ${fmt.pct(diff)}
@@ -7877,6 +8206,18 @@
                     recalculateWeightedAverage();
                 });
             });
+
+            // 바 애니메이션 트리거 (처음 로드 시)
+            setTimeout(() => {
+                container.querySelectorAll('.valuation-model').forEach(model => {
+                    const barWidth = model.dataset.barWidth;
+                    const markerPos = model.dataset.markerPos;
+                    const barFill = model.querySelector('.model-bar-fill');
+                    const barMarker = model.querySelector('.model-bar-marker');
+                    if (barFill) barFill.style.width = barWidth + '%';
+                    if (barMarker) barMarker.style.left = markerPos + '%';
+                });
+            }, 100);
 
             // 초기 가중 평균 계산
             recalculateWeightedAverage();
@@ -7915,7 +8256,16 @@
             
             const avgDiff = state.price > 0 ? ((weightedAvgPrice - state.price) / state.price) * 100 : 0;
 
-            document.getElementById('composite-price').textContent = fmt.price(weightedAvgPrice);
+            // Animate composite price
+            const compositePriceEl = document.getElementById('composite-price');
+            const prevCompositePrice = parseFloat(compositePriceEl.dataset.value) || 0;
+            compositePriceEl.dataset.value = weightedAvgPrice;
+            if (prevCompositePrice === 0) {
+                animateValue(compositePriceEl, 0, weightedAvgPrice, 800, fmt.price);
+            } else {
+                compositePriceEl.textContent = fmt.price(weightedAvgPrice);
+            }
+            
             const diffEl = document.getElementById('composite-diff');
             const vsCurrent = translations[currentLang] && translations[currentLang]['valuation.vsCurrent'] 
                 ? translations[currentLang]['valuation.vsCurrent'] : 'vs Current';
@@ -9359,12 +9709,19 @@ Check out ETHval 👇`;
                 const valueEl = document.getElementById(`method-value-${model}`);
                 const diffEl = document.getElementById(`method-diff-${model}`);
                 
+                // Get valuation status text based on diff
+                let statusKey;
+                if (diff > 5) statusKey = 'valuation.undervalued';
+                else if (diff < -5) statusKey = 'valuation.overvalued';
+                else statusKey = 'valuation.fair';
+                const statusText = translations[currentLang]?.[statusKey] || (diff > 5 ? 'Undervalued' : diff < -5 ? 'Overvalued' : 'Fair');
+                
                 if (valueEl) {
                     valueEl.textContent = fmt.price(latestValue);
                     valueEl.style.color = MODEL_COLORS[model] || 'var(--text)';
                 }
                 if (diffEl) {
-                    diffEl.textContent = fmt.pct(diff) + ' vs Price';
+                    diffEl.textContent = fmt.pct(diff) + ' ' + statusText;
                     diffEl.className = 'method-chart-diff ' + (diff >= 0 ? 'up' : 'down');
                 }
                 
@@ -9617,9 +9974,20 @@ Check out ETHval 👇`;
                 <div class="share-modal-title" data-i18n="share.modalTitle">Share Your Analysis</div>
                 <button class="share-modal-close" onclick="closeShareModal()">×</button>
             </div>
-            <div class="share-modal-preview">
-                <img id="share-preview-img" src="" alt="Generating preview...">
+            <div class="share-modal-body">
+                <div class="share-preview" id="share-preview"></div>
+                <div class="share-actions">
+                    <button class="share-btn download" onclick="downloadShareCard()">
+                        <span>📥</span> <span data-i18n="share.download">Download Image</span>
+                    </button>
+                    <button class="share-btn twitter" onclick="shareToTwitter()">
+                        <span>𝕏</span> <span data-i18n="share.twitter">Share on X</span>
+                    </button>
+                </div>
             </div>
-            <div class="share-modal-actions">
-                <button class="share-modal-btn twitter" onclick="shareToTwitter()">
-                    <svg viewBox
+        </div>
+    </div>
+
+
+</body>
+</html>
