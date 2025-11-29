@@ -4329,27 +4329,7 @@
                     </div>
                 </div>
 
-                <!-- 9. Gas Price -->
-                <div class="metric-card" data-metric="gasPrice">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Gas Price</h4>
-                            <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="gasPrice">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><canvas id="gas-price-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Base Fee · Etherscan</span>
-                        <span class="change" id="gas-price-change">--</span>
-                    </div>
-                </div>
-
-                <!-- 10. ETH Burned -->
+                <!-- 9. ETH Burned -->
                 <div class="metric-card" data-metric="ethBurned">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4366,6 +4346,26 @@
                     <div class="metric-footer">
                         <span>EIP-1559 · ultrasound.money</span>
                         <span class="change" id="eth-burned-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 10. Gas Price -->
+                <div class="metric-card" data-metric="gasPrice">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Gas Price</h4>
+                            <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="gasPrice">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="gas-price-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Base Fee · Etherscan</span>
+                        <span class="change" id="gas-price-change">--</span>
                     </div>
                 </div>
 
@@ -8641,51 +8641,77 @@
             });
         }
 
-        // Gas Price - from fees data (estimated from network fees)
+        // Gas Price - estimated from network fees and transaction count
         let gasPriceChart = null;
         async function fetchGasPrice() {
             try {
                 console.log('   Fetching Gas Price...');
-                // Use Etherscan API for gas oracle (no API key needed for basic)
-                // Fallback: estimate from fees data
                 
-                // Try to get current gas from public endpoint
-                const currentGas = state.feesHistory?.length > 0 
-                    ? estimateGasFromFees(state.feesHistory[state.feesHistory.length - 1]?.value)
-                    : 15; // Default fallback
+                // Estimate gas price from fees and transaction data
+                // Formula: Gas Price (Gwei) = (Daily Fees USD / ETH Price) / (Daily Tx * Avg Gas per Tx) * 1e9
+                // Simplified: Use fees history to derive relative gas prices
                 
-                state.gasPrice = currentGas;
-                state.gasPriceHistory = [];
+                const feesHist = state.feesHistory || [];
+                const txHist = state.txEthHistory || [];
                 
-                // Build history from fees (gas correlates with fees)
-                if (state.feesHistory && state.feesHistory.length > 0) {
-                    state.gasPriceHistory = state.feesHistory.map(d => ({
-                        date: d.date,
-                        value: estimateGasFromFees(d.value)
-                    }));
+                if (feesHist.length > 0) {
+                    state.gasPriceHistory = [];
+                    
+                    // Calculate gas price for each day
+                    for (let i = 0; i < feesHist.length; i++) {
+                        const fee = feesHist[i];
+                        const ethPrice = state.price || 3500;
+                        
+                        // Find closest tx count
+                        let txCount = 1100000; // Default ~1.1M tx/day
+                        if (txHist.length > 0) {
+                            let minDiff = Infinity;
+                            for (const tx of txHist) {
+                                const diff = Math.abs(fee.date.getTime() - tx.date.getTime());
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    txCount = tx.value || 1100000;
+                                }
+                            }
+                        }
+                        
+                        // Gas price calculation
+                        // Daily fees in ETH / (tx count * avg gas per tx ~65000) * 1e9 = Gwei
+                        const feesInEth = fee.value / ethPrice;
+                        const avgGasPerTx = 65000;
+                        const gasUsed = txCount * avgGasPerTx;
+                        const gasPriceGwei = (feesInEth / gasUsed) * 1e9;
+                        
+                        // Reasonable bounds: 5-500 Gwei
+                        const boundedGas = Math.max(5, Math.min(500, gasPriceGwei));
+                        
+                        state.gasPriceHistory.push({
+                            date: fee.date,
+                            value: boundedGas
+                        });
+                    }
+                    
+                    // Current gas price
+                    if (state.gasPriceHistory.length > 0) {
+                        state.gasPrice = state.gasPriceHistory[state.gasPriceHistory.length - 1].value;
+                    }
+                }
+                
+                // Fallback if no data
+                if (!state.gasPrice || state.gasPrice <= 0) {
+                    state.gasPrice = 15;
                 }
                 
                 const gasEl = document.getElementById('gas-price-value');
                 if (gasEl) {
-                    gasEl.textContent = currentGas.toFixed(1) + ' Gwei';
+                    gasEl.textContent = state.gasPrice.toFixed(1) + ' Gwei';
                 }
                 
                 updateGasPriceChart();
-                console.log('   Gas Price:', currentGas.toFixed(1), 'Gwei');
+                console.log('   Gas Price:', state.gasPrice.toFixed(1), 'Gwei, history:', state.gasPriceHistory?.length);
             } catch (e) {
                 console.error('Gas price error:', e);
             }
-        }
-        
-        function estimateGasFromFees(dailyFeesUsd) {
-            // Rough estimation: daily fees correlate with gas price
-            // Average ~1M txs/day, avg gas ~100k, price correlates
-            if (!dailyFeesUsd || dailyFeesUsd <= 0) return 15;
-            const ethPrice = state.price || 3500;
-            const feesInEth = dailyFeesUsd / ethPrice;
-            // Simplified: higher fees = higher gas
-            const estimatedGwei = Math.max(5, Math.min(200, feesInEth * 0.5));
-            return estimatedGwei;
         }
         
         function updateGasPriceChart(days = 365) {
