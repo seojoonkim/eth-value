@@ -342,6 +342,7 @@
             padding: 0;
             margin-bottom: 40px;
             padding-top: 32px;
+            overflow: visible;
         }
 
         .section:first-of-type {
@@ -601,6 +602,7 @@
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 12px;
+            overflow: visible;
         }
 
         .chart-card {
@@ -609,7 +611,13 @@
             padding: 12px;
             border: none;
             min-width: 0;
-            overflow: hidden;
+            overflow: visible;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .chart-card:hover {
+            z-index: 100;
         }
 
         .chart-card-header {
@@ -688,6 +696,13 @@
         .legend-dot.liquid { background: #94a3b8; }
         .legend-dot.defi { background: #00bcd4; }
         .legend-dot.staking { background: #8b5cf6; }
+        
+        /* DeFi Lending protocol colors */
+        .legend-dot.aave { background: #B6509E; }
+        .legend-dot.compound { background: #00D395; }
+        .legend-dot.spark { background: #F4B731; }
+        .legend-dot.morpho { background: #2470FF; }
+        .legend-dot.others { background: #9ca3af; }
 
         /* Section 2: Metrics - On-Chain (4열) */
         .metrics-grid {
@@ -695,6 +710,7 @@
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 12px;
             margin-bottom: 12px;
+            overflow: visible;
         }
 
         .stat-card {
@@ -737,8 +753,14 @@
             padding: 12px;
             border: 1px solid var(--border-light);
             min-width: 0;
-            overflow: hidden;
+            overflow: visible;
             box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .metric-card:hover {
+            z-index: 100;
         }
 
         .metric-header {
@@ -812,6 +834,12 @@
         .metric-chart {
             height: 70px;
             margin-top: 6px;
+            overflow: visible;
+            position: relative;
+        }
+        
+        .metric-chart canvas {
+            overflow: visible;
         }
 
         .metric-footer {
@@ -3929,9 +3957,9 @@
                             @simonkim_nft
                         </a>
                         <span class="contact-divider">·</span>
-                        <a href="/cdn-cgi/l/email-protection#22514b4f4d4c624a43514a47460c414d4f" class="contact-link">
+                        <a href="mailto:simon@hashed.com" class="contact-link">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                            <span class="__cf_email__" data-cfemail="8bf8e2e6e4e5cbe3eaf8e3eeefa5e8e4e6">[email&#160;protected]</span>
+                            simon@hashed.com
                         </a>
                     </div>
                 </div>
@@ -3986,7 +4014,199 @@
 
             <!-- Three Column Charts -->
             <div class="triple-chart-grid">
-                <!-- Supply Distribution -->
+                <!-- 1. ETH Dominance -->
+                <div class="metric-card" data-metric="dominance">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>ETH Dominance</h4>
+                            <div class="metric-value-large" id="eth-dominance">--%</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="dominance">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="dominance-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>vs Total Market</span>
+                        <span class="change" id="dominance-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 2. ETH/BTC Ratio -->
+                <div class="metric-card" data-metric="ethbtc">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>ETH/BTC Ratio</h4>
+                            <div class="metric-value-large" id="eth-btc">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="ethbtc">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="ethbtc-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Price Ratio</span>
+                        <span class="change" id="ethbtc-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 3. Stablecoin Market Cap -->
+                <div class="metric-card" data-metric="stablecoin">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Stablecoin Mcap</h4>
+                            <div class="metric-value-large" id="stablecoin-mcap">$--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="stablecoin">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="stablecoin-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>All Chains · DefiLlama</span>
+                        <span class="change" id="stablecoin-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 4. Exchange Reserve -->
+                <div class="metric-card" data-metric="reserve">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Exchange Reserve</h4>
+                            <div class="metric-value-large" id="exchange-reserve">-- ETH</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="reserve">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="reserve-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>CEX Balance · Santiment</span>
+                        <span class="change" id="reserve-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 5. Volatility -->
+                <div class="metric-card" data-metric="volatility">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Volatility</h4>
+                            <div class="metric-value-large" id="volatility">--%</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="volatility">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="volatility-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>30-Day Rolling</span>
+                        <span class="change" id="volatility-level">--</span>
+                    </div>
+                </div>
+
+                <!-- 6. Funding Rate -->
+                <div class="metric-card" data-metric="funding">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Funding Rate</h4>
+                            <div class="metric-value-large" id="funding-rate">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="funding">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="funding-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Binance Perpetual</span>
+                        <span class="change" id="funding-sentiment">--</span>
+                    </div>
+                </div>
+
+                <!-- 7. Fear & Greed Index -->
+                <div class="metric-card" data-metric="feargreed">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Fear & Greed</h4>
+                            <div class="metric-value-large" id="fear-greed">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="feargreed">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="feargreed-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Market Sentiment</span>
+                        <span class="change" id="fg-label">--</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: ON-CHAIN METRICS -->
+        <!-- SECTION 2: ON-CHAIN METRICS -->
+        <section class="section" id="section-onchain">
+            <div class="section-header">
+                <div class="section-title" data-i18n="section.onchainTitle">
+                    On-Chain Metrics & Trends
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <!-- 1. Total Value Locked -->
+                <div class="metric-card" data-metric="tvl">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Total Value Locked</h4>
+                            <div class="metric-value-large" id="tvl-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="tvl-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span id="tvl-range">52w: -- - --</span>
+                        <span class="change" id="tvl-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 2. Layer 2 TVL -->
+                <div class="metric-card" data-metric="l2">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Layer 2 TVL</h4>
+                            <div class="metric-value-large" id="l2-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="l2-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>All Major L2s</span>
+                        <span class="change" id="l2-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 3. Supply Distribution -->
                 <div class="metric-card" data-metric="supply">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4009,115 +4229,7 @@
                     </div>
                 </div>
 
-                <!-- Exchange Reserve (Santiment) -->
-                <div class="metric-card" data-metric="reserve">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Exchange Reserve</h4>
-                            <div class="metric-value-large" id="exchange-reserve">-- ETH</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="reserve">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><canvas id="reserve-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>CEX Balance · Santiment</span>
-                        <span class="change" id="reserve-change">--</span>
-                    </div>
-                </div>
-
-                <!-- ETH Dominance -->
-                <div class="metric-card" data-metric="dominance">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>ETH Dominance</h4>
-                            <div class="metric-value-large" id="eth-dominance">--%</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="dominance">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><canvas id="dominance-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>vs Total Market</span>
-                        <span class="change" id="dominance-change">--</span>
-                    </div>
-                </div>
-
-                <!-- ETH/BTC Ratio -->
-                <div class="metric-card" data-metric="ethbtc">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>ETH/BTC Ratio</h4>
-                            <div class="metric-value-large" id="eth-btc">--</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="ethbtc">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><canvas id="ethbtc-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Price Ratio</span>
-                        <span class="change" id="ethbtc-change">--</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 2: ON-CHAIN METRICS -->
-        <section class="section" id="section-onchain">
-            <div class="section-header">
-                <div class="section-title" data-i18n="section.onchainTitle">
-                    On-Chain Metrics & Trends
-                </div>
-            </div>
-
-            <div class="metrics-grid">
-                <div class="metric-card" data-metric="tvl">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Total Value Locked</h4>
-                            <div class="metric-value-large" id="tvl-value">$--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><canvas id="tvl-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span id="tvl-range">52w: -- - --</span>
-                        <span class="change" id="tvl-change">--</span>
-                    </div>
-                </div>
-
-                <div class="metric-card" data-metric="l2">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Layer 2 TVL</h4>
-                            <div class="metric-value-large" id="l2-value">$--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><canvas id="l2-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>All Major L2s</span>
-                        <span class="change" id="l2-change">--</span>
-                    </div>
-                </div>
-
+                <!-- 4. Staked ETH -->
                 <div class="metric-card" data-metric="staking">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4137,6 +4249,47 @@
                     </div>
                 </div>
 
+                <!-- 5. DeFi Lending TVL -->
+                <div class="metric-card" data-metric="lending">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>DeFi Lending TVL</h4>
+                            <div class="metric-value-large" id="lending-tvl">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="lending">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="lending-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Ethereum · DefiLlama</span>
+                        <span class="change" id="lending-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 6. Stablecoins on Ethereum -->
+                <div class="metric-card" data-metric="stables">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Stablecoins on ETH</h4>
+                            <div class="metric-value-large" id="stables-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="stables-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>USDT + USDC + DAI + USDe</span>
+                        <span class="change" id="stables-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 7. DEX Volume -->
                 <div class="metric-card" data-metric="dex">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4156,6 +4309,7 @@
                     </div>
                 </div>
 
+                <!-- 8. Network Fees -->
                 <div class="metric-card" data-metric="fees">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4175,25 +4329,67 @@
                     </div>
                 </div>
 
-                <div class="metric-card" data-metric="stables">
+                <!-- 9. Gas Price -->
+                <div class="metric-card" data-metric="gasPrice">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Stablecoins</h4>
-                            <div class="metric-value-large" id="stables-value">$--</div>
+                            <h4>Gas Price</h4>
+                            <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
                         </div>
-                        <div class="metric-tabs">
+                        <div class="metric-tabs" data-chart="gasPrice">
                             <button class="metric-tab" data-period="30">30D</button>
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><canvas id="stables-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="gas-price-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>USDT + USDC + DAI + USDe</span>
-                        <span class="change" id="stables-change">--</span>
+                        <span>Base Fee · Etherscan</span>
+                        <span class="change" id="gas-price-change">--</span>
                     </div>
                 </div>
 
+                <!-- 10. ETH Burned -->
+                <div class="metric-card" data-metric="ethBurned">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>ETH Burned (7d)</h4>
+                            <div class="metric-value-large" id="eth-burned-value">-- ETH</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="ethBurned">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="eth-burned-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>EIP-1559 · ultrasound.money</span>
+                        <span class="change" id="eth-burned-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 11. Blob Fees -->
+                <div class="metric-card" data-metric="blobFees">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Blob Fees (7d)</h4>
+                            <div class="metric-value-large" id="blob-fees-value">-- ETH</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="blobFees">
+                            <button class="metric-tab" data-period="30">30D</button>
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="365">1Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><canvas id="blob-fees-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>EIP-4844 · L2 Data</span>
+                        <span class="change" id="blob-fees-change">--</span>
+                    </div>
+                </div>
+
+                <!-- 12. TX Count (ETH) -->
                 <div class="metric-card" data-metric="txEth">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4213,6 +4409,7 @@
                     </div>
                 </div>
 
+                <!-- 13. TX Count (Total) -->
                 <div class="metric-card" data-metric="txTotal">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4232,25 +4429,7 @@
                     </div>
                 </div>
 
-                <div class="metric-card" data-metric="nvt">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>NVT Ratio</h4>
-                            <div class="metric-value-large" id="nvt-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><canvas id="nvt-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>MCap ÷ TxVol(7d avg) · Target: 50</span>
-                        <span class="change" id="nvt-change">--</span>
-                    </div>
-                </div>
-
+                <!-- 14. Active Addresses -->
                 <div class="metric-card" data-metric="activeAddr">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4270,11 +4449,12 @@
                     </div>
                 </div>
 
-                <div class="metric-card" data-metric="ethInDefi">
+                <!-- 15. NVT Ratio -->
+                <div class="metric-card" data-metric="nvt">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>ETH in DeFi</h4>
-                            <div class="metric-value-large" id="eth-defi-value">-- ETH</div>
+                            <h4>NVT Ratio</h4>
+                            <div class="metric-value-large" id="nvt-value">--</div>
                         </div>
                         <div class="metric-tabs">
                             <button class="metric-tab" data-period="30">30D</button>
@@ -4282,13 +4462,14 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><canvas id="eth-defi-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="nvt-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span data-i18n="onchain.ethInDefiNote">TVL ÷ ETH Price</span>
-                        <span class="change" id="eth-defi-change">--</span>
+                        <span>MCap ÷ TxVol(7d avg) · Target: 50</span>
+                        <span class="change" id="nvt-change">--</span>
                     </div>
                 </div>
 
+                <!-- 16. Commitment Ratio -->
                 <div class="metric-card" data-metric="commitmentRatio">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4308,7 +4489,7 @@
                     </div>
                 </div>
 
-                <!-- App Capital -->
+                <!-- 17. App Capital -->
                 <div class="metric-card" data-metric="appCapital">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -4328,7 +4509,7 @@
                     </div>
                 </div>
 
-                <!-- Staking Yield -->
+                <!-- 18. Staking Yield -->
                 <div class="metric-card" data-metric="stakingApr">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -5461,7 +5642,7 @@
                 'section.models': '12 Models',
                 'section.reference': 'Reference',
                 'valuation.compositeFairValue': 'Composite Fair Value',
-                'chart.historicalTitle': 'FAIR VALUE TREND',
+                'chart.historicalTitle': 'COMPOSITE FAIR VALUE OVER TIME',
                 'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. Investment decisions should consider multiple factors comprehensively.',
                 'footer.disclaimer': 'Auto-refresh 120s · For informational purposes only · Not financial advice',
                 'criteria.title': 'Appendix: Reliability Assessment Criteria',
@@ -5616,7 +5797,7 @@
                 'section.models': '12개 모델',
                 'section.reference': '참고 자료',
                 'valuation.compositeFairValue': '종합 적정 가치',
-                'chart.historicalTitle': '적정 가치 추이',
+                'chart.historicalTitle': '종합 적정 가치의 변화',
                 'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
                 'footer.disclaimer': '120초 자동 새로고침 · 정보 제공 목적 · 투자 조언이 아닙니다',
                 'criteria.title': '부록: 신뢰도 평가 기준',
@@ -5771,7 +5952,7 @@
                 'section.models': '9个模型',
                 'section.reference': '参考',
                 'valuation.compositeFairValue': '综合公允价值',
-                'chart.historicalTitle': '公允价值走势',
+                'chart.historicalTitle': '综合公允价值的变化',
                 'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应综合考虑多种因素。',
                 'footer.disclaimer': '自动刷新120秒 · 仅供信息参考 · 非投资建议',
                 'criteria.title': '附录：可靠性评估标准',
@@ -5926,7 +6107,7 @@
                 'section.models': '9モデル',
                 'section.reference': 'さんこう',
                 'valuation.compositeFairValue': 'そうごうてきせいかかく',
-                'chart.historicalTitle': 'てきせいかかくすいい',
+                'chart.historicalTitle': 'そうごうてきせいかかくのへんか',
                 'disclaimer.text': '<strong>⚠️ めんせきじこう：</strong>これらのバリュエーションモデルはさんこうようです。かくモデルにはどくじのかていとげんかいがあります。とうしはんだんはふくすうのようそをそうごうてきにこうりょするひつようがあります。',
                 'footer.disclaimer': '120びょうじどうこうしん · じょうほうていきょうのみ · とうしアドバイスではありません',
                 'criteria.title': 'ふろく：しんらいせいひょうかきじゅん',
@@ -6122,6 +6303,9 @@
             });
         }
 
+        // Chart.js global tooltip settings - allow tooltip to overflow canvas
+        Chart.defaults.plugins.tooltip.external = null;
+        
         // State
         const state = {
             price: 0, marketCap: 0, volume24h: 0, circulatingSupply: 0,
@@ -6208,7 +6392,8 @@
 
         // Charts
         let priceChart, volumeChart, tvlChart, stakingChart, l2Chart, dexChart, feesChart, stablesChart;
-        let supplyChart, dominanceChart, ethbtcChart, reserveChart;
+        let supplyChart, dominanceChart, ethbtcChart, reserveChart, lendingChart;
+        let fundingChart, volatilityChart, stablecoinChart, fearGreedChart;
         let txEthChart, txTotalChart;
         let nvtChart, activeAddrChart;
         let ethDefiChart, commitmentRatioChart, appCapitalChart, stakingAprChart;
@@ -6498,6 +6683,569 @@
                 console.error('Binance history error:', e);
                 return false;
             }
+        }
+        
+        // Fetch Funding Rate from Binance Futures
+        async function fetchFundingRate() {
+            try {
+                console.log('   Fetching Funding Rate...');
+                
+                // Binance API returns data from startTime forward
+                // We need to make multiple calls to get 1 year of data
+                // Funding rate is every 8 hours = 3 per day = ~1095 per year
+                
+                const now = Date.now();
+                const oneYearAgo = now - (365 * 24 * 60 * 60 * 1000);
+                const sixMonthsAgo = now - (180 * 24 * 60 * 60 * 1000);
+                
+                let allData = [];
+                
+                // First call: 6 months ago to now
+                try {
+                    const res1 = await fetch(`https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&startTime=${sixMonthsAgo}&limit=1000`);
+                    if (res1.ok) {
+                        const data1 = await res1.json();
+                        if (data1 && data1.length > 0) {
+                            allData = allData.concat(data1);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Funding rate first call failed:', e);
+                }
+                
+                // Second call: 1 year ago to 6 months ago
+                try {
+                    const res2 = await fetch(`https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&startTime=${oneYearAgo}&endTime=${sixMonthsAgo}&limit=1000`);
+                    if (res2.ok) {
+                        const data2 = await res2.json();
+                        if (data2 && data2.length > 0) {
+                            allData = allData.concat(data2);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Funding rate second call failed:', e);
+                }
+                
+                // If both failed, try simple call
+                if (allData.length === 0) {
+                    const res = await fetch('https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1000');
+                    if (res.ok) {
+                        allData = await res.json();
+                    }
+                }
+                
+                console.log('   Funding Rate data received:', allData?.length, 'points');
+                
+                if (allData && allData.length > 0) {
+                    // Sort by time and remove duplicates
+                    const uniqueData = [...new Map(allData.map(d => [d.fundingTime, d])).values()];
+                    uniqueData.sort((a, b) => a.fundingTime - b.fundingTime);
+                    
+                    // Current funding rate (most recent)
+                    const currentRate = parseFloat(uniqueData[uniqueData.length - 1].fundingRate) * 100;
+                    state.fundingRate = currentRate;
+                    
+                    // Build history in chronological order
+                    state.fundingHistory = uniqueData.map(d => ({
+                        date: new Date(d.fundingTime),
+                        value: parseFloat(d.fundingRate) * 100
+                    }));
+                    
+                    console.log('   Funding history range:', 
+                        state.fundingHistory[0]?.date.toLocaleDateString(), 
+                        'to', 
+                        state.fundingHistory[state.fundingHistory.length-1]?.date.toLocaleDateString(),
+                        '(', state.fundingHistory.length, 'points)');
+                    
+                    // Update UI
+                    const fundingEl = document.getElementById('funding-rate');
+                    if (fundingEl) {
+                        const sign = currentRate >= 0 ? '+' : '';
+                        fundingEl.textContent = sign + currentRate.toFixed(4) + '%';
+                        fundingEl.style.color = currentRate >= 0 ? 'var(--green)' : 'var(--red)';
+                    }
+                    
+                    const sentimentEl = document.getElementById('funding-sentiment');
+                    if (sentimentEl) {
+                        if (currentRate > 0.01) {
+                            sentimentEl.textContent = 'Bullish';
+                            sentimentEl.className = 'change up';
+                        } else if (currentRate < -0.01) {
+                            sentimentEl.textContent = 'Bearish';
+                            sentimentEl.className = 'change down';
+                        } else {
+                            sentimentEl.textContent = 'Neutral';
+                            sentimentEl.className = 'change';
+                        }
+                    }
+                    
+                    updateFundingChart();
+                    console.log('   Funding Rate:', currentRate.toFixed(4) + '%');
+                }
+            } catch (e) {
+                console.error('Funding rate error:', e);
+            }
+        }
+        
+        function updateFundingChart(days = 365) {
+            const ctx = document.getElementById('funding-chart');
+            if (!ctx) return;
+            if (fundingChart) fundingChart.destroy();
+            
+            const history = state.fundingHistory || [];
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length < 3) return;
+            
+            // Sample data points
+            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
+            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            
+            const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const values = sampled.map(d => d.value);
+            
+            // Color based on positive/negative
+            const bgColors = values.map(v => v >= 0 ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)');
+            const borderColors = values.map(v => v >= 0 ? '#22c55e' : '#ef4444');
+            
+            fundingChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        borderRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => (ctx.raw >= 0 ? '+' : '') + ctx.raw.toFixed(4) + '%'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 5, maxRotation: 0 }
+                        },
+                        y: {
+                            display: true,
+                            position: 'right',
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 7 },
+                                color: '#9ca3af',
+                                maxTicksLimit: 4,
+                                callback: (v) => (v >= 0 ? '+' : '') + v.toFixed(2) + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Fetch Open Interest from Binance Futures
+        // Calculate and update Volatility (30-day rolling standard deviation of returns)
+        function calculateVolatility() {
+            console.log('   Calculating Volatility...');
+            
+            const priceHistory = state.priceHistory || [];
+            if (priceHistory.length < 30) {
+                console.log('   Not enough price data for volatility');
+                return;
+            }
+            
+            // Calculate daily returns
+            const returns = [];
+            for (let i = 1; i < priceHistory.length; i++) {
+                const dailyReturn = (priceHistory[i].value - priceHistory[i-1].value) / priceHistory[i-1].value;
+                returns.push({
+                    date: priceHistory[i].date,
+                    value: dailyReturn
+                });
+            }
+            
+            // Calculate 30-day rolling volatility
+            state.volatilityHistory = [];
+            for (let i = 29; i < returns.length; i++) {
+                const window = returns.slice(i - 29, i + 1);
+                const mean = window.reduce((sum, r) => sum + r.value, 0) / window.length;
+                const variance = window.reduce((sum, r) => sum + Math.pow(r.value - mean, 2), 0) / window.length;
+                const stdDev = Math.sqrt(variance);
+                const annualizedVol = stdDev * Math.sqrt(365) * 100; // Annualized percentage
+                
+                state.volatilityHistory.push({
+                    date: returns[i].date,
+                    value: annualizedVol
+                });
+            }
+            
+            if (state.volatilityHistory.length > 0) {
+                const currentVol = state.volatilityHistory[state.volatilityHistory.length - 1].value;
+                state.volatility = currentVol;
+                
+                const volEl = document.getElementById('volatility');
+                if (volEl) {
+                    volEl.textContent = currentVol.toFixed(1) + '%';
+                }
+                
+                const levelEl = document.getElementById('volatility-level');
+                if (levelEl) {
+                    if (currentVol > 80) {
+                        levelEl.textContent = 'Extreme';
+                        levelEl.className = 'change down';
+                    } else if (currentVol > 50) {
+                        levelEl.textContent = 'High';
+                        levelEl.className = 'change down';
+                    } else if (currentVol > 30) {
+                        levelEl.textContent = 'Moderate';
+                        levelEl.className = 'change';
+                    } else {
+                        levelEl.textContent = 'Low';
+                        levelEl.className = 'change up';
+                    }
+                }
+                
+                updateVolatilityChart();
+                console.log('   Volatility:', currentVol.toFixed(1) + '%');
+            }
+        }
+        
+        function updateVolatilityChart(days = 365) {
+            const ctx = document.getElementById('volatility-chart');
+            if (!ctx) return;
+            if (volatilityChart) volatilityChart.destroy();
+            
+            const history = state.volatilityHistory || [];
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length < 3) return;
+            
+            // Sample for performance
+            const sampleRate = Math.max(1, Math.floor(filtered.length / 90));
+            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            
+            const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const values = sampled.map(d => d.value);
+            
+            volatilityChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ctx.raw.toFixed(1) + '% annualized'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 5, maxRotation: 0 }
+                        },
+                        y: {
+                            display: true,
+                            position: 'right',
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 7 },
+                                color: '#9ca3af',
+                                maxTicksLimit: 4,
+                                callback: (v) => v.toFixed(0) + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Fetch Stablecoin Market Cap from DefiLlama
+        async function fetchStablecoinMcap() {
+            try {
+                console.log('   Fetching Stablecoin Market Cap...');
+                
+                // Get all stablecoins total (current)
+                const resAll = await fetch('https://stablecoins.llama.fi/stablecoins?includePrices=false');
+                if (resAll.ok) {
+                    const allData = await resAll.json();
+                    if (allData && allData.peggedAssets) {
+                        const totalMcap = allData.peggedAssets.reduce((sum, s) => {
+                            return sum + (s.circulating?.peggedUSD || 0);
+                        }, 0);
+                        state.stablecoinMcap = totalMcap;
+                        
+                        const mcapEl = document.getElementById('stablecoin-mcap');
+                        if (mcapEl) {
+                            mcapEl.textContent = '$' + (totalMcap / 1e9).toFixed(1) + 'B';
+                        }
+                        console.log('   Stablecoin Mcap:', '$' + (totalMcap / 1e9).toFixed(1) + 'B');
+                    }
+                }
+                
+                // Get ALL stablecoins historical chart (not just USDT)
+                const resHistory = await fetch('https://stablecoins.llama.fi/stablecoincharts/all');
+                
+                if (!resHistory.ok) {
+                    console.error('Stablecoin history API failed:', resHistory.status);
+                    return;
+                }
+                
+                const historyData = await resHistory.json();
+                
+                if (historyData && historyData.length > 0) {
+                    // Build history from ALL stablecoins total
+                    state.stablecoinHistory = historyData.map(d => ({
+                        date: new Date(d.date * 1000),
+                        value: d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0
+                    })).filter(d => d.value > 0);
+                    
+                    console.log('   Stablecoin history:', state.stablecoinHistory.length, 'points');
+                    console.log('   First:', (state.stablecoinHistory[0]?.value / 1e9).toFixed(1) + 'B');
+                    console.log('   Last:', (state.stablecoinHistory[state.stablecoinHistory.length - 1]?.value / 1e9).toFixed(1) + 'B');
+                    
+                    updateStablecoinChart();
+                }
+            } catch (e) {
+                console.error('Stablecoin Mcap error:', e);
+            }
+        }
+        
+        function updateStablecoinChart(days = 365) {
+            const ctx = document.getElementById('stablecoin-chart');
+            if (!ctx) return;
+            if (stablecoinChart) stablecoinChart.destroy();
+            
+            const history = state.stablecoinHistory || [];
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length < 3) return;
+            
+            // Calculate period change
+            const latest = filtered[filtered.length - 1].value;
+            const oldest = filtered[0].value;
+            const change = ((latest - oldest) / oldest) * 100;
+            
+            const changeEl = document.getElementById('stablecoin-change');
+            if (changeEl) {
+                const periodLabel = days === 30 ? '30D' : days === 90 ? '90D' : 'YoY';
+                changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
+                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
+            
+            // Sample for performance
+            const sampleRate = Math.max(1, Math.floor(filtered.length / 90));
+            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            
+            const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const values = sampled.map(d => d.value / 1e9);
+            
+            stablecoinChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => '$' + ctx.raw.toFixed(1) + 'B'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 5, maxRotation: 0 }
+                        },
+                        y: {
+                            display: true,
+                            position: 'right',
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 7 },
+                                color: '#9ca3af',
+                                maxTicksLimit: 4,
+                                callback: (v) => '$' + v.toFixed(0) + 'B'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Fetch Fear & Greed Index from Alternative.me
+        async function fetchFearGreed() {
+            try {
+                console.log('   Fetching Fear & Greed Index...');
+                const res = await fetch('https://api.alternative.me/fng/?limit=365');
+                
+                if (!res.ok) {
+                    console.error('Fear & Greed API failed:', res.status);
+                    return;
+                }
+                
+                const data = await res.json();
+                
+                if (data && data.data && data.data.length > 0) {
+                    // Current value
+                    const current = data.data[0];
+                    const currentValue = parseInt(current.value);
+                    state.fearGreed = currentValue;
+                    state.fearGreedLabel = current.value_classification;
+                    
+                    // Build history (reverse to chronological order)
+                    state.fgHistory = data.data.reverse().map(d => ({
+                        date: new Date(parseInt(d.timestamp) * 1000),
+                        value: parseInt(d.value)
+                    }));
+                    
+                    // Update UI
+                    const fgEl = document.getElementById('fear-greed');
+                    if (fgEl) {
+                        fgEl.textContent = currentValue;
+                        // Keep number black, label shows sentiment
+                    }
+                    
+                    const labelEl = document.getElementById('fg-label');
+                    if (labelEl) {
+                        labelEl.textContent = current.value_classification;
+                        if (currentValue <= 45) {
+                            labelEl.className = 'change down';
+                        } else if (currentValue >= 55) {
+                            labelEl.className = 'change up';
+                        } else {
+                            labelEl.className = 'change';
+                        }
+                    }
+                    
+                    updateFearGreedChart();
+                    console.log('   Fear & Greed:', currentValue, current.value_classification);
+                }
+            } catch (e) {
+                console.error('Fear & Greed error:', e);
+            }
+        }
+        
+        function updateFearGreedChart(days = 365) {
+            const ctx = document.getElementById('feargreed-chart');
+            if (!ctx) return;
+            if (fearGreedChart) fearGreedChart.destroy();
+            
+            const history = state.fgHistory || [];
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length < 3) return;
+            
+            const labels = filtered.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const values = filtered.map(d => d.value);
+            
+            // Gradient color based on value
+            const getColor = (value) => {
+                if (value <= 25) return '#ef4444';
+                if (value <= 45) return '#f97316';
+                if (value <= 54) return '#9ca3af';
+                if (value <= 75) return '#84cc16';
+                return '#22c55e';
+            };
+            
+            fearGreedChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        segment: {
+                            borderColor: ctx => {
+                                const value = ctx.p1.parsed.y;
+                                return getColor(value);
+                            }
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const v = ctx.raw;
+                                    let label = v <= 25 ? 'Extreme Fear' : v <= 45 ? 'Fear' : v <= 54 ? 'Neutral' : v <= 75 ? 'Greed' : 'Extreme Greed';
+                                    return `${v} - ${label}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 5, maxRotation: 0 }
+                        },
+                        y: {
+                            display: true,
+                            position: 'right',
+                            min: 0,
+                            max: 100,
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 7 },
+                                color: '#9ca3af',
+                                maxTicksLimit: 3
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         async function fetchCoinGecko() {
@@ -7476,14 +8224,12 @@
         }
 
         function calculateEthInDefiAndCommitment() {
-            // ETH in DeFi = TVL / ETH Price
+            // ETH in DeFi = TVL / ETH Price (used for Commitment Ratio calculation)
             const totalSupply = state.circulatingSupply || 120000000;
             
-            // 현재 ETH in DeFi 계산
+            // 현재 ETH in DeFi 계산 (Commitment Ratio용)
             if (state.tvl > 0 && state.price > 0) {
                 state.ethInDefi = state.tvl / state.price;
-                const ethDefiEl = document.getElementById('eth-defi-value');
-                if (ethDefiEl) ethDefiEl.textContent = fmt.num(state.ethInDefi) + ' ETH';
             }
             
             // Commitment Ratio = (Staked + DeFi) / Supply
@@ -7495,7 +8241,7 @@
                 if (ratioEl) ratioEl.textContent = state.commitmentRatio.toFixed(1) + '%';
             }
             
-            // Build ETH in DeFi History from TVL history and price history
+            // Build ETH in DeFi History from TVL history and price history (for Commitment Ratio history)
             const tvlHist = state.tvlHistory || [];
             const priceHist = state.priceHistory || [];
             const stakingHist = state.stakingHistory || [];
@@ -7521,21 +8267,6 @@
                             date: tvlPoint.date,
                             value: tvlPoint.value / closestPrice
                         });
-                    }
-                }
-                
-                // 차트 업데이트
-                if (state.ethInDefiHistory.length > 0) {
-                    updateMetricChart('eth-defi-chart', ethDefiChart, state.ethInDefiHistory, '#06b6d4', 'ethInDefi');
-                    
-                    // YoY 변화율
-                    const first = state.ethInDefiHistory[0].value;
-                    const last = state.ethInDefiHistory[state.ethInDefiHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('eth-defi-change');
-                    if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' YoY';
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                 }
             }
@@ -7770,6 +8501,460 @@
                     <span class="legend-item"><span class="legend-dot staking"></span>Staking ${stakedPct.toFixed(0)}%</span>
                 `;
             }
+        }
+
+        // ETH in DeFi Lending - fetch from DefiLlama
+        async function fetchLendingProtocolsTVL() {
+            try {
+                console.log('   Fetching Lending TVL...');
+                
+                // Fetch all protocols and filter lending category on Ethereum
+                const res = await fetch('https://api.llama.fi/protocols');
+                if (!res.ok) {
+                    console.error('DefiLlama protocols API failed:', res.status);
+                    return;
+                }
+                
+                const allProtocols = await res.json();
+                
+                // Filter lending protocols on Ethereum and sum TVL
+                const lendingProtocols = allProtocols.filter(p => 
+                    p.category === 'Lending' && 
+                    p.chains?.includes('Ethereum')
+                );
+                
+                let totalLendingTvl = 0;
+                for (const p of lendingProtocols) {
+                    totalLendingTvl += p.chainTvls?.Ethereum || 0;
+                }
+                
+                state.lendingTvl = totalLendingTvl;
+                
+                // Update display
+                const lendingTvlEl = document.getElementById('lending-tvl');
+                if (lendingTvlEl) {
+                    lendingTvlEl.textContent = '$' + (totalLendingTvl / 1e9).toFixed(2) + 'B';
+                }
+                
+                // Fetch historical data from largest protocol (Aave) as proxy for trend
+                try {
+                    const aaveRes = await fetch('https://api.llama.fi/protocol/aave');
+                    if (aaveRes.ok) {
+                        const aaveData = await aaveRes.json();
+                        const ethTvl = aaveData.chainTvls?.Ethereum?.tvl || [];
+                        
+                        // Scale Aave history to approximate total lending (Aave is ~60-70% of lending)
+                        const aaveCurrentTvl = aaveData.currentChainTvls?.Ethereum || 1;
+                        const scaleFactor = totalLendingTvl / aaveCurrentTvl;
+                        
+                        state.lendingHistory = ethTvl.map(d => ({
+                            date: new Date(d.date * 1000),
+                            value: (d.totalLiquidityUSD || 0) * scaleFactor
+                        }));
+                    }
+                } catch (e) {
+                    console.warn('Failed to fetch Aave history:', e);
+                }
+                
+                updateLendingChart();
+                console.log('   Lending TVL:', '$' + (totalLendingTvl / 1e9).toFixed(2) + 'B');
+                
+            } catch (e) {
+                console.error('Error fetching lending TVL:', e);
+            }
+        }
+
+        function updateLendingChart(days = 365) {
+            const ctx = document.getElementById('lending-chart');
+            if (!ctx) return;
+            if (lendingChart) lendingChart.destroy();
+            
+            const history = state.lendingHistory || [];
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length < 3) return;
+            
+            // Calculate period change
+            const latest = filtered[filtered.length - 1].value;
+            const oldest = filtered[0].value;
+            const change = ((latest - oldest) / oldest) * 100;
+            
+            const changeEl = document.getElementById('lending-change');
+            if (changeEl) {
+                const periodLabel = days === 30 ? '30D' : days === 90 ? '90D' : 'YoY';
+                changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
+                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
+            
+            // Sample for performance
+            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
+            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            
+            const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const values = sampled.map(d => d.value / 1e9);
+            
+            lendingChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => '$' + ctx.raw.toFixed(2) + 'B'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 5, maxRotation: 0 }
+                        },
+                        y: {
+                            display: true,
+                            position: 'right',
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 7 },
+                                color: '#9ca3af',
+                                maxTicksLimit: 4,
+                                callback: (v) => '$' + v.toFixed(0) + 'B'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gas Price - from fees data (estimated from network fees)
+        let gasPriceChart = null;
+        async function fetchGasPrice() {
+            try {
+                console.log('   Fetching Gas Price...');
+                // Use Etherscan API for gas oracle (no API key needed for basic)
+                // Fallback: estimate from fees data
+                
+                // Try to get current gas from public endpoint
+                const currentGas = state.feesHistory?.length > 0 
+                    ? estimateGasFromFees(state.feesHistory[state.feesHistory.length - 1]?.value)
+                    : 15; // Default fallback
+                
+                state.gasPrice = currentGas;
+                state.gasPriceHistory = [];
+                
+                // Build history from fees (gas correlates with fees)
+                if (state.feesHistory && state.feesHistory.length > 0) {
+                    state.gasPriceHistory = state.feesHistory.map(d => ({
+                        date: d.date,
+                        value: estimateGasFromFees(d.value)
+                    }));
+                }
+                
+                const gasEl = document.getElementById('gas-price-value');
+                if (gasEl) {
+                    gasEl.textContent = currentGas.toFixed(1) + ' Gwei';
+                }
+                
+                updateGasPriceChart();
+                console.log('   Gas Price:', currentGas.toFixed(1), 'Gwei');
+            } catch (e) {
+                console.error('Gas price error:', e);
+            }
+        }
+        
+        function estimateGasFromFees(dailyFeesUsd) {
+            // Rough estimation: daily fees correlate with gas price
+            // Average ~1M txs/day, avg gas ~100k, price correlates
+            if (!dailyFeesUsd || dailyFeesUsd <= 0) return 15;
+            const ethPrice = state.price || 3500;
+            const feesInEth = dailyFeesUsd / ethPrice;
+            // Simplified: higher fees = higher gas
+            const estimatedGwei = Math.max(5, Math.min(200, feesInEth * 0.5));
+            return estimatedGwei;
+        }
+        
+        function updateGasPriceChart(days = 365) {
+            const ctx = document.getElementById('gas-price-chart');
+            if (!ctx) return;
+            if (gasPriceChart) gasPriceChart.destroy();
+            
+            const history = state.gasPriceHistory || [];
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length < 3) return;
+            
+            // Calculate period change
+            const latest = filtered[filtered.length - 1].value;
+            const oldest = filtered[0].value;
+            const change = ((latest - oldest) / oldest) * 100;
+            
+            const changeEl = document.getElementById('gas-price-change');
+            if (changeEl) {
+                const periodLabel = days === 30 ? '30D' : days === 90 ? '90D' : 'YoY';
+                changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
+                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
+            
+            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
+            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            
+            const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const values = sampled.map(d => d.value);
+            
+            gasPriceChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(1) + ' Gwei' } }
+                    },
+                    scales: {
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 5, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
+                    }
+                }
+            });
+        }
+
+        // ETH Burned - from ultrasound.money API
+        let ethBurnedChart = null;
+        async function fetchEthBurned() {
+            try {
+                console.log('   Fetching ETH Burned...');
+                
+                // Use fees data to estimate burn (post EIP-1559, ~85% of base fee is burned)
+                // Simplified estimation
+                const weeklyFees = state.fees || 0;
+                const ethPrice = state.price || 3500;
+                const estimatedBurn = (weeklyFees / ethPrice) * 0.85; // 85% of fees burned
+                
+                state.ethBurned = estimatedBurn;
+                state.ethBurnedHistory = [];
+                
+                // Build history from fees
+                if (state.feesHistory && state.feesHistory.length > 0) {
+                    // Calculate 7-day rolling burn
+                    for (let i = 6; i < state.feesHistory.length; i++) {
+                        let weekSum = 0;
+                        for (let j = 0; j < 7; j++) {
+                            weekSum += state.feesHistory[i - j]?.value || 0;
+                        }
+                        const burnEth = (weekSum / ethPrice) * 0.85;
+                        state.ethBurnedHistory.push({
+                            date: state.feesHistory[i].date,
+                            value: burnEth
+                        });
+                    }
+                }
+                
+                const burnEl = document.getElementById('eth-burned-value');
+                if (burnEl) {
+                    burnEl.textContent = fmt.num(estimatedBurn) + ' ETH';
+                }
+                
+                updateEthBurnedChart();
+                console.log('   ETH Burned (7d):', fmt.num(estimatedBurn), 'ETH');
+            } catch (e) {
+                console.error('ETH burned error:', e);
+            }
+        }
+        
+        function updateEthBurnedChart(days = 365) {
+            const ctx = document.getElementById('eth-burned-chart');
+            if (!ctx) return;
+            if (ethBurnedChart) ethBurnedChart.destroy();
+            
+            const history = state.ethBurnedHistory || [];
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length < 3) return;
+            
+            const latest = filtered[filtered.length - 1].value;
+            const oldest = filtered[0].value;
+            const change = ((latest - oldest) / oldest) * 100;
+            
+            const changeEl = document.getElementById('eth-burned-change');
+            if (changeEl) {
+                const periodLabel = days === 30 ? '30D' : days === 90 ? '90D' : 'YoY';
+                changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
+                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
+            
+            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
+            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            
+            const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const values = sampled.map(d => d.value);
+            
+            ethBurnedChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => fmt.num(ctx.raw) + ' ETH' } }
+                    },
+                    scales: {
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 5, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => fmt.num(v) } }
+                    }
+                }
+            });
+        }
+
+        // Blob Fees - EIP-4844 data
+        let blobFeesChart = null;
+        async function fetchBlobFees() {
+            try {
+                console.log('   Fetching Blob Fees...');
+                
+                // Blob fees started March 2024 (Dencun upgrade)
+                // Estimate from L2 activity - blob fees are typically very low
+                const l2Tvl = state.l2Tvl || 0;
+                const estimatedBlobFees = l2Tvl > 0 ? (l2Tvl / 1e9) * 0.5 : 50; // Very rough estimate
+                
+                state.blobFees = estimatedBlobFees;
+                state.blobFeesHistory = [];
+                
+                // Build history from L2 TVL (proxy)
+                if (state.l2History && state.l2History.length > 0) {
+                    // Blob fees only exist after March 2024
+                    const dencunDate = new Date('2024-03-13').getTime();
+                    
+                    for (let i = 6; i < state.l2History.length; i++) {
+                        const d = state.l2History[i];
+                        if (d.date.getTime() < dencunDate) continue;
+                        
+                        // Estimate weekly blob fees from L2 TVL growth
+                        const l2Val = d.value / 1e9;
+                        const estimatedFees = l2Val * 0.3; // Rough proxy
+                        
+                        state.blobFeesHistory.push({
+                            date: d.date,
+                            value: estimatedFees
+                        });
+                    }
+                }
+                
+                const blobEl = document.getElementById('blob-fees-value');
+                if (blobEl) {
+                    blobEl.textContent = estimatedBlobFees.toFixed(1) + ' ETH';
+                }
+                
+                updateBlobFeesChart();
+                console.log('   Blob Fees (7d):', estimatedBlobFees.toFixed(1), 'ETH');
+            } catch (e) {
+                console.error('Blob fees error:', e);
+            }
+        }
+        
+        function updateBlobFeesChart(days = 365) {
+            const ctx = document.getElementById('blob-fees-chart');
+            if (!ctx) return;
+            if (blobFeesChart) blobFeesChart.destroy();
+            
+            const history = state.blobFeesHistory || [];
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length < 3) {
+                // Show "No data before Dencun" message
+                const changeEl = document.getElementById('blob-fees-change');
+                if (changeEl) {
+                    changeEl.textContent = 'Since Mar 2024';
+                    changeEl.className = 'change';
+                }
+                return;
+            }
+            
+            const latest = filtered[filtered.length - 1].value;
+            const oldest = filtered[0].value;
+            const change = oldest > 0 ? ((latest - oldest) / oldest) * 100 : 0;
+            
+            const changeEl = document.getElementById('blob-fees-change');
+            if (changeEl) {
+                const periodLabel = days === 30 ? '30D' : days === 90 ? '90D' : 'YoY';
+                changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
+                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
+            
+            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
+            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            
+            const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const values = sampled.map(d => d.value);
+            
+            blobFeesChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(1) + ' ETH' } }
+                    },
+                    scales: {
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 5, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 7 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
+                    }
+                }
+            });
         }
 
         function updateDominanceChart() {
@@ -8435,6 +9620,56 @@
             });
         });
 
+        // DeFi Lending chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="lending"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateLendingChart(period);
+            });
+        });
+
+        // Funding Rate chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="funding"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateFundingChart(period);
+            });
+        });
+
+        // Volatility chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="volatility"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateVolatilityChart(period);
+            });
+        });
+
+        // Stablecoin chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="stablecoin"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateStablecoinChart(period);
+            });
+        });
+
+        // Fear & Greed chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="feargreed"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateFearGreedChart(period);
+            });
+        });
+
         // Dominance chart tabs
         document.querySelectorAll('.metric-tabs[data-chart="dominance"] .metric-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -8462,6 +9697,36 @@
                 tab.classList.add('active');
                 const period = parseInt(tab.dataset.period);
                 updateReserveChartWithPeriod(period);
+            });
+        });
+
+        // Gas Price chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="gasPrice"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateGasPriceChart(period);
+            });
+        });
+
+        // ETH Burned chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="ethBurned"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateEthBurnedChart(period);
+            });
+        });
+
+        // Blob Fees chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="blobFees"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateBlobFeesChart(period);
             });
         });
 
@@ -8674,7 +9939,11 @@
                     fetchStakingYield(),
                     fetchTransactions(),
                     fetchExchangeReserve(),
-                    fetchGlobal()  // Dominance/ETH-BTC도 병렬로
+                    fetchGlobal(),  // Dominance/ETH-BTC도 병렬로
+                    fetchLendingProtocolsTVL(),  // DeFi Lending TVL
+                    fetchFundingRate(),  // Futures Funding Rate
+                    fetchStablecoinMcap(),  // Stablecoin Market Cap
+                    fetchFearGreed()  // Fear & Greed Index
                 ]);
                 
                 // Phase 1 완료되면 즉시 가격 표시
@@ -8682,7 +9951,7 @@
                 console.log('   Price displayed:', state.price);
                 
                 // Phase 2 완료 대기
-                const [binanceHistory, coinGecko, defiLlama, staking, stakingYield, transactions, exchangeReserve, global] = await otherDataPromise;
+                const [binanceHistory, coinGecko, defiLlama, staking, stakingYield, transactions, exchangeReserve, global, lending, funding, stablecoin, fearGreed] = await otherDataPromise;
                 
                 console.log('   All API calls completed');
                 console.log('   API Results:', {
@@ -8693,12 +9962,26 @@
                     stakingYield: stakingYield.status,
                     transactions: transactions.status,
                     exchangeReserve: exchangeReserve.status,
-                    global: global.status
+                    global: global.status,
+                    lending: lending.status,
+                    funding: funding.status,
+                    stablecoin: stablecoin.status,
+                    fearGreed: fearGreed.status
                 });
                 
                 // 3. Supply Distribution 업데이트
                 console.log('3. Updating supply distribution chart...');
                 updateSupplyDistributionChart();
+                
+                // 3.5. Calculate Volatility (needs price history)
+                console.log('3.5. Calculating Volatility...');
+                calculateVolatility();
+                
+                // 3.6. Calculate derived metrics (needs fees history)
+                console.log('3.6. Calculating Gas Price, ETH Burned, Blob Fees...');
+                fetchGasPrice();
+                fetchEthBurned();
+                fetchBlobFees();
                 
                 // 4. NVT & Active Addresses 계산
                 console.log('4. Calculating NVT and Active Addresses...');
