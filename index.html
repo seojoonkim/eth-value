@@ -106,10 +106,6 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        html, body {
-            height: 100%;
-        }
-
         html {
             overflow-x: hidden;
             scroll-behavior: smooth;
@@ -123,6 +119,7 @@
             line-height: 1.5;
             overflow-x: hidden;
             min-width: 320px;
+            padding-top: 100px; /* Space for fixed header */
         }
 
         .container {
@@ -131,10 +128,12 @@
             padding: 16px;
         }
 
-        /* Sticky Header Wrapper */
+        /* Fixed Header Wrapper */
         .header-wrapper {
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1000;
             background: var(--bg-card);
             box-shadow: var(--shadow-sm);
@@ -3296,11 +3295,16 @@
 
         .historical-chart-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             flex-wrap: wrap;
             gap: 8px;
+        }
+
+        .historical-chart-header .conclusion-label {
+            margin-bottom: 0;
+            text-align: center;
         }
 
         .historical-chart-title {
@@ -3316,7 +3320,8 @@
         /* Chart Price Display */
         .chart-price-display {
             display: flex;
-            gap: 32px;
+            justify-content: center;
+            gap: 48px;
             margin-bottom: 16px;
             padding: 12px 0;
         }
@@ -4416,7 +4421,7 @@
             <!-- Historical Chart (integrated) -->
             <div class="historical-main-chart" style="margin-top: 24px;">
                 <div class="historical-chart-header">
-                    <div class="historical-chart-title">Market Price vs Composite Fair Value <span id="chart-title-model-count" style="color: var(--text-muted); font-weight: 400; font-size: 11px; margin-left: 6px;">12 / 12 models</span></div>
+                    <div class="conclusion-label"><span data-i18n="chart.historicalTitle">FAIR VALUE TREND</span> <span class="model-count-light">(<span id="chart-model-count">12</span> / 12 models)</span></div>
                 </div>
                 
                 <!-- Price Display Row -->
@@ -5456,6 +5461,7 @@
                 'section.models': '12 Models',
                 'section.reference': 'Reference',
                 'valuation.compositeFairValue': 'Composite Fair Value',
+                'chart.historicalTitle': 'FAIR VALUE TREND',
                 'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. Investment decisions should consider multiple factors comprehensively.',
                 'footer.disclaimer': 'Auto-refresh 120s · For informational purposes only · Not financial advice',
                 'criteria.title': 'Appendix: Reliability Assessment Criteria',
@@ -5610,6 +5616,7 @@
                 'section.models': '12개 모델',
                 'section.reference': '참고 자료',
                 'valuation.compositeFairValue': '종합 적정 가치',
+                'chart.historicalTitle': '적정 가치 추이',
                 'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
                 'footer.disclaimer': '120초 자동 새로고침 · 정보 제공 목적 · 투자 조언이 아닙니다',
                 'criteria.title': '부록: 신뢰도 평가 기준',
@@ -5764,6 +5771,7 @@
                 'section.models': '9个模型',
                 'section.reference': '参考',
                 'valuation.compositeFairValue': '综合公允价值',
+                'chart.historicalTitle': '公允价值走势',
                 'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应综合考虑多种因素。',
                 'footer.disclaimer': '自动刷新120秒 · 仅供信息参考 · 非投资建议',
                 'criteria.title': '附录：可靠性评估标准',
@@ -5918,6 +5926,7 @@
                 'section.models': '9モデル',
                 'section.reference': 'さんこう',
                 'valuation.compositeFairValue': 'そうごうてきせいかかく',
+                'chart.historicalTitle': 'てきせいかかくすいい',
                 'disclaimer.text': '<strong>⚠️ めんせきじこう：</strong>これらのバリュエーションモデルはさんこうようです。かくモデルにはどくじのかていとげんかいがあります。とうしはんだんはふくすうのようそをそうごうてきにこうりょするひつようがあります。',
                 'footer.disclaimer': '120びょうじどうこうしん · じょうほうていきょうのみ · とうしアドバイスではありません',
                 'criteria.title': 'ふろく：しんらいせいひょうかきじゅん',
@@ -7909,6 +7918,7 @@
             // 기준: 방법론 검증도 + 데이터 객관성 + 가정 민감도
             if (tvl > 0 && cs > 0) {
                 models.push({ 
+                    id: 'tvlMultiple',
                     name: 'TVL Multiple', 
                     formula: 'TVL × Multiple ÷ Supply', 
                     price: (tvl * 7) / cs,
@@ -7920,6 +7930,7 @@
                 const scarcity = cs / (cs - stakedEth);
                 const stakedPct = ((stakedEth / cs) * 100).toFixed(0);
                 models.push({ 
+                    id: 'stakingScarcity',
                     name: 'Staking Scarcity', 
                     formula: 'Price × √(Supply ÷ Liquid)', 
                     price: state.price * Math.pow(scarcity, 0.5),
@@ -7930,6 +7941,7 @@
             if (state.marketCap > 0 && tvl > 0) {
                 const currentRatio = (state.marketCap / tvl).toFixed(1);
                 models.push({ 
+                    id: 'mctvl',
                     name: 'MC/TVL Fair Value', 
                     formula: 'Price × (Target ÷ Ratio)', 
                     price: state.price * (6 / (state.marketCap / tvl)),
@@ -7939,6 +7951,7 @@
             }
             if (tvl > 0 && cs > 0) {
                 models.push({ 
+                    id: 'metcalfe',
                     name: "Metcalfe's Law", 
                     formula: 'Coef × TVL^Exp ÷ Supply', 
                     price: (Math.pow(tvl / 1e9, 1.5) * 1e9 * 2) / cs,
@@ -7954,6 +7967,7 @@
                 const growthRate = 0.03;   // 3% perpetual growth
                 const displayYield = (stakingYield * 100).toFixed(1);
                 models.push({ 
+                    id: 'dcf',
                     name: 'DCF (Staking)', 
                     formula: 'Price × (1+APR) ÷ (Discount - Growth)', 
                     price: Math.min(state.price * yieldMultiplier / (discountRate - growthRate), state.price * 3),
@@ -7963,6 +7977,7 @@
             }
             if (l2Tvl > 0 && tvl > 0 && cs > 0) {
                 models.push({ 
+                    id: 'l2Ecosystem',
                     name: 'L2 Ecosystem', 
                     formula: '(TVL + L2×Weight) × Multiple ÷ Supply', 
                     price: (tvl + l2Tvl * 2) * 6 / cs,
@@ -7972,6 +7987,7 @@
             }
             if (fees > 0 && cs > 0) {
                 models.push({ 
+                    id: 'ps',
                     name: 'P/S Ratio (25x)', 
                     formula: 'DailyFees × 365 × PSRatio ÷ Supply', 
                     price: (fees * 365 * 25) / cs,
@@ -7987,6 +8003,7 @@
                 const targetYield = state.stakingApr / 100; // Live staking APR from Lido
                 const displayYield = state.stakingApr.toFixed(2);
                 models.push({ 
+                    id: 'revenueYield',
                     name: 'Revenue Yield', 
                     formula: 'AnnualFees ÷ APR ÷ Supply', 
                     price: (annualRevenue / targetYield) / cs,
@@ -8005,6 +8022,7 @@
                 const committedValueMultiplier = 1.5;
                 const commitPct = (commitmentRatio * 100).toFixed(0);
                 models.push({
+                    id: 'commitmentPremium',
                     name: 'Commitment Premium',
                     formula: 'Price × (1 + Commit% × Multiplier)',
                     price: state.price * (1 + (commitmentRatio * committedValueMultiplier)),
@@ -8019,6 +8037,7 @@
             const appCapital = state.appCapital || (state.stablecoins > 0 ? state.stablecoins / 0.28 : 0);
             if (appCapital > 0 && cs > 0) {
                 models.push({ 
+                    id: 'appCapital',
                     name: 'App Capital', 
                     formula: 'Stables ÷ Ratio ÷ Supply', 
                     price: appCapital / cs,
@@ -8036,6 +8055,7 @@
                 const targetYield = riskFreeRate + riskPremium; // 6%
                 const currentApr = state.stakingApr;
                 models.push({ 
+                    id: 'validatorEcon',
                     name: 'Validator Economics', 
                     formula: 'Price × (Target ÷ APR)', 
                     price: state.price * (targetYield / currentApr),
@@ -8053,6 +8073,7 @@
                 const annualVolume = dailySettlement * 365;
                 const fairMarketCap = annualVolume / velocity;
                 models.push({ 
+                    id: 'settlementLayer',
                     name: 'Settlement Layer', 
                     formula: '(DailyVol × 365 ÷ Velocity) ÷ Supply', 
                     price: fairMarketCap / cs,
@@ -8159,10 +8180,10 @@
                     ? translations[currentLang]['valuation.fair'] : 'Fair';
                 const label = diff > 15 ? labelUndervalued : diff < -15 ? labelOvervalued : labelFair;
 
-                const modelId = m.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+                const modelId = m.id; // Use the id from model definition
 
                 container.innerHTML += `
-                    <div class="valuation-model" data-model-id="${modelId}" data-price="${m.price}" data-reliability="${m.reliability}" data-bar-width="${barWidth}" data-marker-pos="${markerPos}">
+                    <div class="valuation-model" data-model="${modelId}" data-price="${m.price}" data-reliability="${m.reliability}" data-bar-width="${barWidth}" data-marker-pos="${markerPos}">
                         <div class="model-row-1">
                             <div class="model-name">${m.name}</div>
                             <div class="model-reliability">
@@ -8198,12 +8219,30 @@
             container.querySelectorAll('.model-toggle input').forEach(toggle => {
                 toggle.addEventListener('change', function() {
                     const modelCard = this.closest('.valuation-model');
+                    const model = modelCard.dataset.model;
+                    
                     if (this.checked) {
                         modelCard.classList.remove('disabled');
                     } else {
                         modelCard.classList.add('disabled');
                     }
+                    
+                    // Sync with Historical chart legend-btn
+                    const legendBtn = document.querySelector(`.legend-btn[data-model="${model}"]`);
+                    if (legendBtn) {
+                        if (this.checked) {
+                            legendBtn.classList.add('active');
+                        } else {
+                            legendBtn.classList.remove('active');
+                        }
+                    }
+                    
                     recalculateWeightedAverage();
+                    
+                    // Update Historical chart if available
+                    if (typeof updateChartData === 'function') {
+                        updateChartData();
+                    }
                 });
             });
 
@@ -8357,6 +8396,18 @@
             const conclusionModelCountEl = document.getElementById('conclusion-model-count');
             if (conclusionModelCountEl) {
                 conclusionModelCountEl.textContent = activeCount;
+            }
+            
+            // Historical 차트의 Composite Fair Value도 동기화 (상단 패널과 동일한 값 표시)
+            const chartCompositeEl = document.getElementById('chart-composite-value');
+            const chartDiffEl = document.getElementById('chart-price-diff');
+            if (chartCompositeEl) {
+                chartCompositeEl.textContent = fmt.price(weightedAvgPrice);
+                
+                if (chartDiffEl && state.price > 0) {
+                    chartDiffEl.textContent = fmt.pct(avgDiff);
+                    chartDiffEl.className = 'chart-price-diff ' + (avgDiff >= 0 ? 'up' : 'down');
+                }
             }
         }
 
@@ -9839,8 +9890,25 @@ Check out ETHval 👇`;
         document.querySelectorAll('.legend-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 btn.classList.toggle('active');
-                // Update chart data smoothly instead of re-rendering
+                
+                // Sync with Valuation Methodology toggle
+                const model = btn.dataset.model;
+                const valuationToggle = document.querySelector(`.valuation-model[data-model="${model}"] .model-toggle input`);
+                if (valuationToggle) {
+                    valuationToggle.checked = btn.classList.contains('active');
+                    const modelCard = valuationToggle.closest('.valuation-model');
+                    if (btn.classList.contains('active')) {
+                        modelCard.classList.remove('disabled');
+                    } else {
+                        modelCard.classList.add('disabled');
+                    }
+                }
+                
+                // Update chart data
                 updateChartData();
+                
+                // Recalculate weighted average (updates top Composite Fair Value)
+                recalculateWeightedAverage();
             });
         });
         
@@ -9868,10 +9936,10 @@ Check out ETHval 👇`;
                 countBadge.textContent = `${activeModels.length} / 12`;
             }
             
-            // Update chart title model count
-            const titleCount = document.getElementById('chart-title-model-count');
-            if (titleCount) {
-                titleCount.textContent = `${activeModels.length} / 12 models`;
+            // Update chart header model count (synced with conclusion panel style)
+            const chartModelCount = document.getElementById('chart-model-count');
+            if (chartModelCount) {
+                chartModelCount.textContent = activeModels.length;
             }
             
             // Recalculate composite with active models only
@@ -9906,6 +9974,9 @@ Check out ETHval 👇`;
             
             // Update composite dataset (index 1)
             historicalMainChart.data.datasets[1].data = newCompositeData;
+            
+            // Note: chart-composite-value is updated by recalculateWeightedAverage() 
+            // to ensure consistency with the conclusion panel
             
             // Update individual model visibility
             MODEL_ORDER.forEach((model, index) => {
