@@ -1549,15 +1549,46 @@
             text-decoration: none;
             transition: color 0.15s ease;
             line-height: 1.4;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .method-ref-link::before {
-            content: '→ ';
-            color: var(--text-muted);
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3Cpolyline points='10 9 9 9 8 9'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            flex-shrink: 0;
+        }
+
+        .method-ref-link::after {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            flex-shrink: 0;
+            margin-left: 2px;
+            opacity: 0.7;
         }
 
         .method-ref-link:hover {
             color: var(--accent);
+        }
+
+        .method-ref-link:hover::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3Cpolyline points='10 9 9 9 8 9'/%3E%3C/svg%3E");
+        }
+
+        .method-ref-link:hover::after {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
+            opacity: 1;
         }
 
         /* Method Card Mini Chart */
@@ -7100,7 +7131,7 @@
                         data: values,
                         borderColor: '#f59e0b',
                         backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        borderWidth: 2,
+                        borderWidth: 1.5,
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0
@@ -7228,7 +7259,7 @@
                         data: values,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 2,
+                        borderWidth: 1.5,
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0
@@ -7351,7 +7382,7 @@
                         data: values,
                         borderColor: '#f59e0b',
                         backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        borderWidth: 2,
+                        borderWidth: 1.5,
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0,
@@ -7691,7 +7722,7 @@
                 if (Array.isArray(tvlHist)) {
                     const oneYearAgo = Date.now() / 1000 - 365 * 24 * 60 * 60;
                     state.tvlHistory = tvlHist.filter(d => d.date > oneYearAgo).filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).map(d => ({ date: new Date(d.date * 1000), value: d.tvl }));
-                    updateMetricChart('tvl-chart', tvlChart, state.tvlHistory, '#22863a', 'tvl');
+                    updateMetricChart('tvl-chart', tvlChart, state.tvlHistory, '#10b981', 'tvl');
 
                     if (state.tvlHistory.length > 1) {
                         const first = state.tvlHistory[0].value, last = state.tvlHistory[state.tvlHistory.length - 1].value;
@@ -7734,7 +7765,7 @@
                 
                 if (l2Combined.length > 0) {
                     state.l2History = l2Combined;
-                    updateMetricChart('l2-chart', l2Chart, state.l2History, '#6f42c1', 'l2');
+                    updateMetricChart('l2-chart', l2Chart, state.l2History, '#7c3aed', 'l2');
                     
                     const first = l2Combined[0].value, last = l2Combined[l2Combined.length - 1].value;
                     const change = ((last - first) / first) * 100;
@@ -7752,7 +7783,7 @@
                 document.getElementById('dex-value').textContent = fmt.usd(state.dexVolume * 7);
                 if (dexData.totalDataChart && Array.isArray(dexData.totalDataChart)) {
                     state.dexHistory = dexData.totalDataChart.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).slice(-52).map(d => ({ date: new Date(d[0] * 1000), value: d[1] * 7 }));
-                    updateMetricChart('dex-chart', dexChart, state.dexHistory, '#0598bc', 'dex');
+                    updateMetricChart('dex-chart', dexChart, state.dexHistory, '#06b6d4', 'dex');
                     
                     if (state.dexHistory.length > 1) {
                         const first = state.dexHistory[0].value, last = state.dexHistory[state.dexHistory.length - 1].value;
@@ -7772,7 +7803,7 @@
                 document.getElementById('fees-value').textContent = fmt.usd(state.fees * 7);
                 if (feesData.totalDataChart && Array.isArray(feesData.totalDataChart)) {
                     state.feesHistory = feesData.totalDataChart.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).slice(-52).map(d => ({ date: new Date(d[0] * 1000), value: d[1] * 7 }));
-                    updateMetricChart('fees-chart', feesChart, state.feesHistory, '#e65100', 'fees');
+                    updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees');
                     
                     if (state.feesHistory.length > 1) {
                         const first = state.feesHistory[0].value, last = state.feesHistory[state.feesHistory.length - 1].value;
@@ -7792,7 +7823,7 @@
                     state.stablecoins = stablesData[stablesData.length - 1].totalCirculatingUSD?.peggedUSD || 0;
                     document.getElementById('stables-value').textContent = fmt.usd(state.stablecoins);
                     state.stablesHistory = stablesData.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).slice(-52).map(d => ({ date: new Date(d.date * 1000), value: d.totalCirculatingUSD?.peggedUSD || 0 }));
-                    updateMetricChart('stables-chart', stablesChart, state.stablesHistory, '#b08800', 'stables');
+                    updateMetricChart('stables-chart', stablesChart, state.stablesHistory, '#eab308', 'stables');
                     
                     if (state.stablesHistory.length > 1) {
                         const first = state.stablesHistory[0].value, last = state.stablesHistory[state.stablesHistory.length - 1].value;
@@ -7825,7 +7856,7 @@
                         date: d.date,
                         value: d.value / STABLECOIN_RATIO
                     }));
-                    updateMetricChart('app-capital-chart', appCapitalChart, state.appCapitalHistory, '#8b5cf6', 'appCapital');
+                    updateMetricChart('app-capital-chart', appCapitalChart, state.appCapitalHistory, '#ec4899', 'appCapital');
                     
                     if (state.appCapitalHistory.length > 1) {
                         const first = state.appCapitalHistory[0].value, last = state.appCapitalHistory[state.appCapitalHistory.length - 1].value;
@@ -7863,7 +7894,7 @@
                     date: new Date(Date.now() - (52 - i) * 7 * 24 * 60 * 60 * 1000),
                     value: baseStaked + (currentStaked - baseStaked) * (i / 52)
                 }));
-                updateMetricChart('staking-chart', stakingChart, state.stakingHistory, '#0366d6', 'staking');
+                updateMetricChart('staking-chart', stakingChart, state.stakingHistory, '#6366f1', 'staking');
                 
                 // Calculate YoY change
                 if (state.stakingHistory.length > 1) {
@@ -7987,8 +8018,8 @@
                 document.getElementById('tx-total-value').textContent = fmt.num(state.txTotal, 1);
                 
                 // Update charts
-                updateMetricChart('tx-eth-chart', txEthChart, state.txEthHistory, '#627eea', 'txEth');
-                updateMetricChart('tx-total-chart', txTotalChart, state.txTotalHistory, '#8b5cf6', 'txTotal');
+                updateMetricChart('tx-eth-chart', txEthChart, state.txEthHistory, '#14b8a6', 'txEth');
+                updateMetricChart('tx-total-chart', txTotalChart, state.txTotalHistory, '#6366f1', 'txTotal');
                 
                 // Calculate YoY change for ETH
                 if (state.txEthHistory.length > 1) {
@@ -8123,7 +8154,7 @@
             if (reserveChart) reserveChart.destroy();
             
             reserveChart = new Chart(ctx.getContext('2d'), chartConfig(
-                '#f59e0b',
+                '#d97706',
                 data,
                 labels,
                 (v) => fmt.num(v) + ' ETH',
@@ -8164,7 +8195,7 @@
                             data: priceData,
                             borderColor: '#0366d6',
                             backgroundColor: 'rgba(3, 102, 214, 0.1)',
-                            borderWidth: 2,
+                            borderWidth: 1.5,
                             fill: true,
                             tension: 0.3,
                             pointRadius: 0,
@@ -8330,7 +8361,7 @@
             
             // 차트 업데이트
             if (state.nvtHistory.length > 0) {
-                updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#dc2626', 'nvt');
+                updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#be123c', 'nvt');
             }
         }
 
@@ -8372,7 +8403,7 @@
             
             // 차트 업데이트
             if (state.activeAddrHistory.length > 0) {
-                updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#7c3aed', 'activeAddr');
+                updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#a855f7', 'activeAddr');
             }
         }
 
@@ -8449,7 +8480,7 @@
                 
                 // 차트 업데이트
                 if (state.commitmentRatioHistory.length > 0) {
-                    updateMetricChart('commitment-ratio-chart', commitmentRatioChart, state.commitmentRatioHistory, '#8b5cf6', 'commitmentRatio');
+                    updateMetricChart('commitment-ratio-chart', commitmentRatioChart, state.commitmentRatioHistory, '#f59e0b', 'commitmentRatio');
                     
                     // YoY 변화율
                     const first = state.commitmentRatioHistory[0].value;
@@ -8753,9 +8784,9 @@
                     labels,
                     datasets: [{
                         data: values,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        borderWidth: 2,
+                        borderColor: '#ec4899',
+                        backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                        borderWidth: 1.5,
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0
@@ -8902,9 +8933,9 @@
                     labels,
                     datasets: [{
                         data: values,
-                        borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        borderWidth: 2,
+                        borderColor: '#84cc16',
+                        backgroundColor: 'rgba(132, 204, 22, 0.1)',
+                        borderWidth: 1.5,
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0
@@ -9002,9 +9033,9 @@
                     labels,
                     datasets: [{
                         data: values,
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderWidth: 2,
+                        borderColor: '#f43f5e',
+                        backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                        borderWidth: 1.5,
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0
@@ -9113,9 +9144,9 @@
                     labels,
                     datasets: [{
                         data: values,
-                        borderColor: '#a855f7',
-                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
-                        borderWidth: 2,
+                        borderColor: '#0ea5e9',
+                        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                        borderWidth: 1.5,
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0
@@ -9159,7 +9190,7 @@
                 console.log('Creating dominance chart with', history.length, 'points');
                 
                 dominanceChart = new Chart(ctx.getContext('2d'), chartConfig(
-                    '#0366d6',
+                    '#3b82f6',
                     history.map(d => d.value),
                     history.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
                     (v) => v.toFixed(1) + '%',
@@ -9921,7 +9952,7 @@
             
             if (dominanceChart) dominanceChart.destroy();
             dominanceChart = new Chart(ctx.getContext('2d'), chartConfig(
-                '#0366d6',
+                '#3b82f6',
                 filtered.map(d => d.value),
                 filtered.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
                 (v) => v.toFixed(1) + '%'
@@ -9981,7 +10012,7 @@
             
             if (reserveChart) reserveChart.destroy();
             reserveChart = new Chart(ctx.getContext('2d'), chartConfig(
-                '#f59e0b',
+                '#d97706',
                 filtered.map(d => d.value),
                 filtered.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
                 (v) => fmt.num(v) + ' ETH',
@@ -10019,43 +10050,43 @@
                 
                 if (metric === 'tvl') {
                     history = state.tvlHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('tvl-chart', tvlChart, history, '#22863a', 'tvl');
+                    updateMetricChart('tvl-chart', tvlChart, history, '#10b981', 'tvl');
                     changeElId = 'tvl-change';
                 } else if (metric === 'staking') {
                     history = state.stakingHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('staking-chart', stakingChart, history, '#0366d6', 'staking');
+                    updateMetricChart('staking-chart', stakingChart, history, '#6366f1', 'staking');
                     changeElId = 'staking-change';
                 } else if (metric === 'l2') {
                     history = state.l2History.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l2-chart', l2Chart, history, '#6f42c1', 'l2');
+                    updateMetricChart('l2-chart', l2Chart, history, '#7c3aed', 'l2');
                     changeElId = 'l2-change';
                 } else if (metric === 'dex') {
                     history = state.dexHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('dex-chart', dexChart, history, '#00bcd4', 'dex');
+                    updateMetricChart('dex-chart', dexChart, history, '#06b6d4', 'dex');
                     changeElId = 'dex-change';
                 } else if (metric === 'fees') {
                     history = state.feesHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('fees-chart', feesChart, history, '#e65100', 'fees');
+                    updateMetricChart('fees-chart', feesChart, history, '#f97316', 'fees');
                     changeElId = 'fees-change';
                 } else if (metric === 'stables') {
                     history = state.stablesHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('stables-chart', stablesChart, history, '#b08800', 'stables');
+                    updateMetricChart('stables-chart', stablesChart, history, '#eab308', 'stables');
                     changeElId = 'stables-change';
                 } else if (metric === 'txEth') {
                     history = state.txEthHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('tx-eth-chart', txEthChart, history, '#627eea', 'txEth');
+                    updateMetricChart('tx-eth-chart', txEthChart, history, '#14b8a6', 'txEth');
                     changeElId = 'tx-eth-change';
                 } else if (metric === 'txTotal') {
                     history = state.txTotalHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('tx-total-chart', txTotalChart, history, '#8b5cf6', 'txTotal');
+                    updateMetricChart('tx-total-chart', txTotalChart, history, '#6366f1', 'txTotal');
                     changeElId = 'tx-total-change';
                 } else if (metric === 'nvt') {
                     history = state.nvtHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('nvt-chart', nvtChart, history, '#dc2626', 'nvt');
+                    updateMetricChart('nvt-chart', nvtChart, history, '#be123c', 'nvt');
                     changeElId = 'nvt-change';
                 } else if (metric === 'activeAddr') {
                     history = state.activeAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('active-addr-chart', activeAddrChart, history, '#7c3aed', 'activeAddr');
+                    updateMetricChart('active-addr-chart', activeAddrChart, history, '#a855f7', 'activeAddr');
                     changeElId = 'active-addr-change';
                 } else if (metric === 'ethInDefi') {
                     history = state.ethInDefiHistory.filter(d => d.date.getTime() > cutoffDate);
@@ -10063,11 +10094,11 @@
                     changeElId = 'eth-defi-change';
                 } else if (metric === 'commitmentRatio') {
                     history = state.commitmentRatioHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('commitment-ratio-chart', commitmentRatioChart, history, '#8b5cf6', 'commitmentRatio');
+                    updateMetricChart('commitment-ratio-chart', commitmentRatioChart, history, '#f59e0b', 'commitmentRatio');
                     changeElId = 'commitment-ratio-change';
                 } else if (metric === 'appCapital') {
                     history = state.appCapitalHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('app-capital-chart', appCapitalChart, history, '#8b5cf6', 'appCapital');
+                    updateMetricChart('app-capital-chart', appCapitalChart, history, '#ec4899', 'appCapital');
                     changeElId = 'app-capital-change';
                 } else if (metric === 'stakingApr') {
                     history = state.stakingAprHistory.filter(d => d.date.getTime() > cutoffDate);
@@ -10215,7 +10246,7 @@
                                 data: priceData,
                                 borderColor: '#0366d6',
                                 backgroundColor: 'rgba(3, 102, 214, 0.1)',
-                                borderWidth: 2,
+                                borderWidth: 1.5,
                                 fill: true,
                                 tension: 0.3,
                                 pointRadius: 0,
@@ -10271,7 +10302,7 @@
                     labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
                     data.push(17 + Math.sin(i * 0.3) * 2);
                 }
-                dominanceChart = new Chart(domCtx.getContext('2d'), chartConfig('#0366d6', data, labels, v => v.toFixed(1) + '%', 'pct'));
+                dominanceChart = new Chart(domCtx.getContext('2d'), chartConfig('#3b82f6', data, labels, v => v.toFixed(1) + '%', 'pct'));
                 console.log('Dominance chart initialized');
             }
             
@@ -10297,7 +10328,7 @@
                     labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
                     data.push(1000000 + Math.sin(i * 0.3) * 100000);
                 }
-                txEthChart = new Chart(txEthCtx.getContext('2d'), chartConfig('#627eea', data, labels, v => fmt.num(v) + ' tx'));
+                txEthChart = new Chart(txEthCtx.getContext('2d'), chartConfig('#14b8a6', data, labels, v => fmt.num(v) + ' tx'));
                 console.log('ETH Tx chart initialized');
             }
             
@@ -10310,7 +10341,7 @@
                     labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
                     data.push(10000000 + Math.sin(i * 0.3) * 2000000);
                 }
-                txTotalChart = new Chart(txTotalCtx.getContext('2d'), chartConfig('#8b5cf6', data, labels, v => fmt.num(v) + ' tx'));
+                txTotalChart = new Chart(txTotalCtx.getContext('2d'), chartConfig('#6366f1', data, labels, v => fmt.num(v) + ' tx'));
                 console.log('Total Tx chart initialized');
             }
             
@@ -10323,7 +10354,7 @@
                     labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
                     data.push(19000000 - i * 20000 + Math.random() * 100000);
                 }
-                reserveChart = new Chart(reserveCtx.getContext('2d'), chartConfig('#f59e0b', data, labels, v => fmt.num(v) + ' ETH', 'eth'));
+                reserveChart = new Chart(reserveCtx.getContext('2d'), chartConfig('#d97706', data, labels, v => fmt.num(v) + ' ETH', 'eth'));
                 console.log('Reserve chart initialized');
             }
             
@@ -10336,7 +10367,7 @@
                     labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
                     data.push(45 + Math.sin(i * 0.2) * 15 + Math.random() * 5);
                 }
-                nvtChart = new Chart(nvtCtx.getContext('2d'), chartConfig('#dc2626', data, labels, v => v.toFixed(1)));
+                nvtChart = new Chart(nvtCtx.getContext('2d'), chartConfig('#be123c', data, labels, v => v.toFixed(1)));
                 console.log('NVT chart initialized');
             }
             
@@ -10349,7 +10380,7 @@
                     labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
                     data.push(500000 + Math.sin(i * 0.15) * 100000 + Math.random() * 50000);
                 }
-                activeAddrChart = new Chart(activeAddrCtx.getContext('2d'), chartConfig('#7c3aed', data, labels, v => fmt.num(v)));
+                activeAddrChart = new Chart(activeAddrCtx.getContext('2d'), chartConfig('#a855f7', data, labels, v => fmt.num(v)));
                 console.log('Active Addresses chart initialized');
             }
         }
@@ -11511,14 +11542,4 @@ Check out ETHval 👇`;
                 <div class="share-preview" id="share-preview"></div>
                 <div class="share-actions">
                     <button class="share-btn download" onclick="downloadShareCard()">
-                        <span>📥</span> <span data-i18n="share.download">Download</span>
-                    </button>
-                    <button class="share-btn twitter" onclick="shareToTwitter()">
-                        <span>𝕏</span> <span data-i18n="share.postToX">Post to 𝕏</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+                        <span>📥</span> <s
