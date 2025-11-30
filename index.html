@@ -3062,9 +3062,19 @@
                 font-size: 16px;
             }
             
-            /* iOS 자동 확대 방지 */
+            /* iOS 자동 확대 방지 및 키보드 스크롤 개선 */
             input, textarea, select {
                 font-size: 16px !important;
+                -webkit-appearance: none;
+            }
+            
+            /* 모바일에서 textarea 포커스 시 뷰포트 조정 */
+            .modal-content {
+                scroll-padding-bottom: 200px;
+            }
+            
+            .modal-write-input textarea:focus {
+                scroll-margin-top: 20px;
             }
             
             .modal-submit-btn {
@@ -3869,6 +3879,11 @@
         .method-chart-diff.down {
             background: var(--negative-bg);
             color: var(--negative);
+        }
+
+        .method-chart-diff.fair {
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
         }
 
         .method-chart-tabs {
@@ -6391,7 +6406,7 @@
                         <strong>Join the Discussion!</strong> Rate each model's confidence level and share your thoughts. 
                         Together, we can build a more accurate, crowd-sourced reliability weighting system.
                     </p>
-                    <a href="#section-methodology" class="community-stats-box" style="text-decoration: none; cursor: pointer;">
+                    <div class="community-stats-box" onclick="document.getElementById('section-methodology').scrollIntoView({behavior: 'smooth'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelector('.nav-item[href=\'#section-methodology\']').classList.add('active');" style="cursor: pointer;">
                         <span class="community-stats-label">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             <strong data-i18n="summary.communityStats">Discussion</strong>
@@ -6413,7 +6428,7 @@
                             </div>
                         </div>
                         <svg class="community-stats-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-                    </a>
+                    </div>
                     <div class="summary-cta">
                         <img src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;">
                         <div class="contact-info">
@@ -8949,9 +8964,9 @@
             const diffSign = priceDiff !== null ? (priceDiff >= 0 ? '+' : '') : '';
             const diffClass = priceDiff !== null ? (priceDiff >= 0 ? 'positive' : 'negative') : '';
             const labelText = priceDiff !== null 
-                ? (priceDiff > 5 ? (translations[currentLang]?.['valuation.undervalued'] || 'Undervalued') 
-                    : priceDiff < -5 ? (translations[currentLang]?.['valuation.overvalued'] || 'Overvalued') 
-                    : (translations[currentLang]?.['valuation.fairValue'] || 'Fair Value'))
+                ? (priceDiff > 15 ? (translations[currentLang]?.['valuation.undervalued'] || 'Undervalued') 
+                    : priceDiff < -15 ? (translations[currentLang]?.['valuation.overvalued'] || 'Overvalued') 
+                    : (translations[currentLang]?.['valuation.fair'] || 'Fair'))
                 : '';
             const labelClass = priceDiff !== null ? (priceDiff >= 0 ? '' : 'negative') : '';
             
@@ -10647,15 +10662,19 @@
                 const diff = state.price > 0 ? ((latestValue - state.price) / state.price) * 100 : 0;
                 
                 let statusKey;
-                if (diff > 5) statusKey = 'valuation.undervalued';
-                else if (diff < -5) statusKey = 'valuation.overvalued';
+                if (diff > 15) statusKey = 'valuation.undervalued';
+                else if (diff < -15) statusKey = 'valuation.overvalued';
                 else statusKey = 'valuation.fair';
                 
-                const statusText = translations[currentLang]?.[statusKey] || (diff > 5 ? 'Undervalued' : diff < -5 ? 'Overvalued' : 'Fair');
+                const statusText = translations[currentLang]?.[statusKey] || (diff > 15 ? 'Undervalued' : diff < -15 ? 'Overvalued' : 'Fair');
                 
                 const diffEl = document.getElementById(`method-diff-${model}`);
                 if (diffEl) {
                     diffEl.textContent = fmt.pct(diff) + ' ' + statusText;
+                    let diffClass = 'fair';
+                    if (diff > 15) diffClass = 'up';
+                    else if (diff < -15) diffClass = 'down';
+                    diffEl.className = 'method-chart-diff ' + diffClass;
                 }
             });
         }
@@ -14708,6 +14727,15 @@
                 window.scrollTo(0, 0);
             }
             
+            // 모바일에서 모달 내 textarea 포커스 시 스크롤 조정
+            document.addEventListener('focus', function(e) {
+                if (e.target.tagName === 'TEXTAREA' && e.target.closest('.review-modal')) {
+                    setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+            }, true);
+            
             initCharts();
             fetchAll();
             setInterval(fetchAll, 120000);
@@ -15660,10 +15688,10 @@ Check out ETHval 👇`;
                 
                 // Get valuation status text based on diff
                 let statusKey;
-                if (diff > 5) statusKey = 'valuation.undervalued';
-                else if (diff < -5) statusKey = 'valuation.overvalued';
+                if (diff > 15) statusKey = 'valuation.undervalued';
+                else if (diff < -15) statusKey = 'valuation.overvalued';
                 else statusKey = 'valuation.fair';
-                const statusText = translations[currentLang]?.[statusKey] || (diff > 5 ? 'Undervalued' : diff < -5 ? 'Overvalued' : 'Fair');
+                const statusText = translations[currentLang]?.[statusKey] || (diff > 15 ? 'Undervalued' : diff < -15 ? 'Overvalued' : 'Fair');
                 
                 if (valueEl) {
                     valueEl.textContent = fmt.price(latestValue);
@@ -15671,7 +15699,10 @@ Check out ETHval 👇`;
                 }
                 if (diffEl) {
                     diffEl.textContent = fmt.pct(diff) + ' ' + statusText;
-                    diffEl.className = 'method-chart-diff ' + (diff >= 0 ? 'up' : 'down');
+                    let diffClass = 'fair';
+                    if (diff > 15) diffClass = 'up';
+                    else if (diff < -15) diffClass = 'down';
+                    diffEl.className = 'method-chart-diff ' + diffClass;
                 }
                 
                 // Add tab click handlers for methodology cards
