@@ -28,6 +28,21 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <style>
+        /* iOS Safari 자동 확대 방지 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                -webkit-text-size-adjust: 100%;
+            }
+            input, textarea, select {
+                font-size: 16px !important;
+            }
+        }
+        
+        /* 전역 터치 확대 방지 */
+        html {
+            touch-action: manipulation;
+        }
+        
         :root {
             /* ========================================
                DESIGN SYSTEM - Colors & Typography
@@ -1920,7 +1935,7 @@
         .modal-close {
             background: none;
             border: none;
-            font-size: 22px;
+            font-size: 28px;
             color: var(--text-muted);
             cursor: pointer;
             padding: 0;
@@ -1928,8 +1943,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
+            width: 36px;
+            height: 36px;
         }
 
         .modal-close:hover {
@@ -3041,7 +3056,12 @@
             .modal-write-input textarea {
                 min-height: 70px;
                 padding: 12px;
-                font-size: 14px;
+                font-size: 16px;
+            }
+            
+            /* iOS 자동 확대 방지 */
+            input, textarea, select {
+                font-size: 16px !important;
             }
             
             .modal-submit-btn {
