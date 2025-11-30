@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ETHval | Intrinsic Value Dashboard</title>
     
     <!-- Google Analytics -->
@@ -12,6 +12,11 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-PX7DBZL3ND');
+      
+      // 브라우저 자동 스크롤 복원 비활성화
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
     </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2912,15 +2917,16 @@
             }
             
             .review-modal-overlay {
-                padding: 0;
+                padding: 0 !important;
             }
             
             .review-modal {
-                max-height: 100vh;
-                margin: 0;
-                border-radius: 0;
-                width: 100%;
-                max-width: 100%;
+                max-height: 100vh !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                width: 100vw !important;
+                max-width: 100vw !important;
+                min-width: 100vw !important;
             }
             
             /* 모달 헤더 모바일 최적화 */
@@ -14673,6 +14679,12 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             console.log('DOM loaded, initializing...');
+            
+            // 페이지 로드 시 스크롤을 맨 위로 (URL에 hash가 없을 때만)
+            if (!window.location.hash || window.location.hash === '#top') {
+                window.scrollTo(0, 0);
+            }
+            
             initCharts();
             fetchAll();
             setInterval(fetchAll, 120000);
