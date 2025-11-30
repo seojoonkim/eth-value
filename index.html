@@ -9583,7 +9583,7 @@
             try {
                 // 모든 댓글 가져오기
                 const { data: comments, error } = await supabaseClient
-                    .from('ethval_comments')
+                    .from('comments')
                     .select('id, user_id, rating');
                 
                 if (error) throw error;
