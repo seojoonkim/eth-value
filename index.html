@@ -1848,6 +1848,16 @@
             margin-left: 0;
         }
 
+        .summary-avatars-more {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
         .summary-btn {
             display: flex;
             align-items: center;
@@ -9199,16 +9209,11 @@
                 ? (uniqueUserCount === 1 ? '1 person discussing' : `${uniqueUserCount} people discussing`)
                 : `${uniqueUserCount} ${personLabel}`;
             
-            // 상위 5명 리뷰어 선정: 1) 별점 있는 리뷰 우선, 2) 좋아요 많은 순, 3) 먼저 작성한 순
+            // 상위 7명 리뷰어 선정: 최근 활동 순 (created_at 기준 최신순)
             const allTopLevel = comments.filter(c => !c.parent_id);
             const sortedReviewers = allTopLevel.sort((a, b) => {
-                // 1) 별점 있는 리뷰 우선
-                if (a.rating && !b.rating) return -1;
-                if (!a.rating && b.rating) return 1;
-                // 2) 좋아요 많은 순
-                if (b.likes !== a.likes) return b.likes - a.likes;
-                // 3) 먼저 작성한 순
-                return new Date(a.created_at) - new Date(b.created_at);
+                // 최근 작성한 순
+                return new Date(b.created_at) - new Date(a.created_at);
             });
             // 중복 유저 제거 (user_id 기준)
             const seenUsers = new Set();
@@ -9217,7 +9222,8 @@
                 seenUsers.add(r.user_id);
                 return true;
             });
-            const topReviewers = uniqueReviewers.slice(0, 5);
+            const topReviewers = uniqueReviewers.slice(0, 7);
+            const hasMoreReviewers = uniqueReviewers.length > 7;
             
             // 카드에는 요약만 표시
             const hasRatings = ratings.totalRatings > 0;
@@ -9241,6 +9247,7 @@
                             ${topReviewers.map(r => `
                                 <img class="summary-avatar" src="${r.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="${r.user_handle}" title="${r.user_handle}">
                             `).join('')}
+                            ${hasMoreReviewers ? '<span class="summary-avatars-more">...</span>' : ''}
                         </div>
                         ` : '<div class="summary-avatars-empty"></div>'}
                         <button class="summary-btn" data-action="open-modal" data-model="${modelId}">
