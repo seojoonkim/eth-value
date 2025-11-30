@@ -13,9 +13,9 @@
       gtag('js', new Date());
       gtag('config', 'G-PX7DBZL3ND');
       
-      // 브라우저 자동 스크롤 복원 비활성화
+      // 브라우저 자동 스크롤 복원 활성화
       if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual';
+        history.scrollRestoration = 'auto';
       }
     </script>
     
@@ -110,7 +110,7 @@
             
             /* Typography - PC */
             --font-h1: 32px;
-            --font-h2: 16px;
+            --font-h2: 17px;
             --font-h3: 13px;
             --font-body: 12px;
             --font-caption: 10px;
@@ -121,7 +121,7 @@
         @media (max-width: 768px) {
             :root {
                 --font-h1: 24px;
-                --font-h2: 14px;
+                --font-h2: 15px;
                 --font-h3: 12px;
                 --font-body: 11px;
                 --font-caption: 9px;
@@ -131,11 +131,34 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        /* 얇고 반투명한 오버레이 스크롤바 */
         html {
             overflow-x: hidden;
             scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
         }
 
+        /* Webkit 브라우저 (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        /* 스크롤바가 컨텐츠 위에 오버레이 */
         body {
             font-family: 'Inter', 'Pretendard Variable', Pretendard, 'Noto Sans JP', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg);
@@ -147,10 +170,41 @@
             padding-top: 100px; /* Space for fixed header */
         }
 
+        /* 모달 열렸을 때 스크롤 방지 */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        /* 클릭 가능한 요소 공통 스타일 */
+        .clickable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .clickable:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .clickable:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 16px;
+            padding: 16px 32px;
+        }
+        
+        @media (min-width: 1600px) {
+            .container {
+                padding: 16px 48px;
+            }
         }
 
         /* Fixed Header Wrapper */
@@ -169,7 +223,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 16px;
+            padding: 10px 32px;
             gap: 10px;
             flex-wrap: wrap;
             max-width: 1400px;
@@ -184,7 +238,7 @@
             justify-content: center;
             align-items: center;
             gap: 4px;
-            padding: 6px 16px;
+            padding: 6px 32px;
             max-width: 1400px;
             margin-left: auto;
             margin-right: auto;
@@ -208,6 +262,11 @@
         .nav-item:hover {
             color: var(--text);
             background: var(--bg-subtle);
+            transform: translateY(-1px);
+        }
+        
+        .nav-item:active {
+            transform: translateY(0);
         }
 
         .nav-item.active {
@@ -229,6 +288,12 @@
             align-items: center;
             gap: 8px;
             flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .logo:hover {
+            opacity: 0.85;
         }
 
         .logo-icon {
@@ -357,6 +422,11 @@
 
         .lang-btn:hover {
             color: var(--text);
+            transform: translateY(-1px);
+        }
+        
+        .lang-btn:active {
+            transform: translateY(0);
         }
 
         .lang-btn.active {
@@ -993,6 +1063,11 @@
             height: 16px;
             cursor: pointer;
             flex-shrink: 0;
+            transition: transform 0.15s ease;
+        }
+        
+        .model-toggle:hover {
+            transform: scale(1.05);
         }
 
         .model-toggle input {
@@ -1498,6 +1573,12 @@
             overflow: hidden;
             min-height: 190px;
             box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+        
+        .method-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: var(--border);
         }
 
         .method-header {
@@ -1782,10 +1863,18 @@
             transition: all 0.15s ease;
             margin-left: auto;
             flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
         }
 
         .summary-btn:hover {
             background: #7c3aed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(124, 58, 237, 0.4);
+        }
+        
+        .summary-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(124, 58, 237, 0.3);
         }
 
         .summary-btn svg {
@@ -1839,6 +1928,7 @@
             overflow: hidden;
             overscroll-behavior: contain;
             animation: modalFadeIn 0.2s ease-out;
+            touch-action: none;
         }
 
         .review-modal {
@@ -1936,7 +2026,7 @@
             background: none;
             border: none;
             font-size: 28px;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             cursor: pointer;
             padding: 0;
             line-height: 1;
@@ -1945,6 +2035,7 @@
             justify-content: center;
             width: 36px;
             height: 36px;
+            transition: color 0.15s ease;
         }
 
         .modal-close:hover {
@@ -1955,6 +2046,12 @@
             flex: 1;
             overflow-y: auto;
             padding: 16px 20px;
+            touch-action: pan-y;
+            overscroll-behavior: contain;
+        }
+
+        .review-modal {
+            touch-action: auto;
         }
 
         /* 모달 별점 요약 + 작성 섹션 wrapper */
@@ -2232,7 +2329,9 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.15s ease;
+            transition: all 0.15s ease;
+            position: relative;
+            min-width: 60px;
         }
 
         .modal-submit:hover {
@@ -2245,6 +2344,30 @@
 
         .modal-submit.active:hover {
             background: #5b21b6;
+        }
+        
+        .modal-submit.loading {
+            color: transparent;
+            pointer-events: none;
+        }
+        
+        .modal-submit.loading::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            top: 50%;
+            left: 50%;
+            margin-left: -7px;
+            margin-top: -7px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .modal-login-prompt {
@@ -2298,8 +2421,8 @@
         .modal-sort-btns {
             display: flex;
             gap: 2px;
-            background: var(--bg-card);
-            padding: 2px;
+            background: var(--bg-subtle);
+            padding: 3px;
             border-radius: var(--radius-sm);
         }
 
@@ -2320,9 +2443,10 @@
         }
 
         .modal-sort-btn.active {
-            background: var(--bg-subtle);
+            background: white;
             color: var(--accent);
-            box-shadow: var(--shadow-sm);
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .modal-likes-count {
@@ -2648,7 +2772,7 @@
 
         .modal-name-row {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             flex-wrap: wrap;
             gap: 2px;
         }
@@ -2676,6 +2800,58 @@
             line-height: 1.5;
             margin-top: 8px;
             margin-bottom: 10px;
+        }
+        
+        .translate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            vertical-align: middle;
+        }
+        
+        .translate-badge:hover {
+            background: var(--bg);
+            color: var(--text-secondary);
+        }
+        
+        .translate-badge svg {
+            width: 12px;
+            height: 12px;
+        }
+        
+        .loading-spinner-small {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        .translated-content {
+            border-left: 2px solid var(--accent);
+            padding-left: 10px;
+            margin-top: 6px;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        
+        .translated-label {
+            font-size: 10px;
+            color: var(--accent);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .modal-review-content a,
@@ -4497,6 +4673,7 @@
 
         .community-stats-box {
             display: flex;
+            flex-direction: row;
             align-items: center;
             gap: 20px;
             padding: 14px 18px;
@@ -4506,6 +4683,20 @@
             margin-top: 14px;
             margin-bottom: 14px;
             transition: all 0.2s ease;
+        }
+
+        .community-stats-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .community-stats-top-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
         }
 
         .community-stats-box:hover {
@@ -4522,30 +4713,37 @@
             margin-left: auto;
             flex-shrink: 0;
             transition: transform 0.2s ease;
+            align-self: center;
         }
 
         .community-stats-box:hover .community-stats-arrow {
-            transform: translateX(3px);
+            transform: translateY(3px);
         }
 
         .community-stats-label {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-secondary);
-            font-weight: 500;
+            font-weight: 400;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 4px;
             flex-shrink: 0;
+            width: 70px;
+            margin-right: 10px;
         }
 
         .community-stats-label strong {
             color: var(--text);
+            font-weight: 500;
         }
 
         .community-stats-label svg {
-            width: 16px;
-            height: 16px;
-            color: #7c3aed;
+            width: 24px;
+            height: 24px;
+            color: var(--text);
+            stroke-width: 1.2;
         }
 
         .community-stats-items {
@@ -4575,6 +4773,121 @@
         .community-stat-divider {
             color: var(--border);
             font-size: 10px;
+        }
+
+        .community-recent-participants {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recent-participants-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #7c3aed;
+            white-space: nowrap;
+        }
+
+        .recent-participants-avatars {
+            display: flex;
+            align-items: center;
+        }
+
+        .recent-participants-avatars img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            margin-left: -6px;
+            object-fit: cover;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .recent-participants-avatars img:first-child {
+            margin-left: 0;
+        }
+
+        .recent-participants-more {
+            margin-left: 6px;
+            color: #7c3aed;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* 모바일 Discussion 박스 */
+        @media (max-width: 600px) {
+            .community-stats-box {
+                gap: 12px;
+                padding: 12px 14px;
+            }
+            
+            .community-stats-content {
+                gap: 6px;
+            }
+            
+            .community-stats-top-row {
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            
+            .community-stats-label {
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                font-size: 9px;
+                width: 50px;
+                margin-right: 5px;
+            }
+            
+            .community-stats-label svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .community-stats-label strong {
+                font-size: 9px;
+            }
+            
+            .community-stats-items {
+                gap: 10px;
+            }
+            
+            .community-stat-value {
+                font-size: 13px;
+            }
+            
+            .community-stat-name {
+                font-size: 10px;
+            }
+            
+            .community-stat-divider {
+                font-size: 8px;
+            }
+            
+            .community-recent-participants {
+                gap: 8px;
+            }
+            
+            .recent-participants-label {
+                font-size: 11px;
+            }
+            
+            .recent-participants-avatars img {
+                width: 24px;
+                height: 24px;
+                margin-left: -5px;
+            }
+            
+            .recent-participants-more {
+                margin-left: 4px;
+                font-size: 14px;
+            }
+            
+            .community-stats-arrow {
+                width: 16px;
+                height: 16px;
+            }
         }
 
         .summary-cta {
@@ -5984,14 +6297,20 @@
         .legend-btn {
             border: 1px solid rgba(0,0,0,0.06);
             cursor: pointer;
-            transition: all 0.12s ease;
+            transition: all 0.15s ease;
             user-select: none;
         }
 
         .legend-btn:hover {
             background: var(--bg);
-            border-color: rgba(0,0,0,0.12);
-            transform: translateY(-1px);
+            border-color: rgba(124, 58, 237, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .legend-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .legend-btn.active {
@@ -6315,7 +6634,7 @@
     <!-- Sticky Header -->
     <div class="header-wrapper">
         <header class="header">
-            <a href="#top" class="logo" style="text-decoration: none;">
+            <div class="logo" style="text-decoration: none; cursor: pointer;" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelector('.nav-item[data-i18n=\'nav.overview\']').classList.add('active');">
                 <div class="logo-icon">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <!-- 이더리움 다이아몬드 -->
@@ -6330,8 +6649,8 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.4.1</span>
-            </a>
+                <span class="version-badge">v0.4.2</span>
+            </div>
             <div class="header-center">
                 <div class="status">
                     <span class="status-dot" id="status-dot"></span>
@@ -6349,7 +6668,7 @@
             </div>
         </header>
         <nav class="nav-bar">
-            <a class="nav-item active" href="#top" data-i18n="nav.overview">Overview</a>
+            <a class="nav-item active" href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); this.classList.add('active');" data-i18n="nav.overview">Overview</a>
             <a class="nav-item" href="#section-price" data-i18n="nav.price">Price & Market</a>
             <a class="nav-item" href="#section-onchain" data-i18n="nav.onchain">On-Chain Metrics</a>
             <a class="nav-item" href="#section-valuation" data-i18n="nav.valuation">Valuation Analysis</a>
@@ -6408,26 +6727,42 @@
                     </p>
                     <div class="community-stats-box" onclick="document.getElementById('section-methodology').scrollIntoView({behavior: 'smooth'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelector('.nav-item[href=\'#section-methodology\']').classList.add('active');" style="cursor: pointer;">
                         <span class="community-stats-label">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <!-- 왼쪽 말풍선 (텍스트) -->
+                                <path d="M3 5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7l-3 3V5z"/>
+                                <line x1="6" y1="6" x2="12" y2="6"/>
+                                <line x1="6" y1="9" x2="10" y2="9"/>
+                                <!-- 오른쪽 말풍선 (별) -->
+                                <path d="M21 10a2 2 0 0 0-2-2h-4v5a2 2 0 0 1-2 2H9l-1 1h6l3 3V15h2a2 2 0 0 0 2-2v-3z"/>
+                                <path d="M17 12l.3.9h1l-.8.6.3.9-.8-.6-.8.6.3-.9-.8-.6h1z" fill="currentColor" stroke="none"/>
+                            </svg>
                             <strong data-i18n="summary.communityStats">Discussion</strong>
                         </span>
-                        <div class="community-stats-items">
-                            <div class="community-stat">
-                                <span class="community-stat-value" id="total-participants">--</span>
-                                <span class="community-stat-name" data-i18n="summary.participants">participants</span>
+                        <div class="community-stats-content">
+                            <div class="community-stats-top-row">
+                                <div class="community-stats-items">
+                                    <div class="community-stat">
+                                        <span class="community-stat-value" id="total-participants">--</span>
+                                        <span class="community-stat-name" data-i18n="summary.participants">participants</span>
+                                    </div>
+                                    <span class="community-stat-divider">•</span>
+                                    <div class="community-stat">
+                                        <span class="community-stat-value" id="total-votes">--</span>
+                                        <span class="community-stat-name" data-i18n="summary.votes">votes</span>
+                                    </div>
+                                    <span class="community-stat-divider">•</span>
+                                    <div class="community-stat">
+                                        <span class="community-stat-value" id="total-comments">--</span>
+                                        <span class="community-stat-name" data-i18n="summary.commentsLabel">comments</span>
+                                    </div>
+                                </div>
+                                <svg class="community-stats-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
                             </div>
-                            <span class="community-stat-divider">•</span>
-                            <div class="community-stat">
-                                <span class="community-stat-value" id="total-votes">--</span>
-                                <span class="community-stat-name" data-i18n="summary.votes">votes</span>
-                            </div>
-                            <span class="community-stat-divider">•</span>
-                            <div class="community-stat">
-                                <span class="community-stat-value" id="total-comments">--</span>
-                                <span class="community-stat-name" data-i18n="summary.commentsLabel">comments</span>
+                            <div class="community-recent-participants" id="recent-participants-container">
+                                <span class="recent-participants-label" data-i18n="summary.recentParticipants">Recent</span>
+                                <div class="recent-participants-avatars" id="recent-participants-avatars"></div>
                             </div>
                         </div>
-                        <svg class="community-stats-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
                     </div>
                     <div class="summary-cta">
                         <img src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;">
@@ -8172,7 +8507,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · <span class="version-badge">v0.4.1</span>
+                by <strong>Hashed</strong> (<a href="mailto:simon@hashed.com">simon@hashed.com</a>) · <span class="version-badge">v0.4.2</span>
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -8184,7 +8519,7 @@
         </footer>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // ═══════════════════════════════════════════════════════════════════
         // SUPABASE INITIALIZATION & COMMUNITY FEATURES
         // ═══════════════════════════════════════════════════════════════════
@@ -8219,6 +8554,21 @@
         // Current user state
         let currentUser = null;
         let isAdmin = false;
+        
+        // 모달 열 때 스크롤 잠금
+        let savedScrollY = 0;
+        function lockScroll() {
+            savedScrollY = window.scrollY;
+            document.body.style.top = `-${savedScrollY}px`;
+            document.body.classList.add('modal-open');
+        }
+        
+        // 모달 닫을 때 스크롤 복원
+        function unlockScroll() {
+            document.body.classList.remove('modal-open');
+            document.body.style.top = '';
+            window.scrollTo(0, savedScrollY);
+        }
         
         // Check if user is admin
         async function checkAdmin(userId) {
@@ -8381,7 +8731,8 @@
                 user_avatar: currentUser.avatar,
                 content: content.trim(),
                 rating: parentId ? null : rating,
-                parent_id: parentId || null
+                parent_id: parentId || null,
+                lang: currentLang || 'en'
             }).select();
             
             if (error) {
@@ -8496,13 +8847,13 @@
         async function likeComment(commentId, modelId, commentUserId) {
             if (!currentUser) {
                 loginWithTwitter();
-                return;
+                return { success: false };
             }
             
             // 자기 글에는 좋아요 불가
             if (currentUser.id === commentUserId) {
                 showAlertModal(t('alert.cantLikeOwn', "You can't like your own post."));
-                return;
+                return { success: false };
             }
             
             // Check existing like
@@ -8513,10 +8864,12 @@
                 .eq('user_id', currentUser.id)
                 .single();
             
+            let newLiked = false;
             if (existing) {
                 // Unlike
                 await supabaseClient.from('comment_likes').delete().eq('id', existing.id);
                 await supabaseClient.rpc('decrement_comment_likes', { comment_id: commentId });
+                newLiked = false;
             } else {
                 // Like
                 await supabaseClient.from('comment_likes').insert({
@@ -8524,9 +8877,52 @@
                     user_id: currentUser.id
                 });
                 await supabaseClient.rpc('increment_comment_likes', { comment_id: commentId });
+                newLiked = true;
             }
             
+            // 최신 좋아요 수 가져오기
+            const { data: comment } = await supabaseClient
+                .from('comments')
+                .select('likes')
+                .eq('id', commentId)
+                .single();
+            
+            const newLikes = comment?.likes || 0;
+            
             renderCommunitySection(modelId);
+            
+            return { success: true, liked: newLiked, likes: newLikes };
+        }
+        
+        // 모달에서 좋아요 버튼만 업데이트 (전체 새로고침 없이)
+        async function likeCommentInModal(commentId, modelId, commentUserId, buttonElement) {
+            const result = await likeComment(commentId, modelId, commentUserId);
+            if (!result.success) return;
+            
+            // 버튼 상태만 업데이트
+            if (buttonElement) {
+                const svg = buttonElement.querySelector('svg');
+                const countSpan = buttonElement.querySelector('span');
+                
+                if (result.liked) {
+                    buttonElement.classList.add('active');
+                    if (svg) svg.setAttribute('fill', 'currentColor');
+                } else {
+                    buttonElement.classList.remove('active');
+                    if (svg) svg.setAttribute('fill', 'none');
+                }
+                
+                // 좋아요 수 업데이트
+                if (result.likes > 0) {
+                    if (countSpan) {
+                        countSpan.textContent = result.likes;
+                    } else {
+                        buttonElement.insertAdjacentHTML('beforeend', `<span onclick="event.stopPropagation(); showLikers('${commentId}')">${result.likes}</span>`);
+                    }
+                } else {
+                    if (countSpan) countSpan.remove();
+                }
+            }
         }
         
         // 좋아요 누른 사람들 보기
@@ -8743,6 +9139,39 @@
             return past.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
         }
         
+        // 텍스트 언어 감지 (간단한 문자 범위 기반)
+        function detectLanguage(text) {
+            if (!text) return 'en';
+            
+            // 한글 (가-힣)
+            const koreanChars = (text.match(/[\uAC00-\uD7AF]/g) || []).length;
+            // 일본어 (히라가나 + 가타카나)
+            const japaneseChars = (text.match(/[\u3040-\u309F\u30A0-\u30FF]/g) || []).length;
+            // 중국어 (한자, 일본어 한자 제외를 위해 히라가나/가타카나 없을 때)
+            const chineseChars = (text.match(/[\u4E00-\u9FFF]/g) || []).length;
+            
+            const totalSpecial = koreanChars + japaneseChars + chineseChars;
+            const threshold = 2; // 최소 2글자 이상
+            
+            if (koreanChars >= threshold && koreanChars >= japaneseChars && koreanChars >= chineseChars) return 'ko';
+            if (japaneseChars >= threshold) return 'ja';
+            if (chineseChars >= threshold && japaneseChars === 0) return 'zh';
+            
+            return 'en'; // 기본값
+        }
+        
+        // Google Translate로 번역 (새 창)
+        function translateContent(badge, commentId) {
+            const contentEl = document.getElementById(`content-${commentId}`);
+            if (!contentEl) return;
+            
+            const text = contentEl.innerText || contentEl.textContent;
+            const targetLang = currentLang === 'zh' ? 'zh-CN' : currentLang;
+            const url = `https://translate.google.com/?sl=auto&tl=${targetLang}&text=${encodeURIComponent(text)}&op=translate`;
+            
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+        
         // Render community section for a model
         async function renderCommunitySection(modelId) {
             const section = document.querySelector(`.model-community[data-model="${modelId}"]`);
@@ -8855,13 +9284,13 @@
             loadingModal.onclick = function(e) {
                 if (e.target === this) {
                     this.remove();
-                    document.body.style.overflow = '';
-                    document.documentElement.style.overflow = '';
+                    unlockScroll();
+                    
                 }
             };
             document.body.appendChild(loadingModal);
-            document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden';
+            lockScroll();
+            
             
             try {
                 // 먼저 간단한 연결 테스트
@@ -9068,9 +9497,9 @@
                             <div class="modal-sort-row">
                                 <span class="modal-sort-label">${statsText}</span>
                                 <div class="modal-sort-btns">
-                                    <button class="modal-sort-btn active" onclick="changeModalSort('${modelId}', 'popular')">${t('modal.popular')}</button>
-                                    <button class="modal-sort-btn" onclick="changeModalSort('${modelId}', 'recent')">${t('modal.recent')}</button>
-                                    <button class="modal-sort-btn" onclick="changeModalSort('${modelId}', 'old')">${t('modal.old')}</button>
+                                    <button class="modal-sort-btn active" data-sort="popular" onclick="changeModalSort('${modelId}', 'popular')">${t('modal.popular')}</button>
+                                    <button class="modal-sort-btn" data-sort="recent" onclick="changeModalSort('${modelId}', 'recent')">${t('modal.recent')}</button>
+                                    <button class="modal-sort-btn" data-sort="old" onclick="changeModalSort('${modelId}', 'old')">${t('modal.old')}</button>
                                 </div>
                             </div>
                             <div class="modal-reviews-section" id="modal-reviews-${modelId}">
@@ -9082,8 +9511,8 @@
             `;
             
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden';
+            lockScroll();
+            
             
             // Initialize selected rating - 항상 빈 상태로 시작
             selectedRatings[modelId] = 0;
@@ -9095,8 +9524,8 @@
                 // 로딩 모달 제거
                 const loadingEl = document.getElementById('loading-modal');
                 if (loadingEl) loadingEl.remove();
-                document.body.style.overflow = '';
-                document.documentElement.style.overflow = '';
+                unlockScroll();
+                
                 alert(err.message || 'Failed to load reviews. Please try again.');
             }
         }
@@ -9143,9 +9572,9 @@
         async function changeModalSort(modelId, sortOrder) {
             modalSortOrder[modelId] = sortOrder;
             
-            // 버튼 상태 업데이트 - textContent로 구분
+            // 버튼 상태 업데이트 - data-sort 속성으로 구분
             document.querySelectorAll('.modal-sort-btn').forEach(btn => {
-                const btnSort = btn.textContent.trim().toLowerCase();
+                const btnSort = btn.getAttribute('data-sort');
                 btn.classList.toggle('active', btnSort === sortOrder);
             });
             
@@ -9294,8 +9723,8 @@
             if (modal) {
                 console.log('Closing review modal');
                 modal.remove();
-                document.body.style.overflow = '';
-                document.documentElement.style.overflow = '';
+                unlockScroll();
+                
             }
         }
         
@@ -9327,6 +9756,7 @@
         
         // 모달에서 리뷰 제출
         async function submitModalReview(modelId) {
+            const submitBtn = document.getElementById(`modal-submit-${modelId}`);
             const rating = selectedRatings[modelId] || null;
             const textarea = document.getElementById(`modal-textarea-${modelId}`);
             const content = textarea?.value?.trim();
@@ -9336,43 +9766,57 @@
                 return;
             }
             
-            // 별점이 있는 경우, 기존 별점 리뷰가 있는지 확인
-            if (rating && currentUser) {
-                const { data: existingReview } = await supabaseClient
-                    .from('comments')
-                    .select('id')
-                    .eq('model_id', modelId)
-                    .eq('user_id', currentUser.id)
-                    .not('rating', 'is', null)
-                    .is('parent_id', null)
-                    .single();
-                
-                if (existingReview) {
-                    showConfirmModal(
-                        'Update Rating',
-                        'You already have a rating for this model.<br><br>If you proceed, your previous rating will be converted to a regular comment, and only your new rating will be kept.',
-                        async () => {
-                            await addReview(modelId, content, rating);
-                            // 별점 선택 초기화
-                            selectedRatings[modelId] = 0;
-                            await refreshModalContent(modelId);
-                            clearStarUI(modelId);
-                        }
-                    );
-                    return;
+            // 로딩 상태 시작
+            if (submitBtn) submitBtn.classList.add('loading');
+            
+            try {
+                // 별점이 있는 경우, 기존 별점 리뷰가 있는지 확인
+                if (rating && currentUser) {
+                    const { data: existingReview } = await supabaseClient
+                        .from('comments')
+                        .select('id')
+                        .eq('model_id', modelId)
+                        .eq('user_id', currentUser.id)
+                        .not('rating', 'is', null)
+                        .is('parent_id', null)
+                        .single();
+                    
+                    if (existingReview) {
+                        if (submitBtn) submitBtn.classList.remove('loading');
+                        showConfirmModal(
+                            'Update Rating',
+                            'You already have a rating for this model.<br><br>If you proceed, your previous rating will be converted to a regular comment, and only your new rating will be kept.',
+                            async () => {
+                                const confirmSubmitBtn = document.getElementById(`modal-submit-${modelId}`);
+                                if (confirmSubmitBtn) confirmSubmitBtn.classList.add('loading');
+                                try {
+                                    await addReview(modelId, content, rating);
+                                    selectedRatings[modelId] = 0;
+                                    await refreshModalContent(modelId);
+                                    clearStarUI(modelId);
+                                } finally {
+                                    if (confirmSubmitBtn) confirmSubmitBtn.classList.remove('loading');
+                                }
+                            }
+                        );
+                        return;
+                    }
                 }
+                
+                await addReview(modelId, content, rating);
+                
+                // 별점 선택 초기화
+                selectedRatings[modelId] = 0;
+                
+                // 모달 내용만 새로고침 (모달 닫지 않음)
+                await refreshModalContent(modelId);
+                
+                // 별점 UI 비우기
+                clearStarUI(modelId);
+            } finally {
+                // 로딩 상태 해제
+                if (submitBtn) submitBtn.classList.remove('loading');
             }
-            
-            await addReview(modelId, content, rating);
-            
-            // 별점 선택 초기화
-            selectedRatings[modelId] = 0;
-            
-            // 모달 내용만 새로고침 (모달 닫지 않음)
-            await refreshModalContent(modelId);
-            
-            // 별점 UI 비우기
-            clearStarUI(modelId);
         }
         
         // 별점 UI 초기화 함수
@@ -9392,6 +9836,9 @@
         function renderModalReview(review, allComments, commentLikes, modelId) {
             const replies = allComments.filter(c => c.parent_id === review.id);
             const canDelete = currentUser && (currentUser.id === review.user_id || isAdmin);
+            const reviewLang = detectLanguage(review.content);
+            const needsTranslation = reviewLang !== currentLang;
+            const langNames = { en: 'EN', ko: '한', zh: '中', ja: '日' };
             
             return `
                 <div class="modal-review" data-comment-id="${review.id}">
@@ -9405,13 +9852,14 @@
                                         <span class="modal-review-handle">@${review.user_handle}</span>
                                     </a>
                                     <span class="modal-review-date">${timeAgo(review.created_at)}</span>
+                                    ${needsTranslation ? `<span class="translate-badge" onclick="translateContent(this, '${review.id}')" title="${t('modal.translate', 'Translate')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>${langNames[reviewLang] || reviewLang} → ${langNames[currentLang] || currentLang}</span>` : ''}
                                 </div>
                             </div>
                         </div>
                         ${review.rating ? `<div class="modal-review-meta"><div class="stars">${renderStars(review.rating, 'small')}</div></div>` : ''}
-                        <div class="modal-review-content">${linkifyUrls(review.content)}</div>
+                        <div class="modal-review-content" id="content-${review.id}">${linkifyUrls(review.content)}</div>
                         <div class="modal-review-actions">
-                            <button class="modal-action-btn heart-btn ${commentLikes[review.id] ? 'active' : ''}" onclick="likeComment('${review.id}', '${modelId}', '${review.user_id}').then(() => refreshModalContent('${modelId}'))">
+                            <button class="modal-action-btn heart-btn ${commentLikes[review.id] ? 'active' : ''}" onclick="likeCommentInModal('${review.id}', '${modelId}', '${review.user_id}', this)">
                                 <svg viewBox="0 0 24 24" fill="${commentLikes[review.id] ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                 ${review.likes > 0 ? `<span onclick="event.stopPropagation(); showLikers('${review.id}')">${review.likes}</span>` : ''}
                             </button>
@@ -9435,6 +9883,9 @@
         function renderModalComment(comment, allComments, commentLikes, modelId) {
             const replies = allComments.filter(c => c.parent_id === comment.id);
             const canDelete = currentUser && (currentUser.id === comment.user_id || isAdmin);
+            const commentLang = detectLanguage(comment.content);
+            const needsTranslation = commentLang !== currentLang;
+            const langNames = { en: 'EN', ko: '한', zh: '中', ja: '日' };
             
             return `
                 <div class="modal-review modal-comment" data-comment-id="${comment.id}">
@@ -9448,12 +9899,13 @@
                                         <span class="modal-review-handle">@${comment.user_handle}</span>
                                     </a>
                                     <span class="modal-review-date">${timeAgo(comment.created_at)}</span>
+                                    ${needsTranslation ? `<span class="translate-badge" onclick="translateContent(this, '${comment.id}')" title="${t('modal.translate', 'Translate')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>${langNames[commentLang] || commentLang} → ${langNames[currentLang] || currentLang}</span>` : ''}
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-review-content">${linkifyUrls(comment.content)}</div>
+                        <div class="modal-review-content" id="content-${comment.id}">${linkifyUrls(comment.content)}</div>
                         <div class="modal-review-actions">
-                            <button class="modal-action-btn heart-btn ${commentLikes[comment.id] ? 'active' : ''}" onclick="likeComment('${comment.id}', '${modelId}', '${comment.user_id}').then(() => refreshModalContent('${modelId}'))">
+                            <button class="modal-action-btn heart-btn ${commentLikes[comment.id] ? 'active' : ''}" onclick="likeCommentInModal('${comment.id}', '${modelId}', '${comment.user_id}', this)">
                                 <svg viewBox="0 0 24 24" fill="${commentLikes[comment.id] ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                 ${comment.likes > 0 ? `<span onclick="event.stopPropagation(); showLikers('${comment.id}')">${comment.likes}</span>` : ''}
                             </button>
@@ -9478,6 +9930,10 @@
             const canDelete = currentUser && (currentUser.id === reply.user_id || isAdmin);
             // 대댓글의 답글은 원래 부모(최상위 댓글)에 달리도록 parentId 사용
             const replyTargetId = parentId || reply.parent_id;
+            const replyLang = detectLanguage(reply.content);
+            const needsTranslation = replyLang !== currentLang;
+            const langNames = { en: 'EN', ko: '한', zh: '中', ja: '日' };
+            
             return `
                 <div class="modal-reply" data-comment-id="${reply.id}">
                     <img class="modal-reply-avatar" src="${reply.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
@@ -9488,10 +9944,11 @@
                                 <span class="modal-reply-handle">@${reply.user_handle}</span>
                             </a>
                             <span class="modal-reply-date">${timeAgo(reply.created_at)}</span>
+                            ${needsTranslation ? `<span class="translate-badge" onclick="translateContent(this, '${reply.id}')" title="${t('modal.translate', 'Translate')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>${langNames[replyLang] || replyLang} → ${langNames[currentLang] || currentLang}</span>` : ''}
                         </div>
-                        <div class="modal-reply-content">${linkifyUrls(reply.content)}</div>
+                        <div class="modal-reply-content" id="content-${reply.id}">${linkifyUrls(reply.content)}</div>
                         <div class="modal-reply-actions">
-                            <button class="modal-action-btn heart-btn ${commentLikes[reply.id] ? 'active' : ''}" onclick="likeComment('${reply.id}', '${modelId}', '${reply.user_id}').then(() => refreshModalContent('${modelId}'))">
+                            <button class="modal-action-btn heart-btn ${commentLikes[reply.id] ? 'active' : ''}" onclick="likeCommentInModal('${reply.id}', '${modelId}', '${reply.user_id}', this)">
                                 <svg viewBox="0 0 24 24" fill="${commentLikes[reply.id] ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                 ${reply.likes > 0 ? `<span onclick="event.stopPropagation(); showLikers('${reply.id}')">${reply.likes}</span>` : ''}
                             </button>
@@ -9765,10 +10222,11 @@
         // 전체 커뮤니티 통계 로드
         async function loadCommunityStats() {
             try {
-                // 모든 댓글 가져오기
+                // 모든 댓글 가져오기 (최근순, 아바타 포함)
                 const { data: comments, error } = await supabaseClient
                     .from('comments')
-                    .select('id, user_id, rating');
+                    .select('id, user_id, user_avatar, user_handle, rating, created_at')
+                    .order('created_at', { ascending: false });
                 
                 if (error) throw error;
                 
@@ -9786,9 +10244,84 @@
                 if (votesEl) votesEl.textContent = totalVotes;
                 if (commentsEl) commentsEl.textContent = totalComments;
                 
+                // 최근 참여자 아바타 (최대 10명, 중복 제거, 10개 초과 시 ... 표시)
+                const avatarsContainer = document.getElementById('recent-participants-avatars');
+                if (avatarsContainer && comments && comments.length > 0) {
+                    const seenUsers = new Set();
+                    const allUniqueParticipants = [];
+                    for (const c of comments) {
+                        if (!seenUsers.has(c.user_id) && c.user_avatar) {
+                            seenUsers.add(c.user_id);
+                            allUniqueParticipants.push(c);
+                        }
+                    }
+                    
+                    const displayCount = 10;
+                    const displayParticipants = allUniqueParticipants.slice(0, displayCount);
+                    const hasMore = allUniqueParticipants.length > displayCount;
+                    
+                    let html = displayParticipants.map(p => 
+                        `<img src="${p.user_avatar}" alt="${p.user_handle || 'user'}" title="@${p.user_handle || 'user'}">`
+                    ).join('');
+                    
+                    if (hasMore) {
+                        html += `<span class="recent-participants-more">...</span>`;
+                    }
+                    
+                    avatarsContainer.innerHTML = html;
+                }
+                
             } catch (e) {
                 console.error('Failed to load community stats:', e);
             }
+        }
+        
+        // 번역 함수 - Google Translate 사용
+        function translateContent(badge, commentId) {
+            const contentEl = document.getElementById(`content-${commentId}`);
+            if (!contentEl) return;
+            
+            const originalText = contentEl.innerText;
+            const targetLang = currentLang === 'ko' ? 'ko' : currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja' : 'en';
+            
+            // 이미 번역된 경우 원문으로 복원
+            if (contentEl.dataset.translated === 'true') {
+                contentEl.innerHTML = contentEl.dataset.original;
+                contentEl.dataset.translated = 'false';
+                badge.innerHTML = badge.dataset.originalBadge;
+                return;
+            }
+            
+            // 원문 저장
+            contentEl.dataset.original = contentEl.innerHTML;
+            badge.dataset.originalBadge = badge.innerHTML;
+            
+            // 로딩 표시
+            badge.innerHTML = '<span class="loading-spinner-small"></span>';
+            
+            // Google Translate API (무료 비공식)
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(originalText)}`;
+            
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const translated = data[0].map(item => item[0]).join('');
+                    const langNames = { en: 'English', ko: '한국어', zh: '中文', ja: '日本語' };
+                    contentEl.innerHTML = `
+                        <div class="translated-label">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+                            ${t('modal.translatedTo', 'Translated to')} ${langNames[currentLang] || currentLang}
+                        </div>
+                        <div class="translated-content">${linkifyUrls(translated)}</div>
+                    `;
+                    contentEl.dataset.translated = 'true';
+                    badge.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l5 5L21 4"/></svg>${t('modal.showOriginal', 'Original')}`;
+                })
+                .catch(err => {
+                    console.error('Translation failed:', err);
+                    badge.innerHTML = badge.dataset.originalBadge;
+                    alert('Translation failed. Please try again.');
+                });
         }
         
         // 모든 커뮤니티 함수를 전역으로 노출
@@ -9807,6 +10340,7 @@
         window.closeConfirmModal = closeConfirmModal;
         window.loginWithTwitter = loginWithTwitter;
         window.refreshModalContent = refreshModalContent;
+        window.translateContent = translateContent;
     </script>
     <script>
         // Translations
@@ -9834,6 +10368,7 @@
                 'summary.participants': 'participants',
                 'summary.votes': 'votes',
                 'summary.commentsLabel': 'comments',
+                'summary.recentParticipants': 'Recent',
                 'share.button': 'Share',
                 'share.modalTitle': 'Share Your Analysis',
                 'share.postToX': 'Post to 𝕏',
@@ -9985,6 +10520,9 @@
                 'modal.noComments': 'No comments yet',
                 'modal.replyPlaceholder': 'Write a reply...',
                 'modal.delete': 'Delete',
+                'modal.translate': 'Translate',
+                'modal.translatedTo': 'Translated to',
+                'modal.showOriginal': 'Original',
                 'modal.comments': 'comments',
                 'modal.comment': 'comment',
                 'modal.confidences': 'votes',
@@ -10029,6 +10567,7 @@
                 'summary.participants': '명 참여',
                 'summary.votes': '개 투표',
                 'summary.commentsLabel': '개 댓글',
+                'summary.recentParticipants': '최근',
                 'share.button': '공유',
                 'share.modalTitle': '분석 결과 공유하기',
                 'share.postToX': '𝕏에 포스트',
@@ -10180,6 +10719,9 @@
                 'modal.noComments': '아직 댓글이 없습니다',
                 'modal.replyPlaceholder': '답글을 입력하세요...',
                 'modal.delete': '삭제',
+                'modal.translate': '번역',
+                'modal.translatedTo': '번역됨:',
+                'modal.showOriginal': '원문',
                 'modal.comments': '댓글',
                 'modal.comment': '댓글',
                 'modal.confidences': '표',
@@ -10224,6 +10766,7 @@
                 'summary.participants': '位参与者',
                 'summary.votes': '次投票',
                 'summary.commentsLabel': '条评论',
+                'summary.recentParticipants': '最近',
                 'share.button': '分享',
                 'share.modalTitle': '分享您的分析',
                 'share.postToX': '发布到 𝕏',
@@ -10375,6 +10918,9 @@
                 'modal.noComments': '暂无评论',
                 'modal.replyPlaceholder': '写回复...',
                 'modal.delete': '删除',
+                'modal.translate': '翻译',
+                'modal.translatedTo': '已翻译为',
+                'modal.showOriginal': '原文',
                 'modal.comments': '条评论',
                 'modal.comment': '条评论',
                 'modal.confidences': '票',
@@ -10419,6 +10965,7 @@
                 'summary.participants': '人がさんか',
                 'summary.votes': '票',
                 'summary.commentsLabel': '件のコメント',
+                'summary.recentParticipants': '最近',
                 'share.button': 'シェア',
                 'share.modalTitle': 'ぶんせきけっかをシェア',
                 'share.postToX': '𝕏にとうこう',
@@ -10570,6 +11117,9 @@
                 'modal.noComments': 'まだコメントがありません',
                 'modal.replyPlaceholder': '返信を入力...',
                 'modal.delete': '削除',
+                'modal.translate': '翻訳',
+                'modal.translatedTo': '翻訳済み:',
+                'modal.showOriginal': '原文',
                 'modal.comments': '件のコメント',
                 'modal.comment': '件のコメント',
                 'modal.confidences': '票',
@@ -14722,11 +15272,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('DOM loaded, initializing...');
             
-            // 페이지 로드 시 스크롤을 맨 위로 (URL에 hash가 없을 때만)
-            if (!window.location.hash || window.location.hash === '#top') {
-                window.scrollTo(0, 0);
-            }
-            
             // 모바일에서 모달 내 textarea 포커스 시 스크롤 조정
             document.addEventListener('focus', function(e) {
                 if (e.target.tagName === 'TEXTAREA' && e.target.closest('.review-modal')) {
@@ -14754,11 +15299,11 @@
                     // 모달이 열려있는지 확인하고 body overflow 상태 복구
                     const existingModal = document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay');
                     if (existingModal) {
-                        document.body.style.overflow = 'hidden';
-                        document.documentElement.style.overflow = 'hidden';
-                    } else if (document.body.style.overflow === 'hidden') {
-                        document.body.style.overflow = '';
-                        document.documentElement.style.overflow = '';
+                        lockScroll();
+                        
+                    } else if (document.body.classList.contains('modal-open')) {
+                        unlockScroll();
+                        
                     }
                     
                     // 세션은 비동기로 체크 (실패해도 무시)
@@ -14785,9 +15330,9 @@
                 if (event.persisted) {
                     console.log('Page restored from bfcache, checking modal state...');
                     const existingModal = document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay');
-                    if (!existingModal && document.body.style.overflow === 'hidden') {
-                        document.body.style.overflow = '';
-                        document.documentElement.style.overflow = '';
+                    if (!existingModal && document.body.classList.contains('modal-open')) {
+                        unlockScroll();
+                        
                     }
                 }
             });
@@ -14862,7 +15407,7 @@
                 var sectionHistorical = document.getElementById('section-historical');
                 var sectionMethodology = document.getElementById('section-methodology');
                 
-                var current = 'top';
+                var current = '';
                 
                 if (sectionMethodology && scrollTop >= sectionMethodology.offsetTop - headerHeight) {
                     current = 'section-methodology';
@@ -14876,13 +15421,20 @@
                     current = 'section-price';
                 }
                 
-                document.querySelectorAll('.nav-bar .nav-item').forEach(function(nav) {
-                    if (nav.getAttribute('href') === '#' + current) {
-                        nav.className = 'nav-item active';
-                    } else {
-                        nav.className = 'nav-item';
-                    }
-                });
+                // Overview는 스크롤 감지로 활성화하지 않음 (클릭으로만)
+                if (current) {
+                    document.querySelectorAll('.nav-bar .nav-item').forEach(function(nav) {
+                        var href = nav.getAttribute('href');
+                        if (href === '#' + current) {
+                            nav.className = 'nav-item active';
+                        } else if (href !== 'javascript:void(0)') {
+                            nav.className = 'nav-item';
+                        } else {
+                            // Overview 탭 비활성화
+                            nav.className = 'nav-item';
+                        }
+                    });
+                }
             }, 100);
         });
 
@@ -15958,14 +16510,4 @@ Check out ETHval 👇`;
             </div>
             <div class="share-card-stat">
                 <div class="share-card-stat-value sell" id="share-sell-count">-</div>
-                <div class="share-card-stat-label">Sell</div>
-            </div>
-        </div>
-        <div class="share-card-footer">
-            <div class="share-card-models" id="share-model-count">12 / 12 models analyzed</div>
-            <div class="share-card-url">ethval.io</div>
-        </div>
-    </div>
-
-    <!-- Share Modal -->
-    <div class="share-modal"
+  
