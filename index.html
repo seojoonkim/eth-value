@@ -8738,11 +8738,11 @@
     <div class="celebration-modal" id="celebration-modal">
         <div class="celebration-content">
             <div class="celebration-icon">🎉</div>
-            <h3 class="celebration-title">First Vote!</h3>
+            <h3 class="celebration-title">First Rating!</h3>
             <p class="celebration-subtitle">You've made your first contribution to the community!</p>
             <div class="celebration-badge">
                 <span>🏆</span>
-                <span>First Vote Badge Earned</span>
+                <span>First Rating Badge Earned</span>
             </div>
             <button class="celebration-btn" onclick="closeCelebration()">Continue</button>
         </div>
@@ -8870,7 +8870,7 @@
                                     <span class="community-stat-divider">•</span>
                                     <div class="community-stat">
                                         <span class="community-stat-value" id="total-votes">--</span>
-                                        <span class="community-stat-name" data-i18n="summary.votes">votes</span>
+                                        <span class="community-stat-name" data-i18n="summary.votes">ratings</span>
                                     </div>
                                     <span class="community-stat-divider">•</span>
                                     <div class="community-stat">
@@ -10746,7 +10746,7 @@
                                         <th data-i18n="rankings.table.fairValue">Fair Value</th>
                                         <th data-i18n="rankings.table.avgRating">Confidence (Stars)</th>
                                         <th data-i18n="rankings.table.confidence">Confidence (Scores)</th>
-                                        <th data-i18n="rankings.table.votes">Votes</th>
+                                        <th data-i18n="rankings.table.votes">Ratings</th>
                                     </tr>
                                 </thead>
                                 <tbody id="model-stats-tbody">
@@ -10765,7 +10765,7 @@
                         <span class="rankings-subtitle">Top 50</span>
                     </h3>
                     <div class="rankings-description" data-i18n="rankings.users.description">
-                        Community members ranked by contribution score (Votes: 5pts, Comments: 3pts, Likes received: 1pt).
+                        Community members ranked by contribution score (Ratings: 5pts, Comments: 3pts, Likes received: 1pt).
                     </div>
                     
                     <!-- User Stats Summary -->
@@ -10776,7 +10776,7 @@
                         </div>
                         <div class="user-stat-box">
                             <div class="user-stat-value" id="rankings-total-votes">--</div>
-                            <div class="user-stat-label" data-i18n="rankings.stats.votes">Confidence Votes</div>
+                            <div class="user-stat-label" data-i18n="rankings.stats.votes">Confidence Ratings</div>
                         </div>
                         <div class="user-stat-box">
                             <div class="user-stat-value" id="rankings-total-comments">--</div>
@@ -10792,7 +10792,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th data-i18n="rankings.table.user">User</th>
-                                        <th data-i18n="rankings.table.userVotes">Votes</th>
+                                        <th data-i18n="rankings.table.userVotes">Ratings</th>
                                         <th data-i18n="rankings.table.comments">Comments</th>
                                         <th title="Likes received from other users">Likes <span class="tooltip-icon" title="Likes received from other users">ⓘ</span></th>
                                         <th data-i18n="rankings.table.score">Score</th>
@@ -13213,14 +13213,14 @@
                 'rankings.models.subtitle': 'by Community Ratings',
                 'rankings.models.description': 'Valuation models ranked by average community rating (highest rated first).',
                 'rankings.users.title': 'Contributor Leaderboard',
-                'rankings.users.description': 'Community members ranked by contribution score (Votes: 5pts, Comments: 3pts, Likes received: 1pt).',
+                'rankings.users.description': 'Community members ranked by contribution score (Ratings: 5pts, Comments: 3pts, Likes received: 1pt).',
                 'rankings.stats.contributors': 'Total Contributors',
-                'rankings.stats.votes': 'Confidence Votes',
+                'rankings.stats.votes': 'Confidence Ratings',
                 'rankings.stats.comments': 'Total Comments',
                 'rankings.table.avgRating': 'Avg Rating',
                 'rankings.table.confidence': 'Confidence',
-                'rankings.table.votes': 'Votes',
-                'rankings.table.userVotes': 'Votes',
+                'rankings.table.votes': 'Ratings',
+                'rankings.table.userVotes': 'Ratings',
                 'rankings.table.comments': 'Comments',
                 'section.historicalTitle': 'Historical Fair Value Analysis',
                 'summary.title': 'Overview',
@@ -13234,7 +13234,7 @@
                 'summary.community': '<strong>Join the Discussion!</strong> Rate each model\'s confidence level and share your thoughts. Together, we can build a more accurate, crowd-sourced reliability weighting system.',
                 'summary.communityStats': 'Discussion',
                 'summary.participants': 'participants',
-                'summary.votes': 'votes',
+                'summary.votes': 'ratings',
                 'summary.commentsLabel': 'comments',
                 'summary.recentParticipants': 'Recent',
                 'share.button': 'Share',
@@ -20532,7 +20532,7 @@ Check out ETHval 👇`;
                     } else if (ratedCount >= 1) {
                         nextBadgeText.textContent = `${5 - ratedCount} more for 5 Models`;
                     } else {
-                        nextBadgeText.textContent = 'Next: First Vote';
+                        nextBadgeText.textContent = 'Next: First Rating';
                     }
                 }
             }
