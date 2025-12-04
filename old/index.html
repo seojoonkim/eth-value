@@ -954,50 +954,6 @@
         .metric-chart canvas {
             overflow: visible;
         }
-        
-        /* Chart Loading Animation */
-        .chart-loader {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 8px;
-            background: #f3f4f6;
-            border-radius: 6px;
-            z-index: 100;
-        }
-        
-        .metric-chart.loading .chart-loader {
-            display: flex !important;
-        }
-        
-        .metric-chart.loading canvas {
-            visibility: hidden !important;
-        }
-        
-        .chart-loader .spinner {
-            width: 24px;
-            height: 24px;
-            border: 3px solid #e5e7eb;
-            border-top-color: #7c3aed;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        .chart-loader .loading-text {
-            font-size: 10px;
-            color: #9ca3af;
-            font-weight: 500;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
 
         .metric-footer {
             display: flex;
@@ -7415,7 +7371,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dominance-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="dominance-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>vs Total Market</span>
                         <span class="change" id="dominance-change">--</span>
@@ -7435,7 +7391,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="ethbtc-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="ethbtc-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Price Ratio</span>
                         <span class="change" id="ethbtc-change">--</span>
@@ -7455,7 +7411,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="stablecoin-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>All Chains · DefiLlama</span>
                         <span class="change" id="stablecoin-change">--</span>
@@ -7475,7 +7431,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="reserve-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="reserve-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>CEX Balance · Santiment</span>
                         <span class="change" id="reserve-change">--</span>
@@ -7495,7 +7451,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="volatility-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="volatility-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>30-Day Rolling</span>
                         <span class="change" id="volatility-level">--</span>
@@ -7515,7 +7471,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="funding-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="funding-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Binance Perpetual</span>
                         <span class="change" id="funding-sentiment">--</span>
@@ -7535,7 +7491,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="feargreed-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="feargreed-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Market Sentiment</span>
                         <span class="change" id="fg-label">--</span>
@@ -7567,7 +7523,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-utilization-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="gas-utilization-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Gas Used / Gas Limit</span>
                         <span class="change" id="gas-util-change">--</span>
@@ -7587,7 +7543,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-burn-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="daily-burn-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>EIP-1559 Fee Burn</span>
                         <span class="change" id="burn-change">--</span>
@@ -7607,7 +7563,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-issuance-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="daily-issuance-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Staking Rewards</span>
                         <span class="change" id="issuance-change">--</span>
@@ -7630,7 +7586,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="net-supply-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="net-supply-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Burn - Issuance</span>
                         <span class="change" id="net-supply-status">--</span>
@@ -7650,7 +7606,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="base-fee-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="base-fee-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>EIP-1559 · Gwei</span>
                         <span class="change" id="base-fee-change">--</span>
@@ -7670,7 +7626,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-fees-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="blob-fees-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>EIP-4844 · L2 Data</span>
                         <span class="change" id="blob-fees-change">--</span>
@@ -7690,7 +7646,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-count-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="blob-count-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>PeerDAS Ready</span>
                         <span class="change" id="blob-count-change">--</span>
@@ -7710,7 +7666,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tvl-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="tvl-chart"></canvas></div>
                     <div class="metric-footer">
                         <span id="tvl-range">52w: -- - --</span>
                         <span class="change" id="tvl-change">--</span>
@@ -7730,7 +7686,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="l2-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>All Major L2s</span>
                         <span class="change" id="l2-change">--</span>
@@ -7750,7 +7706,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="supply-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="supply-chart"></canvas></div>
                     <div class="metric-footer">
                         <div class="chart-card-legend">
                             <span class="legend-item"><span class="legend-dot liquid"></span>Liquid</span>
@@ -7773,7 +7729,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="staking-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="staking-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Rate: <span id="staking-rate">--%</span></span>
                         <span class="change" id="staking-change">--</span>
@@ -7793,7 +7749,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="lending-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="lending-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Ethereum · DefiLlama</span>
                         <span class="change" id="lending-change">--</span>
@@ -7813,7 +7769,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stables-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="stables-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>USDT + USDC + DAI + USDe</span>
                         <span class="change" id="stables-change">--</span>
@@ -7833,7 +7789,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dex-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="dex-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>All DEXs</span>
                         <span class="change" id="dex-change">--</span>
@@ -7853,7 +7809,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="fees-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="fees-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Protocol Revenue</span>
                         <span class="change" id="fees-change">--</span>
@@ -7873,7 +7829,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="eth-burned-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="eth-burned-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>EIP-1559 · ultrasound.money</span>
                         <span class="change" id="eth-burned-change">--</span>
@@ -7893,7 +7849,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-eth-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="tx-eth-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Ethereum Only</span>
                         <span class="change" id="tx-eth-change">--</span>
@@ -7913,7 +7869,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-total-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="tx-total-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>All Ecosystem</span>
                         <span class="change" id="tx-total-change">--</span>
@@ -7933,7 +7889,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="active-addr-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="active-addr-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>From Tx Count · ~3 tx/addr</span>
                         <span class="change" id="active-addr-change">--</span>
@@ -7953,7 +7909,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="nvt-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="nvt-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>MCap ÷ TxVol(7d avg) · Target: 50</span>
                         <span class="change" id="nvt-change">--</span>
@@ -7973,7 +7929,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="commitment-ratio-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="commitment-ratio-chart"></canvas></div>
                     <div class="metric-footer">
                         <span data-i18n="onchain.commitmentRatioNote">(Staked + DeFi) ÷ Supply</span>
                         <span class="change" id="commitment-ratio-change">--</span>
@@ -7993,7 +7949,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="app-capital-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="app-capital-chart"></canvas></div>
                     <div class="metric-footer">
                         <span data-i18n="onchain.appCapitalNote">Stablecoins ÷ 0.28 · Proxy</span>
                         <span class="change" id="app-capital-change">--</span>
@@ -8013,7 +7969,7 @@
                             <button class="metric-tab active" data-period="365">1Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="staking-yield-chart"></canvas></div>
+                    <div class="metric-chart"><canvas id="staking-yield-chart"></canvas></div>
                     <div class="metric-footer">
                         <span data-i18n="onchain.stakingYieldNote">Lido stETH APR · Live</span>
                         <span class="change" id="staking-yield-change">--</span>
@@ -12308,8 +12264,6 @@
             tvl: 0, stakedEth: 0, l2Tvl: 0, dexVolume: 0, fees: 0, stablecoins: 0,
             priceHistory: [], volumeHistory: [], tvlHistory: [], stakingHistory: [], l2History: [],
             dexHistory: [], feesHistory: [], stablesHistory: [],
-            // Daily history for 30D/90D views
-            tvlHistoryDaily: [], l2HistoryDaily: [], dexHistoryDaily: [], feesHistoryDaily: [],
             dominanceHistory: [], ethbtcHistory: [],
             ethBtcRatio: 0, // 현재 ETH/BTC 비율
             // ETH market data for reuse
@@ -12802,17 +12756,13 @@
         function updateFundingChart(days = 365) {
             const ctx = document.getElementById('funding-chart');
             if (!ctx) return;
+            if (fundingChart) fundingChart.destroy();
             
             const history = state.fundingHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
-            if (filtered.length < 3) {
-                console.log('funding-chart: waiting for data...');
-                return; // Keep loading spinner visible
-            }
-            
-            if (fundingChart) fundingChart.destroy();
+            if (filtered.length < 3) return;
             
             // Sample data points
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
@@ -12868,9 +12818,6 @@
                     }
                 }
             });
-            
-            // Remove loading spinner after chart is rendered
-            setChartLoading('funding-chart', false);
         }
         
         // Fetch Open Interest from Binance Futures
@@ -12943,17 +12890,13 @@
         function updateVolatilityChart(days = 365) {
             const ctx = document.getElementById('volatility-chart');
             if (!ctx) return;
+            if (volatilityChart) volatilityChart.destroy();
             
             const history = state.volatilityHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
-            if (filtered.length < 3) {
-                console.log('volatility-chart: waiting for data...');
-                return; // Keep loading spinner visible
-            }
-            
-            if (volatilityChart) volatilityChart.destroy();
+            if (filtered.length < 3) return;
             
             // Sample for performance
             const sampleRate = Math.max(1, Math.floor(filtered.length / 90));
@@ -13007,9 +12950,6 @@
                     }
                 }
             });
-            
-            // Remove loading spinner after chart is rendered
-            setChartLoading('volatility-chart', false);
         }
         
         // Fetch Stablecoin Market Cap from DefiLlama
@@ -13066,17 +13006,13 @@
         function updateStablecoinChart(days = 365) {
             const ctx = document.getElementById('stablecoin-chart');
             if (!ctx) return;
+            if (stablecoinChart) stablecoinChart.destroy();
             
             const history = state.stablecoinHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
-            if (filtered.length < 3) {
-                console.log('stablecoin-chart: waiting for data...');
-                return; // Keep loading spinner visible
-            }
-            
-            if (stablecoinChart) stablecoinChart.destroy();
+            if (filtered.length < 3) return;
             
             // Calculate period change
             const latest = filtered[filtered.length - 1].value;
@@ -13142,9 +13078,6 @@
                     }
                 }
             });
-            
-            // Remove loading spinner after chart is rendered
-            setChartLoading('stablecoin-chart', false);
         }
         
         // Fetch Fear & Greed Index from Alternative.me
@@ -13203,17 +13136,13 @@
         function updateFearGreedChart(days = 365) {
             const ctx = document.getElementById('feargreed-chart');
             if (!ctx) return;
+            if (fearGreedChart) fearGreedChart.destroy();
             
             const history = state.fgHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
-            if (filtered.length < 3) {
-                console.log('feargreed-chart: waiting for data...');
-                return; // Keep loading spinner visible
-            }
-            
-            if (fearGreedChart) fearGreedChart.destroy();
+            if (filtered.length < 3) return;
             
             const labels = filtered.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
             const values = filtered.map(d => d.value);
@@ -13283,9 +13212,6 @@
                     }
                 }
             });
-            
-            // Remove loading spinner after chart is rendered
-            setChartLoading('feargreed-chart', false);
         }
         
         async function fetchCoinGecko() {
@@ -13394,20 +13320,12 @@
                 }
                 
                 // priceHistory 사용 (Binance 또는 CoinGecko에서 가져온 것)
-                let priceHistory = state.priceHistory;
+                const priceHistory = state.priceHistory;
                 console.log('Price history from state:', priceHistory?.length || 0, 'points');
                 
-                // priceHistory가 없으면 임시 데이터 생성
                 if (!priceHistory || priceHistory.length === 0) {
-                    console.log('No price history, generating simulated data');
-                    const now = Date.now();
-                    priceHistory = [];
-                    for (let i = 0; i < 365; i++) {
-                        priceHistory.push({
-                            date: new Date(now - (365 - i) * 24 * 60 * 60 * 1000),
-                            value: 3500 + Math.sin(i * 0.05) * 500
-                        });
-                    }
+                    console.log('No price history in state, skipping');
+                    return;
                 }
                 
                 // 샘플링
@@ -13585,15 +13503,7 @@
                 const tvlHist = await tvlHistRes.json();
                 if (Array.isArray(tvlHist)) {
                     const oneYearAgo = Date.now() / 1000 - 365 * 24 * 60 * 60;
-                    const filteredTvl = tvlHist.filter(d => d.date > oneYearAgo);
-                    
-                    // Store daily data for 30D/90D views
-                    state.tvlHistoryDaily = filteredTvl.map(d => ({ date: new Date(d.date * 1000), value: d.tvl }));
-                    console.log('TVL Daily data points:', state.tvlHistoryDaily.length);
-                    
-                    // Weekly data for 1Y view (every 7th point)
-                    state.tvlHistory = filteredTvl.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).map(d => ({ date: new Date(d.date * 1000), value: d.tvl }));
-                    console.log('TVL Weekly data points:', state.tvlHistory.length);
+                    state.tvlHistory = tvlHist.filter(d => d.date > oneYearAgo).filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).map(d => ({ date: new Date(d.date * 1000), value: d.tvl }));
                     updateMetricChart('tvl-chart', tvlChart, state.tvlHistory, '#10b981', 'tvl');
 
                     if (state.tvlHistory.length > 1) {
@@ -13630,15 +13540,10 @@
                     }
                 });
                 
-                const l2CombinedDaily = Array.from(l2Map.entries())
+                const l2Combined = Array.from(l2Map.entries())
                     .sort((a, b) => a[0] - b[0])
+                    .filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1)
                     .map(([date, tvl]) => ({ date: new Date(date * 1000), value: tvl }));
-                
-                // Store daily data for 30D/90D views
-                state.l2HistoryDaily = l2CombinedDaily;
-                
-                // Weekly data for 1Y view
-                const l2Combined = l2CombinedDaily.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
                 
                 if (l2Combined.length > 0) {
                     state.l2History = l2Combined;
@@ -13659,9 +13564,6 @@
                 state.dexVolume = dexData.total24h || 0;
                 document.getElementById('dex-value').textContent = fmt.usd(state.dexVolume * 7);
                 if (dexData.totalDataChart && Array.isArray(dexData.totalDataChart)) {
-                    // Daily data for 30D/90D views
-                    state.dexHistoryDaily = dexData.totalDataChart.slice(-365).map(d => ({ date: new Date(d[0] * 1000), value: d[1] * 7 }));
-                    // Weekly data for 1Y view
                     state.dexHistory = dexData.totalDataChart.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).slice(-52).map(d => ({ date: new Date(d[0] * 1000), value: d[1] * 7 }));
                     updateMetricChart('dex-chart', dexChart, state.dexHistory, '#06b6d4', 'dex');
                     
@@ -13682,9 +13584,6 @@
                 state.fees = feesData.total24h || 0;
                 document.getElementById('fees-value').textContent = fmt.usd(state.fees * 7);
                 if (feesData.totalDataChart && Array.isArray(feesData.totalDataChart)) {
-                    // Daily data for 30D/90D views
-                    state.feesHistoryDaily = feesData.totalDataChart.slice(-365).map(d => ({ date: new Date(d[0] * 1000), value: d[1] * 7 }));
-                    // Weekly data for 1Y view
                     state.feesHistory = feesData.totalDataChart.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).slice(-52).map(d => ({ date: new Date(d[0] * 1000), value: d[1] * 7 }));
                     updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees');
                     
@@ -13758,9 +13657,6 @@
                 stablecoins: state.stablecoins,
                 appCapital: state.appCapital
             });
-            
-            // Try to update Supply Distribution chart (may need staking data too)
-            updateSupplyDistributionChart();
         }
 
         async function fetchStaking() {
@@ -13795,9 +13691,6 @@
                 document.getElementById('staked-value').textContent = '~34M ETH';
                 document.getElementById('staking-rate').textContent = '~28%';
             }
-            
-            // Try to update Supply Distribution chart (may need TVL data too)
-            updateSupplyDistributionChart();
         }
 
         async function fetchStakingYield() {
@@ -13922,8 +13815,32 @@
                     console.log('growthepie API failed, trying L2Beat...');
                 }
                 
-                // === 2차: L2Beat API (disabled - 404 error) ===
-                // API removed due to endpoint changes
+                // === 2차: L2Beat API ===
+                if (l2TotalTx < 5000000) {
+                    try {
+                        const l2beatResponse = await fetch('https://l2beat.com/api/activity');
+                        if (l2beatResponse.ok) {
+                            const l2beatData = await l2beatResponse.json();
+                            // L2Beat returns daily tx counts per chain
+                            if (l2beatData && l2beatData.data) {
+                                let totalDailyTx = 0;
+                                for (const chain of l2beatData.data) {
+                                    if (chain.data && chain.data.length > 0) {
+                                        // Get most recent day
+                                        const recent = chain.data[chain.data.length - 1];
+                                        totalDailyTx += recent[1] || 0; // [timestamp, txCount]
+                                    }
+                                }
+                                if (totalDailyTx > 5000000) {
+                                    l2TotalTx = totalDailyTx;
+                                    dataSource = 'l2beat';
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.log('L2Beat API failed, trying DeFiLlama...');
+                    }
+                }
                 
                 // === 3차: DeFiLlama chains API (TVL 기반 추정) ===
                 if (l2TotalTx < 5000000) {
@@ -14027,11 +13944,73 @@
             }
         }
 
-        // Exchange Reserve - using simulated data (Santiment API has CORS issues)
+        // Santiment Exchange Reserve API (Free tier: 30-day lag, 1 year history)
         async function fetchExchangeReserve() {
-            // Santiment API disabled due to CORS policy restrictions
-            // Using simulated data based on historical trends
-            generateSimulatedReserveData();
+            try {
+                // Santiment 무료 티어: 30일 전 ~ 1년 전 데이터만 접근 가능
+                const toDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30일 전
+                const fromDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 1년 전
+                
+                const query = `{
+                    getMetric(metric: "exchange_balance") {
+                        timeseriesData(
+                            slug: "ethereum"
+                            from: "${fromDate.toISOString()}"
+                            to: "${toDate.toISOString()}"
+                            interval: "1w"
+                        ) {
+                            datetime
+                            value
+                        }
+                    }
+                }`;
+                
+                const response = await fetch('https://api.santiment.net/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                
+                if (!response.ok) throw new Error('Santiment API error');
+                
+                const data = await response.json();
+                
+                if (data.data?.getMetric?.timeseriesData) {
+                    const timeseries = data.data.getMetric.timeseriesData;
+                    
+                    state.reserveHistory = timeseries.map(d => ({
+                        date: new Date(d.datetime),
+                        value: d.value
+                    }));
+                    
+                    // 마지막 값 (30일 전 기준)
+                    if (state.reserveHistory.length > 0) {
+                        state.exchangeReserve = state.reserveHistory[state.reserveHistory.length - 1].value;
+                        
+                        // UI 업데이트
+                        document.getElementById('exchange-reserve').textContent = fmt.num(state.exchangeReserve, 1) + ' ETH';
+                        
+                        // 차트 업데이트
+                        updateReserveChart();
+                        
+                        // YoY 변화율
+                        if (state.reserveHistory.length > 1) {
+                            const first = state.reserveHistory[0].value;
+                            const last = state.exchangeReserve;
+                            const change = ((last - first) / first) * 100;
+                            const changeEl = document.getElementById('reserve-change');
+                            changeEl.textContent = fmt.pct(change) + ' YoY';
+                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                        }
+                        
+                        console.log('Exchange Reserve loaded:', fmt.num(state.exchangeReserve), 'ETH (', state.reserveHistory.length, 'points)');
+                    }
+                }
+            } catch (e) {
+                console.error('Santiment Exchange Reserve error:', e);
+                // 실패 시 시뮬레이션 데이터 사용
+                generateSimulatedReserveData();
+            }
         }
         
         // Santiment API 실패 시 시뮬레이션 데이터
@@ -14283,82 +14262,28 @@
             }
         }
 
-        // Active Addresses - from API or calculated
-        async function calculateAndUpdateActiveAddr() {
-            // === 1차: growthepie API에서 active addresses 가져오기 ===
-            let activeAddresses = 0;
-            let dataSource = 'estimate';
+        // Active Addresses 추정 및 차트 업데이트
+        function calculateAndUpdateActiveAddr() {
+            // Active Addresses = Daily Tx Count / 3 (평균 3 tx per active address)
             
-            try {
-                const response = await fetch('https://api.growthepie.xyz/v1/fundamentals/daa.json');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.ethereum) {
-                        // Get most recent data
-                        const ethData = data.ethereum;
-                        if (Array.isArray(ethData) && ethData.length > 0) {
-                            const sortedData = ethData.sort((a, b) => 
-                                new Date(b.date || b.unix * 1000) - new Date(a.date || a.unix * 1000)
-                            );
-                            // Average of last 7 days
-                            const recent = sortedData.slice(0, 7);
-                            activeAddresses = recent.reduce((sum, d) => sum + (d.value || 0), 0) / recent.length;
-                            if (activeAddresses > 100000) dataSource = 'growthepie';
-                        }
-                    }
-                }
-            } catch (e) {
-                console.log('growthepie DAA API failed...');
+            // 현재 Active Addresses 계산 (메인 숫자) - 히스토리 없어도 표시
+            if (state.txTotal > 0) {
+                state.activeAddresses = state.txTotal / 3;
+                
+                const addrEl = document.getElementById('active-addr-value');
+                if (addrEl) addrEl.textContent = fmt.num(state.activeAddresses);
             }
             
-            // === 2차: Etherscan API ===
-            if (activeAddresses < 100000) {
-                try {
-                    const response = await fetch('https://api.etherscan.io/api?module=stats&action=dailyactiveaddress&startdate=2024-01-01&enddate=2024-12-31&sort=desc');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.status === '1' && data.result && data.result.length > 0) {
-                            // Get most recent
-                            activeAddresses = parseInt(data.result[0].activeAddresses) || 0;
-                            if (activeAddresses > 100000) dataSource = 'etherscan';
-                        }
-                    }
-                } catch (e) {
-                    console.log('Etherscan active addresses API failed...');
-                }
-            }
+            // 히스토리가 없으면 차트만 스킵
+            if (!state.txTotalHistory || state.txTotalHistory.length === 0) return;
             
-            // === 3차: Tx 기반 추정 ===
-            if (activeAddresses < 100000 && state.txTotal > 0) {
-                // Ethereum typically has ~400k-600k active addresses daily
-                // L2s combined have ~2-5M active addresses daily
-                // Total ecosystem: ~3-6M daily active addresses
-                activeAddresses = state.txTotal / 5; // Average 5 tx per active address across ecosystem
-                dataSource = 'tx-estimate';
-            }
-            
-            // Fallback
-            if (activeAddresses < 100000) {
-                activeAddresses = 500000; // Conservative estimate for ETH mainnet
-                dataSource = 'fallback';
-            }
-            
-            console.log(`Active Addresses source: ${dataSource}, Value: ${fmt.num(activeAddresses)}`);
-            
-            state.activeAddresses = activeAddresses;
-            
-            const addrEl = document.getElementById('active-addr-value');
-            if (addrEl) addrEl.textContent = fmt.num(state.activeAddresses);
-            
-            // Build history
             state.activeAddrHistory = [];
-            if (state.txTotalHistory && state.txTotalHistory.length > 0) {
-                for (const tx of state.txTotalHistory) {
-                    state.activeAddrHistory.push({
-                        date: tx.date,
-                        value: tx.value / 5
-                    });
-                }
+            
+            for (const tx of state.txTotalHistory) {
+                state.activeAddrHistory.push({
+                    date: tx.date,
+                    value: tx.value / 3 // 주소당 평균 3 트랜잭션
+                });
             }
             
             // 변화율 계산 (YoY)
@@ -14476,27 +14401,16 @@
         function updateSupplyDistributionChart(days = 365) {
             const ctx = document.getElementById('supply-chart');
             if (!ctx) return;
-            
-            // Check if we have the necessary data - use fallback values if not available yet
-            const totalSupply = state.circulatingSupply || 120000000; // Default 120M ETH
-            const staked = state.stakedEth || 0;
-            const tvl = state.tvl || 0;
-            const price = state.price || 3500;
-            
-            // Don't render if we have absolutely no data
-            if (staked === 0 && tvl === 0 && state.circulatingSupply === 0) {
-                console.log('Supply Distribution: waiting for data...');
-                return; // Keep loading spinner visible
-            }
-            
             if (supplyChart) supplyChart.destroy();
             
             // Get current distribution for display
-            const inDefi = tvl && price ? (tvl / price) : 0;
+            const totalSupply = state.circulatingSupply || 120000000;
+            const staked = state.stakedEth || 0;
+            const inDefi = state.tvl && state.price ? (state.tvl / state.price) : 0;
             
-            // Calculate percentages - use reasonable defaults if data is partial
-            const stakedPct = staked > 0 ? (staked / totalSupply) * 100 : 27; // ~27% staked typically
-            const defiPct = inDefi > 0 ? Math.min((inDefi / totalSupply) * 100, 100 - stakedPct) : 18; // ~18% in DeFi
+            // Calculate percentages
+            const stakedPct = (staked / totalSupply) * 100;
+            const defiPct = Math.min((inDefi / totalSupply) * 100, 100 - stakedPct);
             const liquidPct = Math.max(0, 100 - stakedPct - defiPct);
             
             state.supplyDistribution = { liquid: liquidPct, defi: defiPct, staking: stakedPct };
@@ -14532,8 +14446,6 @@
                         scales: { x: { stacked: true, max: 100, display: false }, y: { stacked: true, display: false } }
                     }
                 });
-                // Remove loading state since we rendered the chart
-                setChartLoading('supply-chart', false);
             } else {
                 // Build aligned time series - 100% stacked area
                 const timePoints = Math.min(filteredStaking.length, filteredTvl.length, 52);
@@ -14659,8 +14571,6 @@
                         }
                     }
                 });
-                // Remove loading state since we rendered the chart
-                setChartLoading('supply-chart', false);
             }
             
             // Update legend values
@@ -14738,17 +14648,13 @@
         function updateLendingChart(days = 365) {
             const ctx = document.getElementById('lending-chart');
             if (!ctx) return;
+            if (lendingChart) lendingChart.destroy();
             
             const history = state.lendingHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
-            if (filtered.length < 3) {
-                console.log('lending-chart: waiting for data...');
-                return; // Keep loading spinner visible
-            }
-            
-            if (lendingChart) lendingChart.destroy();
+            if (filtered.length < 3) return;
             
             // Calculate period change
             const latest = filtered[filtered.length - 1].value;
@@ -14814,9 +14720,6 @@
                     }
                 }
             });
-            
-            // Remove loading spinner after chart is rendered
-            setChartLoading('lending-chart', false);
         }
 
         // Gas Price - estimated from network fees and transaction count
@@ -14825,66 +14728,42 @@
             try {
                 console.log('   Fetching Gas Price...');
                 
-                let currentGasPrice = 0;
-                let dataSource = 'estimate';
+                // Estimate gas price from fees and transaction data
+                // Formula: Gas Price (Gwei) = (Daily Fees USD / ETH Price) / (Daily Tx * Avg Gas per Tx) * 1e9
+                // Simplified: Use fees history to derive relative gas prices
                 
-                // === 1차: Etherscan Gas Oracle API ===
-                try {
-                    const response = await fetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.status === '1' && data.result) {
-                            currentGasPrice = parseFloat(data.result.ProposeGasPrice) || 0;
-                            if (currentGasPrice > 0) dataSource = 'etherscan';
-                        }
-                    }
-                } catch (e) {
-                    console.log('Etherscan gas oracle API failed...');
-                }
-                
-                // === 2차: Blocknative API ===
-                if (currentGasPrice === 0) {
-                    try {
-                        const response = await fetch('https://api.blocknative.com/gasprices/blockprices');
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.blockPrices && data.blockPrices[0]) {
-                                currentGasPrice = data.blockPrices[0].estimatedPrices?.[0]?.price || 0;
-                                if (currentGasPrice > 0) dataSource = 'blocknative';
-                            }
-                        }
-                    } catch (e) {
-                        console.log('Blocknative gas API failed...');
-                    }
-                }
-                
-                // === 3차: Fees 기반 추정 ===
                 const feesHist = state.feesHistory || [];
                 const txHist = state.txEthHistory || [];
                 
                 if (feesHist.length > 0) {
                     state.gasPriceHistory = [];
                     
+                    // Calculate gas price for each day
                     for (let i = 0; i < feesHist.length; i++) {
                         const fee = feesHist[i];
                         const ethPrice = state.price || 3500;
                         
-                        let txCount = 1200000;
+                        // Find closest tx count
+                        let txCount = 1100000; // Default ~1.1M tx/day
                         if (txHist.length > 0) {
                             let minDiff = Infinity;
                             for (const tx of txHist) {
                                 const diff = Math.abs(fee.date.getTime() - tx.date.getTime());
                                 if (diff < minDiff) {
                                     minDiff = diff;
-                                    txCount = tx.value || 1200000;
+                                    txCount = tx.value || 1100000;
                                 }
                             }
                         }
                         
+                        // Gas price calculation
+                        // Daily fees in ETH / (tx count * avg gas per tx ~65000) * 1e9 = Gwei
                         const feesInEth = fee.value / ethPrice;
                         const avgGasPerTx = 65000;
                         const gasUsed = txCount * avgGasPerTx;
                         const gasPriceGwei = (feesInEth / gasUsed) * 1e9;
+                        
+                        // Reasonable bounds: 5-500 Gwei
                         const boundedGas = Math.max(5, Math.min(500, gasPriceGwei));
                         
                         state.gasPriceHistory.push({
@@ -14893,22 +14772,16 @@
                         });
                     }
                     
-                    // Use API value if available, otherwise use calculated
-                    if (currentGasPrice > 0) {
-                        state.gasPrice = currentGasPrice;
-                    } else if (state.gasPriceHistory.length > 0) {
+                    // Current gas price
+                    if (state.gasPriceHistory.length > 0) {
                         state.gasPrice = state.gasPriceHistory[state.gasPriceHistory.length - 1].value;
-                        dataSource = 'fees-calc';
                     }
                 }
                 
-                // Fallback
+                // Fallback if no data
                 if (!state.gasPrice || state.gasPrice <= 0) {
                     state.gasPrice = 15;
-                    dataSource = 'fallback';
                 }
-                
-                console.log(`Gas Price source: ${dataSource}, Value: ${state.gasPrice.toFixed(1)} Gwei`);
                 
                 const gasEl = document.getElementById('gas-price-value');
                 if (gasEl) {
@@ -14925,17 +14798,13 @@
         function updateGasPriceChart(days = 365) {
             const ctx = document.getElementById('gas-price-chart');
             if (!ctx) return;
+            if (gasPriceChart) gasPriceChart.destroy();
             
             const history = state.gasPriceHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
-            if (filtered.length < 3) {
-                console.log('gas-price-chart: waiting for data...');
-                return; // Keep loading spinner visible
-            }
-            
-            if (gasPriceChart) gasPriceChart.destroy();
+            if (filtered.length < 3) return;
             
             // Calculate period change
             const latest = filtered[filtered.length - 1].value;
@@ -14982,9 +14851,6 @@
                     }
                 }
             });
-            
-            // Remove loading spinner after chart is rendered
-            setChartLoading('gas-price-chart', false);
         }
 
         // ETH Burned - from ultrasound.money API
@@ -14993,44 +14859,18 @@
             try {
                 console.log('   Fetching ETH Burned...');
                 
-                let burnData = null;
-                let dataSource = 'estimate';
-                
-                // === 1차: ultrasound.money API ===
-                try {
-                    const response = await fetch('https://ultrasound.money/api/v2/fees/burn-total');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data && data.burnTotal) {
-                            // ultrasound returns total burn since merge
-                            burnData = data;
-                            dataSource = 'ultrasound';
-                        }
-                    }
-                } catch (e) {
-                    console.log('ultrasound.money API failed, trying beaconcha.in...');
-                }
-                
-                // === 2차: beaconcha.in burn stats (disabled - CORS issues) ===
-                // API removed due to CORS policy restrictions
-                
-                // === 3차: Fees 기반 추정 ===
+                // Use fees data to estimate burn (post EIP-1559, ~85% of base fee is burned)
+                // Simplified estimation
                 const weeklyFees = state.fees || 0;
                 const ethPrice = state.price || 3500;
-                let estimatedBurn = (weeklyFees / ethPrice) * 0.85;
-                
-                if (burnData && burnData.dailyBurn) {
-                    estimatedBurn = burnData.dailyBurn * 7; // Weekly burn
-                    dataSource = 'api';
-                }
-                
-                console.log(`ETH Burned source: ${dataSource}, Weekly: ${fmt.num(estimatedBurn)} ETH`);
+                const estimatedBurn = (weeklyFees / ethPrice) * 0.85; // 85% of fees burned
                 
                 state.ethBurned = estimatedBurn;
                 state.ethBurnedHistory = [];
                 
                 // Build history from fees
                 if (state.feesHistory && state.feesHistory.length > 0) {
+                    // Calculate 7-day rolling burn
                     for (let i = 6; i < state.feesHistory.length; i++) {
                         let weekSum = 0;
                         for (let j = 0; j < 7; j++) {
@@ -15059,17 +14899,13 @@
         function updateEthBurnedChart(days = 365) {
             const ctx = document.getElementById('eth-burned-chart');
             if (!ctx) return;
+            if (ethBurnedChart) ethBurnedChart.destroy();
             
             const history = state.ethBurnedHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
-            if (filtered.length < 3) {
-                console.log('eth-burned-chart: waiting for data...');
-                return; // Keep loading spinner visible
-            }
-            
-            if (ethBurnedChart) ethBurnedChart.destroy();
+            if (filtered.length < 3) return;
             
             const latest = filtered[filtered.length - 1].value;
             const oldest = filtered[0].value;
@@ -15115,74 +14951,34 @@
                     }
                 }
             });
-            
-            // Remove loading spinner after chart is rendered
-            setChartLoading('eth-burned-chart', false);
         }
 
-        // Blob Fees - EIP-4844 data from blobscan
+        // Blob Fees - EIP-4844 data
         let blobFeesChart = null;
         async function fetchBlobFees() {
             try {
                 console.log('   Fetching Blob Fees...');
                 
-                let blobFees = 0;
-                let blobCount = 0;
-                let dataSource = 'estimate';
+                // Blob fees started March 2024 (Dencun upgrade)
+                // Estimate from L2 activity - blob fees are typically very low
+                const l2Tvl = state.l2Tvl || 0;
+                const estimatedBlobFees = l2Tvl > 0 ? (l2Tvl / 1e9) * 0.5 : 50; // Very rough estimate
                 
-                // === 1차: blobscan.com API ===
-                try {
-                    const response = await fetch('https://api.blobscan.com/stats');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data) {
-                            // blobscan returns blob stats
-                            blobFees = data.totalBlobFees ? data.totalBlobFees / 1e18 : 0; // Wei to ETH
-                            blobCount = data.totalBlobs || 0;
-                            if (blobFees > 0 || blobCount > 0) dataSource = 'blobscan';
-                        }
-                    }
-                } catch (e) {
-                    console.log('blobscan API failed, trying etherscan...');
-                }
-                
-                // === 2차: Etherscan blob gas API ===
-                if (blobFees === 0) {
-                    try {
-                        const response = await fetch('https://api.etherscan.io/api?module=stats&action=dailyavgblocksize&startdate=2024-03-13&enddate=2024-12-31&sort=desc');
-                        if (response.ok) {
-                            const data = await response.json();
-                            // Process if available
-                            dataSource = 'etherscan-estimate';
-                        }
-                    } catch (e) {
-                        console.log('Etherscan blob API failed...');
-                    }
-                }
-                
-                // === 3차: L2 TVL 기반 추정 ===
-                if (blobFees === 0) {
-                    const l2Tvl = state.l2Tvl || 0;
-                    // Blob fees are very low: ~0.001-0.01 ETH per blob
-                    // Avg ~50k blobs/week = ~50-500 ETH/week in fees
-                    blobFees = l2Tvl > 0 ? (l2Tvl / 1e9) * 0.3 : 30;
-                }
-                
-                console.log(`Blob Fees source: ${dataSource}, Weekly: ${blobFees.toFixed(1)} ETH`);
-                
-                state.blobFees = blobFees;
+                state.blobFees = estimatedBlobFees;
                 state.blobFeesHistory = [];
                 
                 // Build history from L2 TVL (proxy)
                 if (state.l2History && state.l2History.length > 0) {
+                    // Blob fees only exist after March 2024
                     const dencunDate = new Date('2024-03-13').getTime();
                     
                     for (let i = 6; i < state.l2History.length; i++) {
                         const d = state.l2History[i];
                         if (d.date.getTime() < dencunDate) continue;
                         
+                        // Estimate weekly blob fees from L2 TVL growth
                         const l2Val = d.value / 1e9;
-                        const estimatedFees = l2Val * 0.3;
+                        const estimatedFees = l2Val * 0.3; // Rough proxy
                         
                         state.blobFeesHistory.push({
                             date: d.date,
@@ -15193,11 +14989,11 @@
                 
                 const blobEl = document.getElementById('blob-fees-value');
                 if (blobEl) {
-                    blobEl.textContent = blobFees.toFixed(1) + ' ETH';
+                    blobEl.textContent = estimatedBlobFees.toFixed(1) + ' ETH';
                 }
                 
                 updateBlobFeesChart();
-                console.log('   Blob Fees (7d):', blobFees.toFixed(1), 'ETH');
+                console.log('   Blob Fees (7d):', estimatedBlobFees.toFixed(1), 'ETH');
             } catch (e) {
                 console.error('Blob fees error:', e);
             }
@@ -15274,51 +15070,14 @@
             try {
                 console.log('   Fetching Base Fee...');
                 
-                let currentBaseFee = 0;
-                let dataSource = 'estimate';
-                
-                // === 1차: Etherscan Gas Oracle API (현재 base fee 직접 제공) ===
-                try {
-                    const response = await fetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.status === '1' && data.result) {
-                            // suggestBaseFee is the current base fee in Gwei
-                            currentBaseFee = parseFloat(data.result.suggestBaseFee) || 0;
-                            if (currentBaseFee > 0) dataSource = 'etherscan';
-                        }
-                    }
-                } catch (e) {
-                    console.log('Etherscan base fee API failed...');
-                }
-                
-                // === 2차: Gas price에서 추정 ===
-                if (currentBaseFee === 0) {
-                    const gasPrice = state.gasPrice || 15;
-                    currentBaseFee = gasPrice * 0.85;
-                    dataSource = 'gas-estimate';
-                }
-                
-                state.baseFee = currentBaseFee;
-                console.log(`Base Fee source: ${dataSource}, Value: ${currentBaseFee.toFixed(1)} Gwei`);
-                
-                // Build history - use fees history as proxy if available
+                // Use gas price data as proxy for base fee
+                // Base fee is typically 70-90% of total gas price
+                const gasPrice = state.gasPrice || 15;
+                state.baseFee = gasPrice * 0.85;
                 state.baseFeeHistory = [];
-                if (state.feesHistory && state.feesHistory.length > 0) {
-                    const ethPrice = state.price || 3500;
-                    for (let i = 0; i < state.feesHistory.length; i++) {
-                        const fee = state.feesHistory[i];
-                        // Estimate base fee from daily fees
-                        // Higher fees = higher base fee
-                        const avgDailyFees = state.fees || 5000000;
-                        const feeRatio = fee.value / avgDailyFees;
-                        const estimatedBaseFee = currentBaseFee * feeRatio;
-                        state.baseFeeHistory.push({
-                            date: fee.date,
-                            value: Math.max(5, Math.min(200, estimatedBaseFee))
-                        });
-                    }
-                } else if (state.gasPriceHistory && state.gasPriceHistory.length > 0) {
+                
+                // Build history from gas price history
+                if (state.gasPriceHistory && state.gasPriceHistory.length > 0) {
                     for (let i = 0; i < state.gasPriceHistory.length; i++) {
                         const d = state.gasPriceHistory[i];
                         state.baseFeeHistory.push({
@@ -15326,18 +15085,6 @@
                             value: d.value * 0.85
                         });
                     }
-                } else {
-                    // Generate simulated history if no data available yet
-                    // This will be updated when feesHistory loads
-                    const now = Date.now();
-                    for (let i = 0; i < 52; i++) {
-                        const variation = 1 + 0.3 * Math.sin(i * 0.4);
-                        state.baseFeeHistory.push({
-                            date: new Date(now - (52 - i) * 7 * 24 * 60 * 60 * 1000),
-                            value: currentBaseFee * variation
-                        });
-                    }
-                    console.log('   Base Fee: using simulated history');
                 }
                 
                 const baseFeeEl = document.getElementById('base-fee-value');
@@ -15868,8 +15615,8 @@
             
             const history = state.dominanceHistory;
             if (!history || history.length === 0) {
-                console.log('dominance-chart: waiting for data...');
-                return; // Keep loading spinner visible
+                console.warn('No dominance history data available, keeping existing chart');
+                return; // 데이터 없으면 기존 차트 유지
             }
             
             try {
@@ -15889,8 +15636,6 @@
                     'pct'
                 ));
                 
-                // Remove loading spinner after chart is rendered
-                setChartLoading('dominance-chart', false);
                 console.log('Dominance chart updated with real data');
             } catch (e) {
                 console.error('Error creating dominance chart:', e);
@@ -15906,8 +15651,8 @@
             
             const history = state.ethbtcHistory;
             if (!history || history.length === 0) {
-                console.log('ethbtc-chart: waiting for data...');
-                return; // Keep loading spinner visible
+                console.warn('No ETH/BTC history data available, keeping existing chart');
+                return; // 데이터 없으면 기존 차트 유지
             }
             
             try {
@@ -15927,8 +15672,6 @@
                     'ratio'
                 ));
                 
-                // Remove loading spinner after chart is rendered
-                setChartLoading('ethbtc-chart', false);
                 console.log('ETH/BTC chart updated with real data');
             } catch (e) {
                 console.error('Error creating ETH/BTC chart:', e);
@@ -15938,12 +15681,6 @@
         function updateMetricChart(canvasId, chartInstance, history, color, key) {
             const ctx = document.getElementById(canvasId);
             if (!ctx) return;
-            
-            // Check if we have data - if not, keep loading spinner
-            if (!history || history.length < 2) {
-                console.log(`${canvasId}: waiting for data...`);
-                return; // Keep loading spinner visible
-            }
             
             if (key === 'tvl' && tvlChart) tvlChart.destroy();
             if (key === 'staking' && stakingChart) stakingChart.destroy();
@@ -15998,9 +15735,6 @@
             if (key === 'commitmentRatio') commitmentRatioChart = chart;
             if (key === 'appCapital') appCapitalChart = chart;
             if (key === 'stakingApr') stakingAprChart = chart;
-            
-            // Remove loading spinner after chart is rendered
-            setChartLoading(canvasId, false);
         }
 
         // Valuation with formulas
@@ -16811,20 +16545,12 @@
                 tab.classList.add('active');
                 
                 // Filter history based on period
-                // Use daily data for 30D/90D, weekly data for 1Y
                 let history;
                 let changeElId;
                 const cutoffDate = Date.now() - (period * 24 * 60 * 60 * 1000);
-                const useDaily = period <= 90;
-                
-                console.log(`Tab clicked: ${metric}, period: ${period}, useDaily: ${useDaily}`);
                 
                 if (metric === 'tvl') {
-                    const hasDaily = state.tvlHistoryDaily && state.tvlHistoryDaily.length > 0;
-                    console.log(`TVL - hasDaily: ${hasDaily}, dailyLen: ${state.tvlHistoryDaily?.length}, weeklyLen: ${state.tvlHistory?.length}`);
-                    const sourceData = useDaily && hasDaily ? state.tvlHistoryDaily : state.tvlHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    console.log(`TVL - filtered points: ${history.length}`);
+                    history = state.tvlHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('tvl-chart', tvlChart, history, '#10b981', 'tvl');
                     changeElId = 'tvl-change';
                 } else if (metric === 'staking') {
@@ -16832,21 +16558,15 @@
                     updateMetricChart('staking-chart', stakingChart, history, '#6366f1', 'staking');
                     changeElId = 'staking-change';
                 } else if (metric === 'l2') {
-                    const sourceData = useDaily && state.l2HistoryDaily && state.l2HistoryDaily.length > 0 
-                        ? state.l2HistoryDaily : state.l2History;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
+                    history = state.l2History.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('l2-chart', l2Chart, history, '#7c3aed', 'l2');
                     changeElId = 'l2-change';
                 } else if (metric === 'dex') {
-                    const sourceData = useDaily && state.dexHistoryDaily && state.dexHistoryDaily.length > 0 
-                        ? state.dexHistoryDaily : state.dexHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
+                    history = state.dexHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('dex-chart', dexChart, history, '#06b6d4', 'dex');
                     changeElId = 'dex-change';
                 } else if (metric === 'fees') {
-                    const sourceData = useDaily && state.feesHistoryDaily && state.feesHistoryDaily.length > 0 
-                        ? state.feesHistoryDaily : state.feesHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
+                    history = state.feesHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('fees-chart', feesChart, history, '#f97316', 'fees');
                     changeElId = 'fees-change';
                 } else if (metric === 'stables') {
@@ -16915,135 +16635,263 @@
         async function fetchAll() {
             console.log('========== fetchAll START ==========');
             setStatus('status.updating');
-            
             try {
-                // ═══════════════════════════════════════════════════════════════════
-                // FULLY PARALLEL DATA FETCHING
-                // All API calls start simultaneously for fastest loading
-                // ═══════════════════════════════════════════════════════════════════
+                // Phase 1: 가격 데이터 먼저 (가장 빠름, 사용자에게 가장 중요)
+                console.log('Phase 1: Fetching price data first...');
+                const pricePromise = fetchBinancePrice();
                 
-                // Start ALL fetches in parallel immediately
-                // Loading spinners are removed inside each update function when data is ready
-                const fetchPromises = {
-                    price: fetchBinancePrice(),
-                    binanceHistory: fetchBinanceHistory(365),
-                    coinGecko: fetchCoinGecko(),
-                    defiLlama: fetchDefiLlama(),
-                    staking: fetchStaking(),
-                    stakingYield: fetchStakingYield(),
-                    transactions: fetchTransactions(),
-                    exchangeReserve: fetchExchangeReserve(),
-                    global: fetchGlobal(),
-                    lending: fetchLendingProtocolsTVL(),
-                    funding: fetchFundingRate(),
-                    stablecoin: fetchStablecoinMcap(),
-                    fearGreed: fetchFearGreed(),
-                    baseFee: fetchBaseFee(),
-                    gasPrice: fetchGasPrice()
-                };
-                
-                // Wait for all primary data
-                const results = await Promise.allSettled(Object.values(fetchPromises));
-                
-                console.log('   All primary API calls completed');
-                
-                // ═══════════════════════════════════════════════════════════════════
-                // DERIVED METRICS (병렬 실행)
-                // These depend on primary data but can run in parallel with each other
-                // ═══════════════════════════════════════════════════════════════════
-                
-                const derivedPromises = Promise.allSettled([
-                    // Supply Distribution - loading state managed inside function
-                    Promise.resolve().then(() => {
-                        updateSupplyDistributionChart();
-                    }),
-                    
-                    // Volatility - loading state managed inside function
-                    Promise.resolve().then(() => {
-                        calculateVolatility();
-                    }),
-                    
-                    // ETH Burned - loading state managed inside function
-                    fetchEthBurned(),
-                    
-                    // Blob Fees & Count
-                    fetchBlobFees(),
-                    fetchBlobCount(),
-                    
-                    // Supply Dynamics
-                    Promise.resolve().then(() => {
-                        fetchSupplyDynamics();
-                    }),
-                    
-                    // NVT
-                    Promise.resolve().then(() => {
-                        calculateAndUpdateNVT();
-                    }),
-                    
-                    // Active Addresses
-                    calculateAndUpdateActiveAddr(),
-                    
-                    // ETH in DeFi & Commitment Ratio
-                    Promise.resolve().then(() => {
-                        calculateEthInDefiAndCommitment();
-                    })
+                // Phase 2: 나머지 데이터 병렬 시작 (Phase 1 완료 기다리지 않음)
+                console.log('Phase 2: Starting all other fetches in parallel...');
+                const otherDataPromise = Promise.allSettled([
+                    fetchBinanceHistory(365),
+                    fetchCoinGecko(),
+                    fetchDefiLlama(),
+                    fetchStaking(),
+                    fetchStakingYield(),
+                    fetchTransactions(),
+                    fetchExchangeReserve(),
+                    fetchGlobal(),  // Dominance/ETH-BTC도 병렬로
+                    fetchLendingProtocolsTVL(),  // DeFi Lending TVL
+                    fetchFundingRate(),  // Futures Funding Rate
+                    fetchStablecoinMcap(),  // Stablecoin Market Cap
+                    fetchFearGreed()  // Fear & Greed Index
                 ]);
                 
-                await derivedPromises;
+                // Phase 1 완료되면 즉시 가격 표시
+                await pricePromise;
+                console.log('   Price displayed:', state.price);
                 
-                // ═══════════════════════════════════════════════════════════════════
-                // FINAL RENDERING
-                // ═══════════════════════════════════════════════════════════════════
+                // Phase 2 완료 대기
+                const [binanceHistory, coinGecko, defiLlama, staking, stakingYield, transactions, exchangeReserve, global, lending, funding, stablecoin, fearGreed] = await otherDataPromise;
+                
+                console.log('   All API calls completed');
+                console.log('   API Results:', {
+                    binanceHistory: binanceHistory.status,
+                    coinGecko: coinGecko.status,
+                    defiLlama: defiLlama.status,
+                    staking: staking.status,
+                    stakingYield: stakingYield.status,
+                    transactions: transactions.status,
+                    exchangeReserve: exchangeReserve.status,
+                    global: global.status,
+                    lending: lending.status,
+                    funding: funding.status,
+                    stablecoin: stablecoin.status,
+                    fearGreed: fearGreed.status
+                });
+                
+                // 3. Supply Distribution 업데이트
+                console.log('3. Updating supply distribution chart...');
+                updateSupplyDistributionChart();
+                
+                // 3.5. Calculate Volatility (needs price history)
+                console.log('3.5. Calculating Volatility...');
+                calculateVolatility();
+                
+                // 3.6. Calculate derived metrics (needs fees history)
+                console.log('3.6. Calculating Gas Price, ETH Burned, Blob Fees...');
+                fetchGasPrice();
+                fetchEthBurned();
+                fetchBlobFees();
+                fetchBaseFee();
+                fetchBlobCount();
+                
+                // 3.7. Supply Dynamics (Fusaka metrics)
+                console.log('3.7. Fetching Supply Dynamics...');
+                fetchSupplyDynamics();
+                
+                // 4. NVT & Active Addresses 계산
+                console.log('4. Calculating NVT and Active Addresses...');
+                calculateAndUpdateNVT();
+                calculateAndUpdateActiveAddr();
+                
+                // 5. ETH in DeFi & Commitment Ratio 계산
+                console.log('5. Calculating ETH in DeFi and Commitment Ratio...');
+                calculateEthInDefiAndCommitment();
                 
                 console.log('6. Rendering valuations...');
                 renderValuations();
                 
+                // 7. Historical Analysis 계산 및 렌더링
                 console.log('7. Calculating Historical Fair Values...');
                 initHistoricalAnalysis();
-                
-                // Clear any remaining loading states
-                setAllChartsLoading(false);
                 
                 updateTime();
                 setStatus('status.live');
                 console.log('========== fetchAll COMPLETE ==========');
             } catch (e) {
                 console.error('fetchAll error:', e);
-                setAllChartsLoading(false);
                 setStatus('Error', true);
             }
         }
 
-        // Chart loading state management
-        function setChartLoading(chartId, isLoading) {
-            const chartContainer = document.getElementById(chartId)?.closest('.metric-chart');
-            if (chartContainer) {
-                if (isLoading) {
-                    chartContainer.classList.add('loading');
-                } else {
-                    chartContainer.classList.remove('loading');
+        // 초기 차트 생성 (더미 데이터)
+        function initCharts() {
+            console.log('=== Initializing all charts with dummy data ===');
+            const now = Date.now();
+            
+            // 가격+볼륨 통합 차트 더미 데이터
+            const priceCtx = document.getElementById('price-chart');
+            if (priceCtx && !priceChart) {
+                const labels = [];
+                const priceData = [];
+                const volumeData = [];
+                for (let i = 0; i < 60; i++) {
+                    labels.push(new Date(now - (60-i) * 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: '2-digit'}));
+                    priceData.push(3000 + Math.sin(i * 0.15) * 500 + Math.random() * 200);
+                    volumeData.push(8e9 + Math.random() * 5e9);
                 }
+                
+                priceChart = new Chart(priceCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                type: 'line',
+                                label: 'Price',
+                                data: priceData,
+                                borderColor: '#7c3aed',
+                                backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                                borderWidth: 1.5,
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 0,
+                                yAxisID: 'y'
+                            },
+                            {
+                                type: 'bar',
+                                label: 'Volume',
+                                data: volumeData,
+                                backgroundColor: 'rgba(139, 92, 246, 0.4)',
+                                borderWidth: 0,
+                                barPercentage: 0.9,
+                                categoryPercentage: 1.0,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: {
+                                display: true,
+                                grid: { display: false },
+                                ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 6, maxRotation: 0 }
+                            },
+                            y: {
+                                position: 'right',
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { font: { size: 8 }, color: '#6b7280', callback: v => '$' + (v/1000).toFixed(1) + 'K' }
+                            },
+                            y1: {
+                                position: 'left',
+                                display: false,
+                                grid: { display: false },
+                                min: 0,
+                                max: Math.max(...volumeData) * 4
+                            }
+                        }
+                    }
+                });
+                console.log('Combined price+volume chart initialized');
+            }
+            
+            // Dominance 차트
+            const domCtx = document.getElementById('dominance-chart');
+            if (domCtx && !dominanceChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(17 + Math.sin(i * 0.3) * 2);
+                }
+                dominanceChart = new Chart(domCtx.getContext('2d'), chartConfig('#0891b2', data, labels, v => v.toFixed(1) + '%', 'pct'));
+                console.log('Dominance chart initialized');
+            }
+            
+            // ETH/BTC 차트
+            const btcCtx = document.getElementById('ethbtc-chart');
+            if (btcCtx && !ethbtcChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(0.035 + Math.sin(i * 0.2) * 0.005);
+                }
+                ethbtcChart = new Chart(btcCtx.getContext('2d'), chartConfig('#f7931a', data, labels, v => v.toFixed(5), 'ratio'));
+                console.log('ETH/BTC chart initialized');
+            }
+            
+            // ETH Mainnet Tx 차트
+            const txEthCtx = document.getElementById('tx-eth-chart');
+            if (txEthCtx && !txEthChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(1000000 + Math.sin(i * 0.3) * 100000);
+                }
+                txEthChart = new Chart(txEthCtx.getContext('2d'), chartConfig('#14b8a6', data, labels, v => fmt.num(v) + ' tx'));
+                console.log('ETH Tx chart initialized');
+            }
+            
+            // ETH + L2 Total Tx 차트
+            const txTotalCtx = document.getElementById('tx-total-chart');
+            if (txTotalCtx && !txTotalChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(10000000 + Math.sin(i * 0.3) * 2000000);
+                }
+                txTotalChart = new Chart(txTotalCtx.getContext('2d'), chartConfig('#6366f1', data, labels, v => fmt.num(v) + ' tx'));
+                console.log('Total Tx chart initialized');
+            }
+            
+            // Exchange Reserve 차트 (Santiment)
+            const reserveCtx = document.getElementById('reserve-chart');
+            if (reserveCtx && !reserveChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(19000000 - i * 20000 + Math.random() * 100000);
+                }
+                reserveChart = new Chart(reserveCtx.getContext('2d'), chartConfig('#d97706', data, labels, v => fmt.num(v) + ' ETH', 'eth'));
+                console.log('Reserve chart initialized');
+            }
+            
+            // NVT Ratio 차트
+            const nvtCtx = document.getElementById('nvt-chart');
+            if (nvtCtx && !nvtChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(45 + Math.sin(i * 0.2) * 15 + Math.random() * 5);
+                }
+                nvtChart = new Chart(nvtCtx.getContext('2d'), chartConfig('#be123c', data, labels, v => v.toFixed(1)));
+                console.log('NVT chart initialized');
+            }
+            
+            // Active Addresses 차트
+            const activeAddrCtx = document.getElementById('active-addr-chart');
+            if (activeAddrCtx && !activeAddrChart) {
+                const labels = [];
+                const data = [];
+                for (let i = 0; i < 30; i++) {
+                    labels.push(new Date(now - (30-i) * 12 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
+                    data.push(500000 + Math.sin(i * 0.15) * 100000 + Math.random() * 50000);
+                }
+                activeAddrChart = new Chart(activeAddrCtx.getContext('2d'), chartConfig('#a855f7', data, labels, v => fmt.num(v)));
+                console.log('Active Addresses chart initialized');
             }
         }
-        
-        function setAllChartsLoading(isLoading) {
-            const charts = document.querySelectorAll('.metric-chart');
-            console.log(`setAllChartsLoading(${isLoading}): found ${charts.length} charts`);
-            charts.forEach(container => {
-                if (isLoading) {
-                    container.classList.add('loading');
-                } else {
-                    container.classList.remove('loading');
-                }
-            });
-        }
 
-        // 초기 차트 생성 (더미 데이터)
-        // Charts will be initialized when data loads - no dummy charts
-        function initCharts() {
-            console.log("=== Charts will load with real data ===");
-            // No dummy charts - loading spinners will show until real data arrives
-        }
         // 이벤트 위임 - DOMContentLoaded 밖에서 즉시 등록
         (function() {
             // 클릭 이벤트 처리 중인지 추적 (중복 실행 방지)
@@ -17186,9 +17034,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             console.log('DOM loaded, initializing...');
-            
-            // 모든 차트를 로딩 상태로 먼저 설정
-            setAllChartsLoading(true);
             
             // 모바일에서 모달 내 textarea 포커스 시 스크롤 조정
             document.addEventListener('focus', function(e) {
