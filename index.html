@@ -10857,11 +10857,49 @@
         async function logout() {
             await supabaseClient.auth.signOut();
             currentUser = null;
+            window.userRatings = {};
             updateAuthUI();
         }
         
+        // Load user's ratings from Supabase
+        async function loadUserRatings() {
+            if (!currentUser) {
+                window.userRatings = {};
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('comments')
+                    .select('model_id, rating')
+                    .eq('user_id', currentUser.id)
+                    .not('rating', 'is', null)
+                    .is('parent_id', null);
+                
+                if (error) {
+                    console.error('Error loading user ratings:', error);
+                    window.userRatings = {};
+                    return;
+                }
+                
+                // Convert to object: { modelId: rating }
+                window.userRatings = {};
+                data.forEach(r => {
+                    window.userRatings[r.model_id] = r.rating;
+                });
+                
+                console.log('Loaded user ratings:', window.userRatings);
+            } catch (e) {
+                console.error('Error loading user ratings:', e);
+                window.userRatings = {};
+            }
+        }
+        
         // Update UI based on auth state
-        function updateAuthUI() {
+        async function updateAuthUI() {
+            // Load user's ratings from Supabase
+            await loadUserRatings();
+            
             // 모달이 열려있으면 작성 폼만 업데이트
             const openModal = document.querySelector('.review-modal');
             if (openModal) {
@@ -11024,6 +11062,14 @@
             }
             
             console.log('Review added:', data);
+            
+            // Update window.userRatings if this is a rating
+            if (rating && !parentId) {
+                if (!window.userRatings) window.userRatings = {};
+                window.userRatings[modelId] = rating;
+                // Dispatch ratingUpdated event for engagement UX
+                window.dispatchEvent(new CustomEvent('ratingUpdated', { detail: { modelId, rating } }));
+            }
             
             // 리뷰 작성 폼 초기화
             if (!parentId) {
