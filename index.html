@@ -8728,7 +8728,7 @@
     <!-- Floating Action Button -->
     <div class="fab-container" id="fab-container">
         <button class="fab-button pulse" id="fab-button" onclick="handleFabClick()">
-            <span class="fab-text" id="fab-text">12 models to rate</span>
+            <span class="fab-text" id="fab-text">12 more to rate</span>
             <span class="fab-star">⭐</span>
         </button>
     </div>
@@ -11639,13 +11639,13 @@
                         ${isLoggedIn && userHasVoted ? `
                             <div class="vote-status-badge voted">
                                 <span class="vote-status-icon">✓</span>
-                                You voted ${ratings.userRating}★
+                                You rated ${ratings.userRating}★
                             </div>
                         ` : ''}
                         ${isLoggedIn && !userHasVoted ? `
                             <div class="vote-status-badge not-voted">
                                 <span class="vote-status-icon">⭐</span>
-                                Not voted yet
+                                Not rated yet
                             </div>
                         ` : ''}
                     </div>
@@ -11661,7 +11661,7 @@
                         ${!isLoggedIn ? `
                             <button class="summary-btn login-btn" onclick="loginWithTwitter(); event.stopPropagation();">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                Login to vote
+                                Login to rate
                             </button>
                         ` : `
                             <button class="summary-btn" data-action="open-modal" data-model="${modelId}">
@@ -11964,17 +11964,17 @@
                                 ${!currentUser ? `
                                     <div class="modal-vote-status login-required" onclick="loginWithTwitter()">
                                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                        Login to vote
+                                        Login to rate
                                     </div>
                                 ` : ratings.userRating ? `
                                     <div class="modal-vote-status voted">
                                         <span>✓</span>
-                                        You voted ${ratings.userRating}★
+                                        You rated ${ratings.userRating}★
                                     </div>
                                 ` : `
                                     <div class="modal-vote-status not-voted">
                                         <span>⭐</span>
-                                        Not voted yet
+                                        Not rated yet
                                     </div>
                                 `}
                                 <button class="modal-close" onclick="closeReviewModal()">&times;</button>
@@ -12407,16 +12407,16 @@
                         voteStatusEl.className = 'modal-vote-status login-required';
                         voteStatusEl.innerHTML = `
                             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                            Login to vote
+                            Login to rate
                         `;
                         voteStatusEl.onclick = loginWithTwitter;
                     } else if (ratings.userRating) {
                         voteStatusEl.className = 'modal-vote-status voted';
-                        voteStatusEl.innerHTML = `<span>✓</span> You voted ${ratings.userRating}★`;
+                        voteStatusEl.innerHTML = `<span>✓</span> You rated ${ratings.userRating}★`;
                         voteStatusEl.onclick = null;
                     } else {
                         voteStatusEl.className = 'modal-vote-status not-voted';
-                        voteStatusEl.innerHTML = `<span>⭐</span> Not voted yet`;
+                        voteStatusEl.innerHTML = `<span>⭐</span> Not rated yet`;
                         voteStatusEl.onclick = null;
                     }
                 }
@@ -20252,7 +20252,7 @@ Check out ETHval 👇`;
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                No contributors yet. Be the first to vote!
+                                No contributors yet. Be the first to rate!
                             </td>
                         </tr>
                     `;
@@ -20383,7 +20383,7 @@ Check out ETHval 👇`;
                 
                 if (!isLoggedIn) {
                     // Not logged in - show login prompt
-                    textEl.textContent = 'Login to vote';
+                    textEl.textContent = 'Login to rate';
                     button.classList.remove('pulse', 'all-done');
                     button.classList.add('login-btn');
                     if (starEl) {
@@ -20402,7 +20402,7 @@ Check out ETHval 👇`;
                         button.classList.remove('pulse');
                         button.classList.add('all-done');
                     } else {
-                        textEl.textContent = `${unratedCount} models to rate`;
+                        textEl.textContent = `${unratedCount} more to rate`;
                         button.classList.add('pulse');
                         button.classList.remove('all-done');
                     }
