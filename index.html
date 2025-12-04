@@ -10744,8 +10744,7 @@
                                         <th>#</th>
                                         <th data-i18n="rankings.table.model">Model</th>
                                         <th data-i18n="rankings.table.fairValue">Fair Value</th>
-                                        <th data-i18n="rankings.table.avgRating">Confidence (Stars)</th>
-                                        <th data-i18n="rankings.table.confidence">Confidence (Scores)</th>
+                                        <th data-i18n="rankings.table.confidence">Confidence</th>
                                         <th data-i18n="rankings.table.votes">Ratings</th>
                                     </tr>
                                 </thead>
@@ -20147,9 +20146,9 @@ Check out ETHval 👇`;
                         starsHtml = '<span style="color: #9ca3af; font-size: 12px;">-</span>';
                     }
                     
-                    // 확신도 (numeric rating)
+                    // 통합된 Confidence 표시 (별 + 점수)
                     const confidenceDisplay = model.avgRating > 0 
-                        ? `<span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #f59e0b;">${model.avgRating.toFixed(1)}</span>`
+                        ? `${starsHtml} <span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #f59e0b; margin-left: 8px;">${model.avgRating.toFixed(1)}</span>`
                         : '<span style="color: #9ca3af;">-</span>';
                     
                     return `
@@ -20160,7 +20159,6 @@ Check out ETHval 👇`;
                                 <span style="font-weight: 500;">${model.name}</span>
                             </td>
                             <td style="font-family: 'JetBrains Mono', monospace;">$${model.value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</td>
-                            <td>${starsHtml}</td>
                             <td>${confidenceDisplay}</td>
                             <td style="font-family: 'JetBrains Mono', monospace; color: var(--text-muted);">${model.reviewCount}</td>
                         </tr>
