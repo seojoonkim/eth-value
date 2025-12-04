@@ -13773,10 +13773,10 @@
                     if (response.ok) {
                         const data = await response.json();
                         const l2TxByDate = {};
+                        const ethTxByDate = {};
                         
                         if (data && typeof data === 'object') {
                             for (const chain in data) {
-                                if (chain === 'ethereum') continue;
                                 const chainData = data[chain];
                                 if (Array.isArray(chainData)) {
                                     for (const entry of chainData) {
@@ -13785,17 +13785,29 @@
                                         if (date) {
                                             const dateKey = typeof date === 'number' ? 
                                                 new Date(date * 1000).toISOString().split('T')[0] : date;
-                                            l2TxByDate[dateKey] = (l2TxByDate[dateKey] || 0) + txCount;
+                                            if (chain === 'ethereum') {
+                                                ethTxByDate[dateKey] = txCount;
+                                            } else {
+                                                l2TxByDate[dateKey] = (l2TxByDate[dateKey] || 0) + txCount;
+                                            }
                                         }
                                     }
                                 }
                             }
                             
-                            const sortedDates = Object.keys(l2TxByDate).sort().reverse();
-                            if (sortedDates.length > 0) {
-                                const recentDates = sortedDates.slice(0, 7);
+                            // Get L2 total
+                            const sortedL2Dates = Object.keys(l2TxByDate).sort().reverse();
+                            if (sortedL2Dates.length > 0) {
+                                const recentDates = sortedL2Dates.slice(0, 7);
                                 l2TotalTx = recentDates.reduce((sum, d) => sum + l2TxByDate[d], 0) / recentDates.length;
                                 if (l2TotalTx > 5000000) dataSource = 'growthepie';
+                            }
+                            
+                            // Get ETH mainnet
+                            const sortedEthDates = Object.keys(ethTxByDate).sort().reverse();
+                            if (sortedEthDates.length > 0) {
+                                const recentDates = sortedEthDates.slice(0, 7);
+                                ethMainnetTx = recentDates.reduce((sum, d) => sum + ethTxByDate[d], 0) / recentDates.length;
                             }
                         }
                     }
@@ -13863,12 +13875,12 @@
                     dataSource = 'hardcoded-dec2024';
                 }
                 
-                // ETH 메인넷 - Etherscan 또는 추정
-                const ethCurrentTx = 1100000;
-                const ethBaseTx = 900000;
+                // ETH 메인넷 - API 성공 시 실제값, 실패 시 폴백 (Q4 2024: ~1.2M tx/day)
+                const ethCurrentTx = ethMainnetTx > 500000 ? ethMainnetTx : 1200000;
+                const ethBaseTx = 1000000;
                 const l2BaseTx = 5000000;
                 
-                console.log(`L2 Tx data source: ${dataSource}, Total: ${fmt.num(l2TotalTx)}`);
+                console.log(`Tx data source: ${dataSource}, ETH: ${fmt.num(ethCurrentTx)}, L2: ${fmt.num(l2TotalTx)}`);
                 
                 // Generate historical data (52 weeks) - deterministic
                 // i=0 is 52 weeks ago, i=51 is current week
