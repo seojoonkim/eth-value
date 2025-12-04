@@ -2488,7 +2488,43 @@
         .modal-header-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
+        }
+        
+        /* Modal Vote Status Badge */
+        .modal-vote-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-vote-status.login-required {
+            background: #000;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .modal-vote-status.login-required:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-vote-status.not-voted {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+            color: #d97706;
+            border: 1px dashed #f59e0b;
+        }
+        
+        .modal-vote-status.voted {
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.15), rgba(22, 163, 74, 0.05));
+            color: #16a34a;
+            border: 1px solid rgba(22, 163, 74, 0.3);
         }
 
         .modal-price-info {
@@ -3761,6 +3797,11 @@
                 font-size: 36px;
                 width: 44px;
                 height: 44px;
+            }
+            
+            .modal-vote-status {
+                font-size: 11px;
+                padding: 5px 10px;
             }
             
             /* 레이팅 영역 모바일 */
@@ -11888,6 +11929,22 @@
                                 <p>Rate this model and share your thoughts</p>
                             </div>
                             <div class="modal-header-right">
+                                ${!currentUser ? `
+                                    <div class="modal-vote-status login-required" onclick="loginWithTwitter()">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                        Login to vote
+                                    </div>
+                                ` : ratings.userRating ? `
+                                    <div class="modal-vote-status voted">
+                                        <span>✓</span>
+                                        You voted ${ratings.userRating}★
+                                    </div>
+                                ` : `
+                                    <div class="modal-vote-status not-voted">
+                                        <span>⭐</span>
+                                        Not voted yet
+                                    </div>
+                                `}
                                 <button class="modal-close" onclick="closeReviewModal()">&times;</button>
                             </div>
                         </div>
@@ -12310,6 +12367,27 @@
                 if (avgEl) avgEl.textContent = ratings.avgRating.toFixed(1);
                 if (starsEl) starsEl.innerHTML = renderStars(ratings.avgRating);
                 if (totalEl) totalEl.textContent = `${ratings.totalRatings} rating${ratings.totalRatings !== 1 ? 's' : ''}`;
+                
+                // 모달 헤더의 투표 상태 배지 업데이트
+                const voteStatusEl = document.querySelector('.modal-vote-status');
+                if (voteStatusEl) {
+                    if (!currentUser) {
+                        voteStatusEl.className = 'modal-vote-status login-required';
+                        voteStatusEl.innerHTML = `
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            Login to vote
+                        `;
+                        voteStatusEl.onclick = loginWithTwitter;
+                    } else if (ratings.userRating) {
+                        voteStatusEl.className = 'modal-vote-status voted';
+                        voteStatusEl.innerHTML = `<span>✓</span> You voted ${ratings.userRating}★`;
+                        voteStatusEl.onclick = null;
+                    } else {
+                        voteStatusEl.className = 'modal-vote-status not-voted';
+                        voteStatusEl.innerHTML = `<span>⭐</span> Not voted yet`;
+                        voteStatusEl.onclick = null;
+                    }
+                }
                 
                 // 분포 바 업데이트
                 document.querySelectorAll('.modal-bar-row').forEach((row, i) => {
