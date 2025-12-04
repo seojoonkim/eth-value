@@ -10918,6 +10918,10 @@
                 const modelId = section.dataset.model;
                 renderCommunitySection(modelId);
             });
+            
+            // Expose currentUser to window for engagement UX and dispatch event
+            window.currentUser = currentUser;
+            window.dispatchEvent(new CustomEvent('authStateChanged'));
         }
         
         // Load model ratings (comments 테이블의 rating에서)
