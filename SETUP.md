@@ -8,7 +8,7 @@
 3. Run 클릭
 
 ### 2️⃣ GitHub Secrets 설정
-GitHub 저장소 → Settings → Secrets and variables → Actions
+GitHub 저장소 (https://github.com/seojoonkim/eth-value) → Settings → Secrets and variables → Actions
 
 | Secret | 값 | 필수 |
 |--------|-----|------|
@@ -17,15 +17,16 @@ GitHub 저장소 → Settings → Secrets and variables → Actions
 | `ETHERSCAN_API_KEY` | https://etherscan.io/apis 에서 발급 | 권장 |
 
 ### 3️⃣ GitHub Actions 실행
-1. Actions 탭 → "Collect Historical Data"
-2. "Run workflow" 클릭
+1. https://github.com/seojoonkim/eth-value/actions
+2. "Collect Historical Data" 클릭
+3. "Run workflow" 클릭
 
 ---
 
 ## 📁 파일 구조
 
 ```
-ethval/
+eth-value/
 ├── index.html           # 메인 (admin 링크 추가됨)
 ├── admin.html           # 데이터 수집 상태 모니터링
 ├── supabase-schema.sql  # DB 테이블 생성 스크립트
@@ -41,6 +42,13 @@ ethval/
 
 - **매일 KST 15:00 (UTC 06:00)** 자동 실행
 - Actions 탭에서 수동 실행도 가능
+
+---
+
+## 🔐 Admin 페이지
+
+- URL: `https://ethval.com/admin.html`
+- 기본 비밀번호: `ethvaladmin`
 
 ---
 

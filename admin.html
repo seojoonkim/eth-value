@@ -293,6 +293,46 @@
     </style>
 </head>
 <body>
+    <!-- Password Protection Overlay -->
+    <div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;">
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:400px;width:90%;text-align:center;">
+            <h2 style="margin-bottom:8px;">🔐 ETHval Admin</h2>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px;">Enter password to access</p>
+            <input type="password" id="adminPassword" placeholder="Password" 
+                style="width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:16px;box-sizing:border-box;"
+                onkeypress="if(event.key==='Enter')checkPassword()">
+            <button onclick="checkPassword()" 
+                style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;">
+                Unlock
+            </button>
+            <p id="authError" style="color:var(--error);font-size:13px;margin-top:12px;display:none;">Incorrect password</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple password protection (hash of password)
+        // Change this hash for your own password: console.log(btoa('yourpassword'))
+        const ADMIN_PASSWORD_HASH = 'ZXRodmFsYWRtaW4='; // Default: 'ethvaladmin'
+        
+        function checkPassword() {
+            const input = document.getElementById('adminPassword').value;
+            const inputHash = btoa(input);
+            
+            if (inputHash === ADMIN_PASSWORD_HASH) {
+                document.getElementById('authOverlay').style.display = 'none';
+                sessionStorage.setItem('ethval_admin_auth', 'true');
+            } else {
+                document.getElementById('authError').style.display = 'block';
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+        
+        // Check if already authenticated in this session
+        if (sessionStorage.getItem('ethval_admin_auth') === 'true') {
+            document.getElementById('authOverlay').style.display = 'none';
+        }
+    </script>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -308,9 +348,9 @@
                 <button class="btn btn-secondary" onclick="loadAllData()">
                     🔄 Refresh
                 </button>
-                <a href="https://github.com/hashed-official/ethval/actions" target="_blank" class="btn btn-primary">
+                <button class="btn btn-primary" onclick="openGitHubActions()">
                     ▶️ Run on GitHub
-                </a>
+                </button>
             </div>
         </div>
 
@@ -377,10 +417,15 @@
         <!-- Supabase Configuration -->
         <div class="section">
             <div class="section-header">
-                <h2>⚙️ Supabase Connection</h2>
+                <h2>⚙️ Configuration</h2>
             </div>
             <div class="config-section">
                 <div class="config-grid">
+                    <div class="config-item">
+                        <label>GitHub Repository</label>
+                        <input type="text" id="githubRepo" placeholder="username/repo (e.g., hashed-official/ethval)">
+                        <span class="hint">For "Run on GitHub" button</span>
+                    </div>
                     <div class="config-item">
                         <label>Supabase URL</label>
                         <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co">
@@ -467,8 +512,20 @@
         const SUPABASE_URL = 'https://rliwxedrifwxbudcutqs.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsaXd4ZWRyaWZ3eGJ1ZGN1dHFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ0MzU2MDQsImV4cCI6MjA4MDAxMTYwNH0.jX_tAdAhXEcmHdtf56-8La4SpqbKEM3_hIBBwhldD6Y';
 
+        // GitHub Actions
+        const DEFAULT_GITHUB_REPO = 'seojoonkim/eth-value';
+        
+        function openGitHubActions() {
+            const repo = document.getElementById('githubRepo').value.trim() || localStorage.getItem('ethval_github_repo') || DEFAULT_GITHUB_REPO;
+            window.open(`https://github.com/${repo}/actions`, '_blank');
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Load saved GitHub repo or use default
+            const savedRepo = localStorage.getItem('ethval_github_repo') || DEFAULT_GITHUB_REPO;
+            document.getElementById('githubRepo').value = savedRepo;
+            
             // Use pre-configured Supabase credentials
             document.getElementById('supabaseUrl').value = SUPABASE_URL;
             document.getElementById('supabaseKey').value = SUPABASE_ANON_KEY;
@@ -481,6 +538,7 @@
         function saveConfig() {
             const url = document.getElementById('supabaseUrl').value.trim();
             const key = document.getElementById('supabaseKey').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
             
             if (!url || !key) {
                 alert('Please enter both Supabase URL and Anon Key');
@@ -489,6 +547,9 @@
             
             localStorage.setItem('ethval_supabase_url', url);
             localStorage.setItem('ethval_supabase_key', key);
+            if (repo) {
+                localStorage.setItem('ethval_github_repo', repo);
+            }
             
             initSupabase(url, key);
         }
