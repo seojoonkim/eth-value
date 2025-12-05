@@ -329,6 +329,21 @@
         </div>
     </div>
 
+    <!-- Supabase Config Modal -->
+    <div class="auth-overlay" id="configOverlay" style="display:none;">
+        <div class="auth-box" style="max-width:500px;">
+            <h2 style="margin-bottom:8px;">⚙️ Supabase Configuration</h2>
+            <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">
+                Enter your Supabase credentials<br>
+                <span style="font-size:11px;">(Settings → API in Supabase Dashboard)</span>
+            </p>
+            <input type="text" id="supabaseUrl" placeholder="Project URL (https://xxx.supabase.co)" style="margin-bottom:12px;">
+            <input type="text" id="supabaseKey" placeholder="anon / public key" style="margin-bottom:16px;">
+            <button onclick="saveConfig()">💾 Save & Connect</button>
+            <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">Saved in localStorage (this browser only)</p>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>📊 ETHval Admin <span class="badge">DATA DASHBOARD</span></h1>
@@ -338,6 +353,7 @@
                     <span id="connectionText">Connecting...</span>
                 </div>
                 <button class="btn btn-secondary" onclick="loadAllData()">🔄 Refresh All</button>
+                <button class="btn btn-secondary" onclick="showConfig()">⚙️ Config</button>
                 <button class="btn btn-primary" onclick="openGitHubActions()">▶️ Run Collector</button>
             </div>
         </div>
@@ -372,7 +388,7 @@
         </div>
 
         <!-- Data Status Table -->
-        <h2 class="section-title">🗂️ Data Status (Target: 1,095 days = 3 years)</h2>
+        <h2 class="section-title">🗂️ All Historical Data (Target: 1,095 days = 3 years)</h2>
         <div class="data-table-container">
             <table class="data-table">
                 <thead>
@@ -412,13 +428,40 @@
         }
 
         // TODO: Replace with your actual Supabase credentials
-        const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+        let SUPABASE_URL = localStorage.getItem('ethval_supabase_url') || '';
+        let SUPABASE_ANON_KEY = localStorage.getItem('ethval_supabase_key') || '';
+
+        function saveConfig() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseKey').value.trim();
+            
+            if (!url || !key) {
+                alert('Please enter both URL and Key');
+                return;
+            }
+            
+            localStorage.setItem('ethval_supabase_url', url);
+            localStorage.setItem('ethval_supabase_key', key);
+            SUPABASE_URL = url;
+            SUPABASE_ANON_KEY = key;
+            
+            document.getElementById('configOverlay').style.display = 'none';
+            init();
+        }
+        
+        function showConfig() {
+            document.getElementById('supabaseUrl').value = SUPABASE_URL;
+            document.getElementById('supabaseKey').value = SUPABASE_ANON_KEY;
+            document.getElementById('configOverlay').style.display = 'flex';
+        }
 
         let supabase = null;
         const charts = {};
         const TARGET_DAYS = 1095; // 3 years
 
+        // ═══════════════════════════════════════════════════════════════════
+        // ALL DATASETS STORED IN SUPABASE (20 total)
+        // ═══════════════════════════════════════════════════════════════════
         const DATASETS = {
             'eth_price': { 
                 name: 'ETH Price', 
@@ -428,7 +471,7 @@
                 dateField: 'date', 
                 color: '#8b5cf6',
                 format: 'price',
-                usedIn: ['Price Chart', 'All Valuations']
+                charts: ['price-chart']
             },
             'ethereum_tvl': { 
                 name: 'Ethereum TVL', 
@@ -438,7 +481,7 @@
                 dateField: 'date', 
                 color: '#22c55e',
                 format: 'tvl',
-                usedIn: ['TVL Chart', 'MC/TVL', 'TVL Multiple']
+                charts: ['tvl-chart']
             },
             'l2_tvl': { 
                 name: 'L2 TVL', 
@@ -449,7 +492,7 @@
                 color: '#3b82f6',
                 format: 'tvl',
                 aggregate: true,
-                usedIn: ['L2 Chart', 'L2 Ecosystem']
+                charts: ['l2-chart']
             },
             'protocol_fees': { 
                 name: 'Protocol Fees', 
@@ -459,7 +502,7 @@
                 dateField: 'date', 
                 color: '#f59e0b',
                 format: 'fees',
-                usedIn: ['Revenue Chart', 'P/S', 'DCF']
+                charts: ['fees-chart']
             },
             'staking_data': { 
                 name: 'Staking Data', 
@@ -469,7 +512,7 @@
                 dateField: 'date', 
                 color: '#ef4444',
                 format: 'eth',
-                usedIn: ['Staking Chart', 'Supply Distribution']
+                charts: ['staking-chart']
             },
             'gas_burn': { 
                 name: 'Gas & Burn', 
@@ -479,7 +522,7 @@
                 dateField: 'date', 
                 color: '#f97316',
                 format: 'gas',
-                usedIn: ['Gas Chart', 'Burn Chart']
+                charts: ['base-fee-chart']
             },
             'active_addresses': { 
                 name: 'Active Addresses', 
@@ -489,7 +532,7 @@
                 dateField: 'date', 
                 color: '#06b6d4',
                 format: 'number',
-                usedIn: ['DAU Chart', 'Metcalfe']
+                charts: ['active-addr-chart']
             },
             'eth_supply': { 
                 name: 'ETH Supply', 
@@ -499,7 +542,7 @@
                 dateField: 'date', 
                 color: '#a855f7',
                 format: 'eth',
-                usedIn: ['Supply Chart', 'Net Issuance']
+                charts: ['net-supply-chart']
             },
             'fear_greed': { 
                 name: 'Fear & Greed', 
@@ -509,7 +552,201 @@
                 dateField: 'date', 
                 color: '#eab308',
                 format: 'index',
-                usedIn: ['Fear & Greed Chart']
+                charts: ['feargreed-chart']
+            },
+            'dex_volume': { 
+                name: 'DEX Volume', 
+                icon: '💱', 
+                table: 'historical_dex_volume', 
+                valueField: 'volume', 
+                dateField: 'date', 
+                color: '#ec4899',
+                format: 'tvl',
+                charts: ['dex-chart']
+            },
+            'stablecoins': { 
+                name: 'Stablecoins', 
+                icon: '💵', 
+                table: 'historical_stablecoins', 
+                valueField: 'total_mcap', 
+                dateField: 'date', 
+                color: '#14b8a6',
+                format: 'tvl',
+                charts: ['stablecoin-chart']
+            },
+            'eth_btc': { 
+                name: 'ETH/BTC Ratio', 
+                icon: '₿', 
+                table: 'historical_eth_btc', 
+                valueField: 'ratio', 
+                dateField: 'date', 
+                color: '#f7931a',
+                format: 'ratio',
+                charts: ['ethbtc-chart']
+            },
+            'funding_rate': { 
+                name: 'Funding Rate', 
+                icon: '📊', 
+                table: 'historical_funding_rate', 
+                valueField: 'funding_rate', 
+                dateField: 'date', 
+                color: '#6366f1',
+                format: 'percent',
+                charts: ['funding-chart']
+            },
+            'exchange_reserve': { 
+                name: 'Exchange Reserve', 
+                icon: '🏛️', 
+                table: 'historical_exchange_reserve', 
+                valueField: 'reserve_eth', 
+                dateField: 'date', 
+                color: '#84cc16',
+                format: 'eth',
+                charts: ['reserve-chart']
+            },
+            'eth_dominance': { 
+                name: 'ETH Dominance', 
+                icon: '👑', 
+                table: 'historical_eth_dominance', 
+                valueField: 'eth_dominance', 
+                dateField: 'date', 
+                color: '#0ea5e9',
+                format: 'percent',
+                charts: ['dominance-chart']
+            },
+            'blob_data': { 
+                name: 'Blob Data', 
+                icon: '🫧', 
+                table: 'historical_blob_data', 
+                valueField: 'blob_count', 
+                dateField: 'date', 
+                color: '#8b5cf6',
+                format: 'number',
+                charts: ['blob-count-chart']
+            },
+            'lending_tvl': { 
+                name: 'Lending TVL', 
+                icon: '🏦', 
+                table: 'historical_lending_tvl', 
+                valueField: 'total_tvl', 
+                dateField: 'date', 
+                color: '#f43f5e',
+                format: 'tvl',
+                charts: ['lending-chart']
+            },
+            'volatility': { 
+                name: 'Volatility', 
+                icon: '📉', 
+                table: 'historical_volatility', 
+                valueField: 'volatility_30d', 
+                dateField: 'date', 
+                color: '#ef4444',
+                format: 'percent',
+                charts: ['volatility-chart']
+            },
+            'nvt': { 
+                name: 'NVT Ratio', 
+                icon: '📐', 
+                table: 'historical_nvt', 
+                valueField: 'nvt_ratio', 
+                dateField: 'date', 
+                color: '#22d3ee',
+                format: 'number',
+                charts: ['nvt-chart']
+            },
+            'transactions': { 
+                name: 'Transactions', 
+                icon: '📝', 
+                table: 'historical_transactions', 
+                valueField: 'tx_count', 
+                dateField: 'date', 
+                color: '#a3e635',
+                format: 'number',
+                charts: ['tx-total-chart']
+            },
+            'l2_transactions': { 
+                name: 'L2 Transactions', 
+                icon: '🔗', 
+                table: 'historical_l2_transactions', 
+                valueField: 'tx_count', 
+                dateField: 'date', 
+                color: '#3b82f6',
+                format: 'number',
+                aggregate: true,
+                charts: ['tx-eth-chart']
+            },
+            'l2_addresses': { 
+                name: 'L2 Addresses', 
+                icon: '👤', 
+                table: 'historical_l2_addresses', 
+                valueField: 'active_addresses', 
+                dateField: 'date', 
+                color: '#06b6d4',
+                format: 'number',
+                aggregate: true,
+                charts: []
+            },
+            'protocol_tvl': { 
+                name: 'Protocol TVL', 
+                icon: '📊', 
+                table: 'historical_protocol_tvl', 
+                valueField: 'tvl', 
+                dateField: 'date', 
+                color: '#8b5cf6',
+                format: 'tvl',
+                aggregate: true,
+                charts: []
+            },
+            'staking_apr': { 
+                name: 'Staking APR', 
+                icon: '💹', 
+                table: 'historical_staking_apr', 
+                valueField: 'lido_apr', 
+                dateField: 'date', 
+                color: '#22c55e',
+                format: 'percent',
+                charts: ['staking-yield-chart']
+            },
+            'eth_in_defi': { 
+                name: 'ETH in DeFi', 
+                icon: '🔒', 
+                table: 'historical_eth_in_defi', 
+                valueField: 'eth_locked', 
+                dateField: 'date', 
+                color: '#f59e0b',
+                format: 'eth',
+                charts: ['eth-defi-chart']
+            },
+            'global_mcap': { 
+                name: 'Global Market Cap', 
+                icon: '🌍', 
+                table: 'historical_global_mcap', 
+                valueField: 'total_mcap', 
+                dateField: 'date', 
+                color: '#ec4899',
+                format: 'tvl',
+                charts: []
+            },
+            'dex_by_protocol': { 
+                name: 'DEX by Protocol', 
+                icon: '💱', 
+                table: 'historical_dex_by_protocol', 
+                valueField: 'volume', 
+                dateField: 'date', 
+                color: '#14b8a6',
+                format: 'tvl',
+                aggregate: true,
+                charts: []
+            },
+            'network_stats': { 
+                name: 'Network Stats', 
+                icon: '⛓️', 
+                table: 'historical_network_stats', 
+                valueField: 'block_count', 
+                dateField: 'date', 
+                color: '#6366f1',
+                format: 'number',
+                charts: []
             }
         };
 
@@ -518,6 +755,14 @@
         }
 
         async function init() {
+            // Check if Supabase is configured
+            if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes('YOUR_PROJECT')) {
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionText').textContent = 'Not Configured';
+                showConfig();
+                return;
+            }
+            
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 
@@ -849,6 +1094,7 @@
             const missing = results.filter(r => r.status === 'failed').length;
             const totalRecords = results.reduce((sum, r) => sum + r.records, 0);
             
+            document.getElementById('totalDatasets').textContent = Object.keys(DATASETS).length;
             document.getElementById('completeCount').textContent = complete;
             document.getElementById('partialCount').textContent = partial;
             document.getElementById('missingCount').textContent = missing;
@@ -878,6 +1124,8 @@
                     if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
                     return n.toLocaleString();
                 case 'index': return n.toFixed(0);
+                case 'ratio': return n.toFixed(4);
+                case 'percent': return n.toFixed(2) + '%';
                 default: return n.toLocaleString();
             }
         }
