@@ -1997,10 +1997,10 @@ async function collectL2Transactions() {
     try {
         const records = [];
         
-        // Try Growthepie API
+        // Try Growthepie API - 전체 히스토리
         try {
-            log('info', dataset, 'Fetching from Growthepie...');
-            const data = await fetch('https://api.growthepie.xyz/v1/fundamentals/txcount.json');
+            log('info', dataset, 'Fetching txcount from Growthepie (full history)...');
+            const data = await fetch('https://api.growthepie.com/v1/export/txcount.json');
             
             if (data && Array.isArray(data)) {
                 for (const item of data) {
@@ -2016,7 +2016,26 @@ async function collectL2Transactions() {
                 log('info', dataset, `Got ${records.length} records from Growthepie`);
             }
         } catch (e) {
-            log('warning', dataset, 'Growthepie API failed: ' + e.message);
+            log('warning', dataset, 'Growthepie export API failed: ' + e.message);
+            
+            // Fallback: fundamentals (90일)
+            try {
+                const data = await fetch('https://api.growthepie.com/v1/fundamentals.json');
+                if (data && Array.isArray(data)) {
+                    for (const item of data) {
+                        if (item.metric_key === 'txcount' && item.origin_key && item.date && item.value) {
+                            records.push({
+                                date: item.date,
+                                chain: item.origin_key,
+                                tx_count: Math.floor(item.value),
+                                source: 'growthepie'
+                            });
+                        }
+                    }
+                }
+            } catch (e2) {
+                log('warning', dataset, 'Growthepie fundamentals also failed');
+            }
         }
         
         if (records.length === 0) {
@@ -2054,8 +2073,9 @@ async function collectL2Addresses() {
         const records = [];
         
         try {
-            log('info', dataset, 'Fetching from Growthepie...');
-            const data = await fetch('https://api.growthepie.xyz/v1/fundamentals/daa.json');
+            // Growthepie API - 전체 히스토리 (export 엔드포인트)
+            log('info', dataset, 'Fetching DAA from Growthepie (full history)...');
+            const data = await fetch('https://api.growthepie.com/v1/export/daa.json');
             
             if (data && Array.isArray(data)) {
                 for (const item of data) {
@@ -2071,16 +2091,83 @@ async function collectL2Addresses() {
                 log('info', dataset, `Got ${records.length} records from Growthepie`);
             }
         } catch (e) {
-            log('warning', dataset, 'Growthepie API failed: ' + e.message);
+            log('warning', dataset, 'Growthepie export API failed, trying fundamentals...');
+            
+            // Fallback: fundamentals endpoint (90일)
+            try {
+                const data = await fetch('https://api.growthepie.com/v1/fundamentals.json');
+                if (data && Array.isArray(data)) {
+                    for (const item of data) {
+                        if (item.metric_key === 'daa' && item.origin_key && item.date && item.value) {
+                            records.push({
+                                date: item.date,
+                                chain: item.origin_key,
+                                active_addresses: Math.floor(item.value),
+                                source: 'growthepie'
+                            });
+                        }
+                    }
+                    log('info', dataset, `Got ${records.length} records from fundamentals`);
+                }
+            } catch (e2) {
+                log('warning', dataset, 'Growthepie fundamentals also failed: ' + e2.message);
+            }
         }
         
         if (records.length === 0) {
-            throw new Error('Failed to collect L2 address data');
+            throw new Error('Failed to collect DAA data from Growthepie');
         }
         
+        // 체인별 데이터 저장
         for (let i = 0; i < records.length; i += 500) {
             const batch = records.slice(i, i + 500);
             await supabase.upsert('historical_l2_addresses', batch);
+        }
+        
+        // === 생태계 전체 DAA 합산 계산 ===
+        log('info', dataset, 'Calculating ecosystem totals...');
+        const dateMap = new Map();
+        
+        for (const record of records) {
+            const existing = dateMap.get(record.date) || { 
+                date: record.date, 
+                total: 0, 
+                ethereum: 0, 
+                l2_total: 0,
+                chains: {} 
+            };
+            existing.chains[record.chain] = record.active_addresses;
+            
+            if (record.chain === 'ethereum') {
+                existing.ethereum = record.active_addresses;
+            } else {
+                existing.l2_total += record.active_addresses;
+            }
+            existing.total = existing.ethereum + existing.l2_total;
+            
+            dateMap.set(record.date, existing);
+        }
+        
+        // active_addresses 테이블에 생태계 합산 데이터 저장
+        const ecosystemRecords = [];
+        for (const [date, data] of dateMap) {
+            ecosystemRecords.push({
+                date: date,
+                timestamp: Math.floor(new Date(date).getTime() / 1000),
+                active_addresses: data.total,
+                new_addresses: data.ethereum, // ETH mainnet 값 저장
+                source: 'growthepie_ecosystem'
+            });
+        }
+        
+        if (ecosystemRecords.length > 0) {
+            ecosystemRecords.sort((a, b) => a.date.localeCompare(b.date));
+            
+            for (let i = 0; i < ecosystemRecords.length; i += 500) {
+                const batch = ecosystemRecords.slice(i, i + 500);
+                await supabase.upsert('historical_active_addresses', batch);
+            }
+            log('info', dataset, `Saved ${ecosystemRecords.length} ecosystem totals to active_addresses`);
         }
         
         await updateStatus(dataset, 'success', {
@@ -2089,7 +2176,7 @@ async function collectL2Addresses() {
             date_to: records[records.length - 1]?.date
         });
         
-        log('success', dataset, `Completed: ${records.length} records`);
+        log('success', dataset, `Completed: ${records.length} chain records, ${ecosystemRecords.length} ecosystem totals`);
         return true;
     } catch (error) {
         log('error', dataset, error.message);

@@ -9450,11 +9450,11 @@
                     </div>
                 </div>
 
-                <!-- 14. Active Addresses -->
+                <!-- 14. Eco Active Addresses -->
                 <div class="metric-card" data-metric="activeAddr">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Active Addresses</h4>
+                            <h4>Eco Active Addresses</h4>
                             <div class="metric-value-large" id="active-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -9465,7 +9465,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="active-addr-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>From Tx Count · ~3 tx/addr</span>
+                        <span>ETH + L2 · Growthepie</span>
                         <span class="change" id="active-addr-change">--</span>
                     </div>
                 </div>
@@ -16417,11 +16417,11 @@
         async function calculateAndUpdateActiveAddr() {
             // Supabase 데이터가 있으면 우선 사용
             if (state.supabaseActiveHistory && state.supabaseActiveHistory.length > 10) {
-                console.log('   Using Supabase Active Addresses data');
+                console.log('   Using Supabase Eco Active Addresses data');
                 state.activeAddrHistory = state.supabaseActiveHistory;
                 
                 const latest = state.supabaseActiveHistory[state.supabaseActiveHistory.length - 1];
-                state.activeAddresses = latest.value || 450000;
+                state.activeAddresses = latest.value || 2000000;
                 
                 const addrEl = document.getElementById('active-addr-value');
                 if (addrEl) addrEl.textContent = fmt.num(state.activeAddresses);
@@ -16442,55 +16442,65 @@
                 return;
             }
             
-            // Fallback: API calls
-            let activeAddresses = 0;
+            // Fallback: Growthepie API 직접 호출
+            let ecosystemDAA = 0;
             let dataSource = 'fallback';
+            const historyByDate = new Map();
             
             try {
-                // === 1차: growthepie API ===
-                try {
-                    const response = await fetch('https://api.growthepie.xyz/v1/fundamentals/daa.json');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data?.ethereum && Array.isArray(data.ethereum) && data.ethereum.length > 0) {
-                            const sortedData = data.ethereum.sort((a, b) => 
-                                new Date(b.date || b.unix * 1000) - new Date(a.date || a.unix * 1000)
-                            );
-                            const recent = sortedData.slice(0, 7);
-                            activeAddresses = recent.reduce((sum, d) => sum + (d.value || 0), 0) / recent.length;
-                            if (activeAddresses > 100000) dataSource = 'growthepie';
-                        }
+                // Growthepie fundamentals API (90일)
+                console.log('   Fetching Eco Active Addresses from Growthepie...');
+                const response = await fetch('https://api.growthepie.com/v1/fundamentals.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // DAA 데이터만 필터링
+                    const daaData = data.filter(d => d.metric_key === 'daa');
+                    
+                    // 날짜별로 합산
+                    for (const item of daaData) {
+                        if (!item.date || !item.value) continue;
+                        
+                        const existing = historyByDate.get(item.date) || { total: 0, chains: 0 };
+                        existing.total += item.value;
+                        existing.chains++;
+                        historyByDate.set(item.date, existing);
                     }
-                } catch (e) { /* API failed, continue */ }
-                
-                // === 2차: Tx 기반 추정 ===
-                if (activeAddresses < 100000 && state.txTotal > 0) {
-                    activeAddresses = state.txTotal / 5;
-                    dataSource = 'tx-estimate';
+                    
+                    if (historyByDate.size > 0) {
+                        dataSource = 'growthepie';
+                        // 최근 값
+                        const dates = Array.from(historyByDate.keys()).sort();
+                        const latestDate = dates[dates.length - 1];
+                        ecosystemDAA = historyByDate.get(latestDate).total;
+                        console.log(`   Eco Active Addresses: ${fmt.num(ecosystemDAA)} from ${historyByDate.size} days`);
+                    }
                 }
-                
-                // === 3차: Fallback ===
-                if (activeAddresses < 100000) {
-                    activeAddresses = 500000;
-                    dataSource = 'fallback';
-                }
-            } catch (e) {
-                console.error('Active addresses error:', e);
-                activeAddresses = 500000;
+            } catch (e) { 
+                console.log('   Growthepie API failed:', e.message);
             }
             
-            state.activeAddresses = activeAddresses;
+            // Fallback 값
+            if (ecosystemDAA < 100000) {
+                ecosystemDAA = 2500000;
+                dataSource = 'fallback';
+            }
+            
+            state.activeAddresses = ecosystemDAA;
             
             const addrEl = document.getElementById('active-addr-value');
             if (addrEl) addrEl.textContent = fmt.num(state.activeAddresses);
             
-            // Build history from txTotalHistory
+            // Build history from API data
             state.activeAddrHistory = [];
-            if (state.txTotalHistory?.length > 0) {
-                state.activeAddrHistory = state.txTotalHistory.map(tx => ({
-                    date: tx.date,
-                    value: tx.value / 5
-                }));
+            if (historyByDate.size > 0) {
+                const dates = Array.from(historyByDate.keys()).sort();
+                for (const date of dates) {
+                    state.activeAddrHistory.push({
+                        date: new Date(date),
+                        value: historyByDate.get(date).total
+                    });
+                }
                 
                 if (state.activeAddrHistory.length > 1) {
                     const first = state.activeAddrHistory[0].value;
@@ -16506,12 +16516,12 @@
                 updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#a855f7', 'activeAddr');
             } else {
                 // Generate fallback history
-                console.log('Generating simulated Active Addresses history...');
+                console.log('Generating simulated Eco Active Addresses history...');
                 for (let i = 365; i >= 0; i--) {
                     const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-                    const baseValue = 450000;
-                    const variance = 0.85 + Math.random() * 0.3;
-                    const trend = 1 + (365 - i) / 365 * 0.15;
+                    const baseValue = 2000000;
+                    const variance = 0.9 + Math.random() * 0.2;
+                    const trend = 1 + (365 - i) / 365 * 0.3; // 30% YoY growth
                     state.activeAddrHistory.push({ date, value: baseValue * variance * trend });
                 }
                 
