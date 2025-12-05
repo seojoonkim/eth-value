@@ -9450,26 +9450,6 @@
                     </div>
                 </div>
 
-                <!-- 14. Eco Active Addresses -->
-                <div class="metric-card" data-metric="activeAddr">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Eco Active Addresses</h4>
-                            <div class="metric-value-large" id="active-addr-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="30">30D</button>
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab active" data-period="365">1Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="active-addr-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>ETH + L2 · Growthepie</span>
-                        <span class="change" id="active-addr-change">--</span>
-                    </div>
-                </div>
-
                 <!-- 15. NVT Ratio -->
                 <div class="metric-card" data-metric="nvt">
                     <div class="metric-header">
@@ -16448,17 +16428,14 @@
             const historyByDate = new Map();
             
             try {
-                // Growthepie fundamentals API (90일)
-                console.log('   Fetching Eco Active Addresses from Growthepie...');
-                const response = await fetch('https://api.growthepie.com/v1/fundamentals.json');
+                // Growthepie export API (전체 히스토리)
+                console.log('   Fetching Eco Active Addresses from Growthepie (full history)...');
+                const response = await fetch('https://api.growthepie.com/v1/export/daa.json');
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // DAA 데이터만 필터링
-                    const daaData = data.filter(d => d.metric_key === 'daa');
-                    
-                    // 날짜별로 합산
-                    for (const item of daaData) {
+                    // 날짜별로 합산 (모든 체인)
+                    for (const item of data) {
                         if (!item.date || !item.value) continue;
                         
                         const existing = historyByDate.get(item.date) || { total: 0, chains: 0 };
@@ -16469,7 +16446,6 @@
                     
                     if (historyByDate.size > 0) {
                         dataSource = 'growthepie';
-                        // 최근 값
                         const dates = Array.from(historyByDate.keys()).sort();
                         const latestDate = dates[dates.length - 1];
                         ecosystemDAA = historyByDate.get(latestDate).total;
@@ -16492,26 +16468,64 @@
             if (addrEl) addrEl.textContent = fmt.num(state.activeAddresses);
             
             // Build history from API data
-            state.activeAddrHistory = [];
+            let fullHistory = [];
             if (historyByDate.size > 0) {
                 const dates = Array.from(historyByDate.keys()).sort();
                 for (const date of dates) {
-                    state.activeAddrHistory.push({
+                    fullHistory.push({
                         date: new Date(date),
+                        dateStr: date,
                         value: historyByDate.get(date).total
                     });
                 }
                 
-                if (state.activeAddrHistory.length > 1) {
-                    const first = state.activeAddrHistory[0].value;
-                    const last = state.activeAddrHistory[state.activeAddrHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('active-addr-change');
-                    if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' YoY';
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                // YoY 계산: 데이터 마지막 날짜 기준 7일 평균 vs 1년 전 7일 평균
+                const latestDate = fullHistory[fullHistory.length - 1].date;
+                const oneYearAgo = new Date(latestDate.getTime() - 365 * 24 * 60 * 60 * 1000);
+                const oneYearAgoStr = oneYearAgo.toISOString().split('T')[0];
+                
+                // 1년 전 데이터 찾기 (±7일 범위)
+                const yearAgoData = fullHistory.filter(d => {
+                    const diff = Math.abs(new Date(d.dateStr) - oneYearAgo) / (24 * 60 * 60 * 1000);
+                    return diff <= 7;
+                });
+                
+                // 최근 7일 데이터
+                const recentData = fullHistory.slice(-7);
+                
+                if (yearAgoData.length > 0 && recentData.length > 0) {
+                    const recentAvg = recentData.reduce((sum, d) => sum + d.value, 0) / recentData.length;
+                    const yearAgoAvg = yearAgoData.reduce((sum, d) => sum + d.value, 0) / yearAgoData.length;
+                    
+                    if (yearAgoAvg > 0) {
+                        const change = ((recentAvg - yearAgoAvg) / yearAgoAvg) * 100;
+                        const changeEl = document.getElementById('active-addr-change');
+                        if (changeEl) {
+                            changeEl.textContent = fmt.pct(change) + ' YoY';
+                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                        }
+                        console.log(`   YoY: recent=${fmt.num(recentAvg)}, yearAgo=${fmt.num(yearAgoAvg)}, change=${change.toFixed(1)}%`);
+                    }
+                } else {
+                    // 1년 데이터가 없으면 전체 기간 변화율
+                    const first = fullHistory[0]?.value || 0;
+                    const last = fullHistory[fullHistory.length - 1]?.value || 0;
+                    if (first > 0) {
+                        const change = ((last - first) / first) * 100;
+                        const changeEl = document.getElementById('active-addr-change');
+                        if (changeEl) {
+                            changeEl.textContent = fmt.pct(change) + ` (${fullHistory.length}D)`;
+                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                        }
                     }
                 }
+                
+                // 차트용: 데이터 마지막 날짜 기준 365일만 필터링
+                const chartCutoff = new Date(latestDate.getTime() - 365 * 24 * 60 * 60 * 1000);
+                state.activeAddrHistory = fullHistory.filter(d => d.date >= chartCutoff);
+                
+                console.log(`   Chart: ${state.activeAddrHistory.length} days (filtered from ${fullHistory.length})`);
+                console.log(`   Data range: ${fullHistory[0]?.dateStr} ~ ${fullHistory[fullHistory.length-1]?.dateStr}`);
                 
                 updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#a855f7', 'activeAddr');
             } else {
