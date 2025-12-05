@@ -461,18 +461,31 @@
                 let data;
                 
                 if (ds.aggregate) {
-                    // For L2 TVL - aggregate by date, get all data
-                    const { data: rawData, error } = await supabase
-                        .from(ds.table)
-                        .select(`${ds.dateField}, ${ds.valueField}`)
-                        .order(ds.dateField, { ascending: true })
-                        .limit(100000);
+                    // For L2 TVL - aggregate by date
+                    // Fetch in chunks to get all data
+                    let allData = [];
+                    let offset = 0;
+                    const chunkSize = 1000;
                     
-                    if (error) throw error;
+                    while (true) {
+                        const { data: chunk, error } = await supabase
+                            .from(ds.table)
+                            .select(`${ds.dateField}, ${ds.valueField}`)
+                            .order(ds.dateField, { ascending: true })
+                            .range(offset, offset + chunkSize - 1);
+                        
+                        if (error) throw error;
+                        if (!chunk || chunk.length === 0) break;
+                        
+                        allData = allData.concat(chunk);
+                        offset += chunkSize;
+                        
+                        if (chunk.length < chunkSize) break; // No more data
+                    }
                     
                     // Aggregate by date
                     const dateMap = new Map();
-                    rawData.forEach(row => {
+                    allData.forEach(row => {
                         const date = row[ds.dateField];
                         const val = parseFloat(row[ds.valueField]) || 0;
                         dateMap.set(date, (dateMap.get(date) || 0) + val);
@@ -483,15 +496,28 @@
                         .sort((a, b) => a[ds.dateField].localeCompare(b[ds.dateField]));
                     
                 } else {
-                    // Normal fetch with high limit to get ALL data
-                    const { data: rawData, error } = await supabase
-                        .from(ds.table)
-                        .select(`${ds.dateField}, ${ds.valueField}`)
-                        .order(ds.dateField, { ascending: true })
-                        .limit(5000);
+                    // Fetch in chunks to get ALL data (bypass 1000 limit)
+                    let allData = [];
+                    let offset = 0;
+                    const chunkSize = 1000;
                     
-                    if (error) throw error;
-                    data = rawData;
+                    while (true) {
+                        const { data: chunk, error } = await supabase
+                            .from(ds.table)
+                            .select(`${ds.dateField}, ${ds.valueField}`)
+                            .order(ds.dateField, { ascending: true })
+                            .range(offset, offset + chunkSize - 1);
+                        
+                        if (error) throw error;
+                        if (!chunk || chunk.length === 0) break;
+                        
+                        allData = allData.concat(chunk);
+                        offset += chunkSize;
+                        
+                        if (chunk.length < chunkSize) break; // No more data
+                    }
+                    
+                    data = allData;
                 }
                 
                 loadingEl.style.display = 'none';
