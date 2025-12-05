@@ -14553,6 +14553,153 @@
             document.getElementById('update-time').textContent = new Date().toLocaleTimeString();
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // SUPABASE HISTORICAL DATA LOADING
+        // 모든 미니차트 데이터를 한 번에 로딩
+        // ═══════════════════════════════════════════════════════════════════
+        
+        // TODO: 실제 Supabase URL과 anon key로 교체하세요
+        // Supabase Dashboard > Settings > API에서 확인 가능
+        const SUPABASE_CONFIG = {
+            url: 'https://YOUR_PROJECT_ID.supabase.co',  // 여기에 실제 URL 입력
+            anonKey: 'YOUR_ANON_KEY'  // 여기에 실제 anon key 입력
+        };
+        
+        // Supabase에서 historical 데이터 로딩
+        async function loadHistoricalFromSupabase() {
+            // Supabase가 설정되지 않으면 스킵
+            if (SUPABASE_CONFIG.url.includes('YOUR_PROJECT_ID') || SUPABASE_CONFIG.anonKey === 'YOUR_ANON_KEY') {
+                console.log('📦 Supabase not configured - using external APIs');
+                return false;
+            }
+            
+            console.log('📦 Loading historical data from Supabase...');
+            const startTime = performance.now();
+            
+            try {
+                const baseUrl = SUPABASE_CONFIG.url + '/rest/v1';
+                const headers = {
+                    'apikey': SUPABASE_CONFIG.anonKey,
+                    'Authorization': 'Bearer ' + SUPABASE_CONFIG.anonKey
+                };
+                
+                // 3년치 데이터 요청 (1095일)
+                const limit = 1100;
+                
+                // 모든 테이블 병렬 로딩
+                const [priceRes, tvlRes, stakingRes, gasRes, activeRes, supplyRes, fgRes, feesRes] = await Promise.allSettled([
+                    fetch(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`, { headers }),
+                    fetch(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`, { headers }),
+                    fetch(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`, { headers }),
+                    fetch(`${baseUrl}/historical_gas_burn?select=date,avg_gas_price_gwei,eth_burnt,transaction_count&order=date.desc&limit=${limit}`, { headers }),
+                    fetch(`${baseUrl}/historical_active_addresses?select=date,active_addresses&order=date.desc&limit=${limit}`, { headers }),
+                    fetch(`${baseUrl}/historical_eth_supply?select=date,eth_supply,eth2_staking,burnt_fees&order=date.desc&limit=${limit}`, { headers }),
+                    fetch(`${baseUrl}/historical_fear_greed?select=date,value,classification&order=date.desc&limit=${limit}`, { headers }),
+                    fetch(`${baseUrl}/historical_protocol_fees?select=date,fees&order=date.desc&limit=${limit}`, { headers })
+                ]);
+                
+                // Parse results
+                const parseResult = async (result, name) => {
+                    if (result.status === 'fulfilled' && result.value.ok) {
+                        const data = await result.value.json();
+                        console.log(`   ✓ ${name}: ${data.length} records`);
+                        return data;
+                    }
+                    console.log(`   ✗ ${name}: failed`);
+                    return [];
+                };
+                
+                const priceData = await parseResult(priceRes, 'Price');
+                const tvlData = await parseResult(tvlRes, 'TVL');
+                const stakingData = await parseResult(stakingRes, 'Staking');
+                const gasData = await parseResult(gasRes, 'Gas/Burn');
+                const activeData = await parseResult(activeRes, 'Active Addresses');
+                const supplyData = await parseResult(supplyRes, 'ETH Supply');
+                const fgData = await parseResult(fgRes, 'Fear & Greed');
+                const feesData = await parseResult(feesRes, 'Protocol Fees');
+                
+                // Store in state for charts to use
+                if (priceData.length > 0) {
+                    state.supabasePriceHistory = priceData.map(d => ({
+                        date: new Date(d.date),
+                        value: parseFloat(d.close),
+                        volume: parseFloat(d.volume || 0)
+                    })).reverse();
+                }
+                
+                if (tvlData.length > 0) {
+                    state.supabaseTvlHistory = tvlData.map(d => ({
+                        date: new Date(d.date),
+                        value: parseFloat(d.tvl)
+                    })).reverse();
+                }
+                
+                if (stakingData.length > 0) {
+                    state.supabaseStakingHistory = stakingData.map(d => ({
+                        date: new Date(d.date),
+                        value: parseFloat(d.total_staked_eth || 0),
+                        apr: parseFloat(d.avg_apr || 0),
+                        validators: parseInt(d.total_validators || 0)
+                    })).reverse();
+                }
+                
+                if (gasData.length > 0) {
+                    state.supabaseGasHistory = gasData.map(d => ({
+                        date: new Date(d.date),
+                        gasPrice: parseFloat(d.avg_gas_price_gwei || 0),
+                        burnt: parseFloat(d.eth_burnt || 0),
+                        txCount: parseInt(d.transaction_count || 0)
+                    })).reverse();
+                }
+                
+                if (activeData.length > 0) {
+                    state.supabaseActiveHistory = activeData.map(d => ({
+                        date: new Date(d.date),
+                        value: parseInt(d.active_addresses || 0)
+                    })).reverse();
+                }
+                
+                if (supplyData.length > 0) {
+                    state.supabaseSupplyHistory = supplyData.map(d => ({
+                        date: new Date(d.date),
+                        supply: parseFloat(d.eth_supply || 0),
+                        staked: parseFloat(d.eth2_staking || 0),
+                        burnt: parseFloat(d.burnt_fees || 0)
+                    })).reverse();
+                    
+                    // Update current values from latest
+                    const latest = supplyData[0];
+                    if (latest) {
+                        state.circulatingSupply = parseFloat(latest.eth_supply) || 120000000;
+                        state.ethSupply = state.circulatingSupply;
+                        state.eth2Staking = parseFloat(latest.eth2_staking) || 34000000;
+                        state.burntFees = parseFloat(latest.burnt_fees) || 4500000;
+                    }
+                }
+                
+                if (fgData.length > 0) {
+                    state.supabaseFearGreedHistory = fgData.map(d => ({
+                        date: new Date(d.date),
+                        value: parseInt(d.value || 50),
+                        classification: d.classification || 'Neutral'
+                    })).reverse();
+                }
+                
+                if (feesData.length > 0) {
+                    state.supabaseFeesHistory = feesData.map(d => ({
+                        date: new Date(d.date),
+                        value: parseFloat(d.fees || 0)
+                    })).reverse();
+                }
+                
+                console.log(`📦 Supabase loading complete in ${(performance.now() - startTime).toFixed(0)}ms`);
+                return true;
+            } catch (e) {
+                console.error('Supabase loading error:', e);
+                return false;
+            }
+        }
+
         // Fetch functions
         
         // Binance API - 빠른 가격 데이터 소스
@@ -15068,7 +15215,32 @@
         // Fetch Fear & Greed Index from Alternative.me
         async function fetchFearGreed() {
             try {
-                // console.log('   Fetching Fear & Greed Index...');
+                // Supabase 데이터가 있으면 우선 사용
+                if (state.supabaseFearGreedHistory && state.supabaseFearGreedHistory.length > 10) {
+                    console.log('   Using Supabase Fear & Greed data');
+                    state.fgHistory = state.supabaseFearGreedHistory;
+                    
+                    // Current value (latest)
+                    const current = state.supabaseFearGreedHistory[state.supabaseFearGreedHistory.length - 1];
+                    state.fearGreed = current.value;
+                    state.fearGreedLabel = current.classification;
+                    
+                    // Update UI
+                    const fgEl = document.getElementById('fear-greed');
+                    if (fgEl) fgEl.textContent = current.value;
+                    
+                    const labelEl = document.getElementById('fg-label');
+                    if (labelEl) {
+                        labelEl.textContent = current.classification;
+                        labelEl.className = 'change ' + (current.value <= 45 ? 'down' : current.value >= 55 ? 'up' : '');
+                    }
+                    
+                    updateFearGreedChart();
+                    return;
+                }
+                
+                // Fallback: Alternative.me API
+                // console.log('   Fetching Fear & Greed Index from API...');
                 const res = await fetch('https://api.alternative.me/fng/?limit=365');
                 
                 if (!res.ok) {
@@ -15095,7 +15267,6 @@
                     const fgEl = document.getElementById('fear-greed');
                     if (fgEl) {
                         fgEl.textContent = currentValue;
-                        // Keep number black, label shows sentiment
                     }
                     
                     const labelEl = document.getElementById('fg-label');
@@ -15715,6 +15886,34 @@
 
         async function fetchStaking() {
             try {
+                // Supabase 데이터가 있으면 우선 사용
+                if (state.supabaseStakingHistory && state.supabaseStakingHistory.length > 10) {
+                    console.log('   Using Supabase Staking data');
+                    const latest = state.supabaseStakingHistory[state.supabaseStakingHistory.length - 1];
+                    state.stakedEth = latest.value || 34000000;
+                    state.stakingHistory = state.supabaseStakingHistory;
+                    
+                    document.getElementById('staked-value').textContent = fmt.num(state.stakedEth) + ' ETH';
+                    if (state.circulatingSupply > 0) {
+                        document.getElementById('staking-rate').textContent = (state.stakedEth / state.circulatingSupply * 100).toFixed(1) + '%';
+                    }
+                    
+                    updateMetricChart('staking-chart', stakingChart, state.stakingHistory, '#6366f1', 'staking');
+                    
+                    // Calculate YoY change
+                    if (state.stakingHistory.length > 1) {
+                        const first = state.stakingHistory[0].value, last = state.stakingHistory[state.stakingHistory.length - 1].value;
+                        const change = ((last - first) / first) * 100;
+                        const changeEl = document.getElementById('staking-change');
+                        changeEl.textContent = fmt.pct(change) + ' YoY';
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
+                    
+                    updateSupplyDistributionChart();
+                    return;
+                }
+                
+                // Fallback: beaconcha.in API
                 const res = await fetch('https://beaconcha.in/api/v1/epoch/latest');
                 const data = await res.json();
                 if (data.status === 'OK') {
@@ -16216,6 +16415,34 @@
 
         // Active Addresses - from API or calculated
         async function calculateAndUpdateActiveAddr() {
+            // Supabase 데이터가 있으면 우선 사용
+            if (state.supabaseActiveHistory && state.supabaseActiveHistory.length > 10) {
+                console.log('   Using Supabase Active Addresses data');
+                state.activeAddrHistory = state.supabaseActiveHistory;
+                
+                const latest = state.supabaseActiveHistory[state.supabaseActiveHistory.length - 1];
+                state.activeAddresses = latest.value || 450000;
+                
+                const addrEl = document.getElementById('active-addr-value');
+                if (addrEl) addrEl.textContent = fmt.num(state.activeAddresses);
+                
+                // Calculate YoY change
+                if (state.activeAddrHistory.length > 1) {
+                    const first = state.activeAddrHistory[0].value;
+                    const last = state.activeAddrHistory[state.activeAddrHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const changeEl = document.getElementById('active-addr-change');
+                    if (changeEl) {
+                        changeEl.textContent = fmt.pct(change) + ' YoY';
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
+                }
+                
+                updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#a855f7', 'activeAddr');
+                return;
+            }
+            
+            // Fallback: API calls
             let activeAddresses = 0;
             let dataSource = 'fallback';
             
@@ -16603,6 +16830,12 @@
                     <span class="legend-item"><span class="legend-dot defi"></span>DeFi ${defiPct.toFixed(0)}%</span>
                     <span class="legend-item"><span class="legend-dot staking"></span>Staking ${stakedPct.toFixed(0)}%</span>
                 `;
+            }
+            
+            // Update circ-supply display with fallback
+            const circSupplyEl = document.getElementById('circ-supply');
+            if (circSupplyEl && (circSupplyEl.textContent === '--' || !circSupplyEl.textContent.includes('ETH'))) {
+                circSupplyEl.textContent = fmt.num(totalSupply) + ' ETH';
             }
         }
 
@@ -18747,6 +18980,14 @@
             }, 12000);
             
             try {
+                // ═══════════════════════════════════════════════════════════════════
+                // STAGE 0: SUPABASE HISTORICAL DATA (가장 먼저 - 캐시된 데이터)
+                // ═══════════════════════════════════════════════════════════════════
+                
+                await loadHistoricalFromSupabase();
+                
+                console.log(`   Stage 0 (Supabase) completed in ${(performance.now() - startTime).toFixed(0)}ms`);
+                
                 // ═══════════════════════════════════════════════════════════════════
                 // STAGE 1: ALL PRIMARY API CALLS (완전 병렬)
                 // 모든 독립적인 API 호출을 동시에 시작

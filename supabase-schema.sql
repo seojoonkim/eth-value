@@ -123,7 +123,21 @@ CREATE TABLE IF NOT EXISTS historical_eth_supply (
 
 CREATE INDEX idx_eth_supply_date ON historical_eth_supply(date);
 
--- 9. 데이터 수집 상태 추적
+-- 9. Fear & Greed Index
+CREATE TABLE IF NOT EXISTS historical_fear_greed (
+    id BIGSERIAL PRIMARY KEY,
+    date DATE NOT NULL UNIQUE,
+    timestamp BIGINT,
+    value INTEGER,
+    classification VARCHAR(20),
+    source VARCHAR(50),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_fear_greed_date ON historical_fear_greed(date);
+
+-- 10. 데이터 수집 상태 추적
 CREATE TABLE IF NOT EXISTS data_collection_status (
     id BIGSERIAL PRIMARY KEY,
     dataset_name VARCHAR(50) NOT NULL UNIQUE,
@@ -147,7 +161,8 @@ INSERT INTO data_collection_status (dataset_name, status) VALUES
     ('staking_data', 'pending'),
     ('gas_burn', 'pending'),
     ('active_addresses', 'pending'),
-    ('eth_supply', 'pending')
+    ('eth_supply', 'pending'),
+    ('fear_greed', 'pending')
 ON CONFLICT (dataset_name) DO NOTHING;
 
 -- 10. 수집 로그
@@ -177,6 +192,7 @@ ALTER TABLE historical_staking ENABLE ROW LEVEL SECURITY;
 ALTER TABLE historical_gas_burn ENABLE ROW LEVEL SECURITY;
 ALTER TABLE historical_active_addresses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE historical_eth_supply ENABLE ROW LEVEL SECURITY;
+ALTER TABLE historical_fear_greed ENABLE ROW LEVEL SECURITY;
 ALTER TABLE data_collection_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE data_collection_logs ENABLE ROW LEVEL SECURITY;
 
@@ -189,6 +205,7 @@ CREATE POLICY "Public read staking" ON historical_staking FOR SELECT USING (true
 CREATE POLICY "Public read gas_burn" ON historical_gas_burn FOR SELECT USING (true);
 CREATE POLICY "Public read active_addresses" ON historical_active_addresses FOR SELECT USING (true);
 CREATE POLICY "Public read eth_supply" ON historical_eth_supply FOR SELECT USING (true);
+CREATE POLICY "Public read fear_greed" ON historical_fear_greed FOR SELECT USING (true);
 CREATE POLICY "Public read collection_status" ON data_collection_status FOR SELECT USING (true);
 CREATE POLICY "Public read collection_logs" ON data_collection_logs FOR SELECT USING (true);
 

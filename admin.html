@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHval Admin - Data Verification</title>
+    <title>ETHval Admin - Data Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <style>
         :root {
             --bg: #0a0a0f;
@@ -22,6 +21,7 @@
             --success: #22c55e;
             --warning: #f59e0b;
             --error: #ef4444;
+            --info: #3b82f6;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -31,7 +31,7 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 1600px; margin: 0 auto; }
+        .container { max-width: 1800px; margin: 0 auto; }
         .header {
             display: flex;
             justify-content: space-between;
@@ -85,30 +85,124 @@
         .connection-status.connected { border-color: var(--success); color: var(--success); }
         .connection-status.disconnected { border-color: var(--error); color: var(--error); }
 
-        /* Stats Summary */
-        .stats-summary {
+        /* Section Title */
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 32px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title:first-of-type { margin-top: 0; }
+
+        /* Overview Stats */
+        .overview-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
             margin-bottom: 24px;
         }
-        .stat-card {
+        .overview-stat {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 16px;
+            text-align: center;
         }
-        .stat-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .stat-card .value { font-size: 28px; font-weight: 700; }
-        .stat-card .value.success { color: var(--success); }
-        .stat-card .value.warning { color: var(--warning); }
-        .stat-card .value.error { color: var(--error); }
+        .overview-stat .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .overview-stat .value { font-size: 28px; font-weight: 700; }
+        .overview-stat .value.success { color: var(--success); }
+        .overview-stat .value.warning { color: var(--warning); }
+        .overview-stat .value.error { color: var(--error); }
+
+        /* Data Status Table */
+        .data-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table th {
+            background: var(--bg);
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: var(--bg-hover); }
+        .data-table .icon { font-size: 18px; margin-right: 8px; }
+        .data-table .name { font-weight: 600; }
+        .data-table .table-name { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 11px; 
+            color: var(--text-muted);
+            display: block;
+            margin-top: 2px;
+        }
+        .data-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-badge.success { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .status-badge.partial { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .status-badge.failed { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+        .status-badge.loading { background: rgba(139, 92, 246, 0.15); color: var(--primary); }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .progress-fill.success { background: var(--success); }
+        .progress-fill.partial { background: var(--warning); }
+        .progress-fill.low { background: var(--error); }
+        .progress-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
 
         /* Charts Grid */
         .charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 16px;
         }
         .chart-card {
             background: var(--bg-card);
@@ -117,58 +211,46 @@
             overflow: hidden;
         }
         .chart-header {
-            padding: 16px 20px;
+            padding: 14px 18px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .chart-header h3 {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .chart-header .icon { font-size: 18px; }
         .chart-meta {
             display: flex;
-            gap: 16px;
-            font-size: 12px;
+            gap: 12px;
+            font-size: 11px;
         }
         .chart-meta span { color: var(--text-muted); }
         .chart-meta .value { color: var(--text); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
         .chart-body {
-            padding: 16px;
-            height: 280px;
+            padding: 12px;
+            height: 200px;
             position: relative;
         }
         .chart-body canvas { width: 100% !important; height: 100% !important; }
         .chart-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            padding: 12px 20px;
+            gap: 8px;
+            padding: 10px 16px;
             background: var(--bg);
             border-top: 1px solid var(--border);
         }
         .chart-stat { text-align: center; }
-        .chart-stat .label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
-        .chart-stat .value { font-size: 14px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+        .chart-stat .label { font-size: 9px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; }
+        .chart-stat .value { font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
         .chart-stat .value.latest { color: var(--primary); }
         .chart-stat .value.min { color: var(--error); }
         .chart-stat .value.max { color: var(--success); }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .status-dot.success { background: var(--success); }
-        .status-dot.partial { background: var(--warning); }
-        .status-dot.failed { background: var(--error); }
-        .status-dot.pending { background: var(--text-muted); }
 
         .loading {
             display: flex;
@@ -176,6 +258,7 @@
             justify-content: center;
             height: 100%;
             color: var(--text-muted);
+            font-size: 13px;
         }
 
         /* Auth */
@@ -216,10 +299,21 @@
         }
         .auth-error { color: var(--error); font-size: 13px; margin-top: 12px; display: none; }
 
+        /* Source Badge */
+        .source-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .source-badge.real { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .source-badge.estimated { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
         @media (max-width: 768px) {
             .header { flex-direction: column; gap: 16px; align-items: flex-start; }
             .charts-grid { grid-template-columns: 1fr; }
-            .chart-stats { grid-template-columns: repeat(2, 1fr); }
+            .data-table { font-size: 12px; }
+            .data-table th, .data-table td { padding: 10px 8px; }
         }
     </style>
 </head>
@@ -237,25 +331,68 @@
 
     <div class="container">
         <div class="header">
-            <h1>🛠️ ETHval Admin <span class="badge">DATA VERIFICATION</span></h1>
+            <h1>📊 ETHval Admin <span class="badge">DATA DASHBOARD</span></h1>
             <div class="header-actions">
                 <div class="connection-status" id="connectionStatus">
                     <span style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
                     <span id="connectionText">Connecting...</span>
                 </div>
-                <button class="btn btn-secondary" onclick="loadAllCharts()">🔄 Refresh All</button>
-                <button class="btn btn-primary" onclick="openGitHubActions()">▶️ Run on GitHub</button>
+                <button class="btn btn-secondary" onclick="loadAllData()">🔄 Refresh All</button>
+                <button class="btn btn-primary" onclick="openGitHubActions()">▶️ Run Collector</button>
             </div>
         </div>
 
-        <div class="stats-summary">
-            <div class="stat-card"><div class="label">Total Datasets</div><div class="value">8</div></div>
-            <div class="stat-card"><div class="label">Success</div><div class="value success" id="successCount">-</div></div>
-            <div class="stat-card"><div class="label">Partial</div><div class="value warning" id="partialCount">-</div></div>
-            <div class="stat-card"><div class="label">Failed</div><div class="value error" id="failedCount">-</div></div>
-            <div class="stat-card"><div class="label">Last Run</div><div class="value" id="lastRun" style="font-size:16px;">-</div></div>
+        <!-- Overview Stats -->
+        <h2 class="section-title">📈 Overview</h2>
+        <div class="overview-stats">
+            <div class="overview-stat">
+                <div class="label">Total Datasets</div>
+                <div class="value" id="totalDatasets">9</div>
+            </div>
+            <div class="overview-stat">
+                <div class="label">✅ Complete (3Y+)</div>
+                <div class="value success" id="completeCount">-</div>
+            </div>
+            <div class="overview-stat">
+                <div class="label">⚠️ Partial</div>
+                <div class="value warning" id="partialCount">-</div>
+            </div>
+            <div class="overview-stat">
+                <div class="label">❌ Missing</div>
+                <div class="value error" id="missingCount">-</div>
+            </div>
+            <div class="overview-stat">
+                <div class="label">Total Records</div>
+                <div class="value" id="totalRecords">-</div>
+            </div>
+            <div class="overview-stat">
+                <div class="label">Last Updated</div>
+                <div class="value" id="lastUpdated" style="font-size:14px;">-</div>
+            </div>
         </div>
 
+        <!-- Data Status Table -->
+        <h2 class="section-title">🗂️ Data Status (Target: 1,095 days = 3 years)</h2>
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Dataset</th>
+                        <th>Records</th>
+                        <th>Date Range</th>
+                        <th>3Y Coverage</th>
+                        <th>Data Quality</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mini Charts -->
+        <h2 class="section-title">📉 Data Preview</h2>
         <div class="charts-grid" id="chartsGrid"></div>
     </div>
 
@@ -274,6 +411,14 @@
             document.getElementById('authOverlay').style.display = 'none';
         }
 
+        // TODO: Replace with your actual Supabase credentials
+        const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+
+        let supabase = null;
+        const charts = {};
+        const TARGET_DAYS = 1095; // 3 years
+
         const DATASETS = {
             'eth_price': { 
                 name: 'ETH Price', 
@@ -282,7 +427,8 @@
                 valueField: 'close', 
                 dateField: 'date', 
                 color: '#8b5cf6',
-                format: 'price'
+                format: 'price',
+                usedIn: ['Price Chart', 'All Valuations']
             },
             'ethereum_tvl': { 
                 name: 'Ethereum TVL', 
@@ -291,17 +437,19 @@
                 valueField: 'tvl', 
                 dateField: 'date', 
                 color: '#22c55e',
-                format: 'tvl'
+                format: 'tvl',
+                usedIn: ['TVL Chart', 'MC/TVL', 'TVL Multiple']
             },
             'l2_tvl': { 
-                name: 'L2 TVL (All Chains)', 
+                name: 'L2 TVL', 
                 icon: '🔗', 
                 table: 'historical_l2_tvl', 
                 valueField: 'tvl', 
                 dateField: 'date', 
                 color: '#3b82f6',
                 format: 'tvl',
-                aggregate: true
+                aggregate: true,
+                usedIn: ['L2 Chart', 'L2 Ecosystem']
             },
             'protocol_fees': { 
                 name: 'Protocol Fees', 
@@ -310,7 +458,8 @@
                 valueField: 'fees', 
                 dateField: 'date', 
                 color: '#f59e0b',
-                format: 'fees'
+                format: 'fees',
+                usedIn: ['Revenue Chart', 'P/S', 'DCF']
             },
             'staking_data': { 
                 name: 'Staking Data', 
@@ -319,16 +468,18 @@
                 valueField: 'total_staked_eth', 
                 dateField: 'date', 
                 color: '#ef4444',
-                format: 'eth'
+                format: 'eth',
+                usedIn: ['Staking Chart', 'Supply Distribution']
             },
             'gas_burn': { 
-                name: 'Gas Price', 
+                name: 'Gas & Burn', 
                 icon: '🔥', 
                 table: 'historical_gas_burn', 
                 valueField: 'avg_gas_price_gwei', 
                 dateField: 'date', 
                 color: '#f97316',
-                format: 'gas'
+                format: 'gas',
+                usedIn: ['Gas Chart', 'Burn Chart']
             },
             'active_addresses': { 
                 name: 'Active Addresses', 
@@ -337,7 +488,8 @@
                 valueField: 'active_addresses', 
                 dateField: 'date', 
                 color: '#06b6d4',
-                format: 'number'
+                format: 'number',
+                usedIn: ['DAU Chart', 'Metcalfe']
             },
             'eth_supply': { 
                 name: 'ETH Supply', 
@@ -346,122 +498,129 @@
                 valueField: 'eth_supply', 
                 dateField: 'date', 
                 color: '#a855f7',
-                format: 'eth'
+                format: 'eth',
+                usedIn: ['Supply Chart', 'Net Issuance']
+            },
+            'fear_greed': { 
+                name: 'Fear & Greed', 
+                icon: '😱', 
+                table: 'historical_fear_greed', 
+                valueField: 'value', 
+                dateField: 'date', 
+                color: '#eab308',
+                format: 'index',
+                usedIn: ['Fear & Greed Chart']
             }
         };
 
-        let supabase = null;
-        const charts = {};
-        const SUPABASE_URL = 'https://rliwxedrifwxbudcutqs.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsaXd4ZWRyaWZ3eGJ1ZGN1dHFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ0MzU2MDQsImV4cCI6MjA4MDAxMTYwNH0.jX_tAdAhXEcmHdtf56-8La4SpqbKEM3_hIBBwhldD6Y';
-        const DEFAULT_GITHUB_REPO = 'seojoonkim/eth-value';
-
         function openGitHubActions() {
-            window.open(`https://github.com/${DEFAULT_GITHUB_REPO}/actions`, '_blank');
+            window.open('https://github.com/YOUR_USERNAME/ethval/actions', '_blank');
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            createChartCards();
-            await initSupabase();
-        });
-
-        function createChartCards() {
-            const grid = document.getElementById('chartsGrid');
-            grid.innerHTML = Object.entries(DATASETS).map(([key, ds]) => `
-                <div class="chart-card" id="card-${key}">
-                    <div class="chart-header">
-                        <h3><span class="icon">${ds.icon}</span> ${ds.name}</h3>
-                        <div class="chart-meta">
-                            <span>Records: <span class="value" id="records-${key}">-</span></span>
-                            <span>Range: <span class="value" id="range-${key}">-</span></span>
-                            <span class="status-dot pending" id="status-${key}"></span>
-                        </div>
-                    </div>
-                    <div class="chart-body">
-                        <canvas id="chart-${key}"></canvas>
-                        <div class="loading" id="loading-${key}">Loading...</div>
-                    </div>
-                    <div class="chart-stats">
-                        <div class="chart-stat"><div class="label">Latest</div><div class="value latest" id="latest-${key}">-</div></div>
-                        <div class="chart-stat"><div class="label">Min</div><div class="value min" id="min-${key}">-</div></div>
-                        <div class="chart-stat"><div class="label">Max</div><div class="value max" id="max-${key}">-</div></div>
-                        <div class="chart-stat"><div class="label">Average</div><div class="value" id="avg-${key}">-</div></div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function initSupabase() {
+        async function init() {
             try {
-                document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionText').textContent = 'Connecting...';
-                
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                const { error } = await supabase.from('data_collection_status').select('count').limit(1);
+                
+                // Test connection
+                const { data, error } = await supabase.from('data_collection_status').select('*').limit(1);
+                
                 if (error) throw error;
                 
                 document.getElementById('connectionStatus').className = 'connection-status connected';
                 document.getElementById('connectionText').textContent = 'Connected';
                 
-                await loadStatus();
-                await loadAllCharts();
+                await loadAllData();
             } catch (e) {
+                console.error('Connection failed:', e);
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionText').textContent = 'Failed';
-                console.error(e);
+                document.getElementById('connectionText').textContent = 'Disconnected';
             }
         }
 
-        async function loadStatus() {
-            try {
-                const { data, error } = await supabase.from('data_collection_status').select('*');
-                if (error) throw error;
-                
-                let success = 0, partial = 0, failed = 0, lastRun = null;
-                const statusMap = {};
-                
-                data.forEach(s => {
-                    statusMap[s.dataset_name] = s;
-                    if (s.status === 'success') success++;
-                    else if (s.status === 'partial') partial++;
-                    else if (s.status === 'failed') failed++;
-                    if (s.last_run_at && (!lastRun || new Date(s.last_run_at) > new Date(lastRun))) {
-                        lastRun = s.last_run_at;
-                    }
-                    
-                    // Update status dot
-                    const dot = document.getElementById(`status-${s.dataset_name}`);
-                    if (dot) {
-                        dot.className = `status-dot ${s.status || 'pending'}`;
-                    }
-                });
-                
-                document.getElementById('successCount').textContent = success;
-                document.getElementById('partialCount').textContent = partial;
-                document.getElementById('failedCount').textContent = failed;
-                document.getElementById('lastRun').textContent = lastRun ? formatTime(lastRun) : 'Never';
-                
-            } catch (e) { console.error(e); }
+        async function loadAllData() {
+            // Build table and charts
+            buildDataTable();
+            buildCharts();
+            
+            // Load data for each dataset
+            const results = await Promise.all(
+                Object.entries(DATASETS).map(([key, ds]) => loadDataset(key, ds))
+            );
+            
+            // Update overview stats
+            updateOverviewStats(results);
         }
 
-        async function loadAllCharts() {
-            // 병렬로 모든 차트 로드 (훨씬 빠름!)
-            await Promise.all(Object.keys(DATASETS).map(key => loadChartData(key)));
+        function buildDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = Object.entries(DATASETS).map(([key, ds]) => `
+                <tr id="row-${key}">
+                    <td>
+                        <span class="icon">${ds.icon}</span>
+                        <span class="name">${ds.name}</span>
+                        <span class="table-name">${ds.table}</span>
+                    </td>
+                    <td class="mono" id="records-${key}">
+                        <span class="loading">Loading...</span>
+                    </td>
+                    <td class="mono" id="range-${key}">-</td>
+                    <td id="coverage-${key}">
+                        <div class="progress-bar"><div class="progress-fill" id="progress-${key}" style="width:0%"></div></div>
+                        <div class="progress-text"><span id="pct-${key}">0%</span><span id="days-${key}">0 / ${TARGET_DAYS} days</span></div>
+                    </td>
+                    <td id="quality-${key}">-</td>
+                    <td id="status-${key}">
+                        <span class="status-badge loading"><span class="status-dot"></span>Loading</span>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        async function loadChartData(key) {
-            const ds = DATASETS[key];
-            const loadingEl = document.getElementById(`loading-${key}`);
+        function buildCharts() {
+            const grid = document.getElementById('chartsGrid');
+            grid.innerHTML = Object.entries(DATASETS).map(([key, ds]) => `
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><span>${ds.icon}</span> ${ds.name}</h3>
+                        <div class="chart-meta">
+                            <span>Records: <span class="value" id="chart-records-${key}">-</span></span>
+                            <span>Range: <span class="value" id="chart-range-${key}">-</span></span>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <div class="loading" id="loading-${key}">Loading data...</div>
+                        <canvas id="chart-${key}" style="display:none;"></canvas>
+                    </div>
+                    <div class="chart-stats">
+                        <div class="chart-stat">
+                            <div class="label">Latest</div>
+                            <div class="value latest" id="latest-${key}">-</div>
+                        </div>
+                        <div class="chart-stat">
+                            <div class="label">Min</div>
+                            <div class="value min" id="min-${key}">-</div>
+                        </div>
+                        <div class="chart-stat">
+                            <div class="label">Max</div>
+                            <div class="value max" id="max-${key}">-</div>
+                        </div>
+                        <div class="chart-stat">
+                            <div class="label">Avg</div>
+                            <div class="value" id="avg-${key}">-</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadDataset(key, ds) {
+            const result = { key, records: 0, days: 0, realDataPct: 0, status: 'loading' };
             
             try {
-                loadingEl.style.display = 'flex';
-                loadingEl.textContent = 'Loading...';
-                
-                let data;
+                let data = [];
                 
                 if (ds.aggregate) {
-                    // For L2 TVL - aggregate by date
-                    // Fetch in chunks to get all data
+                    // L2 TVL - aggregate by date
                     let allData = [];
                     let offset = 0;
                     const chunkSize = 1000;
@@ -478,8 +637,7 @@
                         
                         allData = allData.concat(chunk);
                         offset += chunkSize;
-                        
-                        if (chunk.length < chunkSize) break; // No more data
+                        if (chunk.length < chunkSize) break;
                     }
                     
                     // Aggregate by date
@@ -495,15 +653,16 @@
                         .sort((a, b) => a[ds.dateField].localeCompare(b[ds.dateField]));
                     
                 } else {
-                    // Fetch in chunks to get ALL data (bypass 1000 limit)
+                    // Normal table - fetch all with source
                     let allData = [];
                     let offset = 0;
                     const chunkSize = 1000;
+                    const selectFields = `${ds.dateField}, ${ds.valueField}, source`;
                     
                     while (true) {
                         const { data: chunk, error } = await supabase
                             .from(ds.table)
-                            .select(`${ds.dateField}, ${ds.valueField}`)
+                            .select(selectFields)
                             .order(ds.dateField, { ascending: true })
                             .range(offset, offset + chunkSize - 1);
                         
@@ -512,65 +671,141 @@
                         
                         allData = allData.concat(chunk);
                         offset += chunkSize;
-                        
-                        if (chunk.length < chunkSize) break; // No more data
+                        if (chunk.length < chunkSize) break;
                     }
                     
                     data = allData;
                 }
                 
-                loadingEl.style.display = 'none';
+                // Update result
+                result.records = data.length;
                 
-                if (!data || data.length === 0) {
-                    document.getElementById(`records-${key}`).textContent = '0';
-                    document.getElementById(`range-${key}`).textContent = 'No data';
-                    return;
+                if (data.length === 0) {
+                    result.status = 'failed';
+                    updateTableRow(key, result, ds);
+                    return result;
                 }
                 
-                // Update stats
-                const values = data.map(d => parseFloat(d[ds.valueField]) || 0).filter(v => v > 0);
-                const minVal = Math.min(...values);
-                const maxVal = Math.max(...values);
-                const avgVal = values.reduce((a, b) => a + b, 0) / values.length;
-                const latestVal = values[values.length - 1];
+                // Calculate coverage
+                const firstDate = new Date(data[0][ds.dateField]);
+                const lastDate = new Date(data[data.length - 1][ds.dateField]);
+                const daysCovered = Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24));
+                result.days = daysCovered;
                 
-                document.getElementById(`records-${key}`).textContent = data.length.toLocaleString();
-                document.getElementById(`range-${key}`).textContent = 
-                    `${data[0][ds.dateField]} ~ ${data[data.length - 1][ds.dateField]}`;
+                // Calculate data quality (real vs estimated)
+                if (!ds.aggregate) {
+                    const realData = data.filter(d => d.source && !d.source.includes('estimated') && !d.source.includes('interpolated'));
+                    result.realDataPct = data.length > 0 ? Math.round((realData.length / data.length) * 100) : 0;
+                } else {
+                    result.realDataPct = 100; // Aggregated data is considered real
+                }
                 
-                document.getElementById(`latest-${key}`).textContent = formatValue(latestVal, ds.format);
-                document.getElementById(`min-${key}`).textContent = formatValue(minVal, ds.format);
-                document.getElementById(`max-${key}`).textContent = formatValue(maxVal, ds.format);
-                document.getElementById(`avg-${key}`).textContent = formatValue(avgVal, ds.format);
+                // Determine status
+                const coveragePct = (daysCovered / TARGET_DAYS) * 100;
+                if (coveragePct >= 95) {
+                    result.status = 'success';
+                } else if (coveragePct >= 50) {
+                    result.status = 'partial';
+                } else {
+                    result.status = 'failed';
+                }
                 
-                // Render chart
+                // Update table and chart
+                updateTableRow(key, result, ds, data);
                 renderChart(key, data, ds);
+                
+                return result;
                 
             } catch (e) {
                 console.error(`Failed to load ${key}:`, e);
-                loadingEl.textContent = 'Error loading data';
+                result.status = 'failed';
+                updateTableRow(key, result, ds);
+                return result;
             }
         }
 
-        function renderChart(key, data, ds) {
-            const ctx = document.getElementById(`chart-${key}`).getContext('2d');
+        function updateTableRow(key, result, ds, data = []) {
+            // Records
+            document.getElementById(`records-${key}`).innerHTML = result.records > 0 
+                ? `<span style="color:var(--success)">${result.records.toLocaleString()}</span>`
+                : `<span style="color:var(--error)">0</span>`;
             
-            if (charts[key]) {
-                charts[key].destroy();
+            // Date range
+            if (data.length > 0) {
+                const firstDate = data[0][ds.dateField];
+                const lastDate = data[data.length - 1][ds.dateField];
+                document.getElementById(`range-${key}`).textContent = `${firstDate} → ${lastDate}`;
+            } else {
+                document.getElementById(`range-${key}`).textContent = 'No data';
             }
             
-            // Sample data for performance (max 500 points)
-            const sampleRate = Math.max(1, Math.floor(data.length / 500));
+            // Coverage
+            const coveragePct = Math.min(100, Math.round((result.days / TARGET_DAYS) * 100));
+            const progressEl = document.getElementById(`progress-${key}`);
+            progressEl.style.width = `${coveragePct}%`;
+            progressEl.className = `progress-fill ${coveragePct >= 95 ? 'success' : coveragePct >= 50 ? 'partial' : 'low'}`;
+            document.getElementById(`pct-${key}`).textContent = `${coveragePct}%`;
+            document.getElementById(`days-${key}`).textContent = `${result.days} / ${TARGET_DAYS} days`;
+            
+            // Quality
+            const qualityEl = document.getElementById(`quality-${key}`);
+            if (result.realDataPct >= 80) {
+                qualityEl.innerHTML = `<span class="source-badge real">${result.realDataPct}% Real</span>`;
+            } else if (result.realDataPct > 0) {
+                qualityEl.innerHTML = `<span class="source-badge estimated">${result.realDataPct}% Real</span>`;
+            } else {
+                qualityEl.innerHTML = `<span style="color:var(--text-muted)">-</span>`;
+            }
+            
+            // Status
+            const statusMap = {
+                'success': { label: '✅ Complete', class: 'success' },
+                'partial': { label: '⚠️ Partial', class: 'partial' },
+                'failed': { label: '❌ Missing', class: 'failed' },
+                'loading': { label: '⏳ Loading', class: 'loading' }
+            };
+            const status = statusMap[result.status] || statusMap.loading;
+            document.getElementById(`status-${key}`).innerHTML = 
+                `<span class="status-badge ${status.class}"><span class="status-dot"></span>${status.label}</span>`;
+        }
+
+        function renderChart(key, data, ds) {
+            const loadingEl = document.getElementById(`loading-${key}`);
+            const canvasEl = document.getElementById(`chart-${key}`);
+            
+            loadingEl.style.display = 'none';
+            canvasEl.style.display = 'block';
+            
+            // Update chart meta
+            document.getElementById(`chart-records-${key}`).textContent = data.length.toLocaleString();
+            if (data.length > 0) {
+                document.getElementById(`chart-range-${key}`).textContent = 
+                    `${data[0][ds.dateField].slice(5)} → ${data[data.length - 1][ds.dateField].slice(5)}`;
+            }
+            
+            // Calculate stats
+            const values = data.map(d => parseFloat(d[ds.valueField]) || 0).filter(v => v > 0);
+            if (values.length > 0) {
+                document.getElementById(`latest-${key}`).textContent = formatValue(values[values.length - 1], ds.format);
+                document.getElementById(`min-${key}`).textContent = formatValue(Math.min(...values), ds.format);
+                document.getElementById(`max-${key}`).textContent = formatValue(Math.max(...values), ds.format);
+                document.getElementById(`avg-${key}`).textContent = formatValue(values.reduce((a,b) => a+b, 0) / values.length, ds.format);
+            }
+            
+            // Sample data for performance
+            const sampleRate = Math.max(1, Math.floor(data.length / 300));
             const sampled = data.filter((_, i) => i % sampleRate === 0);
             
-            charts[key] = new Chart(ctx, {
+            if (charts[key]) charts[key].destroy();
+            
+            charts[key] = new Chart(canvasEl.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: sampled.map(d => d[ds.dateField]),
                     datasets: [{
                         data: sampled.map(d => parseFloat(d[ds.valueField]) || 0),
                         borderColor: ds.color,
-                        backgroundColor: ds.color + '15',
+                        backgroundColor: ds.color + '20',
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0,
@@ -589,34 +824,36 @@
                             bodyColor: '#e5e5e5',
                             borderColor: '#2a2a3a',
                             borderWidth: 1,
-                            padding: 10,
+                            padding: 8,
                             displayColors: false,
-                            callbacks: {
-                                label: ctx => formatValue(ctx.raw, ds.format)
-                            }
+                            callbacks: { label: ctx => formatValue(ctx.raw, ds.format) }
                         }
                     },
                     scales: {
                         x: {
                             grid: { color: '#1a1a25' },
-                            ticks: { 
-                                color: '#666',
-                                maxTicksLimit: 6,
-                                maxRotation: 0,
-                                font: { size: 10 }
-                            }
+                            ticks: { color: '#666', maxTicksLimit: 5, maxRotation: 0, font: { size: 9 } }
                         },
                         y: {
                             grid: { color: '#1a1a25' },
-                            ticks: { 
-                                color: '#666',
-                                font: { size: 10 },
-                                callback: v => formatValueShort(v, ds.format)
-                            }
+                            ticks: { color: '#666', font: { size: 9 }, callback: v => formatShort(v, ds.format) }
                         }
                     }
                 }
             });
+        }
+
+        function updateOverviewStats(results) {
+            const complete = results.filter(r => r.status === 'success').length;
+            const partial = results.filter(r => r.status === 'partial').length;
+            const missing = results.filter(r => r.status === 'failed').length;
+            const totalRecords = results.reduce((sum, r) => sum + r.records, 0);
+            
+            document.getElementById('completeCount').textContent = complete;
+            document.getElementById('partialCount').textContent = partial;
+            document.getElementById('missingCount').textContent = missing;
+            document.getElementById('totalRecords').textContent = totalRecords.toLocaleString();
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
         }
 
         function formatValue(val, format) {
@@ -624,8 +861,7 @@
             const n = parseFloat(val);
             
             switch (format) {
-                case 'price':
-                    return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+                case 'price': return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
                 case 'tvl':
                 case 'fees':
                     if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
@@ -633,44 +869,31 @@
                     if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
                     return '$' + n.toLocaleString();
                 case 'eth':
-                    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B ETH';
-                    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M ETH';
-                    return n.toLocaleString() + ' ETH';
-                case 'gas':
-                    return n.toFixed(1) + ' Gwei';
+                    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+                    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+                    return n.toLocaleString();
+                case 'gas': return n.toFixed(1) + ' Gwei';
                 case 'number':
                     if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
                     if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
                     return n.toLocaleString();
-                default:
-                    return n.toLocaleString();
+                case 'index': return n.toFixed(0);
+                default: return n.toLocaleString();
             }
         }
 
-        function formatValueShort(val, format) {
+        function formatShort(val, format) {
             if (val === null || val === undefined || isNaN(val)) return '';
             const n = parseFloat(val);
-            
             if (n >= 1e12) return (n / 1e12).toFixed(1) + 'T';
             if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
             if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
             if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
-            
-            if (format === 'price' || format === 'tvl' || format === 'fees') {
-                return '$' + n.toFixed(0);
-            }
-            if (format === 'gas') return n.toFixed(0);
-            
             return n.toFixed(0);
         }
 
-        function formatTime(dateStr) {
-            const diff = (new Date() - new Date(dateStr)) / 1000;
-            if (diff < 60) return 'Just now';
-            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-            return `${Math.floor(diff / 86400)}d ago`;
-        }
+        // Initialize
+        init();
     </script>
 </body>
 </html>

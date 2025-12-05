@@ -1224,6 +1224,72 @@ async function collectETHSupply() {
     }
 }
 
+/**
+ * 9. Fear & Greed Index (Crypto Market)
+ */
+async function collectFearGreed() {
+    const dataset = 'fear_greed';
+    log('info', dataset, 'Starting collection...');
+    
+    try {
+        const records = [];
+        
+        // Source: Alternative.me Fear & Greed API (무료, 전체 히스토리)
+        try {
+            log('info', dataset, 'Fetching Fear & Greed from Alternative.me...');
+            
+            // 최대 데이터 요청
+            const url = `https://api.alternative.me/fng/?limit=${CONFIG.DAYS_TO_FETCH}&format=json`;
+            const data = await fetch(url);
+            
+            if (data && data.data && data.data.length > 0) {
+                for (const d of data.data) {
+                    const timestamp = parseInt(d.timestamp);
+                    const date = new Date(timestamp * 1000);
+                    
+                    records.push({
+                        date: formatDate(date),
+                        timestamp: timestamp,
+                        value: parseInt(d.value),
+                        classification: d.value_classification,
+                        source: 'alternative_me'
+                    });
+                }
+                log('info', dataset, `Got ${records.length} days from Alternative.me`);
+            }
+        } catch (e) {
+            log('warning', dataset, 'Alternative.me API failed: ' + e.message);
+        }
+        
+        if (records.length === 0) {
+            throw new Error('Failed to collect Fear & Greed data');
+        }
+        
+        // Sort by date
+        records.sort((a, b) => a.date.localeCompare(b.date));
+        
+        // Batch upsert
+        for (let i = 0; i < records.length; i += 500) {
+            const batch = records.slice(i, i + 500);
+            await supabase.upsert('historical_fear_greed', batch);
+            log('info', dataset, `Saved ${Math.min(i + 500, records.length)}/${records.length} records`);
+        }
+        
+        await updateStatus(dataset, 'success', {
+            record_count: records.length,
+            date_from: records[0]?.date,
+            date_to: records[records.length - 1]?.date
+        });
+        
+        log('success', dataset, `Completed: ${records.length} records`);
+        return true;
+    } catch (error) {
+        log('error', dataset, error.message);
+        await updateStatus(dataset, 'failed', { last_error: error.message });
+        return false;
+    }
+}
+
 // ============================================
 // Main Execution
 // ============================================
@@ -1245,6 +1311,7 @@ async function main() {
         { name: 'Gas & Burn', fn: collectGasBurn },
         { name: 'Active Addresses', fn: collectActiveAddresses },
         { name: 'ETH Supply', fn: collectETHSupply },
+        { name: 'Fear & Greed', fn: collectFearGreed },
     ];
     
     let successCount = 0;
