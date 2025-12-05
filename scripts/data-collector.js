@@ -441,7 +441,10 @@ async function collectStakingData() {
         if (records.length === 0) {
             log('info', dataset, 'Generating historical estimates from milestones...');
             
-            // Known staking milestones (approximate)
+            const today = new Date();
+            const todayStr = formatDate(today);
+            
+            // Known staking milestones (approximate) - extended to current
             const milestones = [
                 { date: '2020-12-01', staked: 524288, validators: 16384 },      // Genesis
                 { date: '2021-06-01', staked: 5000000, validators: 156250 },
@@ -450,7 +453,8 @@ async function collectStakingData() {
                 { date: '2023-04-12', staked: 18000000, validators: 562500 },   // Shapella
                 { date: '2023-12-01', staked: 28000000, validators: 875000 },
                 { date: '2024-06-01', staked: 32000000, validators: 1000000 },
-                { date: '2024-12-05', staked: 34500000, validators: 1078125 },  // Current
+                { date: '2024-12-01', staked: 34000000, validators: 1062500 },
+                { date: todayStr, staked: 34800000, validators: 1087500 },      // Dynamic current
             ];
             
             // Interpolate daily values
@@ -461,7 +465,9 @@ async function collectStakingData() {
                 const endDate = new Date(end.date);
                 const days = Math.floor((endDate - startDate) / (24 * 60 * 60 * 1000));
                 
-                for (let d = 0; d < days; d++) {
+                if (days <= 0) continue;
+                
+                for (let d = 0; d <= days; d++) {
                     const currentDate = new Date(startDate.getTime() + d * 24 * 60 * 60 * 1000);
                     const progress = d / days;
                     
@@ -470,7 +476,7 @@ async function collectStakingData() {
                         timestamp: Math.floor(currentDate.getTime() / 1000),
                         total_staked_eth: Math.round(start.staked + (end.staked - start.staked) * progress),
                         total_validators: Math.round(start.validators + (end.validators - start.validators) * progress),
-                        avg_apr: 5.0 - progress * 1.5, // APR decreased over time
+                        avg_apr: 5.0 - (i / milestones.length) * 2, // APR decreased over time
                         source: 'interpolated'
                     });
                 }
@@ -852,11 +858,9 @@ async function collectETHSupply() {
         log('info', dataset, 'Generating historical supply data...');
         
         const today = new Date();
-        const mergeDate = new Date('2022-09-15');
-        const eip1559Date = new Date('2021-08-05');
-        const shapellaDate = new Date('2023-04-12');
+        const todayStr = formatDate(today);
         
-        // Known supply snapshots
+        // Known supply snapshots - extended to current date
         const snapshots = [
             { date: '2021-01-01', supply: 114000000, staked: 2100000, burnt: 0 },
             { date: '2021-08-05', supply: 117000000, staked: 6900000, burnt: 0 },      // EIP-1559
@@ -865,7 +869,9 @@ async function collectETHSupply() {
             { date: '2023-01-01', supply: 120400000, staked: 16000000, burnt: 2900000 },
             { date: '2023-04-12', supply: 120200000, staked: 18000000, burnt: 3100000 }, // Shapella
             { date: '2024-01-01', supply: 120100000, staked: 29000000, burnt: 4000000 },
-            { date: '2024-12-05', supply: 120400000, staked: 34500000, burnt: 4500000 }, // Current approx
+            { date: '2024-06-01', supply: 120200000, staked: 32000000, burnt: 4300000 },
+            { date: '2024-12-01', supply: 120350000, staked: 34000000, burnt: 4450000 },
+            { date: todayStr, supply: 120400000, staked: 34800000, burnt: 4500000 },  // Dynamic current
         ];
         
         // Interpolate between snapshots
@@ -876,7 +882,9 @@ async function collectETHSupply() {
             const endDate = new Date(end.date);
             const days = Math.floor((endDate - startDate) / (24 * 60 * 60 * 1000));
             
-            for (let d = 0; d < days; d++) {
+            if (days <= 0) continue;
+            
+            for (let d = 0; d <= days; d++) {
                 const currentDate = new Date(startDate.getTime() + d * 24 * 60 * 60 * 1000);
                 const progress = d / days;
                 

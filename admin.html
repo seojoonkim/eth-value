@@ -301,13 +301,13 @@
                 dateField: 'date', 
                 color: '#3b82f6',
                 format: 'tvl',
-                aggregate: true  // Need to aggregate by date
+                aggregate: true
             },
             'protocol_fees': { 
                 name: 'Protocol Fees', 
                 icon: '📈', 
                 table: 'historical_protocol_fees', 
-                valueField: 'total_fees', 
+                valueField: 'fees', 
                 dateField: 'date', 
                 color: '#f59e0b',
                 format: 'fees'
@@ -456,16 +456,17 @@
             
             try {
                 loadingEl.style.display = 'flex';
+                loadingEl.textContent = 'Loading...';
                 
                 let data;
                 
                 if (ds.aggregate) {
-                    // For L2 TVL - aggregate by date
+                    // For L2 TVL - aggregate by date, get all data
                     const { data: rawData, error } = await supabase
                         .from(ds.table)
                         .select(`${ds.dateField}, ${ds.valueField}`)
-                        .order(ds.dateField, { ascending: false })
-                        .limit(50000);  // Get more data for aggregation
+                        .order(ds.dateField, { ascending: true })
+                        .limit(100000);
                     
                     if (error) throw error;
                     
@@ -482,11 +483,12 @@
                         .sort((a, b) => a[ds.dateField].localeCompare(b[ds.dateField]));
                     
                 } else {
-                    // Normal fetch - get ALL data, not limited
+                    // Normal fetch with high limit to get ALL data
                     const { data: rawData, error } = await supabase
                         .from(ds.table)
                         .select(`${ds.dateField}, ${ds.valueField}`)
-                        .order(ds.dateField, { ascending: true });
+                        .order(ds.dateField, { ascending: true })
+                        .limit(5000);
                     
                     if (error) throw error;
                     data = rawData;
