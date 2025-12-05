@@ -445,9 +445,8 @@
         }
 
         async function loadAllCharts() {
-            for (const key of Object.keys(DATASETS)) {
-                await loadChartData(key);
-            }
+            // 병렬로 모든 차트 로드 (훨씬 빠름!)
+            await Promise.all(Object.keys(DATASETS).map(key => loadChartData(key)));
         }
 
         async function loadChartData(key) {
