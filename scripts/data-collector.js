@@ -1826,15 +1826,16 @@ async function collectVolatility() {
     log('info', dataset, 'Starting collection...');
     
     try {
-        // First fetch price data
-        const { data: priceData, error } = await supabase.client
-            .from('historical_eth_price')
-            .select('date, close')
-            .order('date', { ascending: true });
+        // First fetch price data from Supabase
+        const priceData = await supabase.select('historical_eth_price', 'date,close', {
+            'order': 'date.asc'
+        });
         
-        if (error || !priceData || priceData.length < 30) {
-            throw new Error('Need price data first');
+        if (!priceData || priceData.length < 30) {
+            throw new Error('Need price data first - found ' + (priceData?.length || 0) + ' records');
         }
+        
+        log('info', dataset, `Got ${priceData.length} price records, calculating volatility...`);
         
         const records = [];
         
@@ -2111,7 +2112,7 @@ async function collectL2Transactions() {
         
         for (let i = 0; i < records.length; i += 500) {
             const batch = records.slice(i, i + 500);
-            await supabase.upsert('historical_l2_transactions', batch);
+            await supabase.upsertWithConflict('historical_l2_transactions', batch, 'date,chain');
         }
         
         await updateStatus(dataset, 'success', {
@@ -2188,7 +2189,7 @@ async function collectL2Addresses() {
         // 체인별 데이터 저장
         for (let i = 0; i < records.length; i += 500) {
             const batch = records.slice(i, i + 500);
-            await supabase.upsert('historical_l2_addresses', batch);
+            await supabase.upsertWithConflict('historical_l2_addresses', batch, 'date,chain');
         }
         
         // === 생태계 전체 DAA 합산 계산 ===
@@ -2294,7 +2295,7 @@ async function collectProtocolTvl() {
         
         for (let i = 0; i < records.length; i += 500) {
             const batch = records.slice(i, i + 500);
-            await supabase.upsert('historical_protocol_tvl', batch);
+            await supabase.upsertWithConflict('historical_protocol_tvl', batch, 'date,protocol');
         }
         
         await updateStatus(dataset, 'success', {
@@ -2548,7 +2549,7 @@ async function collectDexByProtocol() {
         
         for (let i = 0; i < records.length; i += 500) {
             const batch = records.slice(i, i + 500);
-            await supabase.upsert('historical_dex_by_protocol', batch);
+            await supabase.upsertWithConflict('historical_dex_by_protocol', batch, 'date,protocol');
         }
         
         await updateStatus(dataset, 'success', {
