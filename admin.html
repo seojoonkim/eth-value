@@ -622,7 +622,8 @@
                 dateField: 'date', 
                 color: '#8b5cf6',
                 format: 'number',
-                charts: ['blob-count-chart']
+                charts: ['blob-count-chart'],
+                startDate: '2024-03-13' // EIP-4844 Dencun 활성화일
             },
             'lending_tvl': { 
                 name: 'Lending TVL', 
@@ -902,8 +903,15 @@
                     result.days = Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24));
                 }
                 
-                // 상태 결정
-                const coveragePct = (result.days / TARGET_DAYS) * 100;
+                // 상태 결정 - startDate 있는 데이터셋은 해당 기간만 계산
+                let targetDays = TARGET_DAYS;
+                if (ds.startDate) {
+                    const startDate = new Date(ds.startDate);
+                    const today = new Date();
+                    targetDays = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+                }
+                
+                const coveragePct = (result.days / targetDays) * 100;
                 if (coveragePct >= 95) {
                     result.status = 'success';
                 } else if (coveragePct >= 50) {
@@ -911,6 +919,9 @@
                 } else {
                     result.status = 'failed';
                 }
+                
+                // 테이블에 표시할 targetDays 저장
+                result.targetDays = targetDays;
                 
                 // Data quality - 일단 100%로 (상세 분석은 차트 로드 시)
                 result.realDataPct = 100;
@@ -992,12 +1003,13 @@
             }
             
             // Coverage
-            const coveragePct = Math.min(100, Math.round((result.days / TARGET_DAYS) * 100));
+            const targetDays = result.targetDays || TARGET_DAYS;
+            const coveragePct = Math.min(100, Math.round((result.days / targetDays) * 100));
             const progressEl = document.getElementById(`progress-${key}`);
             progressEl.style.width = `${coveragePct}%`;
             progressEl.className = `progress-fill ${coveragePct >= 95 ? 'success' : coveragePct >= 50 ? 'partial' : 'low'}`;
             document.getElementById(`pct-${key}`).textContent = `${coveragePct}%`;
-            document.getElementById(`days-${key}`).textContent = `${result.days} / ${TARGET_DAYS} days`;
+            document.getElementById(`days-${key}`).textContent = `${result.days} / ${targetDays} days`;
             
             // Quality
             const qualityEl = document.getElementById(`quality-${key}`);

@@ -116,7 +116,7 @@ const supabase = new SupabaseClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_SERVICE
 
 function fetchOnce(url, options = {}) {
     return new Promise((resolve, reject) => {
-        const timeout = options.timeout || 30000;
+        const timeout = options.timeout || 60000; // 60초로 증가
         const maxRedirects = 5;
         let redirectCount = 0;
         
@@ -915,21 +915,30 @@ async function collectGasBurn() {
             }
         }
         
-        // Add burn data from Ultrasound.money for recent dates
+        // Add burn data - try multiple sources
         try {
-            log('info', dataset, 'Trying Ultrasound.money for burn data...');
-            const ultrasoundUrl = 'https://ultrasound.money/api/v2/fees/eth-burned-all-time';
-            const burnData = await fetch(ultrasoundUrl);
+            log('info', dataset, 'Trying to get ETH burn data...');
             
-            if (burnData && burnData.ethBurned) {
-                const today = formatDate(new Date());
-                const existingIdx = records.findIndex(r => r.date === today);
-                if (existingIdx >= 0) {
-                    records[existingIdx].eth_burnt = burnData.ethBurned;
+            // Source 1: Etherscan Burn Stats
+            try {
+                const etherscanBurnUrl = 'https://api.etherscan.io/api?module=stats&action=ethsupply2' + 
+                    (CONFIG.ETHERSCAN_API_KEY ? `&apikey=${CONFIG.ETHERSCAN_API_KEY}` : '');
+                const burnData = await fetch(etherscanBurnUrl);
+                
+                if (burnData && burnData.result && burnData.result.BurntFees) {
+                    const burntEth = parseFloat(burnData.result.BurntFees) / 1e18;
+                    const today = formatDate(new Date());
+                    const existingIdx = records.findIndex(r => r.date === today);
+                    if (existingIdx >= 0) {
+                        records[existingIdx].eth_burnt = burntEth;
+                        log('info', dataset, `Got burn data from Etherscan: ${burntEth.toFixed(2)} ETH`);
+                    }
                 }
+            } catch (e) {
+                log('warning', dataset, 'Etherscan burn API failed: ' + e.message);
             }
         } catch (e) {
-            log('warning', dataset, 'Ultrasound API failed: ' + e.message);
+            log('warning', dataset, 'All burn data sources failed: ' + e.message);
         }
         
         if (records.length === 0) {
@@ -1765,8 +1774,8 @@ async function collectLendingTvl() {
         const records = [];
         const dateMap = new Map();
         
-        // Fetch major lending protocols
-        const protocols = ['aave', 'compound', 'makerdao'];
+        // Fetch major lending protocols (compound-v2 as main compound deprecated)
+        const protocols = ['aave', 'aave-v3', 'compound-v2', 'compound-v3', 'makerdao', 'spark'];
         
         for (const protocol of protocols) {
             try {
@@ -2262,7 +2271,7 @@ async function collectProtocolTvl() {
     
     try {
         const records = [];
-        const protocols = ['lido', 'aave', 'uniswap', 'makerdao', 'eigenlayer', 'rocket-pool', 'compound', 'spark', 'pendle', 'ethena'];
+        const protocols = ['lido', 'aave', 'aave-v3', 'uniswap', 'makerdao', 'eigenlayer', 'rocket-pool', 'compound-v2', 'spark', 'pendle', 'ethena'];
         
         for (const protocol of protocols) {
             try {
@@ -2527,7 +2536,8 @@ async function collectDexByProtocol() {
     
     try {
         const records = [];
-        const dexes = ['uniswap', 'curve-dex', 'balancer', 'sushiswap', '1inch-network'];
+        // 1inch is aggregator, not DEX - removed. Added pancakeswap and maverick
+        const dexes = ['uniswap', 'curve-dex', 'balancer', 'sushiswap', 'pancakeswap', 'maverick'];
         
         for (const dex of dexes) {
             try {
