@@ -113,22 +113,89 @@ const supabase = new SupabaseClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_SERVICE
 // ============================================
 // Utility Functions
 // ============================================
-function fetch(url) {
+
+function fetchOnce(url, options = {}) {
     return new Promise((resolve, reject) => {
-        const client = url.startsWith('https') ? https : http;
+        const timeout = options.timeout || 30000;
+        const maxRedirects = 5;
+        let redirectCount = 0;
         
-        client.get(url, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-                try {
-                    resolve(JSON.parse(data));
-                } catch (e) {
-                    reject(new Error(`Failed to parse JSON: ${data.substring(0, 200)}`));
+        const makeRequest = (targetUrl) => {
+            if (redirectCount > maxRedirects) {
+                reject(new Error('Too many redirects'));
+                return;
+            }
+            
+            const urlObj = new URL(targetUrl);
+            const client = urlObj.protocol === 'https:' ? https : http;
+            
+            const reqOptions = {
+                hostname: urlObj.hostname,
+                path: urlObj.pathname + urlObj.search,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'application/json',
+                    ...options.headers
+                },
+                timeout: timeout
+            };
+            
+            const req = client.get(reqOptions, (res) => {
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                    redirectCount++;
+                    let redirectUrl = res.headers.location;
+                    if (!redirectUrl.startsWith('http')) {
+                        redirectUrl = `${urlObj.protocol}//${urlObj.host}${redirectUrl}`;
+                    }
+                    makeRequest(redirectUrl);
+                    return;
                 }
+                
+                if (res.statusCode < 200 || res.statusCode >= 300) {
+                    reject(new Error(`HTTP ${res.statusCode} for ${targetUrl}`));
+                    return;
+                }
+                
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        resolve(JSON.parse(data));
+                    } catch (e) {
+                        reject(new Error(`Failed to parse JSON from ${targetUrl}: ${data.substring(0, 200)}`));
+                    }
+                });
             });
-        }).on('error', reject);
+            
+            req.on('error', (e) => reject(new Error(`Request failed for ${targetUrl}: ${e.message}`)));
+            req.on('timeout', () => {
+                req.destroy();
+                reject(new Error(`Request timeout (${timeout}ms) for ${targetUrl}`));
+            });
+        };
+        
+        makeRequest(url);
     });
+}
+
+// fetch with auto-retry (3 attempts)
+async function fetch(url, options = {}) {
+    const retries = options.retries || 3;
+    let lastError;
+    
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fetchOnce(url, options);
+        } catch (e) {
+            lastError = e;
+            if (i < retries - 1) {
+                const delay = 1000 * (i + 1);
+                console.log(`   ⏳ Retry ${i + 1}/${retries} in ${delay}ms: ${e.message}`);
+                await sleep(delay);
+            }
+        }
+    }
+    throw lastError;
 }
 
 // Raw text fetch (CSV용)
