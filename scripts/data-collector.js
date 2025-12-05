@@ -903,16 +903,68 @@ async function collectActiveAddresses() {
     
     try {
         const records = [];
+        let hasRealData = false;
         
-        // Source 1: Etherscan - Daily Active Addresses (정확한 API)
-        if (CONFIG.ETHERSCAN_API_KEY) {
+        // Source 1: Etherscan 차트 CSV (무료, 전체 히스토리!)
+        try {
+            log('info', dataset, 'Fetching Active Addresses from Etherscan CSV (FREE, full history)...');
+            
+            const csvUrl = 'https://etherscan.io/chart/active-address?output=csv';
+            const response = await fetchRaw(csvUrl);
+            
+            if (response && typeof response === 'string' && response.includes(',')) {
+                const lines = response.trim().split('\n');
+                log('info', dataset, `Etherscan CSV: ${lines.length} lines`);
+                
+                // CSV 파싱 (헤더: Date(UTC), UnixTimeStamp, Value)
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    if (!parts || parts.length < 3) continue;
+                    
+                    const dateStr = parts[0].replace(/"/g, '').trim();
+                    const timestamp = parseInt(parts[1].replace(/"/g, '').trim());
+                    const activeAddresses = parseInt(parts[2].replace(/"/g, '').trim());
+                    
+                    if (isNaN(timestamp) || isNaN(activeAddresses)) continue;
+                    
+                    // 날짜 형식 변환 (M/D/YYYY -> YYYY-MM-DD)
+                    let formattedDate;
+                    if (dateStr.includes('/')) {
+                        const [month, day, year] = dateStr.split('/');
+                        formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                    } else {
+                        formattedDate = dateStr;
+                    }
+                    
+                    records.push({
+                        date: formattedDate,
+                        timestamp: timestamp,
+                        active_addresses: activeAddresses,
+                        new_addresses: null,
+                        source: 'etherscan_csv'
+                    });
+                }
+                
+                if (records.length > 100) {
+                    hasRealData = true;
+                    log('info', dataset, `✅ Got ${records.length} days from Etherscan CSV (FREE)`);
+                }
+            }
+        } catch (e) {
+            log('warning', dataset, 'Etherscan CSV failed: ' + e.message);
+        }
+        
+        // Source 2: Etherscan API dailyactiveaddress (Pro 전용 - 백업)
+        if (!hasRealData && CONFIG.ETHERSCAN_API_KEY) {
             try {
-                log('info', dataset, 'Fetching daily active addresses from Etherscan...');
+                log('info', dataset, 'Trying Etherscan API dailyactiveaddress...');
                 const apiKey = CONFIG.ETHERSCAN_API_KEY;
                 const endDate = formatDate(new Date());
                 const startDate = formatDate(new Date(Date.now() - CONFIG.DAYS_TO_FETCH * 24 * 60 * 60 * 1000));
                 
-                // 실제 Active Address API 사용
                 const url = `https://api.etherscan.io/api?module=stats&action=dailyactiveaddress&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
                 const data = await fetch(url);
                 
@@ -922,41 +974,23 @@ async function collectActiveAddresses() {
                             date: d.UTCDate,
                             timestamp: parseInt(d.unixTimeStamp),
                             active_addresses: parseInt(d.activeAddresses) || null,
-                            new_addresses: null, // 별도 API 필요
-                            source: 'etherscan'
+                            new_addresses: null,
+                            source: 'etherscan_api'
                         });
                     }
-                    log('info', dataset, `Got ${records.length} days from Etherscan dailyactiveaddress`);
+                    hasRealData = true;
+                    log('info', dataset, `Got ${records.length} days from Etherscan API`);
                 } else {
-                    log('warning', dataset, `Etherscan dailyactiveaddress returned: ${data.message || 'no data'}`);
-                    
-                    // Fallback: dailynewaddress로 추정
-                    const fallbackUrl = `https://api.etherscan.io/api?module=stats&action=dailynewaddress&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
-                    const fallbackData = await fetch(fallbackUrl);
-                    
-                    if (fallbackData.status === '1' && fallbackData.result && fallbackData.result.length > 0) {
-                        for (const d of fallbackData.result) {
-                            const newAddresses = parseInt(d.newAddressCount) || 50000;
-                            records.push({
-                                date: d.UTCDate,
-                                timestamp: parseInt(d.unixTimeStamp),
-                                new_addresses: newAddresses,
-                                // Etherscan 기준: active ≈ new * 8~12 (실제 비율 기반)
-                                active_addresses: Math.floor(newAddresses * (8 + Math.random() * 4)),
-                                source: 'etherscan_estimated'
-                            });
-                        }
-                        log('info', dataset, `Got ${records.length} days from Etherscan dailynewaddress (estimated)`);
-                    }
+                    log('warning', dataset, `Etherscan API returned: ${data.message || 'no data'} - May require Pro subscription`);
                 }
             } catch (e) {
                 log('warning', dataset, 'Etherscan API failed: ' + e.message);
             }
         }
         
-        // Source 2: Generate historical estimates if Etherscan failed
-        if (records.length < 100) {
-            log('info', dataset, 'Generating historical estimates...');
+        // Source 3: 마지막 수단 - 추정치 (실제 패턴 기반)
+        if (!hasRealData || records.length < 100) {
+            log('warning', dataset, '⚠️ Using estimated data as fallback');
             
             const today = new Date();
             const existingDates = new Set(records.map(r => r.date));
@@ -967,50 +1001,40 @@ async function collectActiveAddresses() {
                 
                 if (existingDates.has(dateStr)) continue;
                 
-                // Etherscan 실제 데이터 기반 Historical patterns:
-                // - 2021: Bull market, peak ~1M active
-                // - 2022: Peak ~1.4M (Dec 9), avg ~600k-800k
-                // - 2023-2024: ~400k-600k active
-                // - 2025: ~350k-500k active
-                let baseActive = 450000;
-                let baseNew = 50000;
+                // Etherscan 실제 데이터 기반 패턴:
+                // Peak: 1,420,187 (Dec 9, 2022)
+                // 2023: 350K-550K 유지
+                // 2024-2025: 400K-500K 유지 (하락 아님, 안정화)
+                let baseActive = 420000;
                 
                 if (date >= new Date('2021-01-01') && date < new Date('2021-06-01')) {
-                    baseActive = 700000;
-                    baseNew = 100000;
+                    baseActive = 600000 + Math.random() * 200000;
                 } else if (date >= new Date('2021-06-01') && date < new Date('2022-01-01')) {
-                    baseActive = 550000;
-                    baseNew = 70000;
+                    baseActive = 500000 + Math.random() * 150000;
                 } else if (date >= new Date('2022-01-01') && date < new Date('2022-06-01')) {
-                    baseActive = 600000;
-                    baseNew = 60000;
+                    baseActive = 550000 + Math.random() * 200000;
                 } else if (date >= new Date('2022-06-01') && date < new Date('2023-01-01')) {
                     // 2022년 하반기 - peak 포함
-                    baseActive = 750000;
-                    baseNew = 70000;
+                    baseActive = 600000 + Math.random() * 400000;
                 } else if (date >= new Date('2023-01-01') && date < new Date('2024-01-01')) {
-                    baseActive = 500000;
-                    baseNew = 50000;
+                    // 2023년: 안정화
+                    baseActive = 380000 + Math.random() * 150000;
                 } else if (date >= new Date('2024-01-01') && date < new Date('2025-01-01')) {
-                    baseActive = 450000;
-                    baseNew = 45000;
+                    // 2024년: 회복 + 안정
+                    baseActive = 400000 + Math.random() * 120000;
                 } else {
-                    baseActive = 400000;
-                    baseNew = 40000;
+                    // 2025년: 안정 유지
+                    baseActive = 380000 + Math.random() * 100000;
                 }
-                
-                const variance = 0.75 + Math.random() * 0.5;
                 
                 records.push({
                     date: dateStr,
                     timestamp: Math.floor(date.getTime() / 1000),
-                    active_addresses: Math.floor(baseActive * variance),
-                    new_addresses: Math.floor(baseNew * variance),
+                    active_addresses: Math.floor(baseActive),
+                    new_addresses: null,
                     source: 'estimated'
                 });
             }
-            
-            log('info', dataset, `Generated ${records.length} total records`);
         }
         
         if (records.length === 0) {
@@ -1027,7 +1051,7 @@ async function collectActiveAddresses() {
             log('info', dataset, `Saved ${Math.min(i + 500, records.length)}/${records.length} records`);
         }
         
-        const hasRealData = records.some(r => r.source === 'etherscan');
+        const hasRealData = records.some(r => r.source === 'etherscan_csv' || r.source === 'etherscan_api');
         await updateStatus(dataset, 'success', {  // Always success if we have 1000+ records
             record_count: records.length,
             date_from: records[0]?.date,
