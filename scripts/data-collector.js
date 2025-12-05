@@ -457,6 +457,9 @@ async function collectStakingData() {
                 { date: todayStr, staked: 34800000, validators: 1087500 },      // Dynamic current
             ];
             
+            // Use a Map to prevent duplicate dates
+            const recordMap = new Map();
+            
             // Interpolate daily values
             for (let i = 0; i < milestones.length - 1; i++) {
                 const start = milestones[i];
@@ -467,21 +470,39 @@ async function collectStakingData() {
                 
                 if (days <= 0) continue;
                 
-                for (let d = 0; d <= days; d++) {
+                for (let d = 0; d < days; d++) {  // Changed from d <= days to d < days
                     const currentDate = new Date(startDate.getTime() + d * 24 * 60 * 60 * 1000);
+                    const dateStr = formatDate(currentDate);
                     const progress = d / days;
                     
-                    records.push({
-                        date: formatDate(currentDate),
-                        timestamp: Math.floor(currentDate.getTime() / 1000),
-                        total_staked_eth: Math.round(start.staked + (end.staked - start.staked) * progress),
-                        total_validators: Math.round(start.validators + (end.validators - start.validators) * progress),
-                        avg_apr: 5.0 - (i / milestones.length) * 2, // APR decreased over time
-                        source: 'interpolated'
-                    });
+                    // Only add if not already exists
+                    if (!recordMap.has(dateStr)) {
+                        recordMap.set(dateStr, {
+                            date: dateStr,
+                            timestamp: Math.floor(currentDate.getTime() / 1000),
+                            total_staked_eth: Math.round(start.staked + (end.staked - start.staked) * progress),
+                            total_validators: Math.round(start.validators + (end.validators - start.validators) * progress),
+                            avg_apr: 5.0 - (i / milestones.length) * 2,
+                            source: 'interpolated'
+                        });
+                    }
                 }
             }
             
+            // Add final milestone (today)
+            const lastMilestone = milestones[milestones.length - 1];
+            if (!recordMap.has(lastMilestone.date)) {
+                recordMap.set(lastMilestone.date, {
+                    date: lastMilestone.date,
+                    timestamp: Math.floor(new Date(lastMilestone.date).getTime() / 1000),
+                    total_staked_eth: lastMilestone.staked,
+                    total_validators: lastMilestone.validators,
+                    avg_apr: 3.0,
+                    source: 'interpolated'
+                });
+            }
+            
+            records.push(...recordMap.values());
             log('info', dataset, `Generated ${records.length} interpolated records`);
         }
         
@@ -850,11 +871,6 @@ async function collectETHSupply() {
         const records = [];
         
         // Generate historical supply based on known Ethereum economics
-        // Pre-merge: ~13,000 ETH/day issuance
-        // Post-merge (Sep 15, 2022): ~1,700 ETH/day issuance
-        // Post-Shapella: Withdrawals enabled
-        // EIP-1559 (Aug 5, 2021): Burn mechanism introduced
-        
         log('info', dataset, 'Generating historical supply data...');
         
         const today = new Date();
@@ -874,6 +890,9 @@ async function collectETHSupply() {
             { date: todayStr, supply: 120400000, staked: 34800000, burnt: 4500000 },  // Dynamic current
         ];
         
+        // Use a Map to prevent duplicate dates
+        const recordMap = new Map();
+        
         // Interpolate between snapshots
         for (let i = 0; i < snapshots.length - 1; i++) {
             const start = snapshots[i];
@@ -884,20 +903,37 @@ async function collectETHSupply() {
             
             if (days <= 0) continue;
             
-            for (let d = 0; d <= days; d++) {
+            for (let d = 0; d < days; d++) {  // Changed from d <= days to d < days
                 const currentDate = new Date(startDate.getTime() + d * 24 * 60 * 60 * 1000);
+                const dateStr = formatDate(currentDate);
                 const progress = d / days;
                 
-                records.push({
-                    date: formatDate(currentDate),
-                    eth_supply: Math.round(start.supply + (end.supply - start.supply) * progress),
-                    eth2_staking: Math.round(start.staked + (end.staked - start.staked) * progress),
-                    burnt_fees: Math.round(start.burnt + (end.burnt - start.burnt) * progress),
-                    source: 'interpolated'
-                });
+                // Only add if not already exists
+                if (!recordMap.has(dateStr)) {
+                    recordMap.set(dateStr, {
+                        date: dateStr,
+                        eth_supply: Math.round(start.supply + (end.supply - start.supply) * progress),
+                        eth2_staking: Math.round(start.staked + (end.staked - start.staked) * progress),
+                        burnt_fees: Math.round(start.burnt + (end.burnt - start.burnt) * progress),
+                        source: 'interpolated'
+                    });
+                }
             }
         }
         
+        // Add final snapshot (today)
+        const lastSnapshot = snapshots[snapshots.length - 1];
+        if (!recordMap.has(lastSnapshot.date)) {
+            recordMap.set(lastSnapshot.date, {
+                date: lastSnapshot.date,
+                eth_supply: lastSnapshot.supply,
+                eth2_staking: lastSnapshot.staked,
+                burnt_fees: lastSnapshot.burnt,
+                source: 'interpolated'
+            });
+        }
+        
+        records.push(...recordMap.values());
         log('info', dataset, `Generated ${records.length} historical records`);
         
         // Update with current live data
