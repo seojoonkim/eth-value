@@ -15589,9 +15589,16 @@
         async function fetchL2HistoryAsync() {
             try {
                 const l2Names = ['Arbitrum', 'Optimism', 'Base', 'ZKsync Era', 'Linea', 'Blast', 'Mantle', 'Scroll', 'Starknet', 'Mode'];
-                const l2HistResponses = await Promise.all(
-                    l2Names.map(name => fetch(`https://api.llama.fi/v2/historicalChainTvl/${encodeURIComponent(name)}`).catch(() => null))
-                );
+                
+                // 타임아웃 5초로 제한
+                const fetchWithTimeout = (name) => {
+                    return Promise.race([
+                        fetch(`https://api.llama.fi/v2/historicalChainTvl/${encodeURIComponent(name)}`),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+                    ]).catch(() => null);
+                };
+                
+                const l2HistResponses = await Promise.all(l2Names.map(fetchWithTimeout));
                 const l2Histories = await Promise.all(
                     l2HistResponses.map(res => res ? res.json().catch(() => []) : [])
                 );
@@ -15613,6 +15620,12 @@
                     .sort((a, b) => a[0] - b[0])
                     .map(([date, tvl]) => ({ date: new Date(date * 1000), value: tvl }));
                 
+                // 데이터가 없으면 fallback 생성
+                if (l2CombinedDaily.length < 10) {
+                    generateFallbackL2History();
+                    return;
+                }
+                
                 state.l2HistoryDaily = l2CombinedDaily;
                 const l2Combined = l2CombinedDaily.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
                 
@@ -15625,7 +15638,38 @@
                     changeEl.textContent = fmt.pct(change) + ' YoY';
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
-            } catch (e) { console.error('L2 history error:', e); }
+            } catch (e) { 
+                console.error('L2 history error:', e);
+                generateFallbackL2History();
+            }
+        }
+        
+        function generateFallbackL2History() {
+            console.log('Generating simulated L2 TVL history...');
+            const currentL2 = state.l2Tvl || 12000000000; // ~$12B
+            const startL2 = currentL2 * 0.5; // Started at 50% of current
+            
+            state.l2History = [];
+            for (let i = 52; i >= 0; i--) {
+                const date = new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000);
+                const progress = (52 - i) / 52;
+                const variance = 0.9 + Math.random() * 0.2;
+                state.l2History.push({ 
+                    date, 
+                    value: (startL2 + (currentL2 - startL2) * progress) * variance 
+                });
+            }
+            
+            updateMetricChart('l2-chart', l2Chart, state.l2History, '#7c3aed', 'l2');
+            
+            const first = state.l2History[0].value;
+            const last = state.l2History[state.l2History.length - 1].value;
+            const change = ((last - first) / first) * 100;
+            const changeEl = document.getElementById('l2-change');
+            if (changeEl) {
+                changeEl.textContent = fmt.pct(change) + ' YoY (sim)';
+                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
         }
 
         async function fetchStaking() {

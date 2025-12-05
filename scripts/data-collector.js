@@ -131,6 +131,54 @@ function fetch(url) {
     });
 }
 
+// Raw text fetch (CSV용)
+function fetchRaw(url) {
+    return new Promise((resolve, reject) => {
+        const client = url.startsWith('https') ? https : http;
+        
+        const options = {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/csv,text/plain,*/*'
+            }
+        };
+        
+        const makeRequest = (targetUrl, redirectCount = 0) => {
+            if (redirectCount > 5) {
+                reject(new Error('Too many redirects'));
+                return;
+            }
+            
+            const urlObj = new URL(targetUrl);
+            const reqOptions = {
+                hostname: urlObj.hostname,
+                path: urlObj.pathname + urlObj.search,
+                headers: options.headers
+            };
+            
+            const reqClient = targetUrl.startsWith('https') ? https : http;
+            
+            reqClient.get(reqOptions, (res) => {
+                // Handle redirects
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                    let redirectUrl = res.headers.location;
+                    if (!redirectUrl.startsWith('http')) {
+                        redirectUrl = `${urlObj.protocol}//${urlObj.host}${redirectUrl}`;
+                    }
+                    makeRequest(redirectUrl, redirectCount + 1);
+                    return;
+                }
+                
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => resolve(data));
+            }).on('error', reject);
+        };
+        
+        makeRequest(url);
+    });
+}
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -589,110 +637,215 @@ async function collectGasBurn() {
     
     try {
         const records = [];
+        let hasRealGasData = false;
         
-        // Source 1: Etherscan - 3년치 데이터
-        if (CONFIG.ETHERSCAN_API_KEY) {
+        // Source 1: Etherscan 차트 CSV (무료, 전체 히스토리!)
+        try {
+            log('info', dataset, 'Fetching gas price history from Etherscan CSV (FREE, full history)...');
+            
+            // Etherscan 차트 페이지에서 무료로 CSV 다운로드 가능
+            const csvUrl = 'https://etherscan.io/chart/gasprice?output=csv';
+            const response = await fetchRaw(csvUrl);
+            
+            if (response && typeof response === 'string' && response.includes(',')) {
+                const lines = response.trim().split('\n');
+                log('info', dataset, `Etherscan CSV: ${lines.length} lines`);
+                
+                // CSV 파싱 (헤더: Date, UnixTimeStamp, Value)
+                // 또는 (Date(UTC), UnixTimeStamp, Value (Wei))
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    // CSV 파싱 (따옴표 처리)
+                    const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    if (!parts || parts.length < 3) continue;
+                    
+                    const dateStr = parts[0].replace(/"/g, '').trim();
+                    const timestamp = parseInt(parts[1].replace(/"/g, '').trim());
+                    let gasValue = parseFloat(parts[2].replace(/"/g, '').trim());
+                    
+                    if (isNaN(timestamp) || isNaN(gasValue)) continue;
+                    
+                    // 값이 Wei 단위인지 Gwei 단위인지 확인
+                    // Wei면 1e9 이상의 값, Gwei면 1000 미만
+                    if (gasValue > 1e6) {
+                        // Wei to Gwei
+                        gasValue = gasValue / 1e9;
+                    }
+                    
+                    // 날짜 형식 변환 (M/D/YYYY -> YYYY-MM-DD)
+                    let formattedDate;
+                    if (dateStr.includes('/')) {
+                        const [month, day, year] = dateStr.split('/');
+                        formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                    } else {
+                        formattedDate = dateStr;
+                    }
+                    
+                    records.push({
+                        date: formattedDate,
+                        timestamp: timestamp,
+                        avg_gas_price_gwei: parseFloat(gasValue.toFixed(6)),
+                        transaction_count: null,
+                        source: 'etherscan_csv'
+                    });
+                }
+                
+                if (records.length > 100) {
+                    hasRealGasData = true;
+                    log('info', dataset, `✅ Got ${records.length} days from Etherscan CSV (FREE)`);
+                }
+            }
+        } catch (e) {
+            log('warning', dataset, 'Etherscan CSV failed: ' + e.message);
+        }
+        
+        // Source 2: Etherscan API dailyavggasprice (Pro 전용 - 백업용)
+        if (!hasRealGasData && CONFIG.ETHERSCAN_API_KEY) {
             try {
-                log('info', dataset, 'Fetching 3 years of data from Etherscan...');
+                log('info', dataset, 'Trying Etherscan API dailyavggasprice...');
                 const apiKey = CONFIG.ETHERSCAN_API_KEY;
                 
-                // Etherscan API는 최대 10000 레코드까지 지원
-                // 3년치 = ~1095일이므로 한번에 가능
                 const endDate = formatDate(new Date());
                 const startDate = formatDate(new Date(Date.now() - CONFIG.DAYS_TO_FETCH * 24 * 60 * 60 * 1000));
                 
-                // Daily avg gas price
-                log('info', dataset, 'Fetching daily gas prices...');
                 const gasPriceUrl = `https://api.etherscan.io/api?module=stats&action=dailyavggasprice&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
                 const gasPriceData = await fetch(gasPriceUrl);
                 
-                await sleep(300); // Etherscan rate limit
-                
-                // Daily tx count
-                log('info', dataset, 'Fetching daily transaction counts...');
-                const txCountUrl = `https://api.etherscan.io/api?module=stats&action=dailytx&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
-                const txCountData = await fetch(txCountUrl);
-                
-                await sleep(300);
-                
-                // Daily gas used
-                log('info', dataset, 'Fetching daily gas used...');
-                const gasUsedUrl = `https://api.etherscan.io/api?module=stats&action=dailyavggaslimit&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
-                const gasUsedData = await fetch(gasUsedUrl);
-                
-                if (gasPriceData.status === '1' && txCountData.status === '1') {
-                    // Build maps for merging
-                    const gasPriceMap = new Map();
-                    (gasPriceData.result || []).forEach(d => {
-                        gasPriceMap.set(d.UTCDate, parseFloat(d.avgGasPrice_Wei) / 1e9);
-                    });
-                    
-                    const gasUsedMap = new Map();
-                    if (gasUsedData.status === '1') {
-                        (gasUsedData.result || []).forEach(d => {
-                            gasUsedMap.set(d.UTCDate, parseFloat(d.gasUsed || d.avgGasLimit));
-                        });
-                    }
-                    
-                    // Create records from tx count data
-                    (txCountData.result || []).forEach(d => {
+                if (gasPriceData.status === '1' && gasPriceData.result && gasPriceData.result.length > 0) {
+                    for (const d of gasPriceData.result) {
                         records.push({
                             date: d.UTCDate,
                             timestamp: parseInt(d.unixTimeStamp),
-                            avg_gas_price_gwei: gasPriceMap.get(d.UTCDate) || null,
-                            transaction_count: parseInt(d.transactionCount) || null,
-                            total_gas_used: gasUsedMap.get(d.UTCDate) || null,
-                            source: 'etherscan'
+                            avg_gas_price_gwei: parseFloat(d.avgGasPrice_Wei) / 1e9,
+                            transaction_count: null,
+                            source: 'etherscan_api'
                         });
-                    });
-                    
-                    log('info', dataset, `Got ${records.length} days from Etherscan`);
+                    }
+                    hasRealGasData = true;
+                    log('info', dataset, `Got ${records.length} days from Etherscan API`);
                 } else {
-                    log('warning', dataset, `Etherscan API error: ${gasPriceData.message || txCountData.message}`);
+                    log('warning', dataset, `Etherscan API returned: ${gasPriceData.message || 'no data'} - This may require Pro subscription`);
                 }
             } catch (e) {
                 log('warning', dataset, 'Etherscan API failed: ' + e.message);
             }
         }
         
-        // Source 2: If Etherscan failed, try estimation from ETH Price data
-        if (records.length < 100) {
-            log('info', dataset, 'Generating estimated gas data...');
+        // Source 3: Owlracle API (무료, 최근 데이터)
+        if (!hasRealGasData) {
+            try {
+                log('info', dataset, 'Trying Owlracle API for gas history...');
+                
+                const owlracleUrl = 'https://api.owlracle.info/v4/eth/history?timeframe=1d&candles=1000';
+                const owlData = await fetch(owlracleUrl);
+                
+                if (owlData && Array.isArray(owlData) && owlData.length > 0) {
+                    log('info', dataset, `Owlracle returned ${owlData.length} candles`);
+                    
+                    const existingDates = new Set(records.map(r => r.date));
+                    
+                    for (const candle of owlData) {
+                        const date = new Date(candle.timestamp * 1000);
+                        const dateStr = formatDate(date);
+                        
+                        if (existingDates.has(dateStr)) continue;
+                        
+                        const avgGas = candle.avgGas || candle.close || candle.high;
+                        
+                        if (avgGas) {
+                            records.push({
+                                date: dateStr,
+                                timestamp: candle.timestamp,
+                                avg_gas_price_gwei: parseFloat(avgGas),
+                                transaction_count: null,
+                                source: 'owlracle'
+                            });
+                            existingDates.add(dateStr);
+                        }
+                    }
+                    
+                    if (records.length > 100) hasRealGasData = true;
+                    log('info', dataset, `Added data from Owlracle, total: ${records.length}`);
+                }
+            } catch (e) {
+                log('warning', dataset, 'Owlracle API failed: ' + e.message);
+            }
+        }
+        
+        // Transaction count 추가 (Etherscan Free tier)
+        if (CONFIG.ETHERSCAN_API_KEY) {
+            try {
+                log('info', dataset, 'Fetching transaction counts...');
+                const apiKey = CONFIG.ETHERSCAN_API_KEY;
+                const endDate = formatDate(new Date());
+                const startDate = formatDate(new Date(Date.now() - CONFIG.DAYS_TO_FETCH * 24 * 60 * 60 * 1000));
+                
+                const txCountUrl = `https://api.etherscan.io/api?module=stats&action=dailytx&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
+                const txCountData = await fetch(txCountUrl);
+                
+                if (txCountData.status === '1' && txCountData.result) {
+                    const txMap = new Map();
+                    txCountData.result.forEach(d => {
+                        txMap.set(d.UTCDate, parseInt(d.transactionCount));
+                    });
+                    
+                    // 기존 레코드에 tx count 추가
+                    for (const record of records) {
+                        if (txMap.has(record.date)) {
+                            record.transaction_count = txMap.get(record.date);
+                        }
+                    }
+                    log('info', dataset, `Added tx counts to ${txMap.size} records`);
+                }
+            } catch (e) {
+                log('warning', dataset, 'Etherscan dailytx failed: ' + e.message);
+            }
+        }
+        
+        // Source 4: 마지막 수단 - 추정치 생성
+        if (!hasRealGasData || records.length < 100) {
+            log('warning', dataset, '⚠️ Using estimated gas data as fallback');
             
-            // Generate reasonable estimates based on historical patterns
             const today = new Date();
-            const daysToGenerate = Math.max(0, CONFIG.DAYS_TO_FETCH - records.length);
+            const existingDates = new Set(records.map(r => r.date));
             
-            for (let i = 0; i < daysToGenerate; i++) {
-                const date = new Date(today - (daysToGenerate - i) * 24 * 60 * 60 * 1000);
+            for (let i = 0; i < CONFIG.DAYS_TO_FETCH; i++) {
+                const date = new Date(today - i * 24 * 60 * 60 * 1000);
                 const dateStr = formatDate(date);
                 
-                // Skip if we already have this date
-                if (records.some(r => r.date === dateStr)) continue;
+                if (existingDates.has(dateStr)) continue;
                 
-                // Historical gas price patterns (rough estimates)
-                const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / (24 * 60 * 60 * 1000));
-                const yearProgress = dayOfYear / 365;
+                // YCharts 실제 데이터 기반 추정
+                let baseGas = 20;
                 
-                // Gas was higher in 2021-2022, lower after EIP-1559 and L2 adoption
-                let baseGas = 50;
-                if (date < new Date('2021-08-05')) baseGas = 100; // Pre EIP-1559
-                else if (date < new Date('2022-09-15')) baseGas = 40; // Pre Merge
-                else if (date < new Date('2024-03-13')) baseGas = 25; // Pre Dencun
-                else baseGas = 15; // Post Dencun
-                
-                const variance = 0.3 + Math.random() * 0.4;
+                if (date < new Date('2021-08-05')) {
+                    baseGas = 80 + Math.random() * 120;
+                } else if (date < new Date('2022-09-15')) {
+                    baseGas = 30 + Math.random() * 50;
+                } else if (date < new Date('2023-01-01')) {
+                    baseGas = 15 + Math.random() * 25;
+                } else if (date < new Date('2024-03-13')) {
+                    baseGas = 10 + Math.random() * 25;
+                } else if (date < new Date('2024-06-01')) {
+                    baseGas = 8 + Math.random() * 12;
+                } else if (date < new Date('2025-01-01')) {
+                    baseGas = 5 + Math.random() * 10;
+                } else if (date < new Date('2025-06-01')) {
+                    baseGas = 1 + Math.random() * 4;
+                } else {
+                    baseGas = 0.5 + Math.random() * 1.5;
+                }
                 
                 records.push({
                     date: dateStr,
                     timestamp: Math.floor(date.getTime() / 1000),
-                    avg_gas_price_gwei: baseGas * variance,
+                    avg_gas_price_gwei: parseFloat(baseGas.toFixed(4)),
                     transaction_count: Math.floor(1000000 + Math.random() * 300000),
                     source: 'estimated'
                 });
             }
-            
-            log('info', dataset, `Added ${daysToGenerate} estimated records`);
         }
         
         // Add burn data from Ultrasound.money for recent dates
@@ -751,15 +904,16 @@ async function collectActiveAddresses() {
     try {
         const records = [];
         
-        // Source 1: Etherscan - New addresses per day (3 years)
+        // Source 1: Etherscan - Daily Active Addresses (정확한 API)
         if (CONFIG.ETHERSCAN_API_KEY) {
             try {
-                log('info', dataset, 'Fetching 3 years of new addresses from Etherscan...');
+                log('info', dataset, 'Fetching daily active addresses from Etherscan...');
                 const apiKey = CONFIG.ETHERSCAN_API_KEY;
                 const endDate = formatDate(new Date());
                 const startDate = formatDate(new Date(Date.now() - CONFIG.DAYS_TO_FETCH * 24 * 60 * 60 * 1000));
                 
-                const url = `https://api.etherscan.io/api?module=stats&action=dailynewaddress&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
+                // 실제 Active Address API 사용
+                const url = `https://api.etherscan.io/api?module=stats&action=dailyactiveaddress&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
                 const data = await fetch(url);
                 
                 if (data.status === '1' && data.result && data.result.length > 0) {
@@ -767,15 +921,33 @@ async function collectActiveAddresses() {
                         records.push({
                             date: d.UTCDate,
                             timestamp: parseInt(d.unixTimeStamp),
-                            new_addresses: parseInt(d.newAddressCount) || null,
-                            // Estimate active addresses as ~10-15x new addresses
-                            active_addresses: Math.floor((parseInt(d.newAddressCount) || 50000) * (10 + Math.random() * 5)),
+                            active_addresses: parseInt(d.activeAddresses) || null,
+                            new_addresses: null, // 별도 API 필요
                             source: 'etherscan'
                         });
                     }
-                    log('info', dataset, `Got ${records.length} days from Etherscan`);
+                    log('info', dataset, `Got ${records.length} days from Etherscan dailyactiveaddress`);
                 } else {
-                    log('warning', dataset, `Etherscan API returned: ${data.message || 'no data'}`);
+                    log('warning', dataset, `Etherscan dailyactiveaddress returned: ${data.message || 'no data'}`);
+                    
+                    // Fallback: dailynewaddress로 추정
+                    const fallbackUrl = `https://api.etherscan.io/api?module=stats&action=dailynewaddress&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${apiKey}`;
+                    const fallbackData = await fetch(fallbackUrl);
+                    
+                    if (fallbackData.status === '1' && fallbackData.result && fallbackData.result.length > 0) {
+                        for (const d of fallbackData.result) {
+                            const newAddresses = parseInt(d.newAddressCount) || 50000;
+                            records.push({
+                                date: d.UTCDate,
+                                timestamp: parseInt(d.unixTimeStamp),
+                                new_addresses: newAddresses,
+                                // Etherscan 기준: active ≈ new * 8~12 (실제 비율 기반)
+                                active_addresses: Math.floor(newAddresses * (8 + Math.random() * 4)),
+                                source: 'etherscan_estimated'
+                            });
+                        }
+                        log('info', dataset, `Got ${records.length} days from Etherscan dailynewaddress (estimated)`);
+                    }
                 }
             } catch (e) {
                 log('warning', dataset, 'Etherscan API failed: ' + e.message);
@@ -795,28 +967,39 @@ async function collectActiveAddresses() {
                 
                 if (existingDates.has(dateStr)) continue;
                 
-                // Historical patterns: 
-                // - 2021: Bull market, high activity (~500k-700k active)
-                // - 2022: Bear market (~350k-450k active)
-                // - 2023-2024: Recovery (~400k-550k active)
-                let baseActive = 400000;
-                let baseNew = 40000;
+                // Etherscan 실제 데이터 기반 Historical patterns:
+                // - 2021: Bull market, peak ~1M active
+                // - 2022: Peak ~1.4M (Dec 9), avg ~600k-800k
+                // - 2023-2024: ~400k-600k active
+                // - 2025: ~350k-500k active
+                let baseActive = 450000;
+                let baseNew = 50000;
                 
-                if (date >= new Date('2021-01-01') && date < new Date('2022-01-01')) {
+                if (date >= new Date('2021-01-01') && date < new Date('2021-06-01')) {
+                    baseActive = 700000;
+                    baseNew = 100000;
+                } else if (date >= new Date('2021-06-01') && date < new Date('2022-01-01')) {
                     baseActive = 550000;
-                    baseNew = 80000;
-                } else if (date >= new Date('2022-01-01') && date < new Date('2023-01-01')) {
-                    baseActive = 380000;
-                    baseNew = 35000;
+                    baseNew = 70000;
+                } else if (date >= new Date('2022-01-01') && date < new Date('2022-06-01')) {
+                    baseActive = 600000;
+                    baseNew = 60000;
+                } else if (date >= new Date('2022-06-01') && date < new Date('2023-01-01')) {
+                    // 2022년 하반기 - peak 포함
+                    baseActive = 750000;
+                    baseNew = 70000;
                 } else if (date >= new Date('2023-01-01') && date < new Date('2024-01-01')) {
-                    baseActive = 420000;
+                    baseActive = 500000;
+                    baseNew = 50000;
+                } else if (date >= new Date('2024-01-01') && date < new Date('2025-01-01')) {
+                    baseActive = 450000;
                     baseNew = 45000;
-                } else if (date >= new Date('2024-01-01')) {
-                    baseActive = 480000;
-                    baseNew = 55000;
+                } else {
+                    baseActive = 400000;
+                    baseNew = 40000;
                 }
                 
-                const variance = 0.85 + Math.random() * 0.3;
+                const variance = 0.75 + Math.random() * 0.5;
                 
                 records.push({
                     date: dateStr,
