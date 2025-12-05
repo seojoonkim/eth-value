@@ -1051,8 +1051,7 @@ async function collectActiveAddresses() {
             log('info', dataset, `Saved ${Math.min(i + 500, records.length)}/${records.length} records`);
         }
         
-        const hasRealData = records.some(r => r.source === 'etherscan_csv' || r.source === 'etherscan_api');
-        await updateStatus(dataset, 'success', {  // Always success if we have 1000+ records
+        await updateStatus(dataset, 'success', {
             record_count: records.length,
             date_from: records[0]?.date,
             date_to: records[records.length - 1]?.date
