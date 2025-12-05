@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETHval Admin - Data Collection Status</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a25;
+            --border: #2a2a3a;
+            --text: #e5e5e5;
+            --text-muted: #888;
+            --primary: #8b5cf6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 .badge {
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #7c3aed; transform: translateY(-1px); }
+        .btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg-hover); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-card .value.success { color: var(--success); }
+        .stat-card .value.warning { color: var(--warning); }
+        .stat-card .value.error { color: var(--error); }
+
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 { font-size: 16px; font-weight: 600; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.02);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--bg-hover); }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.success { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .status-badge.partial { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .status-badge.failed { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+        .status-badge.pending { background: rgba(136, 136, 136, 0.15); color: var(--text-muted); }
+
+        .status-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .text-muted { color: var(--text-muted); }
+        .text-small { font-size: 12px; }
+
+        .log-list { max-height: 300px; overflow-y: auto; }
+
+        .log-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .log-item:last-child { border-bottom: none; }
+        .log-item .icon { font-size: 16px; flex-shrink: 0; }
+        .log-item .content { flex: 1; }
+        .log-item .dataset { font-weight: 600; font-size: 13px; }
+        .log-item .message { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+        .log-item .time { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+        .log-item.error { background: rgba(239, 68, 68, 0.05); }
+        .log-item.warning { background: rgba(245, 158, 11, 0.05); }
+
+        .empty-state { padding: 40px; text-align: center; color: var(--text-muted); }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover { background: var(--bg-hover); color: var(--text); }
+
+        .last-updated {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+        }
+
+        .connection-status.connected { border-color: var(--success); color: var(--success); }
+        .connection-status.disconnected { border-color: var(--error); color: var(--error); }
+
+        .config-section { padding: 20px; }
+        .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+        .config-item { display: flex; flex-direction: column; gap: 8px; }
+        .config-item label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+        .config-item input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .config-item input:focus { outline: none; border-color: var(--primary); }
+        .config-item .hint { font-size: 11px; color: var(--text-muted); }
+        .config-item .hint a { color: var(--primary); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 90%; max-width: 800px; max-height: 80vh;
+            overflow: hidden;
+            transform: scale(0.95); transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal { transform: scale(1); }
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { font-size: 18px; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
+        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
+        .json-preview {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 16px; align-items: flex-start; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            th, td { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                🛠️ ETHval Admin
+                <span class="badge">DATA COLLECTOR</span>
+            </h1>
+            <div class="header-actions">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="dot" style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
+                    <span id="connectionText">Connecting...</span>
+                </div>
+                <button class="btn btn-secondary" onclick="loadAllData()">
+                    🔄 Refresh
+                </button>
+                <a href="https://github.com/hashed-official/ethval/actions" target="_blank" class="btn btn-primary">
+                    ▶️ Run on GitHub
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">Total Datasets</div>
+                <div class="value" id="totalDatasets">8</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Success</div>
+                <div class="value success" id="successCount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Partial / Manual</div>
+                <div class="value warning" id="partialCount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Failed</div>
+                <div class="value error" id="failedCount">-</div>
+            </div>
+        </div>
+
+        <!-- Datasets Table -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📦 Data Collection Status</h2>
+                <div class="last-updated">
+                    Last run: <span id="lastRun">-</span>
+                </div>
+            </div>
+            <div class="section-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dataset</th>
+                            <th>Status</th>
+                            <th>Records</th>
+                            <th>Date Range</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="datasetsTable">
+                        <tr><td colspan="6" class="text-muted" style="text-align:center;padding:40px;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Logs -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📋 Recent Logs</h2>
+                <span class="text-muted text-small" id="logCount">0 logs</span>
+            </div>
+            <div class="section-body">
+                <div class="log-list" id="logsList">
+                    <div class="empty-state">Loading logs...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supabase Configuration -->
+        <div class="section">
+            <div class="section-header">
+                <h2>⚙️ Supabase Connection</h2>
+            </div>
+            <div class="config-section">
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Supabase URL</label>
+                        <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co">
+                        <span class="hint">Your Supabase project URL</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Supabase Anon Key</label>
+                        <input type="password" id="supabaseKey" placeholder="eyJ...">
+                        <span class="hint">Public anon key (read-only)</span>
+                    </div>
+                </div>
+                <div style="margin-top: 16px;">
+                    <button class="btn btn-primary" onclick="saveConfig()">💾 Save & Connect</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Data Sources -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📋 Manual Data Sources</h2>
+            </div>
+            <div class="section-body" style="padding: 20px;">
+                <p style="color: var(--text-muted); margin-bottom: 16px;">
+                    These datasets require manual collection:
+                </p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Source</th>
+                            <th>Instructions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Active Addresses</td>
+                            <td><a href="https://dune.com/browse/dashboards?q=ethereum%20active%20addresses" target="_blank" style="color: var(--primary)">Dune Analytics</a></td>
+                            <td class="text-muted text-small">Search "daily active addresses", export CSV</td>
+                        </tr>
+                        <tr>
+                            <td>Staking Data</td>
+                            <td><a href="https://beaconcha.in/charts" target="_blank" style="color: var(--primary)">beaconcha.in</a></td>
+                            <td class="text-muted text-small">Download Staked ETH & Validators charts</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Preview Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Data Preview</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="json-preview" id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Dataset definitions
+        const DATASETS = {
+            'eth_price': { name: 'ETH Price', icon: '💰', table: 'historical_eth_price' },
+            'ethereum_tvl': { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl' },
+            'l2_tvl': { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl' },
+            'protocol_fees': { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees' },
+            'staking_data': { name: 'Staking Data', icon: '🥩', table: 'historical_staking' },
+            'gas_burn': { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn' },
+            'active_addresses': { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses' },
+            'eth_supply': { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply' }
+        };
+
+        let supabase = null;
+
+        // ETHval Supabase Configuration (same as main app)
+        const SUPABASE_URL = 'https://rliwxedrifwxbudcutqs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsaXd4ZWRyaWZ3eGJ1ZGN1dHFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ0MzU2MDQsImV4cCI6MjA4MDAxMTYwNH0.jX_tAdAhXEcmHdtf56-8La4SpqbKEM3_hIBBwhldD6Y';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Use pre-configured Supabase credentials
+            document.getElementById('supabaseUrl').value = SUPABASE_URL;
+            document.getElementById('supabaseKey').value = SUPABASE_ANON_KEY;
+            
+            // Auto-connect
+            initSupabase(SUPABASE_URL, SUPABASE_ANON_KEY);
+        });
+
+        // Save config and connect
+        function saveConfig() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseKey').value.trim();
+            
+            if (!url || !key) {
+                alert('Please enter both Supabase URL and Anon Key');
+                return;
+            }
+            
+            localStorage.setItem('ethval_supabase_url', url);
+            localStorage.setItem('ethval_supabase_key', key);
+            
+            initSupabase(url, key);
+        }
+
+        // Initialize Supabase
+        async function initSupabase(url, key) {
+            try {
+                updateConnectionStatus(false, 'Connecting...');
+                
+                supabase = window.supabase.createClient(url, key);
+                
+                // Test connection
+                const { data, error } = await supabase
+                    .from('data_collection_status')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) throw error;
+                
+                updateConnectionStatus(true, 'Connected');
+                loadAllData();
+            } catch (error) {
+                console.error('Connection failed:', error);
+                updateConnectionStatus(false, 'Failed: ' + error.message);
+            }
+        }
+
+        // Update connection status UI
+        function updateConnectionStatus(connected, text) {
+            const el = document.getElementById('connectionStatus');
+            const textEl = document.getElementById('connectionText');
+            
+            el.className = 'connection-status ' + (connected ? 'connected' : 'disconnected');
+            textEl.textContent = text;
+        }
+
+        // Load all data
+        async function loadAllData() {
+            if (!supabase) {
+                alert('Please configure Supabase connection first');
+                return;
+            }
+            
+            await loadStatus();
+            await loadLogs();
+        }
+
+        // Load collection status
+        async function loadStatus() {
+            try {
+                const { data, error } = await supabase
+                    .from('data_collection_status')
+                    .select('*')
+                    .order('dataset_name');
+                
+                if (error) throw error;
+                
+                renderStatus(data);
+            } catch (error) {
+                console.error('Failed to load status:', error);
+            }
+        }
+
+        // Render status
+        function renderStatus(statusData) {
+            let successCount = 0;
+            let partialCount = 0;
+            let failedCount = 0;
+            let lastRun = null;
+            
+            // Create status map
+            const statusMap = {};
+            statusData.forEach(s => {
+                statusMap[s.dataset_name] = s;
+                
+                if (s.status === 'success') successCount++;
+                else if (s.status === 'partial') partialCount++;
+                else if (s.status === 'failed') failedCount++;
+                
+                if (s.last_run_at && (!lastRun || new Date(s.last_run_at) > new Date(lastRun))) {
+                    lastRun = s.last_run_at;
+                }
+            });
+            
+            // Update stats
+            document.getElementById('successCount').textContent = successCount;
+            document.getElementById('partialCount').textContent = partialCount;
+            document.getElementById('failedCount').textContent = failedCount;
+            document.getElementById('lastRun').textContent = lastRun ? formatTime(lastRun) : 'Never';
+            
+            // Render table
+            const tbody = document.getElementById('datasetsTable');
+            tbody.innerHTML = Object.entries(DATASETS).map(([key, dataset]) => {
+                const status = statusMap[key] || { status: 'pending' };
+                const statusClass = status.status || 'pending';
+                
+                return `
+                    <tr>
+                        <td>
+                            <span style="margin-right: 8px;">${dataset.icon}</span>
+                            <strong>${dataset.name}</strong>
+                        </td>
+                        <td>
+                            <span class="status-badge ${statusClass}">
+                                <span class="dot"></span>
+                                ${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}
+                            </span>
+                        </td>
+                        <td class="mono">
+                            ${status.record_count ? status.record_count.toLocaleString() : '-'}
+                        </td>
+                        <td class="mono text-small">
+                            ${status.date_from && status.date_to ? `${status.date_from} ~ ${status.date_to}` : '-'}
+                        </td>
+                        <td class="text-muted text-small">
+                            ${status.last_run_at ? formatTime(status.last_run_at) : '-'}
+                        </td>
+                        <td>
+                            <button class="action-btn" onclick="previewData('${key}', '${dataset.table}')">
+                                👁️ View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Load logs
+        async function loadLogs() {
+            try {
+                const { data, error } = await supabase
+                    .from('data_collection_logs')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+                
+                if (error) throw error;
+                
+                renderLogs(data);
+            } catch (error) {
+                console.error('Failed to load logs:', error);
+            }
+        }
+
+        // Render logs
+        function renderLogs(logs) {
+            const container = document.getElementById('logsList');
+            document.getElementById('logCount').textContent = `${logs.length} logs`;
+            
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="empty-state">No logs recorded</div>';
+                return;
+            }
+            
+            container.innerHTML = logs.map(log => {
+                const icon = log.log_type === 'error' ? '❌' : log.log_type === 'warning' ? '⚠️' : 'ℹ️';
+                const dataset = DATASETS[log.dataset_name]?.name || log.dataset_name;
+                
+                return `
+                    <div class="log-item ${log.log_type}">
+                        <span class="icon">${icon}</span>
+                        <div class="content">
+                            <div class="dataset">${dataset}</div>
+                            <div class="message">${log.message}</div>
+                        </div>
+                        <span class="time">${formatTime(log.created_at)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Preview data
+        async function previewData(datasetKey, tableName) {
+            if (!supabase) return;
+            
+            try {
+                const { data, error } = await supabase
+                    .from(tableName)
+                    .select('*')
+                    .order('date', { ascending: false })
+                    .limit(10);
+                
+                if (error) throw error;
+                
+                document.getElementById('modalTitle').textContent = `${DATASETS[datasetKey].name} - Latest 10 Records`;
+                document.getElementById('modalContent').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('modalOverlay').classList.add('active');
+            } catch (error) {
+                alert('Failed to load data: ' + error.message);
+            }
+        }
+
+        // Close modal
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // Format time
+        function formatTime(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>

@@ -8769,7 +8769,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.4.4</span>
+                <span class="version-badge">v0.4.5</span>
             </div>
             <div class="header-center">
                 <div class="status">
@@ -10810,7 +10810,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v0.4.4</span>
+                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v0.4.5</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: 11px;">🔧 Admin</a>
             </div>
             <div class="footer-sources">
                 <span class="source-tag">Binance</span>
@@ -18541,20 +18541,20 @@
                     
                     // On-chain (independent)
                     fetchBaseFee(),
-                    fetchBlobFees(),
                     fetchBlobCount(),
-                    fetchSupplyDynamics(),
                 ]);
                 
                 console.log(`   Stage 1 completed in ${(performance.now() - startTime).toFixed(0)}ms`);
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // STAGE 2: DEPENDENT CALCULATIONS (Stage 1 데이터 필요)
-                // feesHistory, txHistory 등이 준비된 후 실행
+                // feesHistory, txHistory, l2History 등이 준비된 후 실행
                 // ═══════════════════════════════════════════════════════════════════
                 
                 await Promise.allSettled([
                     fetchGasPrice(),            // needs feesHistory, txHistory
+                    fetchSupplyDynamics(),      // needs feesHistory for burn/issuance charts
+                    fetchBlobFees(),            // needs l2History for chart
                     calculateAndUpdateNVT(),    // needs price, txCount
                     calculateAndUpdateActiveAddr(), // needs txHistory
                     calculateEthInDefiAndCommitment(), // needs tvl, staking
