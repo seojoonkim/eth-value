@@ -2293,8 +2293,17 @@ async function collectProtocolTvl() {
             throw new Error('Failed to collect protocol TVL data');
         }
         
-        for (let i = 0; i < records.length; i += 500) {
-            const batch = records.slice(i, i + 500);
+        // 중복 제거: (date, protocol) 조합 기준
+        const uniqueMap = new Map();
+        for (const r of records) {
+            const key = `${r.date}|${r.protocol}`;
+            uniqueMap.set(key, r);
+        }
+        const uniqueRecords = Array.from(uniqueMap.values());
+        log('info', dataset, `Deduplicated: ${records.length} → ${uniqueRecords.length} records`);
+        
+        for (let i = 0; i < uniqueRecords.length; i += 500) {
+            const batch = uniqueRecords.slice(i, i + 500);
             await supabase.upsertWithConflict('historical_protocol_tvl', batch, 'date,protocol');
         }
         

@@ -898,16 +898,15 @@
                         .sort((a, b) => a[ds.dateField].localeCompare(b[ds.dateField]));
                     
                 } else {
-                    // Normal table - fetch all with source
+                    // Normal table - fetch all
                     let allData = [];
                     let offset = 0;
                     const chunkSize = 1000;
-                    const selectFields = `${ds.dateField}, ${ds.valueField}, source`;
                     
                     while (true) {
                         const { data: chunk, error } = await supabase
                             .from(ds.table)
-                            .select(selectFields)
+                            .select('*')
                             .order(ds.dateField, { ascending: true })
                             .range(offset, offset + chunkSize - 1);
                         
@@ -939,8 +938,15 @@
                 
                 // Calculate data quality (real vs estimated)
                 if (!ds.aggregate) {
-                    const realData = data.filter(d => d.source && !d.source.includes('estimated') && !d.source.includes('interpolated'));
-                    result.realDataPct = data.length > 0 ? Math.round((realData.length / data.length) * 100) : 0;
+                    // Check if data has source field
+                    const hasSource = data.length > 0 && data[0].hasOwnProperty('source');
+                    if (hasSource) {
+                        const realData = data.filter(d => d.source && !d.source.includes('estimated') && !d.source.includes('interpolated'));
+                        result.realDataPct = data.length > 0 ? Math.round((realData.length / data.length) * 100) : 0;
+                    } else {
+                        // No source field - assume 100% real (from external API)
+                        result.realDataPct = 100;
+                    }
                 } else {
                     result.realDataPct = 100; // Aggregated data is considered real
                 }
