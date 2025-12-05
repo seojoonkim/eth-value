@@ -1,0 +1,48 @@
+# .github/workflows/collect-historical-data.yml
+# ETHval Historical Data Collection
+# 매일 UTC 06:00에 자동 실행 (KST 15:00)
+
+name: Collect Historical Data
+
+on:
+  # 매일 자동 실행
+  schedule:
+    - cron: '0 6 * * *'
+  
+  # 수동 실행 가능
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  collect-data:
+    name: Collect Historical Data
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Run data collector
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CRYPTOCOMPARE_API_KEY: ${{ secrets.CRYPTOCOMPARE_API_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+        run: |
+          echo "🚀 Starting ETHval data collection..."
+          node scripts/data-collector.js
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 📊 Data Collection Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Check Supabase or admin page for details" >> $GITHUB_STEP_SUMMARY
