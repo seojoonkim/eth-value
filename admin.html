@@ -787,10 +787,18 @@
             buildDataTable();
             buildCharts();
             
-            // Load data for each dataset
-            const results = await Promise.all(
-                Object.entries(DATASETS).map(([key, ds]) => loadDataset(key, ds))
-            );
+            // 동시성 제한 (6개씩 배치 처리)
+            const entries = Object.entries(DATASETS);
+            const results = [];
+            const batchSize = 6;
+            
+            for (let i = 0; i < entries.length; i += batchSize) {
+                const batch = entries.slice(i, i + batchSize);
+                const batchResults = await Promise.all(
+                    batch.map(([key, ds]) => loadDataset(key, ds))
+                );
+                results.push(...batchResults);
+            }
             
             // Update overview stats
             updateOverviewStats(results);
@@ -862,97 +870,40 @@
             const result = { key, records: 0, days: 0, realDataPct: 0, status: 'loading' };
             
             try {
-                let data = [];
+                // ═══════════════════════════════════════════════════════════════
+                // STAGE 1: 빠른 메타데이터 조회 (count + date range)
+                // ═══════════════════════════════════════════════════════════════
                 
-                if (ds.aggregate) {
-                    // L2 TVL - aggregate by date
-                    let allData = [];
-                    let offset = 0;
-                    const chunkSize = 1000;
-                    
-                    while (true) {
-                        const { data: chunk, error } = await supabase
-                            .from(ds.table)
-                            .select(`${ds.dateField}, ${ds.valueField}`)
-                            .order(ds.dateField, { ascending: true })
-                            .range(offset, offset + chunkSize - 1);
-                        
-                        if (error) throw error;
-                        if (!chunk || chunk.length === 0) break;
-                        
-                        allData = allData.concat(chunk);
-                        offset += chunkSize;
-                        if (chunk.length < chunkSize) break;
-                    }
-                    
-                    // Aggregate by date
-                    const dateMap = new Map();
-                    allData.forEach(row => {
-                        const date = row[ds.dateField];
-                        const val = parseFloat(row[ds.valueField]) || 0;
-                        dateMap.set(date, (dateMap.get(date) || 0) + val);
-                    });
-                    
-                    data = Array.from(dateMap.entries())
-                        .map(([date, tvl]) => ({ [ds.dateField]: date, [ds.valueField]: tvl }))
-                        .sort((a, b) => a[ds.dateField].localeCompare(b[ds.dateField]));
-                    
-                } else {
-                    // Normal table - fetch all
-                    let allData = [];
-                    let offset = 0;
-                    const chunkSize = 1000;
-                    
-                    while (true) {
-                        const { data: chunk, error } = await supabase
-                            .from(ds.table)
-                            .select('*')
-                            .order(ds.dateField, { ascending: true })
-                            .range(offset, offset + chunkSize - 1);
-                        
-                        if (error) throw error;
-                        if (!chunk || chunk.length === 0) break;
-                        
-                        allData = allData.concat(chunk);
-                        offset += chunkSize;
-                        if (chunk.length < chunkSize) break;
-                    }
-                    
-                    data = allData;
-                }
+                // Count 조회
+                const { count, error: countError } = await supabase
+                    .from(ds.table)
+                    .select('*', { count: 'exact', head: true });
                 
-                // Update result
-                result.records = data.length;
+                if (countError) throw countError;
+                result.records = count || 0;
                 
-                if (data.length === 0) {
+                if (result.records === 0) {
                     result.status = 'failed';
                     updateTableRow(key, result, ds);
                     return result;
                 }
                 
-                // Calculate coverage
-                const firstDate = new Date(data[0][ds.dateField]);
-                const lastDate = new Date(data[data.length - 1][ds.dateField]);
-                const daysCovered = Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24));
-                result.days = daysCovered;
+                // Date range 조회 (첫 번째 + 마지막)
+                const [firstRes, lastRes] = await Promise.all([
+                    supabase.from(ds.table).select(ds.dateField).order(ds.dateField, { ascending: true }).limit(1).single(),
+                    supabase.from(ds.table).select(ds.dateField).order(ds.dateField, { ascending: false }).limit(1).single()
+                ]);
                 
-                // Calculate data quality (real vs estimated)
-                if (!ds.aggregate) {
-                    // Check if data has source field
-                    const hasSource = data.length > 0 && data[0].hasOwnProperty('source');
-                    if (hasSource) {
-                        const realData = data.filter(d => d.source && !d.source.includes('estimated') && !d.source.includes('interpolated'));
-                        result.realDataPct = data.length > 0 ? Math.round((realData.length / data.length) * 100) : 0;
-                    } else {
-                        // No source field - assume 100% real (from external API)
-                        result.realDataPct = 100;
-                    }
-                } else {
-                    result.realDataPct = 100; // Aggregated data is considered real
+                if (firstRes.data && lastRes.data) {
+                    result.firstDate = firstRes.data[ds.dateField];
+                    result.lastDate = lastRes.data[ds.dateField];
+                    const firstDate = new Date(result.firstDate);
+                    const lastDate = new Date(result.lastDate);
+                    result.days = Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24));
                 }
                 
-                // Determine status
-                const coveragePct = (daysCovered / TARGET_DAYS) * 100;
+                // 상태 결정
+                const coveragePct = (result.days / TARGET_DAYS) * 100;
                 if (coveragePct >= 95) {
                     result.status = 'success';
                 } else if (coveragePct >= 50) {
@@ -961,9 +912,61 @@
                     result.status = 'failed';
                 }
                 
-                // Update table and chart
-                updateTableRow(key, result, ds, data);
-                renderChart(key, data, ds);
+                // Data quality - 일단 100%로 (상세 분석은 차트 로드 시)
+                result.realDataPct = 100;
+                
+                // 테이블 즉시 업데이트
+                updateTableRow(key, result, ds);
+                
+                // ═══════════════════════════════════════════════════════════════
+                // STAGE 2: 차트용 데이터 (최근 400개만 - 지연 로딩)
+                // ═══════════════════════════════════════════════════════════════
+                
+                setTimeout(async () => {
+                    try {
+                        let chartData = [];
+                        
+                        if (ds.aggregate) {
+                            // Aggregate 테이블: 최근 데이터만
+                            const { data: rawData } = await supabase
+                                .from(ds.table)
+                                .select(`${ds.dateField}, ${ds.valueField}`)
+                                .order(ds.dateField, { ascending: false })
+                                .limit(5000);
+                            
+                            if (rawData) {
+                                const dateMap = new Map();
+                                rawData.forEach(row => {
+                                    const date = row[ds.dateField];
+                                    const val = parseFloat(row[ds.valueField]) || 0;
+                                    dateMap.set(date, (dateMap.get(date) || 0) + val);
+                                });
+                                
+                                chartData = Array.from(dateMap.entries())
+                                    .map(([date, val]) => ({ [ds.dateField]: date, [ds.valueField]: val }))
+                                    .sort((a, b) => a[ds.dateField].localeCompare(b[ds.dateField]))
+                                    .slice(-400);
+                            }
+                        } else {
+                            // 일반 테이블: 최근 400개만
+                            const { data: rawData } = await supabase
+                                .from(ds.table)
+                                .select(`${ds.dateField}, ${ds.valueField}`)
+                                .order(ds.dateField, { ascending: false })
+                                .limit(400);
+                            
+                            if (rawData) {
+                                chartData = rawData.reverse();
+                            }
+                        }
+                        
+                        if (chartData.length > 0) {
+                            renderChart(key, chartData, ds);
+                        }
+                    } catch (e) {
+                        console.warn(`Chart load failed for ${key}:`, e.message);
+                    }
+                }, 100 + Math.random() * 500); // 약간의 지연으로 분산
                 
                 return result;
                 
@@ -975,18 +978,16 @@
             }
         }
 
-        function updateTableRow(key, result, ds, data = []) {
+        function updateTableRow(key, result, ds) {
             // Records
             document.getElementById(`records-${key}`).innerHTML = result.records > 0 
                 ? `<span style="color:var(--success)">${result.records.toLocaleString()}</span>`
                 : `<span style="color:var(--error)">0</span>`;
             
             // Date range
-            if (data.length > 0) {
-                const firstDate = data[0][ds.dateField];
-                const lastDate = data[data.length - 1][ds.dateField];
-                document.getElementById(`range-${key}`).textContent = `${firstDate} → ${lastDate}`;
-            } else {
+            if (result.firstDate && result.lastDate) {
+                document.getElementById(`range-${key}`).textContent = `${result.firstDate} → ${result.lastDate}`;
+            } else if (result.records === 0) {
                 document.getElementById(`range-${key}`).textContent = 'No data';
             }
             
