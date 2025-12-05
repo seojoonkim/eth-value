@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHval Admin - Data Collection Status</title>
+    <title>ETHval Admin - Data Verification</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <style>
         :root {
             --bg: #0a0a0f;
@@ -21,7 +22,6 @@
             --success: #22c55e;
             --warning: #f59e0b;
             --error: #ef4444;
-            --info: #3b82f6;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -31,12 +31,12 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1600px; margin: 0 auto; }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--border);
         }
@@ -47,7 +47,7 @@
             align-items: center;
             gap: 12px;
         }
-        .header h1 .badge {
+        .badge {
             background: var(--primary);
             color: white;
             font-size: 10px;
@@ -67,87 +67,11 @@
             align-items: center;
             gap: 8px;
             transition: all 0.2s;
-            text-decoration: none;
         }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #7c3aed; transform: translateY(-1px); }
+        .btn-primary:hover { background: #7c3aed; }
         .btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
         .btn-secondary:hover { background: var(--bg-hover); }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .stat-card .label {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-        .stat-card .value { font-size: 32px; font-weight: 700; }
-        .stat-card .value.success { color: var(--success); }
-        .stat-card .value.warning { color: var(--warning); }
-        .stat-card .value.error { color: var(--error); }
-        .section {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 24px;
-            overflow: hidden;
-        }
-        .section-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .section-header h2 { font-size: 16px; font-weight: 600; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover { background: var(--bg-hover); }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .status-badge::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-        .status-badge.success { color: var(--success); background: rgba(34, 197, 94, 0.1); }
-        .status-badge.partial { color: var(--warning); background: rgba(245, 158, 11, 0.1); }
-        .status-badge.failed { color: var(--error); background: rgba(239, 68, 68, 0.1); }
-        .status-badge.pending { color: var(--text-muted); background: rgba(136, 136, 136, 0.1); }
-        .dataset-icon { font-size: 18px; margin-right: 8px; }
-        .action-btn {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .action-btn:hover { background: var(--bg-hover); color: var(--text); }
         .connection-status {
             display: flex;
             align-items: center;
@@ -160,81 +84,101 @@
         }
         .connection-status.connected { border-color: var(--success); color: var(--success); }
         .connection-status.disconnected { border-color: var(--error); color: var(--error); }
-        .config-section { padding: 20px; }
-        .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-        .config-item { display: flex; flex-direction: column; gap: 8px; }
-        .config-item label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
-        .config-item input {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 14px;
-            color: var(--text);
-            font-family: 'JetBrains Mono', monospace;
+
+        /* Stats Summary */
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
         }
-        .config-item input:focus { outline: none; border-color: var(--primary); }
-        .config-item .hint { font-size: 11px; color: var(--text-muted); }
-        /* Chart Modal */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s;
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal {
+        .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            width: 95%; max-width: 1200px; max-height: 90vh;
-            overflow: hidden;
-            transform: scale(0.95); transition: transform 0.3s;
-        }
-        .modal-overlay.active .modal { transform: scale(1); }
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .modal-header h3 { font-size: 18px; display: flex; align-items: center; gap: 10px; }
-        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
-        .modal-close:hover { color: var(--text); }
-        .modal-body { padding: 20px; max-height: calc(90vh - 80px); overflow-y: auto; }
-        .chart-container {
-            background: var(--bg);
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 16px;
         }
-        .chart-container canvas { width: 100% !important; height: 400px !important; }
-        .data-stats {
+        .stat-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-card .value { font-size: 28px; font-weight: 700; }
+        .stat-card .value.success { color: var(--success); }
+        .stat-card .value.warning { color: var(--warning); }
+        .stat-card .value.error { color: var(--error); }
+
+        /* Charts Grid */
+        .charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .chart-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-header .icon { font-size: 18px; }
+        .chart-meta {
+            display: flex;
             gap: 16px;
-            margin-bottom: 20px;
+            font-size: 12px;
         }
-        .data-stat {
-            background: var(--bg);
-            border-radius: 8px;
+        .chart-meta span { color: var(--text-muted); }
+        .chart-meta .value { color: var(--text); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+        .chart-body {
             padding: 16px;
-            text-align: center;
+            height: 280px;
+            position: relative;
         }
-        .data-stat .label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
-        .data-stat .value { font-size: 20px; font-weight: 600; }
-        .sample-data {
+        .chart-body canvas { width: 100% !important; height: 100% !important; }
+        .chart-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 12px 20px;
             background: var(--bg);
-            border-radius: 8px;
-            padding: 16px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            overflow-x: auto;
-            max-height: 200px;
-            overflow-y: auto;
+            border-top: 1px solid var(--border);
         }
-        .sample-data table { font-size: 11px; }
-        .sample-data th, .sample-data td { padding: 8px 12px; }
-        /* Auth Overlay */
+        .chart-stat { text-align: center; }
+        .chart-stat .label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
+        .chart-stat .value { font-size: 14px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+        .chart-stat .value.latest { color: var(--primary); }
+        .chart-stat .value.min { color: var(--error); }
+        .chart-stat .value.max { color: var(--success); }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.success { background: var(--success); }
+        .status-dot.partial { background: var(--warning); }
+        .status-dot.failed { background: var(--error); }
+        .status-dot.pending { background: var(--text-muted); }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+        }
+
+        /* Auth */
         .auth-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999;
@@ -271,16 +215,16 @@
             cursor: pointer;
         }
         .auth-error { color: var(--error); font-size: 13px; margin-top: 12px; display: none; }
+
         @media (max-width: 768px) {
             .header { flex-direction: column; gap: 16px; align-items: flex-start; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            th, td { padding: 10px 12px; font-size: 12px; }
-            .modal { width: 98%; max-width: none; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-stats { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
-    <!-- Password Protection -->
+    <!-- Auth -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
             <h2 style="margin-bottom:8px;">🔐 ETHval Admin</h2>
@@ -291,90 +235,28 @@
         </div>
     </div>
 
-    <!-- Chart Modal -->
-    <div class="modal-overlay" id="chartModal" onclick="if(event.target===this)closeModal()">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="modalTitle">📊 Dataset Chart</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="data-stats" id="dataStats"></div>
-                <div class="chart-container">
-                    <canvas id="dataChart"></canvas>
-                </div>
-                <h4 style="margin-bottom:12px;font-size:14px;">📋 Sample Data (Latest 10 Records)</h4>
-                <div class="sample-data" id="sampleData"></div>
-            </div>
-        </div>
-    </div>
-
     <div class="container">
         <div class="header">
-            <h1>🛠️ ETHval Admin <span class="badge">DATA COLLECTOR</span></h1>
+            <h1>🛠️ ETHval Admin <span class="badge">DATA VERIFICATION</span></h1>
             <div class="header-actions">
                 <div class="connection-status" id="connectionStatus">
                     <span style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
                     <span id="connectionText">Connecting...</span>
                 </div>
-                <button class="btn btn-secondary" onclick="loadAllData()">🔄 Refresh</button>
+                <button class="btn btn-secondary" onclick="loadAllCharts()">🔄 Refresh All</button>
                 <button class="btn btn-primary" onclick="openGitHubActions()">▶️ Run on GitHub</button>
             </div>
         </div>
 
-        <div class="stats-grid">
+        <div class="stats-summary">
             <div class="stat-card"><div class="label">Total Datasets</div><div class="value">8</div></div>
-            <div class="stat-card"><div class="label">Success</div><div class="value success" id="successCount">0</div></div>
-            <div class="stat-card"><div class="label">Partial / Manual</div><div class="value warning" id="partialCount">0</div></div>
-            <div class="stat-card"><div class="label">Failed</div><div class="value error" id="failedCount">0</div></div>
+            <div class="stat-card"><div class="label">Success</div><div class="value success" id="successCount">-</div></div>
+            <div class="stat-card"><div class="label">Partial</div><div class="value warning" id="partialCount">-</div></div>
+            <div class="stat-card"><div class="label">Failed</div><div class="value error" id="failedCount">-</div></div>
+            <div class="stat-card"><div class="label">Last Run</div><div class="value" id="lastRun" style="font-size:16px;">-</div></div>
         </div>
 
-        <div class="section">
-            <div class="section-header">
-                <h2>📦 Data Collection Status</h2>
-                <span style="color:var(--text-muted);font-size:13px;">Last run: <span id="lastRun">Never</span></span>
-            </div>
-            <table>
-                <thead>
-                    <tr><th>Dataset</th><th>Status</th><th>Records</th><th>Date Range</th><th>Last Updated</th><th>Actions</th></tr>
-                </thead>
-                <tbody id="datasetsTable"></tbody>
-            </table>
-        </div>
-
-        <div class="section">
-            <div class="section-header"><h2>⚙️ Configuration</h2></div>
-            <div class="config-section">
-                <div class="config-grid">
-                    <div class="config-item">
-                        <label>GitHub Repository</label>
-                        <input type="text" id="githubRepo" placeholder="username/repo">
-                        <span class="hint">For "Run on GitHub" button</span>
-                    </div>
-                    <div class="config-item">
-                        <label>Supabase URL</label>
-                        <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co">
-                    </div>
-                    <div class="config-item">
-                        <label>Supabase Anon Key</label>
-                        <input type="password" id="supabaseKey" placeholder="eyJ...">
-                    </div>
-                </div>
-                <div style="margin-top:16px;">
-                    <button class="btn btn-primary" onclick="saveConfig()">💾 Save & Connect</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <h2>📝 Recent Logs</h2>
-                <span style="color:var(--text-muted);font-size:13px;"><span id="logCount">0</span> logs</span>
-            </div>
-            <div style="padding:20px;max-height:300px;overflow-y:auto;" id="logsContainer">
-                <p style="color:var(--text-muted);text-align:center;">No logs recorded</p>
-            </div>
-        </div>
+        <div class="charts-grid" id="chartsGrid"></div>
     </div>
 
     <script>
@@ -393,183 +275,279 @@
         }
 
         const DATASETS = {
-            'eth_price': { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', dateField: 'date', color: '#8b5cf6' },
-            'ethereum_tvl': { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', dateField: 'date', color: '#22c55e' },
-            'l2_tvl': { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', dateField: 'date', color: '#3b82f6' },
-            'protocol_fees': { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', valueField: 'total_fees', dateField: 'date', color: '#f59e0b' },
-            'staking_data': { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', dateField: 'date', color: '#ef4444' },
-            'gas_burn': { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'avg_gas_price_gwei', dateField: 'date', color: '#f97316' },
-            'active_addresses': { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', dateField: 'date', color: '#06b6d4' },
-            'eth_supply': { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', dateField: 'date', color: '#a855f7' }
+            'eth_price': { 
+                name: 'ETH Price', 
+                icon: '💰', 
+                table: 'historical_eth_price', 
+                valueField: 'close', 
+                dateField: 'date', 
+                color: '#8b5cf6',
+                format: 'price'
+            },
+            'ethereum_tvl': { 
+                name: 'Ethereum TVL', 
+                icon: '🏦', 
+                table: 'historical_ethereum_tvl', 
+                valueField: 'tvl', 
+                dateField: 'date', 
+                color: '#22c55e',
+                format: 'tvl'
+            },
+            'l2_tvl': { 
+                name: 'L2 TVL (All Chains)', 
+                icon: '🔗', 
+                table: 'historical_l2_tvl', 
+                valueField: 'tvl', 
+                dateField: 'date', 
+                color: '#3b82f6',
+                format: 'tvl',
+                aggregate: true  // Need to aggregate by date
+            },
+            'protocol_fees': { 
+                name: 'Protocol Fees', 
+                icon: '📈', 
+                table: 'historical_protocol_fees', 
+                valueField: 'total_fees', 
+                dateField: 'date', 
+                color: '#f59e0b',
+                format: 'fees'
+            },
+            'staking_data': { 
+                name: 'Staking Data', 
+                icon: '🥩', 
+                table: 'historical_staking', 
+                valueField: 'total_staked_eth', 
+                dateField: 'date', 
+                color: '#ef4444',
+                format: 'eth'
+            },
+            'gas_burn': { 
+                name: 'Gas Price', 
+                icon: '🔥', 
+                table: 'historical_gas_burn', 
+                valueField: 'avg_gas_price_gwei', 
+                dateField: 'date', 
+                color: '#f97316',
+                format: 'gas'
+            },
+            'active_addresses': { 
+                name: 'Active Addresses', 
+                icon: '👥', 
+                table: 'historical_active_addresses', 
+                valueField: 'active_addresses', 
+                dateField: 'date', 
+                color: '#06b6d4',
+                format: 'number'
+            },
+            'eth_supply': { 
+                name: 'ETH Supply', 
+                icon: '💎', 
+                table: 'historical_eth_supply', 
+                valueField: 'eth_supply', 
+                dateField: 'date', 
+                color: '#a855f7',
+                format: 'eth'
+            }
         };
 
-        let supabase = null, currentChart = null;
+        let supabase = null;
+        const charts = {};
         const SUPABASE_URL = 'https://rliwxedrifwxbudcutqs.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsaXd4ZWRyaWZ3eGJ1ZGN1dHFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ0MzU2MDQsImV4cCI6MjA4MDAxMTYwNH0.jX_tAdAhXEcmHdtf56-8La4SpqbKEM3_hIBBwhldD6Y';
         const DEFAULT_GITHUB_REPO = 'seojoonkim/eth-value';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('githubRepo').value = localStorage.getItem('ethval_github_repo') || DEFAULT_GITHUB_REPO;
-            document.getElementById('supabaseUrl').value = SUPABASE_URL;
-            document.getElementById('supabaseKey').value = SUPABASE_ANON_KEY;
-            initSupabase(SUPABASE_URL, SUPABASE_ANON_KEY);
+        function openGitHubActions() {
+            window.open(`https://github.com/${DEFAULT_GITHUB_REPO}/actions`, '_blank');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            createChartCards();
+            await initSupabase();
         });
 
-        function openGitHubActions() {
-            window.open(`https://github.com/${document.getElementById('githubRepo').value.trim() || DEFAULT_GITHUB_REPO}/actions`, '_blank');
+        function createChartCards() {
+            const grid = document.getElementById('chartsGrid');
+            grid.innerHTML = Object.entries(DATASETS).map(([key, ds]) => `
+                <div class="chart-card" id="card-${key}">
+                    <div class="chart-header">
+                        <h3><span class="icon">${ds.icon}</span> ${ds.name}</h3>
+                        <div class="chart-meta">
+                            <span>Records: <span class="value" id="records-${key}">-</span></span>
+                            <span>Range: <span class="value" id="range-${key}">-</span></span>
+                            <span class="status-dot pending" id="status-${key}"></span>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-${key}"></canvas>
+                        <div class="loading" id="loading-${key}">Loading...</div>
+                    </div>
+                    <div class="chart-stats">
+                        <div class="chart-stat"><div class="label">Latest</div><div class="value latest" id="latest-${key}">-</div></div>
+                        <div class="chart-stat"><div class="label">Min</div><div class="value min" id="min-${key}">-</div></div>
+                        <div class="chart-stat"><div class="label">Max</div><div class="value max" id="max-${key}">-</div></div>
+                        <div class="chart-stat"><div class="label">Average</div><div class="value" id="avg-${key}">-</div></div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function saveConfig() {
-            const url = document.getElementById('supabaseUrl').value.trim();
-            const key = document.getElementById('supabaseKey').value.trim();
-            const repo = document.getElementById('githubRepo').value.trim();
-            if (!url || !key) { alert('Please enter both Supabase URL and Anon Key'); return; }
-            localStorage.setItem('ethval_supabase_url', url);
-            localStorage.setItem('ethval_supabase_key', key);
-            if (repo) localStorage.setItem('ethval_github_repo', repo);
-            initSupabase(url, key);
-        }
-
-        async function initSupabase(url, key) {
+        async function initSupabase() {
             try {
-                updateConnectionStatus(false, 'Connecting...');
-                supabase = window.supabase.createClient(url, key);
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionText').textContent = 'Connecting...';
+                
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 const { error } = await supabase.from('data_collection_status').select('count').limit(1);
                 if (error) throw error;
-                updateConnectionStatus(true, 'Connected');
-                loadAllData();
-            } catch (error) {
-                updateConnectionStatus(false, 'Failed');
+                
+                document.getElementById('connectionStatus').className = 'connection-status connected';
+                document.getElementById('connectionText').textContent = 'Connected';
+                
+                await loadStatus();
+                await loadAllCharts();
+            } catch (e) {
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionText').textContent = 'Failed';
+                console.error(e);
             }
-        }
-
-        function updateConnectionStatus(connected, text) {
-            document.getElementById('connectionStatus').className = 'connection-status ' + (connected ? 'connected' : 'disconnected');
-            document.getElementById('connectionText').textContent = text;
-        }
-
-        async function loadAllData() {
-            if (!supabase) return;
-            await loadStatus();
-            await loadLogs();
         }
 
         async function loadStatus() {
             try {
-                const { data, error } = await supabase.from('data_collection_status').select('*').order('dataset_name');
+                const { data, error } = await supabase.from('data_collection_status').select('*');
                 if (error) throw error;
-                renderStatus(data);
+                
+                let success = 0, partial = 0, failed = 0, lastRun = null;
+                const statusMap = {};
+                
+                data.forEach(s => {
+                    statusMap[s.dataset_name] = s;
+                    if (s.status === 'success') success++;
+                    else if (s.status === 'partial') partial++;
+                    else if (s.status === 'failed') failed++;
+                    if (s.last_run_at && (!lastRun || new Date(s.last_run_at) > new Date(lastRun))) {
+                        lastRun = s.last_run_at;
+                    }
+                    
+                    // Update status dot
+                    const dot = document.getElementById(`status-${s.dataset_name}`);
+                    if (dot) {
+                        dot.className = `status-dot ${s.status || 'pending'}`;
+                    }
+                });
+                
+                document.getElementById('successCount').textContent = success;
+                document.getElementById('partialCount').textContent = partial;
+                document.getElementById('failedCount').textContent = failed;
+                document.getElementById('lastRun').textContent = lastRun ? formatTime(lastRun) : 'Never';
+                
             } catch (e) { console.error(e); }
         }
 
-        function renderStatus(statusData) {
-            let successCount = 0, partialCount = 0, failedCount = 0, lastRun = null;
-            const statusMap = {};
-            statusData.forEach(s => {
-                statusMap[s.dataset_name] = s;
-                if (s.status === 'success') successCount++;
-                else if (s.status === 'partial') partialCount++;
-                else if (s.status === 'failed') failedCount++;
-                if (s.last_run_at && (!lastRun || new Date(s.last_run_at) > new Date(lastRun))) lastRun = s.last_run_at;
-            });
-            document.getElementById('successCount').textContent = successCount;
-            document.getElementById('partialCount').textContent = partialCount;
-            document.getElementById('failedCount').textContent = failedCount;
-            document.getElementById('lastRun').textContent = lastRun ? formatTime(lastRun) : 'Never';
-
-            document.getElementById('datasetsTable').innerHTML = Object.entries(DATASETS).map(([key, ds]) => {
-                const st = statusMap[key] || { status: 'pending' };
-                const range = st.date_from && st.date_to ? `${st.date_from} ~ ${st.date_to}` : '-';
-                return `<tr>
-                    <td><span class="dataset-icon">${ds.icon}</span>${ds.name}</td>
-                    <td><span class="status-badge ${st.status || 'pending'}">${(st.status || 'pending').charAt(0).toUpperCase() + (st.status || 'pending').slice(1)}</span></td>
-                    <td style="font-family:'JetBrains Mono',monospace;">${st.record_count ? st.record_count.toLocaleString() : '-'}</td>
-                    <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${range}</td>
-                    <td style="color:var(--text-muted);font-size:13px;">${st.updated_at ? formatTime(st.updated_at) : '-'}</td>
-                    <td><button class="action-btn" onclick="viewDataChart('${key}')">📊 View Chart</button></td>
-                </tr>`;
-            }).join('');
-        }
-
-        async function loadLogs() {
-            try {
-                const { data, error } = await supabase.from('data_collection_logs').select('*').order('created_at', { ascending: false }).limit(50);
-                if (error) throw error;
-                document.getElementById('logCount').textContent = data.length;
-                if (data.length === 0) {
-                    document.getElementById('logsContainer').innerHTML = '<p style="color:var(--text-muted);text-align:center;">No logs recorded</p>';
-                    return;
-                }
-                document.getElementById('logsContainer').innerHTML = data.map(log => `
-                    <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
-                        <span style="color:var(--text-muted);">${formatTime(log.created_at)}</span>
-                        <span style="margin:0 8px;color:${log.log_type === 'error' ? 'var(--error)' : log.log_type === 'warning' ? 'var(--warning)' : 'var(--success)'}">[${log.log_type}]</span>
-                        <strong>${log.dataset_name}</strong>: ${log.message}
-                    </div>
-                `).join('');
-            } catch (e) { console.error(e); }
-        }
-
-        async function viewDataChart(datasetKey) {
-            const ds = DATASETS[datasetKey];
-            if (!ds) return;
-            document.getElementById('modalTitle').innerHTML = `${ds.icon} ${ds.name} - Historical Data (3 Years)`;
-            document.getElementById('chartModal').classList.add('active');
-            document.getElementById('dataStats').innerHTML = '<p style="text-align:center;color:var(--text-muted);">Loading...</p>';
-            document.getElementById('sampleData').innerHTML = '';
-
-            try {
-                const { data, error } = await supabase.from(ds.table).select('*').order(ds.dateField, { ascending: true }).limit(1200);
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    document.getElementById('dataStats').innerHTML = '<p style="color:var(--warning);text-align:center;">No data found</p>';
-                    return;
-                }
-
-                const values = data.map(d => parseFloat(d[ds.valueField]) || 0).filter(v => v > 0);
-                const minVal = Math.min(...values), maxVal = Math.max(...values);
-                const avgVal = values.reduce((a, b) => a + b, 0) / values.length;
-                const latestVal = values[values.length - 1];
-
-                document.getElementById('dataStats').innerHTML = `
-                    <div class="data-stat"><div class="label">Records</div><div class="value">${data.length.toLocaleString()}</div></div>
-                    <div class="data-stat"><div class="label">Latest</div><div class="value" style="color:var(--primary);">${formatValue(latestVal, datasetKey)}</div></div>
-                    <div class="data-stat"><div class="label">Min</div><div class="value" style="color:var(--error);">${formatValue(minVal, datasetKey)}</div></div>
-                    <div class="data-stat"><div class="label">Max</div><div class="value" style="color:var(--success);">${formatValue(maxVal, datasetKey)}</div></div>
-                    <div class="data-stat"><div class="label">Average</div><div class="value">${formatValue(avgVal, datasetKey)}</div></div>
-                `;
-
-                renderChart(data, ds);
-
-                const sample = data.slice(-10).reverse();
-                const cols = Object.keys(sample[0]).filter(k => !['id', 'created_at', 'updated_at'].includes(k));
-                document.getElementById('sampleData').innerHTML = `
-                    <table><thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
-                    <tbody>${sample.map(row => `<tr>${cols.map(c => `<td>${formatCell(row[c])}</td>`).join('')}</tr>`).join('')}</tbody></table>
-                `;
-            } catch (e) {
-                document.getElementById('dataStats').innerHTML = `<p style="color:var(--error);">Error: ${e.message}</p>`;
+        async function loadAllCharts() {
+            for (const key of Object.keys(DATASETS)) {
+                await loadChartData(key);
             }
         }
 
-        function renderChart(data, ds) {
-            const ctx = document.getElementById('dataChart').getContext('2d');
-            if (currentChart) currentChart.destroy();
-            const rate = Math.max(1, Math.floor(data.length / 365));
-            const sampled = data.filter((_, i) => i % rate === 0);
-            currentChart = new Chart(ctx, {
+        async function loadChartData(key) {
+            const ds = DATASETS[key];
+            const loadingEl = document.getElementById(`loading-${key}`);
+            
+            try {
+                loadingEl.style.display = 'flex';
+                
+                let data;
+                
+                if (ds.aggregate) {
+                    // For L2 TVL - aggregate by date
+                    const { data: rawData, error } = await supabase
+                        .from(ds.table)
+                        .select(`${ds.dateField}, ${ds.valueField}`)
+                        .order(ds.dateField, { ascending: false })
+                        .limit(50000);  // Get more data for aggregation
+                    
+                    if (error) throw error;
+                    
+                    // Aggregate by date
+                    const dateMap = new Map();
+                    rawData.forEach(row => {
+                        const date = row[ds.dateField];
+                        const val = parseFloat(row[ds.valueField]) || 0;
+                        dateMap.set(date, (dateMap.get(date) || 0) + val);
+                    });
+                    
+                    data = Array.from(dateMap.entries())
+                        .map(([date, tvl]) => ({ [ds.dateField]: date, [ds.valueField]: tvl }))
+                        .sort((a, b) => a[ds.dateField].localeCompare(b[ds.dateField]));
+                    
+                } else {
+                    // Normal fetch - get ALL data, not limited
+                    const { data: rawData, error } = await supabase
+                        .from(ds.table)
+                        .select(`${ds.dateField}, ${ds.valueField}`)
+                        .order(ds.dateField, { ascending: true });
+                    
+                    if (error) throw error;
+                    data = rawData;
+                }
+                
+                loadingEl.style.display = 'none';
+                
+                if (!data || data.length === 0) {
+                    document.getElementById(`records-${key}`).textContent = '0';
+                    document.getElementById(`range-${key}`).textContent = 'No data';
+                    return;
+                }
+                
+                // Update stats
+                const values = data.map(d => parseFloat(d[ds.valueField]) || 0).filter(v => v > 0);
+                const minVal = Math.min(...values);
+                const maxVal = Math.max(...values);
+                const avgVal = values.reduce((a, b) => a + b, 0) / values.length;
+                const latestVal = values[values.length - 1];
+                
+                document.getElementById(`records-${key}`).textContent = data.length.toLocaleString();
+                document.getElementById(`range-${key}`).textContent = 
+                    `${data[0][ds.dateField]} ~ ${data[data.length - 1][ds.dateField]}`;
+                
+                document.getElementById(`latest-${key}`).textContent = formatValue(latestVal, ds.format);
+                document.getElementById(`min-${key}`).textContent = formatValue(minVal, ds.format);
+                document.getElementById(`max-${key}`).textContent = formatValue(maxVal, ds.format);
+                document.getElementById(`avg-${key}`).textContent = formatValue(avgVal, ds.format);
+                
+                // Render chart
+                renderChart(key, data, ds);
+                
+            } catch (e) {
+                console.error(`Failed to load ${key}:`, e);
+                loadingEl.textContent = 'Error loading data';
+            }
+        }
+
+        function renderChart(key, data, ds) {
+            const ctx = document.getElementById(`chart-${key}`).getContext('2d');
+            
+            if (charts[key]) {
+                charts[key].destroy();
+            }
+            
+            // Sample data for performance (max 500 points)
+            const sampleRate = Math.max(1, Math.floor(data.length / 500));
+            const sampled = data.filter((_, i) => i % sampleRate === 0);
+            
+            charts[key] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: sampled.map(d => d[ds.dateField]),
                     datasets: [{
-                        label: ds.name,
                         data: sampled.map(d => parseFloat(d[ds.valueField]) || 0),
                         borderColor: ds.color,
-                        backgroundColor: ds.color + '20',
+                        backgroundColor: ds.color + '15',
                         fill: true,
                         tension: 0.3,
                         pointRadius: 0,
-                        borderWidth: 2
+                        borderWidth: 1.5
                     }]
                 },
                 options: {
@@ -584,20 +562,79 @@
                             bodyColor: '#e5e5e5',
                             borderColor: '#2a2a3a',
                             borderWidth: 1,
-                            padding: 12
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: ctx => formatValue(ctx.raw, ds.format)
+                            }
                         }
                     },
                     scales: {
-                        x: { grid: { color: '#2a2a3a' }, ticks: { color: '#888', maxTicksLimit: 12, maxRotation: 0 } },
-                        y: { grid: { color: '#2a2a3a' }, ticks: { color: '#888', callback: v => formatValue(v, ds.name) } }
+                        x: {
+                            grid: { color: '#1a1a25' },
+                            ticks: { 
+                                color: '#666',
+                                maxTicksLimit: 6,
+                                maxRotation: 0,
+                                font: { size: 10 }
+                            }
+                        },
+                        y: {
+                            grid: { color: '#1a1a25' },
+                            ticks: { 
+                                color: '#666',
+                                font: { size: 10 },
+                                callback: v => formatValueShort(v, ds.format)
+                            }
+                        }
                     }
                 }
             });
         }
 
-        function closeModal() {
-            document.getElementById('chartModal').classList.remove('active');
-            if (currentChart) { currentChart.destroy(); currentChart = null; }
+        function formatValue(val, format) {
+            if (val === null || val === undefined || isNaN(val)) return '-';
+            const n = parseFloat(val);
+            
+            switch (format) {
+                case 'price':
+                    return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+                case 'tvl':
+                case 'fees':
+                    if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
+                    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+                    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+                    return '$' + n.toLocaleString();
+                case 'eth':
+                    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B ETH';
+                    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M ETH';
+                    return n.toLocaleString() + ' ETH';
+                case 'gas':
+                    return n.toFixed(1) + ' Gwei';
+                case 'number':
+                    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+                    if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+                    return n.toLocaleString();
+                default:
+                    return n.toLocaleString();
+            }
+        }
+
+        function formatValueShort(val, format) {
+            if (val === null || val === undefined || isNaN(val)) return '';
+            const n = parseFloat(val);
+            
+            if (n >= 1e12) return (n / 1e12).toFixed(1) + 'T';
+            if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
+            
+            if (format === 'price' || format === 'tvl' || format === 'fees') {
+                return '$' + n.toFixed(0);
+            }
+            if (format === 'gas') return n.toFixed(0);
+            
+            return n.toFixed(0);
         }
 
         function formatTime(dateStr) {
@@ -607,44 +644,6 @@
             if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
             return `${Math.floor(diff / 86400)}d ago`;
         }
-
-        function formatValue(val, key) {
-            if (val === null || val === undefined) return '-';
-            const n = parseFloat(val);
-            if (isNaN(n)) return val;
-            if (key.includes('price') || key.includes('Price')) return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
-            if (key.includes('tvl') || key.includes('TVL') || key.includes('supply') || key.includes('Supply') || key.includes('staking') || key.includes('Staking')) {
-                if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
-                if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-                return n.toLocaleString();
-            }
-            if (key.includes('gas') || key.includes('Gas')) return n.toFixed(1) + ' Gwei';
-            if (key.includes('address') || key.includes('Address')) {
-                if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-                if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-                return n.toLocaleString();
-            }
-            if (key.includes('fees') || key.includes('Fees')) {
-                if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
-                if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
-                return '$' + n.toLocaleString();
-            }
-            return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
-        }
-
-        function formatCell(val) {
-            if (val === null || val === undefined) return '-';
-            if (typeof val === 'number') {
-                if (val > 1e9) return (val / 1e9).toFixed(2) + 'B';
-                if (val > 1e6) return (val / 1e6).toFixed(2) + 'M';
-                if (val > 1e3) return (val / 1e3).toFixed(1) + 'K';
-                if (val % 1 !== 0) return val.toFixed(4);
-                return val.toLocaleString();
-            }
-            return val;
-        }
-
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
 </body>
 </html>
