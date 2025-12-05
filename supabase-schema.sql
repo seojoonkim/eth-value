@@ -65,8 +65,12 @@ CREATE TABLE IF NOT EXISTS historical_staking (
     date DATE NOT NULL UNIQUE,
     timestamp BIGINT,
     staked_eth DECIMAL(24, 8),
+    total_staked_eth DECIMAL(24, 8),
     validator_count INTEGER,
+    total_validators INTEGER,
     apr DECIMAL(8, 4),
+    avg_apr DECIMAL(8, 4),
+    source VARCHAR(50),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -82,6 +86,8 @@ CREATE TABLE IF NOT EXISTS historical_gas_burn (
     total_gas_used DECIMAL(24, 0),
     transaction_count INTEGER,
     eth_burned DECIMAL(24, 8),
+    eth_burnt DECIMAL(24, 8),
+    source VARCHAR(50),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -95,6 +101,7 @@ CREATE TABLE IF NOT EXISTS historical_active_addresses (
     timestamp BIGINT,
     active_addresses INTEGER,
     new_addresses INTEGER,
+    source VARCHAR(50),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -109,6 +116,7 @@ CREATE TABLE IF NOT EXISTS historical_eth_supply (
     eth2_staking DECIMAL(24, 8),
     burnt_fees DECIMAL(24, 8),
     withdrawn_total DECIMAL(24, 8),
+    source VARCHAR(50),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
