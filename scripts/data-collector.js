@@ -1872,7 +1872,7 @@ async function collectBlobData() {
 }
 
 /**
- * 17. DeFi Lending TVL (DefiLlama)
+ * 17. DeFi Lending TVL (DefiLlama) - All Lending Protocols on Ethereum
  */
 async function collectLendingTvl() {
     const dataset = 'lending_tvl';
@@ -1882,10 +1882,25 @@ async function collectLendingTvl() {
         const records = [];
         const dateMap = new Map();
         
-        // Fetch major lending protocols (compound-v2 as main compound deprecated)
-        const protocols = ['aave', 'aave-v3', 'compound-v2', 'compound-v3', 'makerdao', 'spark'];
+        // 모든 Lending 프로토콜 가져오기
+        log('info', dataset, 'Fetching all Lending protocols from DefiLlama...');
+        const allProtocols = await fetch('https://api.llama.fi/protocols');
         
-        for (const protocol of protocols) {
+        const lendingProtocols = allProtocols.filter(p => 
+            p.category === 'Lending' && p.chains?.includes('Ethereum')
+        );
+        
+        log('info', dataset, `Found ${lendingProtocols.length} Lending protocols on Ethereum`);
+        
+        // 주요 프로토콜만 히스토리 수집 (API 부하 방지)
+        const topProtocols = lendingProtocols
+            .sort((a, b) => (b.chainTvls?.Ethereum || 0) - (a.chainTvls?.Ethereum || 0))
+            .slice(0, 10)
+            .map(p => p.slug);
+        
+        log('info', dataset, `Collecting history for top 10: ${topProtocols.join(', ')}`);
+        
+        for (const protocol of topProtocols) {
             try {
                 const data = await fetch(`https://api.llama.fi/protocol/${protocol}`);
                 if (data && data.chainTvls && data.chainTvls.Ethereum) {
