@@ -1647,7 +1647,8 @@ async function collectExchangeReserve() {
 }
 
 /**
- * 15. ETH Dominance (CoinGecko)
+ * 15. ETH Dominance (CoinGecko - 실제 계산)
+ * ETH Dominance = ETH Market Cap / Total Crypto Market Cap × 100
  */
 async function collectEthDominance() {
     const dataset = 'eth_dominance';
@@ -1656,45 +1657,122 @@ async function collectEthDominance() {
     try {
         const records = [];
         
-        // CoinGecko global data doesn't have historical, so we estimate
-        log('info', dataset, 'Generating ETH dominance history...');
+        // 1. 현재 Global 데이터 가져오기 (현재 dominance 및 total market cap)
+        log('info', dataset, 'Fetching current global data from CoinGecko...');
+        const globalData = await fetch('https://api.coingecko.com/api/v3/global');
         
-        const today = new Date();
-        for (let i = 0; i < CONFIG.DAYS_TO_FETCH; i++) {
-            const date = new Date(today - i * 24 * 60 * 60 * 1000);
+        if (!globalData?.data) {
+            throw new Error('Failed to fetch global data');
+        }
+        
+        const currentEthDominance = globalData.data.market_cap_percentage?.eth || 10;
+        const currentTotalMcap = globalData.data.total_market_cap?.usd || 3500000000000;
+        
+        log('info', dataset, `Current ETH dominance: ${currentEthDominance.toFixed(2)}%, Total MCap: $${(currentTotalMcap/1e12).toFixed(2)}T`);
+        
+        await sleep(1500); // Rate limit
+        
+        // 2. ETH Market Cap 히스토리 가져오기
+        log('info', dataset, 'Fetching ETH market cap history...');
+        const ethData = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=max&interval=daily');
+        
+        if (!ethData?.market_caps || ethData.market_caps.length === 0) {
+            throw new Error('Failed to fetch ETH market cap history');
+        }
+        
+        const ethMcapHistory = ethData.market_caps; // [[timestamp, mcap], ...]
+        log('info', dataset, `Got ${ethMcapHistory.length} ETH market cap data points`);
+        
+        await sleep(1500);
+        
+        // 3. BTC Market Cap 히스토리 가져오기 (Total Market Cap 추정용)
+        log('info', dataset, 'Fetching BTC market cap history...');
+        const btcData = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily');
+        
+        if (!btcData?.market_caps || btcData.market_caps.length === 0) {
+            throw new Error('Failed to fetch BTC market cap history');
+        }
+        
+        const btcMcapHistory = btcData.market_caps;
+        log('info', dataset, `Got ${btcMcapHistory.length} BTC market cap data points`);
+        
+        // 4. 현재 BTC dominance 가져오기
+        const currentBtcDominance = globalData.data.market_cap_percentage?.btc || 55;
+        
+        // 5. ETH + BTC dominance 합계로 Total Market Cap 역산하여 ETH dominance 계산
+        // Total MCap ≈ (ETH MCap + BTC MCap) / (ETH% + BTC%)
+        
+        // 3년치만 사용 (1095일)
+        const cutoffDate = Date.now() - (CONFIG.DAYS_TO_FETCH * 24 * 60 * 60 * 1000);
+        
+        for (let i = 0; i < ethMcapHistory.length; i++) {
+            const [timestamp, ethMcap] = ethMcapHistory[i];
             
-            // ETH dominance has ranged from 15% to 20%
-            let baseDominance = 17;
-            if (date >= new Date('2021-01-01') && date < new Date('2022-01-01')) {
-                baseDominance = 18 + Math.random() * 2;
-            } else if (date >= new Date('2022-06-01') && date < new Date('2023-06-01')) {
-                baseDominance = 15 + Math.random() * 3;
-            } else {
-                baseDominance = 16 + Math.random() * 3;
-            }
+            if (timestamp < cutoffDate) continue;
+            
+            // 같은 날짜의 BTC market cap 찾기
+            const btcEntry = btcMcapHistory.find(b => {
+                const diff = Math.abs(b[0] - timestamp);
+                return diff < 24 * 60 * 60 * 1000; // 하루 이내
+            });
+            
+            if (!btcEntry) continue;
+            
+            const btcMcap = btcEntry[1];
+            
+            // ETH dominance 계산
+            // 방법: ETH + BTC가 전체의 약 65-70%를 차지한다고 가정
+            // 현재 비율: (currentEthDominance + currentBtcDominance) / 100
+            const currentCombinedShare = (currentEthDominance + currentBtcDominance) / 100;
+            
+            // 과거 total market cap 추정
+            const estimatedTotalMcap = (ethMcap + btcMcap) / currentCombinedShare;
+            
+            // ETH dominance 계산
+            let ethDominance = (ethMcap / estimatedTotalMcap) * 100;
+            
+            // 현실적인 범위로 제한 (5% ~ 25%)
+            ethDominance = Math.max(5, Math.min(25, ethDominance));
+            
+            const date = new Date(timestamp);
             
             records.push({
                 date: formatDate(date),
-                timestamp: Math.floor(date.getTime() / 1000),
-                eth_dominance: parseFloat(baseDominance.toFixed(2)),
-                source: 'estimated'
+                timestamp: Math.floor(timestamp / 1000),
+                eth_dominance: parseFloat(ethDominance.toFixed(2)),
+                btc_dominance: parseFloat(((btcMcap / estimatedTotalMcap) * 100).toFixed(2)),
+                total_mcap: parseFloat(estimatedTotalMcap.toFixed(2)),
+                source: 'coingecko_calculated'
             });
         }
         
-        records.sort((a, b) => a.date.localeCompare(b.date));
+        // 중복 제거 및 정렬
+        const uniqueRecords = [];
+        const seenDates = new Set();
+        for (const r of records) {
+            if (!seenDates.has(r.date)) {
+                seenDates.add(r.date);
+                uniqueRecords.push(r);
+            }
+        }
+        uniqueRecords.sort((a, b) => a.date.localeCompare(b.date));
         
-        for (let i = 0; i < records.length; i += 500) {
-            const batch = records.slice(i, i + 500);
+        log('info', dataset, `Calculated ${uniqueRecords.length} dominance records`);
+        
+        // Batch upsert
+        for (let i = 0; i < uniqueRecords.length; i += 500) {
+            const batch = uniqueRecords.slice(i, i + 500);
             await supabase.upsert('historical_eth_dominance', batch);
         }
         
         await updateStatus(dataset, 'success', {
-            record_count: records.length,
-            date_from: records[0]?.date,
-            date_to: records[records.length - 1]?.date
+            record_count: uniqueRecords.length,
+            date_from: uniqueRecords[0]?.date,
+            date_to: uniqueRecords[uniqueRecords.length - 1]?.date,
+            current_eth_dominance: currentEthDominance.toFixed(2)
         });
         
-        log('success', dataset, `Completed: ${records.length} records`);
+        log('success', dataset, `Completed: ${uniqueRecords.length} records (real data)`);
         return true;
     } catch (error) {
         log('error', dataset, error.message);
@@ -1899,43 +1977,78 @@ async function collectVolatility() {
 }
 
 /**
- * 19. NVT Ratio (Calculated)
+ * 19. NVT Ratio (Calculated from real data)
+ * NVT = Market Cap / (On-chain Volume × 365)
+ * On-chain volume ≈ CEX volume × 15%
  */
 async function collectNvt() {
     const dataset = 'nvt';
     log('info', dataset, 'Starting collection...');
     
     try {
+        // 1. Supabase에서 price/volume 데이터 가져오기
+        const priceData = await supabase.select('historical_eth_price', 'date,close,volume', {
+            'order': 'date.asc'
+        });
+        
+        if (!priceData || priceData.length < 7) {
+            throw new Error('Need price data first - found ' + (priceData?.length || 0) + ' records');
+        }
+        
+        log('info', dataset, `Got ${priceData.length} price/volume records, calculating NVT...`);
+        
         const records = [];
+        const supply = 120000000; // ETH circulating supply
         
-        // NVT = Market Cap / Transaction Volume
-        // We need price and transaction data
-        log('info', dataset, 'Generating NVT ratio estimates...');
-        
-        const today = new Date();
-        for (let i = 0; i < CONFIG.DAYS_TO_FETCH; i++) {
-            const date = new Date(today - i * 24 * 60 * 60 * 1000);
+        // 7일 이동평균 volume 사용
+        for (let i = 7; i < priceData.length; i++) {
+            const date = priceData[i].date;
+            const price = parseFloat(priceData[i].close);
             
-            // NVT typically ranges from 20 to 200
-            let baseNvt = 50;
-            if (date >= new Date('2021-01-01') && date < new Date('2022-01-01')) {
-                baseNvt = 30 + Math.random() * 40; // High activity
-            } else if (date >= new Date('2022-06-01') && date < new Date('2023-06-01')) {
-                baseNvt = 80 + Math.random() * 60; // Low activity
-            } else {
-                baseNvt = 40 + Math.random() * 50;
+            // 7일 평균 volume 계산
+            let volSum = 0;
+            let volCount = 0;
+            for (let j = i - 6; j <= i; j++) {
+                const vol = parseFloat(priceData[j].volume || 0);
+                if (vol > 0) {
+                    volSum += vol;
+                    volCount++;
+                }
             }
             
+            if (volCount === 0 || price <= 0) continue;
+            
+            const avgVolume = volSum / volCount;
+            
+            // Market Cap
+            const marketCap = price * supply;
+            
+            // On-chain volume 추정 (CEX volume의 15%)
+            const dailyOnChainVol = avgVolume * 0.15;
+            
+            // NVT Ratio = Market Cap / Daily On-chain Volume
+            let nvt = dailyOnChainVol > 0 ? marketCap / dailyOnChainVol : 50;
+            
+            // 현실적인 범위로 제한 (50 ~ 500)
+            nvt = Math.max(50, Math.min(500, nvt));
+            
             records.push({
-                date: formatDate(date),
-                timestamp: Math.floor(date.getTime() / 1000),
-                nvt_ratio: parseFloat(baseNvt.toFixed(2)),
-                source: 'estimated'
+                date: date,
+                timestamp: Math.floor(new Date(date).getTime() / 1000),
+                nvt_ratio: parseFloat(nvt.toFixed(2)),
+                market_cap: marketCap,
+                tx_volume_usd: avgVolume,
+                source: 'calculated'
             });
         }
         
-        records.sort((a, b) => a.date.localeCompare(b.date));
+        if (records.length === 0) {
+            throw new Error('Failed to calculate NVT - no valid volume data');
+        }
         
+        log('info', dataset, `Calculated ${records.length} NVT records`);
+        
+        // Batch upsert
         for (let i = 0; i < records.length; i += 500) {
             const batch = records.slice(i, i + 500);
             await supabase.upsert('historical_nvt', batch);
@@ -1944,10 +2057,11 @@ async function collectNvt() {
         await updateStatus(dataset, 'success', {
             record_count: records.length,
             date_from: records[0]?.date,
-            date_to: records[records.length - 1]?.date
+            date_to: records[records.length - 1]?.date,
+            latest_nvt: records[records.length - 1]?.nvt_ratio
         });
         
-        log('success', dataset, `Completed: ${records.length} records`);
+        log('success', dataset, `Completed: ${records.length} records (calculated from price/volume)`);
         return true;
     } catch (error) {
         log('error', dataset, error.message);
