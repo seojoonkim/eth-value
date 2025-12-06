@@ -15961,7 +15961,9 @@
                 try {
                     const feesData = feesResult.value;
                     if (feesData.totalDataChart && Array.isArray(feesData.totalDataChart)) {
-                        state.feesHistoryDaily = feesData.totalDataChart.slice(-1095).map(d => ({ date: new Date(d[0] * 1000), value: d[1] * 7 }));
+                        // feesHistoryDaily: 일일 값 (×7 하지 않음)
+                        state.feesHistoryDaily = feesData.totalDataChart.slice(-1095).map(d => ({ date: new Date(d[0] * 1000), value: d[1] }));
+                        // feesHistory: 주간 샘플, 주간 값 (×7)
                         state.feesHistory = feesData.totalDataChart.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).slice(-156).map(d => ({ date: new Date(d[0] * 1000), value: d[1] * 7 }));
                         updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees');
                         if (state.feesHistory.length > 1) {
@@ -18050,19 +18052,44 @@
             state.issuanceHistory = [];
             state.netSupplyHistory = [];
             
-            const ethPrice = state.price || 3500;
             const totalSupply = state.ethSupply || 120000000;
             const stakedEth = state.stakedEth || 34000000;
             const stakingApr = state.stakingApr || 3.5;
             const dailyIssuance = (stakedEth * (stakingApr / 100)) / 365;
             
-            if (state.feesHistory && state.feesHistory.length > 0) {
-                for (let i = 0; i < state.feesHistory.length; i++) {
-                    const d = state.feesHistory[i];
-                    const dailyFees = d.value / 7;
-                    const dailyBurn = (dailyFees / ethPrice) * 0.80;
+            // Helper: 해당 날짜의 가격 찾기
+            const findPriceForDate = (date) => {
+                if (!state.priceHistory || state.priceHistory.length === 0) return state.price || 3500;
+                let closest = state.priceHistory[0];
+                let minDiff = Math.abs(date - state.priceHistory[0].date);
+                for (const p of state.priceHistory) {
+                    const diff = Math.abs(date - p.date);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closest = p;
+                    }
+                }
+                return closest.value;
+            };
+            
+            // feesHistoryDaily 사용 (일일 데이터, 더 정확함)
+            const feesSource = state.feesHistoryDaily && state.feesHistoryDaily.length > 0 
+                ? state.feesHistoryDaily 
+                : state.feesHistory;
+            
+            if (feesSource && feesSource.length > 0) {
+                // feesHistoryDaily면 일일 값, feesHistory면 주간 값
+                const isDaily = feesSource === state.feesHistoryDaily;
+                
+                for (let i = 0; i < feesSource.length; i++) {
+                    const d = feesSource[i];
+                    const dailyFees = isDaily ? d.value : d.value / 7;
                     
-                    const maxFees = Math.max(...state.feesHistory.map(f => f.value));
+                    // 해당 날짜의 ETH 가격 사용
+                    const ethPriceAtDate = findPriceForDate(d.date);
+                    const dailyBurn = (dailyFees / ethPriceAtDate) * 0.80;
+                    
+                    const maxFees = Math.max(...feesSource.map(f => f.value));
                     const utilization = 50 + (d.value / maxFees) * 40;
                     
                     const dailyNetChange = dailyIssuance - dailyBurn;
@@ -20102,7 +20129,8 @@ Check out ETHval 👇`;
             };
             
             // Helper: find closest value in history array
-            const findClosest = (history, date) => {
+            // maxDiffDays: 허용할 최대 날짜 차이 (기본 7일)
+            const findClosest = (history, date, maxDiffDays = 7) => {
                 if (!history || history.length === 0) return null;
                 let closest = history[0];
                 let minDiff = Math.abs(date - history[0].date);
@@ -20113,6 +20141,9 @@ Check out ETHval 👇`;
                         closest = item;
                     }
                 }
+                // 날짜 차이가 maxDiffDays 이상이면 null 반환 (데이터 범위 밖)
+                const maxDiffMs = maxDiffDays * 24 * 60 * 60 * 1000;
+                if (minDiff > maxDiffMs) return null;
                 return closest.value;
             };
             
@@ -20128,7 +20159,28 @@ Check out ETHval 👇`;
                 const tvl = isLastPoint ? state.tvl : (findClosest(state.tvlHistory, date) || state.tvl);
                 const stakedEth = isLastPoint ? state.stakedEth : (findClosest(state.stakingHistory, date) || state.stakedEth);
                 const l2Tvl = isLastPoint ? state.l2Tvl : (findClosest(state.l2History, date) || state.l2Tvl);
-                const fees = isLastPoint ? state.fees : (findClosest(state.feesHistory, date) || state.fees);
+                
+                // fees 처리: feesHistoryDaily는 일일 값, feesHistory는 주간 값(×7)
+                let fees;
+                if (isLastPoint) {
+                    fees = state.fees; // 일일 값
+                } else {
+                    // feesHistoryDaily 우선 (일일 값)
+                    const dailyFee = findClosest(state.feesHistoryDaily, date);
+                    if (dailyFee && dailyFee > 0) {
+                        fees = dailyFee;
+                    } else {
+                        // fallback: feesHistory는 주간 값이므로 /7
+                        const weeklyFee = findClosest(state.feesHistory, date);
+                        fees = weeklyFee ? weeklyFee / 7 : state.fees;
+                    }
+                }
+                
+                // 디버깅: 처음 몇 개와 마지막 포인트 로그
+                if (idx < 3 || idx > state.priceHistory.length - 3) {
+                    console.log(`   [Val ${idx}] date=${date.toISOString().slice(0,10)}, price=${price?.toFixed(0)}, fees=${fees?.toFixed(0)}, feesHistoryDaily.len=${state.feesHistoryDaily?.length || 0}`);
+                }
+                
                 const stables = isLastPoint ? state.stablecoins : (findClosest(state.stablesHistory, date) || state.stablecoins);
                 const volume = isLastPoint ? (state.volume24h || 15000000000) : (findClosest(state.volumeHistory, date) || state.volume24h || 15000000000);
                 
@@ -20193,17 +20245,17 @@ Check out ETHval 👇`;
                 }
                 
                 // 7. P/S Ratio (25x) (matches: DailyFees × 365 × PSRatio ÷ Supply)
-                // Note: feesHistory stores weekly values, state.fees is daily
+                // feesHistoryDaily는 일일 값, state.fees도 일일 값
                 if (fees > 0) {
-                    const dailyFees = isLastPoint ? fees : fees / 7;
+                    const dailyFees = fees; // 이미 일일 값
                     const psValue = (dailyFees * 365 * 25) / supply;
                     results.ps.push({ date, value: psValue });
                 }
                 
                 // 8. Revenue Yield (matches: AnnualFees ÷ APR ÷ Supply)
-                // Note: feesHistory stores weekly values, state.fees is daily
+                // feesHistoryDaily는 일일 값
                 if (fees > 0 && stakingApr > 0) {
-                    const dailyFees = isLastPoint ? fees : fees / 7;
+                    const dailyFees = fees; // 이미 일일 값
                     const annualRev = dailyFees * 365;
                     const targetYield = stakingApr / 100;
                     const revYieldValue = (annualRev / targetYield) / supply;
