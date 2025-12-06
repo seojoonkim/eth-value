@@ -1452,7 +1452,7 @@ async function collectDexVolume() {
 }
 
 /**
- * 11. Stablecoins Market Cap (DefiLlama)
+ * 11. Stablecoins Market Cap (DefiLlama) - Ethereum Chain Only
  */
 async function collectStablecoins() {
     const dataset = 'stablecoins';
@@ -1462,8 +1462,9 @@ async function collectStablecoins() {
         const records = [];
         
         try {
-            log('info', dataset, 'Fetching stablecoin data from DefiLlama...');
-            const data = await fetch('https://stablecoins.llama.fi/stablecoincharts/all?stablecoin=1');
+            // 이더리움 체인의 스테이블코인만 수집 (전체 아님!)
+            log('info', dataset, 'Fetching Ethereum stablecoin data from DefiLlama...');
+            const data = await fetch('https://stablecoins.llama.fi/stablecoincharts/ethereum');
             
             if (data && data.length > 0) {
                 for (const d of data) {
@@ -1471,11 +1472,11 @@ async function collectStablecoins() {
                     records.push({
                         date: formatDate(date),
                         timestamp: d.date,
-                        total_mcap: d.totalCirculating?.peggedUSD || 0,
-                        source: 'defillama'
+                        total_mcap: d.totalCirculatingUSD?.peggedUSD || 0,
+                        source: 'defillama-ethereum'
                     });
                 }
-                log('info', dataset, `Got ${records.length} days from DefiLlama`);
+                log('info', dataset, `Got ${records.length} days from DefiLlama (Ethereum)`);
             }
         } catch (e) {
             log('warning', dataset, 'DefiLlama stablecoins API failed: ' + e.message);
