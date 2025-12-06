@@ -464,39 +464,68 @@ async function collectL2TVL() {
 }
 
 /**
- * 4. Protocol Fees (DefiLlama)
+ * 4. Protocol Fees (DefiLlama) - 전체 히스토리 수집
  */
 async function collectProtocolFees() {
     const dataset = 'protocol_fees';
     log('info', dataset, 'Starting collection...');
     
     try {
+        // DefiLlama fees API - 전체 히스토리 반환
         const url = 'https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees';
+        log('info', dataset, `Fetching from: ${url}`);
+        
         const data = await fetch(url);
         
-        if (!data.totalDataChart) {
-            throw new Error('Invalid response format');
+        if (!data) {
+            throw new Error('No response from API');
         }
+        
+        if (!data.totalDataChart || !Array.isArray(data.totalDataChart)) {
+            log('warning', dataset, 'Response keys: ' + Object.keys(data).join(', '));
+            throw new Error('Invalid response format - no totalDataChart');
+        }
+        
+        log('info', dataset, `API returned ${data.totalDataChart.length} data points`);
+        
+        // 날짜 범위 확인
+        const firstDate = new Date(data.totalDataChart[0][0] * 1000);
+        const lastDate = new Date(data.totalDataChart[data.totalDataChart.length - 1][0] * 1000);
+        log('info', dataset, `Date range: ${formatDate(firstDate)} to ${formatDate(lastDate)}`);
         
         const records = data.totalDataChart.map(([timestamp, fees]) => ({
             date: formatDate(new Date(timestamp * 1000)),
             timestamp: timestamp,
-            fees: fees
+            fees: fees,
+            source: 'defillama'
         }));
         
+        // 중복 제거 (같은 날짜가 여러 개 있을 수 있음)
+        const uniqueRecords = [];
+        const seenDates = new Set();
+        for (const r of records) {
+            if (!seenDates.has(r.date)) {
+                seenDates.add(r.date);
+                uniqueRecords.push(r);
+            }
+        }
+        
+        log('info', dataset, `Unique records: ${uniqueRecords.length}`);
+        
         // Batch upsert
-        for (let i = 0; i < records.length; i += 500) {
-            const batch = records.slice(i, i + 500);
+        for (let i = 0; i < uniqueRecords.length; i += 500) {
+            const batch = uniqueRecords.slice(i, i + 500);
             await supabase.upsert('historical_protocol_fees', batch);
+            log('info', dataset, `Upserted batch ${Math.floor(i/500) + 1}/${Math.ceil(uniqueRecords.length/500)}`);
         }
         
         await updateStatus(dataset, 'success', {
-            record_count: records.length,
-            date_from: records[0]?.date,
-            date_to: records[records.length - 1]?.date
+            record_count: uniqueRecords.length,
+            date_from: uniqueRecords[0]?.date,
+            date_to: uniqueRecords[uniqueRecords.length - 1]?.date
         });
         
-        log('success', dataset, `Completed: ${records.length} records`);
+        log('success', dataset, `Completed: ${uniqueRecords.length} records from ${uniqueRecords[0]?.date} to ${uniqueRecords[uniqueRecords.length - 1]?.date}`);
         return true;
     } catch (error) {
         log('error', dataset, error.message);
