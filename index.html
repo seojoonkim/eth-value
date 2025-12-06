@@ -15025,7 +15025,7 @@
             
             // Sample data points
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }));
             const values = sampled.map(d => d.value);
@@ -15193,7 +15193,7 @@
             
             // Sample for performance
             const sampleRate = Math.max(1, Math.floor(filtered.length / 90));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }));
             const values = sampled.map(d => d.value);
@@ -15315,7 +15315,7 @@
             
             // Sample for performance
             const sampleRate = Math.max(1, Math.floor(filtered.length / 90));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }));
             const values = sampled.map(d => d.value / 1e9);
@@ -15711,7 +15711,7 @@
                             const dominance = baseDominance * (ratio / priceChangeRatio) * (0.97 + Math.random() * 0.06);
                             return { date: d.date, value: Math.max(6, Math.min(18, dominance)) };
                         })
-                        .filter((_, i) => i % sampleRate === 0);
+                        .filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
                 }
                 
                 // ETH/BTC 비율 - Supabase나 Binance에서 이미 가져왔으면 스킵
@@ -15727,7 +15727,7 @@
                                 const estimatedRatio = 0.034 * ratio * (0.95 + Math.random() * 0.10);
                                 return { date: d.date, value: Math.max(0.025, Math.min(0.055, estimatedRatio)) };
                             })
-                            .filter((_, i) => i % sampleRate === 0);
+                            .filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
                     }
                 }
                 
@@ -16545,8 +16545,8 @@
             
             // 샘플링
             const sampleRate = Math.max(1, Math.ceil(filteredPrices.length / 60));
-            const sampledPrices = filteredPrices.filter((_, i) => i % sampleRate === 0);
-            const sampledVolumes = filteredVolumes.filter((_, i) => i % sampleRate === 0);
+            const sampledPrices = filteredPrices.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            const sampledVolumes = filteredVolumes.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             const priceData = sampledPrices.map(d => d.value);
             const volumeData = sampledVolumes.map(d => d.value);
@@ -17334,7 +17334,7 @@
             
             // Sample for performance
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }));
             const values = sampled.map(d => d.value / 1e9);
@@ -17505,7 +17505,7 @@
             }
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }));
             const values = sampled.map(d => d.value);
@@ -17689,7 +17689,7 @@
             }
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             const labels = sampled.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }));
             const values = sampled.map(d => d.value);
@@ -17826,7 +17826,7 @@
             }
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             baseFeeChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -17942,7 +17942,7 @@
             }
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             blobCountChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -18147,7 +18147,7 @@
             }
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             gasUtilizationChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -18197,7 +18197,7 @@
             }
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             dailyBurnChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -18261,7 +18261,7 @@
             }
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             dailyIssuanceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -18308,7 +18308,7 @@
             }
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i) => i % sampleRate === 0);
+            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             netSupplyChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -19466,6 +19466,84 @@
             return Promise.allSettled(results);
         }
         
+        // ═══════════════════════════════════════════════════════════════════
+        // 차트 마지막 값 vs 표시 값 검증 함수 (디버그용)
+        // ═══════════════════════════════════════════════════════════════════
+        function debugChartValueMismatch() {
+            try {
+                console.log('🔍 Chart vs Display Value Comparison:');
+                console.log('┌────────────────────────┬──────────────────┬──────────────────┬────────┐');
+                console.log('│ Metric                 │ Display Value    │ Chart Last       │ Match  │');
+                console.log('├────────────────────────┼──────────────────┼──────────────────┼────────┤');
+                
+                const formatNum = (v) => {
+                    if (v === undefined || v === null || isNaN(v)) return 'N/A';
+                    if (v >= 1e9) return (v/1e9).toFixed(1) + 'B';
+                    if (v >= 1e6) return (v/1e6).toFixed(1) + 'M';
+                    if (v >= 1e3) return (v/1e3).toFixed(1) + 'K';
+                    return v.toFixed(1);
+                };
+                
+                const checks = [
+                    { name: 'NVT Ratio', displayId: 'nvt-value', history: state.nvtHistory },
+                    { name: 'Gas Utilization', displayId: 'gas-utilization-value', history: state.gasUtilizationHistory },
+                    { name: 'Daily Burn', displayId: 'daily-burn-value', history: state.burnHistory },
+                    { name: 'TVL', displayId: 'tvl-value', history: state.tvlHistory },
+                    { name: 'Fees (7d)', displayId: 'fees-value', history: state.feesHistory },
+                    { name: 'Staked ETH', displayId: 'staking-value', history: state.stakingHistory },
+                    { name: 'ETH/BTC', displayId: 'ethbtc-value', history: state.ethBtcHistory },
+                    { name: 'Exchange Reserve', displayId: 'reserve-value', history: state.reserveHistory },
+                    { name: 'Funding Rate', displayId: 'funding-value', history: state.fundingHistory },
+                    { name: 'DEX Volume', displayId: 'dex-value', history: state.dexHistory },
+                    { name: 'Stablecoins', displayId: 'stables-value', history: state.stablesHistory },
+                    { name: 'Lending TVL', displayId: 'lending-value', history: state.lendingHistory },
+                    { name: 'L2 TVL', displayId: 'l2-value', history: state.l2History },
+                    { name: 'Active Addresses', displayId: 'active-value', history: state.activeHistory },
+                    { name: 'Volatility', displayId: 'volatility-value', history: state.volatilityHistory },
+                ];
+                
+                let mismatchCount = 0;
+                
+                checks.forEach(({ name, displayId, history }) => {
+                    try {
+                        const displayEl = document.getElementById(displayId);
+                        const displayText = displayEl?.textContent?.trim() || 'N/A';
+                        
+                        let chartLast = 'N/A';
+                        if (history && Array.isArray(history) && history.length > 0) {
+                            chartLast = history[history.length - 1]?.value;
+                        }
+                        
+                        const chartFormatted = chartLast !== 'N/A' ? formatNum(chartLast) : 'N/A';
+                        
+                        // 숫자 추출해서 비교
+                        const displayNum = parseFloat(displayText.replace(/[^0-9.-]/g, ''));
+                        const chartNum = typeof chartLast === 'number' ? chartLast : parseFloat(chartLast);
+                        
+                        let match = '✅';
+                        if (isNaN(displayNum) || isNaN(chartNum)) {
+                            match = '⚠️';
+                        } else {
+                            const ratio = chartNum !== 0 ? Math.abs(displayNum / chartNum) : 0;
+                            if (ratio < 0.9 || ratio > 1.1) {
+                                match = '❌';
+                                mismatchCount++;
+                            }
+                        }
+                        
+                        console.log(`│ ${name.padEnd(22)} │ ${displayText.slice(0,16).padStart(16)} │ ${chartFormatted.toString().slice(0,16).padStart(16)} │ ${match}      │`);
+                    } catch (e) {
+                        console.log(`│ ${name.padEnd(22)} │ Error            │ Error            │ ⚠️      │`);
+                    }
+                });
+                
+                console.log('└────────────────────────┴──────────────────┴──────────────────┴────────┘');
+                console.log(`Total mismatches: ${mismatchCount}`);
+            } catch (e) {
+                console.warn('debugChartValueMismatch error:', e.message);
+            }
+        }
+        
         async function fetchAll() {
             console.log('========== fetchAll START ==========');
             const startTime = performance.now();
@@ -19553,6 +19631,9 @@
                 setStatus('status.live');
                 
                 console.log(`========== fetchAll COMPLETE in ${(performance.now() - startTime).toFixed(0)}ms ==========`);
+                
+                // 차트 마지막 값 vs 표시 값 검증 (디버그용)
+                // setTimeout(() => debugChartValueMismatch(), 1000);
             } catch (e) {
                 console.error('fetchAll error:', e);
                 clearTimeout(loadingTimeout);
@@ -20337,6 +20418,10 @@ Check out ETHval 👇`;
                 }
             }
             
+            // ═══════════════════════════════════════════════════════════════════
+            // 차트 마지막 포인트를 현재 Valuation 값으로 강제 동기화
+            // 이렇게 하면 차트 끝점과 표시되는 값이 항상 일치함
+            // ═══════════════════════════════════════════════════════════════════
             state.historicalFairValues = results;
             state.historicalDataLoaded = true;
             
@@ -20349,39 +20434,56 @@ Check out ETHval 👇`;
             const modelKeys = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 
                               'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
             
-            // Calculate Valuation values using same formulas
-            const cs = state.circulatingSupply;
+            // Calculate Valuation values using SAME formulas as calculateValuations()
+            const csVal = state.circulatingSupply || 120000000;
             const valuation = {};
             
-            // TVL Multiple
-            valuation.tvlMultiple = (state.tvl * 6) / cs;
-            // Staking Scarcity
-            valuation.stakingScarcity = state.price * (1 + state.stakedEth / cs);
-            // MC/TVL
-            const mctvlRatio = (state.price * cs) / state.tvl;
+            // 1. TVL Multiple: TVL × 7 ÷ Supply
+            valuation.tvlMultiple = (state.tvl * 7) / csVal;
+            
+            // 2. Staking Scarcity: Price × √(Supply ÷ Liquid)
+            const scarcity = csVal / (csVal - state.stakedEth);
+            valuation.stakingScarcity = state.price * Math.pow(scarcity, 0.5);
+            
+            // 3. MC/TVL: Price × (Target ÷ Ratio)
+            const mctvlRatio = (state.price * csVal) / state.tvl;
             valuation.mctvl = state.price * (6 / mctvlRatio);
-            // Metcalfe
-            valuation.metcalfe = (Math.pow(state.tvl / 1e9, 1.5) * 1e9 * 2) / cs;
-            // DCF
+            
+            // 4. Metcalfe: Coef × TVL^Exp ÷ Supply
+            valuation.metcalfe = (Math.pow(state.tvl / 1e9, 1.5) * 1e9 * 2) / csVal;
+            
+            // 5. DCF: Price × (1+APR) ÷ (Discount - Growth)
             const stakingYield = state.stakingApr / 100;
-            valuation.dcf = Math.min(state.price * (1 + stakingYield) / 0.06, state.price * 3);
-            // L2 Ecosystem
-            valuation.l2Ecosystem = (state.tvl + state.l2Tvl * 2) * 6 / cs;
-            // P/S
-            valuation.ps = (state.fees * 365 * 25) / cs;
-            // Revenue Yield
-            valuation.revenueYield = (state.fees * 365 / (state.stakingApr / 100)) / cs;
-            // Commitment Premium
+            const discountRate = 0.09;
+            const growthRate = 0.03;
+            valuation.dcf = Math.min(state.price * (1 + stakingYield) / (discountRate - growthRate), state.price * 3);
+            
+            // 6. L2 Ecosystem: (TVL + L2×Weight) × Multiple ÷ Supply
+            valuation.l2Ecosystem = (state.tvl + state.l2Tvl * 2) * 6 / csVal;
+            
+            // 7. P/S: DailyFees × 365 × PSRatio ÷ Supply
+            valuation.ps = (state.fees * 365 * 25) / csVal;
+            
+            // 8. Revenue Yield: AnnualFees ÷ APR ÷ Supply
+            valuation.revenueYield = (state.fees * 365 / (state.stakingApr / 100)) / csVal;
+            
+            // 9. Commitment Premium: Price × (1 + Commit% × Multiplier)
             const ethInDefi = state.tvl / state.price;
-            const commitRatio = (state.stakedEth + ethInDefi) / cs;
+            const commitRatio = (state.stakedEth + ethInDefi) / csVal;
             valuation.commitmentPremium = state.price * (1 + commitRatio * 1.5);
-            // App Capital
-            valuation.appCapital = (state.stablecoins / 0.28) / cs;
-            // Validator Economics
-            valuation.validatorEcon = state.price * (6 / state.stakingApr);
-            // Settlement Layer
+            
+            // 10. App Capital: Stables ÷ Ratio ÷ Supply
+            valuation.appCapital = (state.stablecoins / 0.28) / csVal;
+            
+            // 11. Validator Economics: Price × (Target ÷ APR)
+            const riskFreeRate = 4.5;
+            const riskPremium = 1.5;
+            const targetYield = riskFreeRate + riskPremium; // 6%
+            valuation.validatorEcon = state.price * (targetYield / state.stakingApr);
+            
+            // 12. Settlement Layer: (DailySettlement × 365 / Velocity) / Supply
             const dailySettlement = state.dailySettlement || 10130000000;
-            valuation.settlementLayer = (dailySettlement * 365 / 6) / cs;
+            valuation.settlementLayer = (dailySettlement * 365 / 6) / csVal;
             
             modelKeys.forEach(key => {
                 const histData = results[key];
