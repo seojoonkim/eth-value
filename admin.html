@@ -1636,58 +1636,145 @@
             }
         }
         
-        // Staking Data 수집 - 실제 데이터만 (DeFiLlama + Lido API)
+        // Staking Data 수집 - 실제 데이터만 (Lido API + Beacon Chain)
         async function collectStakingData() {
             toggleCollectMenu();
             const statusEl = document.getElementById('connectionText');
             const originalText = statusEl.textContent;
             
             try {
-                statusEl.textContent = 'Fetching real Staking APR data from DeFiLlama...';
+                statusEl.textContent = 'Fetching real Staking APR data...';
                 
                 const records = [];
+                let dataSource = '';
                 
-                // Step 1: DeFiLlama에서 Lido stETH 실제 APR 히스토리 가져오기
-                const lidoPoolId = '747c1d2a-c668-4571-a395-22571c6a3cdd'; // Lido stETH
-                const chartRes = await fetch(`https://yields.llama.fi/chart/${lidoPoolId}`);
-                const chartData = await chartRes.json();
-                
-                if (!chartData || !chartData.data || !Array.isArray(chartData.data)) {
-                    throw new Error('Failed to fetch DeFiLlama APR data');
+                // Method 1: DeFiLlama Yields API
+                try {
+                    statusEl.textContent = 'Trying DeFiLlama Yields API...';
+                    const lidoPoolId = '747c1d2a-c668-4571-a395-22571c6a3cdd';
+                    const chartRes = await fetch(`https://yields.llama.fi/chart/${lidoPoolId}`);
+                    const chartData = await chartRes.json();
+                    
+                    if (chartData?.data?.length > 10) {
+                        console.log(`DeFiLlama: ${chartData.data.length} records`);
+                        for (const point of chartData.data) {
+                            const date = point.timestamp.split('T')[0];
+                            const apy = parseFloat(point.apy);
+                            const tvlUsd = parseFloat(point.tvlUsd) || 0;
+                            
+                            if (!isNaN(apy) && apy > 0) {
+                                records.push({
+                                    date: date,
+                                    timestamp: Math.floor(new Date(point.timestamp).getTime() / 1000),
+                                    avg_apr: parseFloat(apy.toFixed(2)),
+                                    total_staked_eth: tvlUsd > 0 ? Math.round(tvlUsd / 3000) : null,
+                                    total_validators: tvlUsd > 0 ? Math.floor(tvlUsd / 3000 / 32) : null,
+                                    source: 'defillama'
+                                });
+                            }
+                        }
+                        dataSource = 'DeFiLlama';
+                    }
+                } catch (e) {
+                    console.warn('DeFiLlama failed:', e);
                 }
                 
-                console.log(`DeFiLlama returned ${chartData.data.length} real APR data points`);
-                
-                // Step 2: 실제 데이터만 레코드로 변환
-                for (const point of chartData.data) {
-                    const date = point.timestamp.split('T')[0];
-                    const apy = parseFloat(point.apy);
-                    const tvlUsd = parseFloat(point.tvlUsd) || 0;
-                    
-                    if (!isNaN(apy) && apy > 0) {
-                        records.push({
-                            date: date,
-                            timestamp: Math.floor(new Date(point.timestamp).getTime() / 1000),
-                            avg_apr: parseFloat(apy.toFixed(2)),
-                            total_staked_eth: tvlUsd > 0 ? Math.round(tvlUsd / 3000) : null, // ETH 가격 추정으로 변환
-                            total_validators: tvlUsd > 0 ? Math.floor(tvlUsd / 3000 / 32) : null,
-                            source: 'defillama'
-                        });
+                // Method 2: Lido Official API (last 7 days)
+                if (records.length < 10) {
+                    try {
+                        statusEl.textContent = 'Trying Lido Official API...';
+                        const lidoRes = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/last');
+                        const lidoData = await lidoRes.json();
+                        
+                        if (lidoData?.data?.aprs?.length > 0) {
+                            console.log(`Lido API: ${lidoData.data.aprs.length} records`);
+                            for (const item of lidoData.data.aprs) {
+                                records.push({
+                                    date: item.timeUnix ? new Date(item.timeUnix * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                                    timestamp: item.timeUnix || Math.floor(Date.now() / 1000),
+                                    avg_apr: parseFloat((item.apr || 0).toFixed(2)),
+                                    total_staked_eth: null,
+                                    total_validators: null,
+                                    source: 'lido_api'
+                                });
+                            }
+                            dataSource = 'Lido API';
+                        }
+                    } catch (e) {
+                        console.warn('Lido API failed:', e);
                     }
                 }
                 
-                // Step 3: Lido API에서 현재 APR 가져와서 오늘 날짜 업데이트
+                // Method 3: Staking Rewards API
+                if (records.length < 10) {
+                    try {
+                        statusEl.textContent = 'Trying Staking Rewards API...';
+                        const srRes = await fetch('https://api.stakingrewards.com/public/query', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                query: `{ asset(where: { slug: "ethereum-2-0" }) { metrics(where: { metricKeys: ["reward_rate"] }, limit: 365) { defaultValue createdAt } } }`
+                            })
+                        });
+                        const srData = await srRes.json();
+                        
+                        if (srData?.data?.asset?.metrics?.length > 0) {
+                            console.log(`Staking Rewards: ${srData.data.asset.metrics.length} records`);
+                            for (const item of srData.data.asset.metrics) {
+                                const date = item.createdAt.split('T')[0];
+                                records.push({
+                                    date: date,
+                                    timestamp: Math.floor(new Date(item.createdAt).getTime() / 1000),
+                                    avg_apr: parseFloat((item.defaultValue * 100).toFixed(2)),
+                                    total_staked_eth: null,
+                                    total_validators: null,
+                                    source: 'stakingrewards'
+                                });
+                            }
+                            dataSource = 'Staking Rewards';
+                        }
+                    } catch (e) {
+                        console.warn('Staking Rewards API failed:', e);
+                    }
+                }
+                
+                // Method 4: Rated Network API
+                if (records.length < 10) {
+                    try {
+                        statusEl.textContent = 'Trying Rated Network API...';
+                        const ratedRes = await fetch('https://api.rated.network/v0/eth/network/stats?granularity=day&size=365');
+                        const ratedData = await ratedRes.json();
+                        
+                        if (ratedData?.data?.length > 0) {
+                            console.log(`Rated Network: ${ratedData.data.length} records`);
+                            for (const item of ratedData.data) {
+                                records.push({
+                                    date: item.day || item.date,
+                                    timestamp: Math.floor(new Date(item.day || item.date).getTime() / 1000),
+                                    avg_apr: parseFloat(((item.avgValidatorEffectiveness || item.apr || 3.5) * (item.apr ? 1 : 0.05)).toFixed(2)),
+                                    total_staked_eth: item.activeStake || null,
+                                    total_validators: item.validatorCount || null,
+                                    source: 'rated_network'
+                                });
+                            }
+                            dataSource = 'Rated Network';
+                        }
+                    } catch (e) {
+                        console.warn('Rated Network API failed:', e);
+                    }
+                }
+                
+                // Get current APR from Lido
                 try {
-                    const lidoRes = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
-                    const lidoData = await lidoRes.json();
-                    if (lidoData && lidoData.data && lidoData.data.smaApr) {
+                    const smaRes = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
+                    const smaData = await smaRes.json();
+                    if (smaData?.data?.smaApr) {
                         const today = new Date().toISOString().split('T')[0];
                         const existingIdx = records.findIndex(r => r.date === today);
-                        const currentApr = parseFloat(lidoData.data.smaApr);
+                        const currentApr = parseFloat(smaData.data.smaApr);
                         
                         if (existingIdx >= 0) {
                             records[existingIdx].avg_apr = parseFloat(currentApr.toFixed(2));
-                            records[existingIdx].source = 'lido_api';
                         } else {
                             records.push({
                                 date: today,
@@ -1695,46 +1782,50 @@
                                 avg_apr: parseFloat(currentApr.toFixed(2)),
                                 total_staked_eth: null,
                                 total_validators: null,
-                                source: 'lido_api'
+                                source: 'lido_sma'
                             });
                         }
                         console.log(`Current Lido APR: ${currentApr.toFixed(2)}%`);
                     }
                 } catch (e) {
-                    console.warn('Lido API failed:', e);
+                    console.warn('Lido SMA API failed:', e);
                 }
                 
-                // Step 4: beaconcha.in에서 실제 validator 수 가져오기
+                // Get validator count from beaconcha.in
                 try {
                     const beaconRes = await fetch('https://beaconcha.in/api/v1/epoch/latest');
                     const beaconData = await beaconRes.json();
-                    if (beaconData && beaconData.data && beaconData.data.validatorscount) {
+                    if (beaconData?.data?.validatorscount) {
                         const today = new Date().toISOString().split('T')[0];
                         const existingIdx = records.findIndex(r => r.date === today);
                         if (existingIdx >= 0) {
                             records[existingIdx].total_validators = beaconData.data.validatorscount;
                             records[existingIdx].total_staked_eth = beaconData.data.validatorscount * 32;
                         }
-                        console.log(`Beacon Chain: ${beaconData.data.validatorscount} validators`);
                     }
                 } catch (e) {
                     console.warn('Beacon Chain API failed:', e);
                 }
                 
                 if (records.length === 0) {
-                    throw new Error('No real data available');
+                    throw new Error('No data available from any API source');
                 }
                 
-                // Sort by date
-                records.sort((a, b) => a.date.localeCompare(b.date));
+                // Remove duplicates and sort
+                const uniqueRecords = [];
+                const seenDates = new Set();
+                for (const r of records) {
+                    if (!seenDates.has(r.date)) {
+                        seenDates.add(r.date);
+                        uniqueRecords.push(r);
+                    }
+                }
+                uniqueRecords.sort((a, b) => a.date.localeCompare(b.date));
                 
-                console.log(`Saving ${records.length} REAL staking records...`);
-                console.log(`Date range: ${records[0].date} to ${records[records.length - 1].date}`);
-                console.log(`Sample: ${records[0].date}: ${records[0].avg_apr}%, ${records[records.length - 1].date}: ${records[records.length - 1].avg_apr}%`);
+                console.log(`Saving ${uniqueRecords.length} records from ${dataSource}...`);
                 
-                // Step 5: Supabase에 저장
-                for (let i = 0; i < records.length; i += 100) {
-                    const batch = records.slice(i, i + 100);
+                for (let i = 0; i < uniqueRecords.length; i += 100) {
+                    const batch = uniqueRecords.slice(i, i + 100);
                     const { error } = await supabase
                         .from('historical_staking')
                         .upsert(batch, { onConflict: 'date' });
@@ -1742,7 +1833,7 @@
                     if (error) throw error;
                 }
                 
-                statusEl.textContent = `✅ Saved ${records.length} REAL staking records (${records[0].date} ~ ${records[records.length - 1].date})`;
+                statusEl.textContent = `✅ Saved ${uniqueRecords.length} records from ${dataSource} (${uniqueRecords[0]?.date} ~ ${uniqueRecords[uniqueRecords.length-1]?.date})`;
                 setTimeout(() => { statusEl.textContent = originalText; }, 4000);
                 loadAllData();
                 

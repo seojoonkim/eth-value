@@ -538,54 +538,77 @@ async function collectProtocolFees() {
  */
 async function collectStakingData() {
     const dataset = 'staking_data';
-    log('info', dataset, 'Fetching REAL staking data from DeFiLlama...');
+    log('info', dataset, 'Fetching REAL staking data from multiple sources...');
     
     try {
         const records = [];
+        let dataSource = '';
         
-        // Step 1: DeFiLlama에서 Lido stETH 실제 APR 히스토리 가져오기
-        log('info', dataset, 'Fetching Lido stETH APR history from DeFiLlama Yields API...');
-        
-        const lidoPoolId = '747c1d2a-c668-4571-a395-22571c6a3cdd'; // Lido stETH pool ID
-        const chartUrl = `https://yields.llama.fi/chart/${lidoPoolId}`;
-        const chartData = await fetch(chartUrl);
-        
-        if (!chartData || !chartData.data || !Array.isArray(chartData.data)) {
-            throw new Error('Failed to fetch DeFiLlama APR data');
+        // Method 1: DeFiLlama Yields API
+        try {
+            log('info', dataset, 'Trying DeFiLlama Yields API...');
+            const lidoPoolId = '747c1d2a-c668-4571-a395-22571c6a3cdd';
+            const chartData = await fetch(`https://yields.llama.fi/chart/${lidoPoolId}`);
+            
+            if (chartData?.data?.length > 10) {
+                log('info', dataset, `DeFiLlama: ${chartData.data.length} records`);
+                for (const point of chartData.data) {
+                    const date = point.timestamp.split('T')[0];
+                    const apy = parseFloat(point.apy);
+                    const tvlUsd = parseFloat(point.tvlUsd) || 0;
+                    
+                    if (!isNaN(apy) && apy > 0) {
+                        records.push({
+                            date: date,
+                            timestamp: Math.floor(new Date(point.timestamp).getTime() / 1000),
+                            avg_apr: parseFloat(apy.toFixed(2)),
+                            total_staked_eth: tvlUsd > 0 ? Math.round(tvlUsd / 3000) : null,
+                            total_validators: tvlUsd > 0 ? Math.floor(tvlUsd / 3000 / 32) : null,
+                            source: 'defillama'
+                        });
+                    }
+                }
+                dataSource = 'DeFiLlama';
+            }
+        } catch (e) {
+            log('warning', dataset, 'DeFiLlama failed: ' + e.message);
         }
         
-        log('info', dataset, `DeFiLlama returned ${chartData.data.length} REAL APR data points`);
-        
-        // Step 2: 실제 데이터만 레코드로 변환
-        for (const point of chartData.data) {
-            const date = point.timestamp.split('T')[0];
-            const apy = parseFloat(point.apy);
-            const tvlUsd = parseFloat(point.tvlUsd) || 0;
-            
-            if (!isNaN(apy) && apy > 0) {
-                records.push({
-                    date: date,
-                    timestamp: Math.floor(new Date(point.timestamp).getTime() / 1000),
-                    avg_apr: parseFloat(apy.toFixed(2)),
-                    total_staked_eth: tvlUsd > 0 ? Math.round(tvlUsd / 3000) : null,
-                    total_validators: tvlUsd > 0 ? Math.floor(tvlUsd / 3000 / 32) : null,
-                    source: 'defillama'
-                });
+        // Method 2: Lido Official API (last records)
+        if (records.length < 10) {
+            try {
+                log('info', dataset, 'Trying Lido Official API...');
+                const lidoData = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/last');
+                
+                if (lidoData?.data?.aprs?.length > 0) {
+                    log('info', dataset, `Lido API: ${lidoData.data.aprs.length} records`);
+                    for (const item of lidoData.data.aprs) {
+                        records.push({
+                            date: item.timeUnix ? formatDate(new Date(item.timeUnix * 1000)) : formatDate(new Date()),
+                            timestamp: item.timeUnix || Math.floor(Date.now() / 1000),
+                            avg_apr: parseFloat((item.apr || 0).toFixed(2)),
+                            total_staked_eth: null,
+                            total_validators: null,
+                            source: 'lido_api'
+                        });
+                    }
+                    dataSource = 'Lido API';
+                }
+            } catch (e) {
+                log('warning', dataset, 'Lido API failed: ' + e.message);
             }
         }
         
-        // Step 3: Lido API에서 현재 APR 가져와서 오늘 날짜 업데이트
+        // Get current APR from Lido SMA
         try {
-            const lidoUrl = 'https://eth-api.lido.fi/v1/protocol/steth/apr/sma';
-            const lidoData = await fetch(lidoUrl);
-            if (lidoData && lidoData.data && lidoData.data.smaApr) {
+            const lidoData = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
+            if (lidoData?.data?.smaApr) {
                 const today = formatDate(new Date());
                 const existingIdx = records.findIndex(r => r.date === today);
                 const currentApr = parseFloat(lidoData.data.smaApr);
                 
                 if (existingIdx >= 0) {
                     records[existingIdx].avg_apr = parseFloat(currentApr.toFixed(2));
-                    records[existingIdx].source = 'lido_api';
                 } else {
                     records.push({
                         date: today,
@@ -593,20 +616,19 @@ async function collectStakingData() {
                         avg_apr: parseFloat(currentApr.toFixed(2)),
                         total_staked_eth: null,
                         total_validators: null,
-                        source: 'lido_api'
+                        source: 'lido_sma'
                     });
                 }
                 log('info', dataset, `Current Lido APR: ${currentApr.toFixed(2)}%`);
             }
         } catch (e) {
-            log('warning', dataset, 'Lido APR API failed: ' + e.message);
+            log('warning', dataset, 'Lido SMA API failed: ' + e.message);
         }
         
-        // Step 4: beaconcha.in에서 실제 validator 수 가져오기
+        // Get validator count from beaconcha.in
         try {
-            const beaconUrl = 'https://beaconcha.in/api/v1/epoch/latest';
-            const beaconData = await fetch(beaconUrl);
-            if (beaconData && beaconData.data && beaconData.data.validatorscount) {
+            const beaconData = await fetch('https://beaconcha.in/api/v1/epoch/latest');
+            if (beaconData?.data?.validatorscount) {
                 const today = formatDate(new Date());
                 const existingIdx = records.findIndex(r => r.date === today);
                 if (existingIdx >= 0) {
@@ -620,30 +642,35 @@ async function collectStakingData() {
         }
         
         if (records.length === 0) {
-            throw new Error('No real data available from DeFiLlama');
+            throw new Error('No data available from any API source');
         }
         
-        // Sort by date
-        records.sort((a, b) => a.date.localeCompare(b.date));
+        // Remove duplicates and sort
+        const uniqueRecords = [];
+        const seenDates = new Set();
+        for (const r of records) {
+            if (!seenDates.has(r.date)) {
+                seenDates.add(r.date);
+                uniqueRecords.push(r);
+            }
+        }
+        uniqueRecords.sort((a, b) => a.date.localeCompare(b.date));
         
-        log('info', dataset, `Date range: ${records[0].date} to ${records[records.length - 1].date}`);
-        log('info', dataset, `Sample: ${records[0].date}: ${records[0].avg_apr}%, ${records[records.length - 1].date}: ${records[records.length - 1].avg_apr}%`);
+        log('info', dataset, `Saving ${uniqueRecords.length} records from ${dataSource}...`);
         
-        // Step 5: Supabase에 저장
-        for (let i = 0; i < records.length; i += 500) {
-            const batch = records.slice(i, i + 500);
+        for (let i = 0; i < uniqueRecords.length; i += 500) {
+            const batch = uniqueRecords.slice(i, i + 500);
             await supabase.upsert('historical_staking', batch);
-            log('info', dataset, `Saved ${Math.min(i + 500, records.length)}/${records.length} records`);
         }
         
         await updateStatus(dataset, 'success', {
-            record_count: records.length,
-            date_from: records[0]?.date,
-            date_to: records[records.length - 1]?.date,
-            source: 'defillama_real_data'
+            record_count: uniqueRecords.length,
+            date_from: uniqueRecords[0]?.date,
+            date_to: uniqueRecords[uniqueRecords.length - 1]?.date,
+            source: dataSource
         });
         
-        log('success', dataset, `Completed: ${records.length} REAL records (NO estimates)`);
+        log('success', dataset, `Completed: ${uniqueRecords.length} REAL records from ${dataSource}`);
         return true;
     } catch (error) {
         log('error', dataset, error.message);
