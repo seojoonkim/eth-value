@@ -678,10 +678,6 @@ async function collectStakingData() {
         return false;
     }
 }
-        await updateStatus(dataset, 'failed', { last_error: error.message });
-        return false;
-    }
-}
 
 /**
  * 6. Gas & Burn Data (3 Years History)
