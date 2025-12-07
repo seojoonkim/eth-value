@@ -496,8 +496,7 @@ async function collectProtocolFees() {
         const records = data.totalDataChart.map(([timestamp, fees]) => ({
             date: formatDate(new Date(timestamp * 1000)),
             timestamp: timestamp,
-            fees: fees,
-            source: 'defillama'
+            fees: fees
         }));
         
         // 중복 제거 (같은 날짜가 여러 개 있을 수 있음)
