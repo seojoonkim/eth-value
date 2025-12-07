@@ -1456,27 +1456,35 @@ async function collectDexVolume() {
  */
 async function collectStablecoins() {
     const dataset = 'stablecoins';
-    log('info', dataset, 'Starting collection...');
+    log('info', dataset, 'Starting collection (All Chains)...');
     
     try {
         const records = [];
         
         try {
-            // 이더리움 체인의 스테이블코인만 수집 (전체 아님!)
-            log('info', dataset, 'Fetching Ethereum stablecoin data from DefiLlama...');
-            const data = await fetch('https://stablecoins.llama.fi/stablecoincharts/ethereum');
+            // 전체 체인의 스테이블코인 수집 (All Chains)
+            log('info', dataset, 'Fetching ALL CHAINS stablecoin data from DefiLlama...');
+            const data = await fetch('https://stablecoins.llama.fi/stablecoincharts/all');
             
             if (data && data.length > 0) {
                 for (const d of data) {
                     const date = new Date(d.date * 1000);
-                    records.push({
-                        date: formatDate(date),
-                        timestamp: d.date,
-                        total_mcap: d.totalCirculatingUSD?.peggedUSD || 0,
-                        source: 'defillama-ethereum'
-                    });
+                    // totalCirculatingUSD 또는 totalCirculating 둘 다 체크
+                    const totalMcap = d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0;
+                    if (totalMcap > 0) {
+                        records.push({
+                            date: formatDate(date),
+                            timestamp: d.date,
+                            total_mcap: totalMcap,
+                            source: 'defillama-all'
+                        });
+                    }
                 }
-                log('info', dataset, `Got ${records.length} days from DefiLlama (Ethereum)`);
+                log('info', dataset, `Got ${records.length} days from DefiLlama (All Chains)`);
+                if (records.length > 0) {
+                    const latest = records[records.length - 1];
+                    log('info', dataset, `Latest: ${formatDate(new Date(latest.timestamp * 1000))} = $${(latest.total_mcap / 1e9).toFixed(1)}B`);
+                }
             }
         } catch (e) {
             log('warning', dataset, 'DefiLlama stablecoins API failed: ' + e.message);
@@ -1496,10 +1504,77 @@ async function collectStablecoins() {
         await updateStatus(dataset, 'success', {
             record_count: records.length,
             date_from: records[0]?.date,
-            date_to: records[records.length - 1]?.date
+            date_to: records[records.length - 1]?.date,
+            latest_mcap: (records[records.length - 1]?.total_mcap / 1e9).toFixed(1) + 'B'
         });
         
-        log('success', dataset, `Completed: ${records.length} records`);
+        log('success', dataset, `Completed: ${records.length} records (All Chains, $${(records[records.length - 1]?.total_mcap / 1e9).toFixed(1)}B)`);
+        return true;
+    } catch (error) {
+        log('error', dataset, error.message);
+        await updateStatus(dataset, 'failed', { last_error: error.message });
+        return false;
+    }
+}
+
+/**
+ * 11-B. Stablecoins on Ethereum (DefiLlama - 이더리움 체인만)
+ */
+async function collectStablesEth() {
+    const dataset = 'stables_eth';
+    log('info', dataset, 'Starting collection (Ethereum only)...');
+    
+    try {
+        const records = [];
+        
+        try {
+            // 이더리움 체인의 스테이블코인만 수집
+            log('info', dataset, 'Fetching ETHEREUM stablecoin data from DefiLlama...');
+            const data = await fetch('https://stablecoins.llama.fi/stablecoincharts/Ethereum');
+            
+            if (data && data.length > 0) {
+                for (const d of data) {
+                    const date = new Date(d.date * 1000);
+                    // totalCirculatingUSD 또는 totalCirculating 둘 다 체크
+                    const totalMcap = d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0;
+                    if (totalMcap > 0) {
+                        records.push({
+                            date: formatDate(date),
+                            timestamp: d.date,
+                            total_mcap: totalMcap,
+                            source: 'defillama-ethereum'
+                        });
+                    }
+                }
+                log('info', dataset, `Got ${records.length} days from DefiLlama (Ethereum)`);
+                if (records.length > 0) {
+                    const latest = records[records.length - 1];
+                    log('info', dataset, `Latest: ${formatDate(new Date(latest.timestamp * 1000))} = $${(latest.total_mcap / 1e9).toFixed(1)}B`);
+                }
+            }
+        } catch (e) {
+            log('warning', dataset, 'DefiLlama stablecoins Ethereum API failed: ' + e.message);
+        }
+        
+        if (records.length === 0) {
+            throw new Error('Failed to collect Ethereum stablecoin data');
+        }
+        
+        records.sort((a, b) => a.date.localeCompare(b.date));
+        
+        for (let i = 0; i < records.length; i += 500) {
+            const batch = records.slice(i, i + 500);
+            await supabase.upsert('historical_stablecoins_eth', batch);
+        }
+        
+        await updateStatus(dataset, 'success', {
+            record_count: records.length,
+            date_from: records[0]?.date,
+            date_to: records[records.length - 1]?.date,
+            latest_mcap: (records[records.length - 1]?.total_mcap / 1e9).toFixed(1) + 'B'
+        });
+        
+        log('success', dataset, `Completed: ${records.length} records (Ethereum, $${(records[records.length - 1]?.total_mcap / 1e9).toFixed(1)}B)`);
         return true;
     } catch (error) {
         log('error', dataset, error.message);
@@ -2841,6 +2916,7 @@ async function main() {
         { name: 'Fear & Greed', fn: collectFearGreed },
         { name: 'DEX Volume', fn: collectDexVolume },
         { name: 'Stablecoins', fn: collectStablecoins },
+        { name: 'Stables ETH', fn: collectStablesEth },
         { name: 'ETH/BTC Ratio', fn: collectEthBtc },
         { name: 'Funding Rate', fn: collectFundingRate },
         { name: 'Exchange Reserve', fn: collectExchangeReserve },

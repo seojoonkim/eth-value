@@ -371,7 +371,8 @@
                     <div class="dropdown-menu" id="collectMenu" style="display:none;position:absolute;top:100%;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 0;min-width:200px;z-index:100;margin-top:4px;">
                         <button class="dropdown-item" onclick="collectDominance()">👑 ETH Dominance</button>
                         <button class="dropdown-item" onclick="collectEthBtc()">⚖️ ETH/BTC Ratio</button>
-                        <button class="dropdown-item" onclick="collectStablecoinMcap()">💵 Stablecoin Mcap</button>
+                        <button class="dropdown-item" onclick="collectStablecoinMcap()">💵 Stablecoin (All)</button>
+                        <button class="dropdown-item" onclick="collectStablesEth()">🔷 Stablecoins (ETH)</button>
                         <hr style="border:none;border-top:1px solid var(--border);margin:4px 0;">
                         <button class="dropdown-item" onclick="collectAllQuick()">🚀 Collect All (Quick)</button>
                     </div>
@@ -588,7 +589,7 @@
                 charts: ['dex-chart']
             },
             'stablecoins': { 
-                name: 'Stablecoins', 
+                name: 'Stablecoins (All)', 
                 icon: '💵', 
                 table: 'historical_stablecoins', 
                 valueField: 'total_mcap', 
@@ -596,6 +597,16 @@
                 color: '#14b8a6',
                 format: 'tvl',
                 charts: ['stablecoin-chart']
+            },
+            'stables_eth': { 
+                name: 'Stablecoins (ETH)', 
+                icon: '🔷', 
+                table: 'historical_stablecoins_eth', 
+                valueField: 'total_mcap', 
+                dateField: 'date', 
+                color: '#eab308',
+                format: 'tvl',
+                charts: ['stables-chart']
             },
             'eth_btc': { 
                 name: 'ETH/BTC Ratio', 
@@ -1411,9 +1422,9 @@
             const originalText = statusEl.textContent;
             
             try {
-                statusEl.textContent = 'Collecting Stablecoin Mcap...';
+                statusEl.textContent = 'Collecting Stablecoin Mcap (All Chains)...';
                 
-                // Get stablecoin chart data from DefiLlama
+                // Get stablecoin chart data from DefiLlama - ALL CHAINS
                 const res = await fetch('https://stablecoins.llama.fi/stablecoincharts/all');
                 const data = await res.json();
                 
@@ -1426,26 +1437,76 @@
                         date: new Date(d.date * 1000).toISOString().split('T')[0],
                         timestamp: d.date,
                         total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
-                        source: 'defillama'
-                    }));
+                        source: 'defillama-all'
+                    }))
+                    .filter(r => r.total_mcap > 0);
                 
-                console.log(`Upserting ${records.length} stablecoin mcap records...`);
+                console.log(`Upserting ${records.length} stablecoin mcap records (All Chains)...`);
+                console.log(`Latest: $${(records[records.length-1]?.total_mcap / 1e9).toFixed(1)}B`);
                 
                 for (let i = 0; i < records.length; i += 100) {
                     const batch = records.slice(i, i + 100);
                     const { error } = await supabase
-                        .from('historical_stablecoin_mcap')
+                        .from('historical_stablecoins')
                         .upsert(batch, { onConflict: 'date' });
                     
                     if (error) throw error;
                 }
                 
-                statusEl.textContent = `✅ Collected ${records.length} stablecoin records`;
+                statusEl.textContent = `✅ Collected ${records.length} stablecoin records (All Chains, $${(records[records.length-1]?.total_mcap / 1e9).toFixed(1)}B)`;
                 setTimeout(() => { statusEl.textContent = originalText; }, 3000);
                 loadAllData();
                 
             } catch (error) {
                 console.error('Collect Stablecoin error:', error);
+                statusEl.textContent = `❌ Error: ${error.message}`;
+                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
+            }
+        }
+        
+        async function collectStablesEth() {
+            toggleCollectMenu();
+            const statusEl = document.getElementById('connectionText');
+            const originalText = statusEl.textContent;
+            
+            try {
+                statusEl.textContent = 'Collecting Stablecoins on Ethereum...';
+                
+                // Get stablecoin chart data from DefiLlama - ETHEREUM ONLY
+                const res = await fetch('https://stablecoins.llama.fi/stablecoincharts/Ethereum');
+                const data = await res.json();
+                
+                // Filter last 1095 days
+                const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
+                
+                const records = data
+                    .filter(d => d.date * 1000 > cutoff)
+                    .map(d => ({
+                        date: new Date(d.date * 1000).toISOString().split('T')[0],
+                        timestamp: d.date,
+                        total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
+                        source: 'defillama-ethereum'
+                    }))
+                    .filter(r => r.total_mcap > 0);
+                
+                console.log(`Upserting ${records.length} stablecoin records (Ethereum)...`);
+                console.log(`Latest: $${(records[records.length-1]?.total_mcap / 1e9).toFixed(1)}B`);
+                
+                for (let i = 0; i < records.length; i += 100) {
+                    const batch = records.slice(i, i + 100);
+                    const { error } = await supabase
+                        .from('historical_stablecoins_eth')
+                        .upsert(batch, { onConflict: 'date' });
+                    
+                    if (error) throw error;
+                }
+                
+                statusEl.textContent = `✅ Collected ${records.length} stablecoin records (ETH, $${(records[records.length-1]?.total_mcap / 1e9).toFixed(1)}B)`;
+                setTimeout(() => { statusEl.textContent = originalText; }, 3000);
+                loadAllData();
+                
+            } catch (error) {
+                console.error('Collect Stables ETH error:', error);
                 statusEl.textContent = `❌ Error: ${error.message}`;
                 setTimeout(() => { statusEl.textContent = originalText; }, 5000);
             }
@@ -1458,6 +1519,8 @@
             await collectEthBtc();
             await new Promise(r => setTimeout(r, 1000));
             await collectStablecoinMcap();
+            await new Promise(r => setTimeout(r, 1000));
+            await collectStablesEth();
         }
     </script>
 </body>
