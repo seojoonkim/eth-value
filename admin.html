@@ -1636,24 +1636,54 @@
             }
         }
         
-        // Staking Data 수집 - 실제 데이터만 (Lido API + Beacon Chain)
+        // Staking Data 수집 - CORS 프록시 사용
         async function collectStakingData() {
             toggleCollectMenu();
             const statusEl = document.getElementById('connectionText');
             const originalText = statusEl.textContent;
             
+            // CORS 프록시 옵션
+            const corsProxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?',
+                'https://api.codetabs.com/v1/proxy?quest='
+            ];
+            
+            async function fetchWithProxy(url) {
+                // 직접 시도
+                try {
+                    const res = await fetch(url);
+                    if (res.ok) return await res.json();
+                } catch (e) {
+                    console.log('Direct fetch failed, trying proxies...');
+                }
+                
+                // 프록시 시도
+                for (const proxy of corsProxies) {
+                    try {
+                        const res = await fetch(proxy + encodeURIComponent(url));
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data) return data;
+                        }
+                    } catch (e) {
+                        console.log(`Proxy ${proxy} failed`);
+                    }
+                }
+                throw new Error('All fetch attempts failed');
+            }
+            
             try {
-                statusEl.textContent = 'Fetching real Staking APR data...';
+                statusEl.textContent = 'Fetching Staking APR history...';
                 
                 const records = [];
                 let dataSource = '';
                 
-                // Method 1: DeFiLlama Yields API
+                // Method 1: DeFiLlama Yields API (via proxy)
                 try {
-                    statusEl.textContent = 'Trying DeFiLlama Yields API...';
+                    statusEl.textContent = 'Fetching from DeFiLlama...';
                     const lidoPoolId = '747c1d2a-c668-4571-a395-22571c6a3cdd';
-                    const chartRes = await fetch(`https://yields.llama.fi/chart/${lidoPoolId}`);
-                    const chartData = await chartRes.json();
+                    const chartData = await fetchWithProxy(`https://yields.llama.fi/chart/${lidoPoolId}`);
                     
                     if (chartData?.data?.length > 10) {
                         console.log(`DeFiLlama: ${chartData.data.length} records`);
@@ -1679,12 +1709,11 @@
                     console.warn('DeFiLlama failed:', e);
                 }
                 
-                // Method 2: Lido Official API (last 7 days)
+                // Method 2: Lido Official History API
                 if (records.length < 10) {
                     try {
-                        statusEl.textContent = 'Trying Lido Official API...';
-                        const lidoRes = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/last');
-                        const lidoData = await lidoRes.json();
+                        statusEl.textContent = 'Fetching from Lido API...';
+                        const lidoData = await fetchWithProxy('https://eth-api.lido.fi/v1/protocol/steth/apr/last');
                         
                         if (lidoData?.data?.aprs?.length > 0) {
                             console.log(`Lido API: ${lidoData.data.aprs.length} records`);
@@ -1705,74 +1734,45 @@
                     }
                 }
                 
-                // Method 3: Staking Rewards API
+                // Method 3: Beaconcha.in Staking History
                 if (records.length < 10) {
                     try {
-                        statusEl.textContent = 'Trying Staking Rewards API...';
-                        const srRes = await fetch('https://api.stakingrewards.com/public/query', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                query: `{ asset(where: { slug: "ethereum-2-0" }) { metrics(where: { metricKeys: ["reward_rate"] }, limit: 365) { defaultValue createdAt } } }`
-                            })
-                        });
-                        const srData = await srRes.json();
+                        statusEl.textContent = 'Fetching from Beaconcha.in...';
+                        // Beaconcha.in daily income chart
+                        const beaconData = await fetchWithProxy('https://beaconcha.in/api/v1/chart/stakedether');
                         
-                        if (srData?.data?.asset?.metrics?.length > 0) {
-                            console.log(`Staking Rewards: ${srData.data.asset.metrics.length} records`);
-                            for (const item of srData.data.asset.metrics) {
-                                const date = item.createdAt.split('T')[0];
-                                records.push({
-                                    date: date,
-                                    timestamp: Math.floor(new Date(item.createdAt).getTime() / 1000),
-                                    avg_apr: parseFloat((item.defaultValue * 100).toFixed(2)),
-                                    total_staked_eth: null,
-                                    total_validators: null,
-                                    source: 'stakingrewards'
-                                });
+                        if (beaconData?.data?.length > 0) {
+                            console.log(`Beaconcha.in: ${beaconData.data.length} records`);
+                            for (const item of beaconData.data) {
+                                // item format: [timestamp, staked_eth]
+                                if (Array.isArray(item) && item.length >= 2) {
+                                    const date = new Date(item[0]).toISOString().split('T')[0];
+                                    const stakedEth = parseFloat(item[1]) || 0;
+                                    records.push({
+                                        date: date,
+                                        timestamp: Math.floor(item[0] / 1000),
+                                        avg_apr: null, // 나중에 계산
+                                        total_staked_eth: Math.round(stakedEth),
+                                        total_validators: Math.floor(stakedEth / 32),
+                                        source: 'beaconchain'
+                                    });
+                                }
                             }
-                            dataSource = 'Staking Rewards';
+                            dataSource = 'Beaconcha.in';
                         }
                     } catch (e) {
-                        console.warn('Staking Rewards API failed:', e);
+                        console.warn('Beaconcha.in failed:', e);
                     }
                 }
                 
-                // Method 4: Rated Network API
-                if (records.length < 10) {
-                    try {
-                        statusEl.textContent = 'Trying Rated Network API...';
-                        const ratedRes = await fetch('https://api.rated.network/v0/eth/network/stats?granularity=day&size=365');
-                        const ratedData = await ratedRes.json();
-                        
-                        if (ratedData?.data?.length > 0) {
-                            console.log(`Rated Network: ${ratedData.data.length} records`);
-                            for (const item of ratedData.data) {
-                                records.push({
-                                    date: item.day || item.date,
-                                    timestamp: Math.floor(new Date(item.day || item.date).getTime() / 1000),
-                                    avg_apr: parseFloat(((item.avgValidatorEffectiveness || item.apr || 3.5) * (item.apr ? 1 : 0.05)).toFixed(2)),
-                                    total_staked_eth: item.activeStake || null,
-                                    total_validators: item.validatorCount || null,
-                                    source: 'rated_network'
-                                });
-                            }
-                            dataSource = 'Rated Network';
-                        }
-                    } catch (e) {
-                        console.warn('Rated Network API failed:', e);
-                    }
-                }
-                
-                // Get current APR from Lido
+                // Get current APR from Lido SMA
                 try {
-                    const smaRes = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
-                    const smaData = await smaRes.json();
+                    const smaData = await fetchWithProxy('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
                     if (smaData?.data?.smaApr) {
                         const today = new Date().toISOString().split('T')[0];
-                        const existingIdx = records.findIndex(r => r.date === today);
                         const currentApr = parseFloat(smaData.data.smaApr);
                         
+                        const existingIdx = records.findIndex(r => r.date === today);
                         if (existingIdx >= 0) {
                             records[existingIdx].avg_apr = parseFloat(currentApr.toFixed(2));
                         } else {
@@ -1786,15 +1786,19 @@
                             });
                         }
                         console.log(`Current Lido APR: ${currentApr.toFixed(2)}%`);
+                        
+                        // APR이 없는 레코드에 현재 APR 적용
+                        for (const r of records) {
+                            if (r.avg_apr === null) r.avg_apr = currentApr;
+                        }
                     }
                 } catch (e) {
                     console.warn('Lido SMA API failed:', e);
                 }
                 
-                // Get validator count from beaconcha.in
+                // Get validator count
                 try {
-                    const beaconRes = await fetch('https://beaconcha.in/api/v1/epoch/latest');
-                    const beaconData = await beaconRes.json();
+                    const beaconData = await fetchWithProxy('https://beaconcha.in/api/v1/epoch/latest');
                     if (beaconData?.data?.validatorscount) {
                         const today = new Date().toISOString().split('T')[0];
                         const existingIdx = records.findIndex(r => r.date === today);
@@ -1804,18 +1808,18 @@
                         }
                     }
                 } catch (e) {
-                    console.warn('Beacon Chain API failed:', e);
+                    console.warn('Beacon epoch API failed:', e);
                 }
                 
                 if (records.length === 0) {
-                    throw new Error('No data available from any API source');
+                    throw new Error('No data from any API. Try running GitHub Actions instead.');
                 }
                 
                 // Remove duplicates and sort
                 const uniqueRecords = [];
                 const seenDates = new Set();
                 for (const r of records) {
-                    if (!seenDates.has(r.date)) {
+                    if (!seenDates.has(r.date) && r.avg_apr !== null) {
                         seenDates.add(r.date);
                         uniqueRecords.push(r);
                     }
@@ -1839,7 +1843,7 @@
                 
             } catch (error) {
                 console.error('Collect Staking error:', error);
-                statusEl.textContent = `❌ Error: ${error.message}`;
+                statusEl.textContent = `❌ ${error.message}. Use GitHub Actions instead.`;
                 setTimeout(() => { statusEl.textContent = originalText; }, 5000);
             }
         }
