@@ -1677,132 +1677,111 @@ async function collectExchangeReserve() {
 }
 
 /**
- * 15. ETH Dominance (CoinGecko - 실제 계산)
+ * 15. ETH Dominance (Binance 가격 기반 계산)
  * ETH Dominance = ETH Market Cap / Total Crypto Market Cap × 100
+ * Binance에서 ETH/BTC 가격 히스토리를 가져와서 계산
  */
 async function collectEthDominance() {
     const dataset = 'eth_dominance';
-    log('info', dataset, 'Starting collection...');
+    log('info', dataset, 'Starting collection (Binance-based)...');
     
     try {
         const records = [];
         
-        // 1. 현재 Global 데이터 가져오기 (현재 dominance 및 total market cap)
+        // 1. 현재 Global 데이터 가져오기 (현재 dominance 비율용)
         log('info', dataset, 'Fetching current global data from CoinGecko...');
-        const globalData = await fetch('https://api.coingecko.com/api/v3/global');
+        let currentEthDom = 9;
+        let currentBtcDom = 58;
         
-        if (!globalData?.data) {
-            throw new Error('Failed to fetch global data');
+        try {
+            const globalData = await fetch('https://api.coingecko.com/api/v3/global');
+            if (globalData?.data) {
+                currentEthDom = globalData.data.market_cap_percentage?.eth || 9;
+                currentBtcDom = globalData.data.market_cap_percentage?.btc || 58;
+                log('info', dataset, `Current dominance: ETH ${currentEthDom.toFixed(2)}%, BTC ${currentBtcDom.toFixed(2)}%`);
+            }
+        } catch (e) {
+            log('warn', dataset, 'CoinGecko failed, using default dominance values');
         }
         
-        const currentEthDominance = globalData.data.market_cap_percentage?.eth || 10;
-        const currentTotalMcap = globalData.data.total_market_cap?.usd || 3500000000000;
+        // 2. Binance에서 ETH/USDT 가격 히스토리 가져오기 (최대 1000일)
+        log('info', dataset, 'Fetching ETH/USDT history from Binance...');
+        const ethData = await fetch('https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=1000');
         
-        log('info', dataset, `Current ETH dominance: ${currentEthDominance.toFixed(2)}%, Total MCap: $${(currentTotalMcap/1e12).toFixed(2)}T`);
-        
-        await sleep(1500); // Rate limit
-        
-        // 2. ETH Market Cap 히스토리 가져오기
-        log('info', dataset, 'Fetching ETH market cap history...');
-        const ethData = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=max&interval=daily');
-        
-        if (!ethData?.market_caps || ethData.market_caps.length === 0) {
-            throw new Error('Failed to fetch ETH market cap history');
+        if (!ethData || ethData.length === 0) {
+            throw new Error('Failed to fetch ETH prices from Binance');
         }
+        log('info', dataset, `Got ${ethData.length} ETH price points`);
         
-        const ethMcapHistory = ethData.market_caps; // [[timestamp, mcap], ...]
-        log('info', dataset, `Got ${ethMcapHistory.length} ETH market cap data points`);
+        // 3. Binance에서 BTC/USDT 가격 히스토리 가져오기
+        log('info', dataset, 'Fetching BTC/USDT history from Binance...');
+        const btcData = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1000');
         
-        await sleep(1500);
-        
-        // 3. BTC Market Cap 히스토리 가져오기 (Total Market Cap 추정용)
-        log('info', dataset, 'Fetching BTC market cap history...');
-        const btcData = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily');
-        
-        if (!btcData?.market_caps || btcData.market_caps.length === 0) {
-            throw new Error('Failed to fetch BTC market cap history');
+        if (!btcData || btcData.length === 0) {
+            throw new Error('Failed to fetch BTC prices from Binance');
         }
+        log('info', dataset, `Got ${btcData.length} BTC price points`);
         
-        const btcMcapHistory = btcData.market_caps;
-        log('info', dataset, `Got ${btcMcapHistory.length} BTC market cap data points`);
+        // 4. Dominance 계산
+        const ETH_SUPPLY = 120000000;
+        const BTC_SUPPLY = 19600000;
+        const combinedShare = (currentEthDom + currentBtcDom) / 100;
         
-        // 4. 현재 BTC dominance 가져오기
-        const currentBtcDominance = globalData.data.market_cap_percentage?.btc || 55;
-        
-        // 5. ETH + BTC dominance 합계로 Total Market Cap 역산하여 ETH dominance 계산
-        // Total MCap ≈ (ETH MCap + BTC MCap) / (ETH% + BTC%)
-        
-        // 3년치만 사용 (1095일)
-        const cutoffDate = Date.now() - (CONFIG.DAYS_TO_FETCH * 24 * 60 * 60 * 1000);
-        
-        for (let i = 0; i < ethMcapHistory.length; i++) {
-            const [timestamp, ethMcap] = ethMcapHistory[i];
+        for (let i = 0; i < ethData.length && i < btcData.length; i++) {
+            const ethK = ethData[i];
+            const btcK = btcData[i];
             
-            if (timestamp < cutoffDate) continue;
+            const timestamp = ethK[0];
+            const ethPrice = parseFloat(ethK[4]); // close price
+            const btcPrice = parseFloat(btcK[4]); // close price
             
-            // 같은 날짜의 BTC market cap 찾기
-            const btcEntry = btcMcapHistory.find(b => {
-                const diff = Math.abs(b[0] - timestamp);
-                return diff < 24 * 60 * 60 * 1000; // 하루 이내
-            });
+            // Market cap 계산
+            const ethMcap = ethPrice * ETH_SUPPLY;
+            const btcMcap = btcPrice * BTC_SUPPLY;
             
-            if (!btcEntry) continue;
+            // Total mcap 추정
+            const estimatedTotalMcap = (ethMcap + btcMcap) / combinedShare;
             
-            const btcMcap = btcEntry[1];
-            
-            // ETH dominance 계산
-            // 방법: ETH + BTC가 전체의 약 65-70%를 차지한다고 가정
-            // 현재 비율: (currentEthDominance + currentBtcDominance) / 100
-            const currentCombinedShare = (currentEthDominance + currentBtcDominance) / 100;
-            
-            // 과거 total market cap 추정
-            const estimatedTotalMcap = (ethMcap + btcMcap) / currentCombinedShare;
-            
-            // ETH dominance 계산
+            // Dominance 계산
             let ethDominance = (ethMcap / estimatedTotalMcap) * 100;
+            let btcDominance = (btcMcap / estimatedTotalMcap) * 100;
             
-            // 현실적인 범위로 제한 (5% ~ 25%)
+            // 현실적인 범위로 제한
             ethDominance = Math.max(5, Math.min(25, ethDominance));
-            
-            const date = new Date(timestamp);
+            btcDominance = Math.max(30, Math.min(75, btcDominance));
             
             records.push({
-                date: formatDate(date),
+                date: formatDate(new Date(timestamp)),
                 timestamp: Math.floor(timestamp / 1000),
                 eth_dominance: parseFloat(ethDominance.toFixed(2)),
-                btc_dominance: parseFloat(((btcMcap / estimatedTotalMcap) * 100).toFixed(2)),
+                btc_dominance: parseFloat(btcDominance.toFixed(2)),
                 total_mcap: parseFloat(estimatedTotalMcap.toFixed(2)),
-                source: 'coingecko_calculated'
+                source: 'binance_calculated'
             });
         }
         
-        // 중복 제거 및 정렬
-        const uniqueRecords = [];
-        const seenDates = new Set();
-        for (const r of records) {
-            if (!seenDates.has(r.date)) {
-                seenDates.add(r.date);
-                uniqueRecords.push(r);
-            }
+        // 마지막 레코드는 현재 dominance로 보정
+        if (records.length > 0) {
+            records[records.length - 1].eth_dominance = parseFloat(currentEthDom.toFixed(2));
+            records[records.length - 1].btc_dominance = parseFloat(currentBtcDom.toFixed(2));
         }
-        uniqueRecords.sort((a, b) => a.date.localeCompare(b.date));
         
-        log('info', dataset, `Calculated ${uniqueRecords.length} dominance records`);
+        log('info', dataset, `Calculated ${records.length} dominance records`);
         
         // Batch upsert
-        for (let i = 0; i < uniqueRecords.length; i += 500) {
-            const batch = uniqueRecords.slice(i, i + 500);
+        for (let i = 0; i < records.length; i += 500) {
+            const batch = records.slice(i, i + 500);
             await supabase.upsert('historical_eth_dominance', batch);
         }
         
         await updateStatus(dataset, 'success', {
-            record_count: uniqueRecords.length,
-            date_from: uniqueRecords[0]?.date,
-            date_to: uniqueRecords[uniqueRecords.length - 1]?.date,
-            current_eth_dominance: currentEthDominance.toFixed(2)
+            record_count: records.length,
+            date_from: records[0]?.date,
+            date_to: records[records.length - 1]?.date,
+            current_eth_dominance: currentEthDom.toFixed(2)
         });
         
-        log('success', dataset, `Completed: ${uniqueRecords.length} records (real data)`);
+        log('success', dataset, `Completed: ${records.length} records (Binance-based)`);
         return true;
     } catch (error) {
         log('error', dataset, error.message);
