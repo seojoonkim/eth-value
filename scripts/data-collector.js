@@ -544,10 +544,11 @@ async function collectStakingData() {
         const records = [];
         let dataSource = '';
         
-        // Method 1: DeFiLlama Yields API
+        // Method 1: DeFiLlama Yields API - Lido stETH
         try {
             log('info', dataset, 'Trying DeFiLlama Yields API...');
-            const lidoPoolId = '747c1d2a-c668-4571-a395-22571c6a3cdd';
+            // 올바른 Lido stETH Pool ID
+            const lidoPoolId = '747c1d2a-c668-4682-b9f9-296708a3dd90';
             const chartData = await fetch(`https://yields.llama.fi/chart/${lidoPoolId}`);
             
             if (chartData?.data?.length > 10) {
@@ -574,7 +575,128 @@ async function collectStakingData() {
             log('warning', dataset, 'DeFiLlama failed: ' + e.message);
         }
         
-        // Method 2: Lido Official API (last records)
+        // Method 2: Beaconcha.in ETH Store API (일일 보상 데이터) - 3년치
+        if (records.length < 10) {
+            try {
+                log('info', dataset, 'Trying Beaconcha.in ETH Store API (3 years daily)...');
+                
+                // 1095일 = 3년치 일일 데이터
+                const totalDays = 1095;
+                let successCount = 0;
+                
+                for (let day = 1; day <= totalDays; day++) {
+                    try {
+                        const ethstoreData = await fetch(`https://beaconcha.in/api/v1/ethstore/${day}`);
+                        if (ethstoreData?.data) {
+                            const d = ethstoreData.data;
+                            const date = formatDate(new Date(d.day * 1000));
+                            // APR 계산: 일일 보상률 * 365
+                            let apr = 3.0;
+                            if (d.avgValidatorBalance > 0 && d.consensusRewards) {
+                                apr = (d.consensusRewards / d.avgValidatorBalance) * 365 * 100;
+                            } else if (d.apr) {
+                                apr = d.apr;
+                            }
+                            
+                            if (apr > 0 && apr < 20) {
+                                records.push({
+                                    date: date,
+                                    timestamp: d.day,
+                                    avg_apr: parseFloat(apr.toFixed(2)),
+                                    total_staked_eth: d.effectiveBalanceSum || d.totalEffectiveBalance || null,
+                                    total_validators: d.validatorCount || null,
+                                    source: 'beaconchain_ethstore'
+                                });
+                                successCount++;
+                            }
+                        }
+                        
+                        // Rate limiting - 10개마다 잠깐 대기
+                        if (day % 10 === 0) {
+                            await sleep(100);
+                        }
+                        
+                        // 진행 상황 로깅 (100일마다)
+                        if (day % 100 === 0) {
+                            log('info', dataset, `Beaconcha.in progress: ${day}/${totalDays} days, ${successCount} records`);
+                        }
+                    } catch (innerE) {
+                        // 개별 요청 실패는 무시하고 계속
+                        if (day % 100 === 0) {
+                            log('warning', dataset, `Beaconcha.in day ${day} failed: ${innerE.message}`);
+                        }
+                    }
+                }
+                
+                if (records.length > 100) {
+                    dataSource = 'Beaconcha.in ETH Store';
+                    log('info', dataset, `Beaconcha.in: ${records.length} records collected`);
+                }
+            } catch (e) {
+                log('warning', dataset, 'Beaconcha.in ETH Store failed: ' + e.message);
+            }
+        }
+        
+        // Method 3: Beaconcha.in Income History API
+        if (records.length < 10) {
+            try {
+                log('info', dataset, 'Trying Beaconcha.in Income History...');
+                const incomeData = await fetch('https://beaconcha.in/api/v1/chart/income?days=1095');
+                
+                if (incomeData?.data?.length > 0) {
+                    log('info', dataset, `Beaconcha.in Income: ${incomeData.data.length} records`);
+                    for (const item of incomeData.data) {
+                        // [timestamp, income_gwei]
+                        if (Array.isArray(item) && item.length >= 2) {
+                            const date = formatDate(new Date(item[0]));
+                            // 일일 수익을 연간화 (대략적인 APR 계산)
+                            const dailyIncome = parseFloat(item[1]) / 1e9; // Gwei to ETH
+                            const apr = (dailyIncome / 32) * 365 * 100; // 32 ETH 기준
+                            
+                            if (apr > 0 && apr < 20) {
+                                records.push({
+                                    date: date,
+                                    timestamp: Math.floor(item[0] / 1000),
+                                    avg_apr: parseFloat(apr.toFixed(2)),
+                                    total_staked_eth: null,
+                                    total_validators: null,
+                                    source: 'beaconchain_income'
+                                });
+                            }
+                        }
+                    }
+                    dataSource = 'Beaconcha.in Income';
+                }
+            } catch (e) {
+                log('warning', dataset, 'Beaconcha.in Income failed: ' + e.message);
+            }
+        }
+        
+        // Method 4: Rated Network API
+        if (records.length < 10) {
+            try {
+                log('info', dataset, 'Trying Rated Network API...');
+                const ratedData = await fetch('https://api.rated.network/v0/eth/network/overview');
+                
+                if (ratedData?.avgNetworkApr) {
+                    const today = formatDate(new Date());
+                    records.push({
+                        date: today,
+                        timestamp: Math.floor(Date.now() / 1000),
+                        avg_apr: parseFloat(ratedData.avgNetworkApr.toFixed(2)),
+                        total_staked_eth: ratedData.activeStake || null,
+                        total_validators: ratedData.activeValidators || null,
+                        source: 'rated_network'
+                    });
+                    dataSource = 'Rated Network';
+                    log('info', dataset, `Rated Network APR: ${ratedData.avgNetworkApr.toFixed(2)}%`);
+                }
+            } catch (e) {
+                log('warning', dataset, 'Rated Network failed: ' + e.message);
+            }
+        }
+        
+        // Method 5: Lido Official API (last records)
         if (records.length < 10) {
             try {
                 log('info', dataset, 'Trying Lido Official API...');
@@ -599,8 +721,9 @@ async function collectStakingData() {
             }
         }
         
-        // Get current APR from Lido SMA
+        // Always get current APR from Lido SMA
         try {
+            log('info', dataset, 'Getting current APR from Lido SMA...');
             const lidoData = await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
             if (lidoData?.data?.smaApr) {
                 const today = formatDate(new Date());
@@ -620,6 +743,7 @@ async function collectStakingData() {
                     });
                 }
                 log('info', dataset, `Current Lido APR: ${currentApr.toFixed(2)}%`);
+                if (!dataSource) dataSource = 'Lido SMA';
             }
         } catch (e) {
             log('warning', dataset, 'Lido SMA API failed: ' + e.message);
@@ -649,7 +773,7 @@ async function collectStakingData() {
         const uniqueRecords = [];
         const seenDates = new Set();
         for (const r of records) {
-            if (!seenDates.has(r.date)) {
+            if (!seenDates.has(r.date) && r.avg_apr > 0) {
                 seenDates.add(r.date);
                 uniqueRecords.push(r);
             }
