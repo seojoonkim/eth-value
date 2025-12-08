@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHval Admin - Data Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>ETHval Admin v6.0 - 29 Datasets</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg: #0a0a0f;
@@ -31,7 +28,7 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 1800px; margin: 0 auto; }
+        .container { max-width: 1600px; margin: 0 auto; }
         .header {
             display: flex;
             justify-content: space-between;
@@ -39,23 +36,12 @@
             margin-bottom: 24px;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 16px;
         }
-        .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .badge {
-            background: var(--primary);
-            color: white;
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .header h1 { font-size: 24px; font-weight: 700; }
+        .badge { background: var(--primary); color: white; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: 600; margin-left: 12px; }
+        .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .btn {
             padding: 10px 20px;
             border: none;
@@ -70,1800 +56,1171 @@
         }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: #7c3aed; }
-        .dropdown-item {
-            display: block;
-            width: 100%;
-            padding: 8px 16px;
-            text-align: left;
-            background: none;
-            border: none;
-            color: var(--text);
-            font-size: 13px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .dropdown-item:hover { background: var(--bg-hover); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #16a34a; }
+        .btn-warning { background: var(--warning); color: black; }
         .btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
         .btn-secondary:hover { background: var(--bg-hover); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
         .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
+            display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+            border-radius: 20px; font-size: 12px; background: var(--bg-card); border: 1px solid var(--border);
         }
         .connection-status.connected { border-color: var(--success); color: var(--success); }
         .connection-status.disconnected { border-color: var(--error); color: var(--error); }
 
-        /* Section Title */
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 32px 0 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .section-title:first-of-type { margin-top: 0; }
-
-        /* Overview Stats */
-        .overview-stats {
+        /* Stats */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 12px;
             margin-bottom: 24px;
         }
-        .overview-stat {
+        .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 16px;
             text-align: center;
         }
-        .overview-stat .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .overview-stat .value { font-size: 28px; font-weight: 700; }
-        .overview-stat .value.success { color: var(--success); }
-        .overview-stat .value.warning { color: var(--warning); }
-        .overview-stat .value.error { color: var(--error); }
+        .stat-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-card .value { font-size: 28px; font-weight: 700; }
+        .stat-card .value.success { color: var(--success); }
+        .stat-card .value.warning { color: var(--warning); }
+        .stat-card .value.error { color: var(--error); }
 
-        /* Data Status Table */
-        .data-table-container {
+        /* Table */
+        .table-container {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .data-table th, .data-table td {
-            padding: 14px 16px;
-            text-align: left;
+        .section-title {
+            font-size: 16px; font-weight: 600; padding: 16px;
             border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .data-table th {
-            background: var(--bg);
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-        .data-table tr:last-child td { border-bottom: none; }
-        .data-table tr:hover td { background: var(--bg-hover); }
-        .data-table .icon { font-size: 18px; margin-right: 8px; }
-        .data-table .name { font-weight: 600; }
-        .data-table .table-name { 
-            font-family: 'JetBrains Mono', monospace; 
-            font-size: 11px; 
-            color: var(--text-muted);
-            display: block;
-            margin-top: 2px;
-        }
-        .data-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg); font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--bg-hover); }
+        .icon { font-size: 16px; margin-right: 6px; }
+        .name { font-weight: 600; font-size: 13px; }
+        .table-name { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
 
         /* Status Badge */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
+        .status {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
         }
-        .status-badge.success { background: rgba(34, 197, 94, 0.15); color: var(--success); }
-        .status-badge.partial { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-        .status-badge.failed { background: rgba(239, 68, 68, 0.15); color: var(--error); }
-        .status-badge.loading { background: rgba(139, 92, 246, 0.15); color: var(--primary); }
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-        }
+        .status.ok { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .status.warn { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .status.fail { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+        .status.load { background: rgba(139, 92, 246, 0.15); color: var(--primary); }
 
-        /* Progress Bar */
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--bg);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.3s;
-        }
-        .progress-fill.success { background: var(--success); }
-        .progress-fill.partial { background: var(--warning); }
-        .progress-fill.low { background: var(--error); }
-        .progress-text {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            display: flex;
-            justify-content: space-between;
-        }
+        /* Progress */
+        .progress { width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
 
-        /* Charts Grid */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 16px;
-        }
-        .chart-card {
+        /* Log */
+        .log-container {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
-            overflow: hidden;
+            padding: 16px;
+            margin-bottom: 24px;
         }
-        .chart-header {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chart-header h3 {
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .chart-meta {
-            display: flex;
-            gap: 12px;
-            font-size: 11px;
-        }
-        .chart-meta span { color: var(--text-muted); }
-        .chart-meta .value { color: var(--text); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
-        .chart-body {
-            padding: 12px;
-            height: 200px;
-            position: relative;
-        }
-        .chart-body canvas { width: 100% !important; height: 100% !important; }
-        .chart-stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            padding: 10px 16px;
+        .log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
             background: var(--bg);
-            border-top: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
         }
-        .chart-stat { text-align: center; }
-        .chart-stat .label { font-size: 9px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; }
-        .chart-stat .value { font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
-        .chart-stat .value.latest { color: var(--primary); }
-        .chart-stat .value.min { color: var(--error); }
-        .chart-stat .value.max { color: var(--success); }
+        .log .success { color: var(--success); }
+        .log .error { color: var(--error); }
+        .log .warn { color: var(--warning); }
+        .log .info { color: var(--info); }
 
-        .loading {
-            display: flex;
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            color: var(--text-muted);
-            font-size: 13px;
         }
-
-        /* Auth */
-        .auth-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg); z-index: 9999;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .auth-box {
+        .modal.show { display: flex; }
+        .modal-content {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 400px;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 800px;
             width: 90%;
-            text-align: center;
+            max-height: 80vh;
+            overflow-y: auto;
         }
-        .auth-box input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
+
+        /* Verify Result */
+        .verify-result {
             background: var(--bg);
-            color: var(--text);
-            font-size: 14px;
-            margin-bottom: 16px;
-        }
-        .auth-box button {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
             border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
+            padding: 12px;
+            margin-top: 12px;
         }
-        .auth-error { color: var(--error); font-size: 13px; margin-top: 12px; display: none; }
-
-        /* Source Badge */
-        .source-badge {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 500;
+        .verify-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
         }
-        .source-badge.real { background: rgba(34, 197, 94, 0.2); color: var(--success); }
-        .source-badge.estimated { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-
-        @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 16px; align-items: flex-start; }
-            .charts-grid { grid-template-columns: 1fr; }
-            .data-table { font-size: 12px; }
-            .data-table th, .data-table td { padding: 10px 8px; }
-        }
+        .verify-item:last-child { border-bottom: none; }
+        .verify-match { color: var(--success); }
+        .verify-mismatch { color: var(--error); }
     </style>
 </head>
 <body>
-    <!-- Auth -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-box">
-            <h2 style="margin-bottom:8px;">🔐 ETHval Admin</h2>
-            <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px;">Enter password to access</p>
-            <input type="password" id="adminPassword" placeholder="Password" onkeypress="if(event.key==='Enter')checkPassword()">
-            <button onclick="checkPassword()">Unlock</button>
-            <p class="auth-error" id="authError">Incorrect password</p>
-        </div>
-    </div>
-
-    <!-- Supabase Config Modal -->
-    <div class="auth-overlay" id="configOverlay" style="display:none;">
-        <div class="auth-box" style="max-width:500px;">
-            <h2 style="margin-bottom:8px;">⚙️ Supabase Configuration</h2>
-            <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">
-                Enter your Supabase credentials<br>
-                <span style="font-size:11px;">(Settings → API in Supabase Dashboard)</span>
-            </p>
-            <input type="text" id="supabaseUrl" placeholder="Project URL (https://xxx.supabase.co)" style="margin-bottom:12px;">
-            <input type="text" id="supabaseKey" placeholder="anon / public key" style="margin-bottom:16px;">
-            <button onclick="saveConfig()">💾 Save & Connect</button>
-            <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">Saved in localStorage (this browser only)</p>
-        </div>
-    </div>
-
     <div class="container">
         <div class="header">
-            <h1>📊 ETHval Admin <span class="badge">DATA DASHBOARD</span></h1>
+            <h1>⚡ ETHval Admin <span class="badge">v6.0</span></h1>
             <div class="header-actions">
-                <div class="connection-status" id="connectionStatus">
-                    <span style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
-                    <span id="connectionText">Connecting...</span>
+                <div class="connection-status" id="connStatus">
+                    <span id="connDot">●</span>
+                    <span id="connText">Connecting...</span>
                 </div>
-                <button class="btn btn-secondary" onclick="loadAllData()">🔄 Refresh All</button>
-                <div class="dropdown" style="position:relative;">
-                    <button class="btn btn-secondary" onclick="toggleCollectMenu()">📥 Collect Data ▼</button>
-                    <div class="dropdown-menu" id="collectMenu" style="display:none;position:absolute;top:100%;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 0;min-width:200px;z-index:100;margin-top:4px;">
-                        <button class="dropdown-item" onclick="collectDominance()">👑 ETH Dominance</button>
-                        <button class="dropdown-item" onclick="collectEthBtc()">⚖️ ETH/BTC Ratio</button>
-                        <button class="dropdown-item" onclick="collectStablecoinMcap()">💵 Stablecoin (All)</button>
-                        <button class="dropdown-item" onclick="collectStablesEth()">🔷 Stablecoins (ETH)</button>
-                        <button class="dropdown-item" onclick="collectNetworkFees()">💰 Network Fees</button>
-                        <button class="dropdown-item" onclick="collectBlobData()">🫧 Blob Data</button>
-                        <button class="dropdown-item" onclick="collectStakingData()">📊 Staking Data (APR)</button>
-                        <hr style="border:none;border-top:1px solid var(--border);margin:4px 0;">
-                        <button class="dropdown-item" onclick="collectAllQuick()">🚀 Collect All (Quick)</button>
-                    </div>
-                </div>
-                <button class="btn btn-secondary" onclick="showConfig()">⚙️ Config</button>
-                <button class="btn btn-primary" onclick="openGitHubActions()">▶️ Run Collector</button>
+                <button class="btn btn-success" onclick="collectAll()">🚀 Collect All 29</button>
+                <button class="btn btn-warning" onclick="verifyAll()">🔍 Verify All</button>
+                <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
             </div>
         </div>
 
-        <!-- Overview Stats -->
-        <h2 class="section-title">📈 Overview</h2>
-        <div class="overview-stats">
-            <div class="overview-stat">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
                 <div class="label">Total Datasets</div>
-                <div class="value" id="totalDatasets">9</div>
+                <div class="value">29</div>
             </div>
-            <div class="overview-stat">
-                <div class="label">✅ Complete (3Y+)</div>
-                <div class="value success" id="completeCount">-</div>
+            <div class="stat-card">
+                <div class="label">OK</div>
+                <div class="value success" id="statOk">-</div>
             </div>
-            <div class="overview-stat">
-                <div class="label">⚠️ Partial</div>
-                <div class="value warning" id="partialCount">-</div>
+            <div class="stat-card">
+                <div class="label">Partial</div>
+                <div class="value warning" id="statPartial">-</div>
             </div>
-            <div class="overview-stat">
-                <div class="label">❌ Missing</div>
-                <div class="value error" id="missingCount">-</div>
+            <div class="stat-card">
+                <div class="label">Failed</div>
+                <div class="value error" id="statFailed">-</div>
             </div>
-            <div class="overview-stat">
+            <div class="stat-card">
                 <div class="label">Total Records</div>
-                <div class="value" id="totalRecords">-</div>
-            </div>
-            <div class="overview-stat">
-                <div class="label">Last Updated</div>
-                <div class="value" id="lastUpdated" style="font-size:14px;">-</div>
+                <div class="value" id="statRecords">-</div>
             </div>
         </div>
 
-        <!-- Data Status Table -->
-        <h2 class="section-title">🗂️ All Historical Data (Target: 1,095 days = 3 years)</h2>
-        <div class="data-table-container">
-            <table class="data-table">
+        <!-- Data Table -->
+        <div class="table-container">
+            <div class="section-title">
+                <span>📊 29 Datasets Status</span>
+                <span class="mono" id="lastUpdate">Last update: -</span>
+            </div>
+            <table>
                 <thead>
                     <tr>
+                        <th style="width:30px">#</th>
                         <th>Dataset</th>
+                        <th>Table</th>
                         <th>Records</th>
-                        <th>Date Range</th>
-                        <th>3Y Coverage</th>
-                        <th>Data Quality</th>
+                        <th>Latest</th>
+                        <th>Value</th>
+                        <th>Coverage</th>
                         <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="dataTableBody">
-                    <!-- Populated by JS -->
-                </tbody>
+                <tbody id="dataTable"></tbody>
             </table>
         </div>
 
-        <!-- Mini Charts -->
-        <h2 class="section-title">📉 Data Preview</h2>
-        <div class="charts-grid" id="chartsGrid"></div>
+        <!-- Log -->
+        <div class="log-container">
+            <div class="section-title">📝 Activity Log</div>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <!-- Verify Modal -->
+    <div class="modal" id="verifyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="verifyTitle">🔍 Verification Result</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="verifyContent"></div>
+        </div>
     </div>
 
     <script>
-        const ADMIN_PASSWORD_HASH = 'ZXRodmFsYWRtaW4=';
-        function checkPassword() {
-            if (btoa(document.getElementById('adminPassword').value) === ADMIN_PASSWORD_HASH) {
-                document.getElementById('authOverlay').style.display = 'none';
-                sessionStorage.setItem('ethval_admin_auth', 'true');
-            } else {
-                document.getElementById('authError').style.display = 'block';
-                document.getElementById('adminPassword').value = '';
-            }
-        }
-        if (sessionStorage.getItem('ethval_admin_auth') === 'true') {
-            document.getElementById('authOverlay').style.display = 'none';
-        }
-
-        // TODO: Replace with your actual Supabase credentials
-        let SUPABASE_URL = localStorage.getItem('ethval_supabase_url') || '';
-        let SUPABASE_ANON_KEY = localStorage.getItem('ethval_supabase_key') || '';
-
-        function saveConfig() {
-            const url = document.getElementById('supabaseUrl').value.trim();
-            const key = document.getElementById('supabaseKey').value.trim();
-            
-            if (!url || !key) {
-                alert('Please enter both URL and Key');
-                return;
-            }
-            
-            localStorage.setItem('ethval_supabase_url', url);
-            localStorage.setItem('ethval_supabase_key', key);
-            SUPABASE_URL = url;
-            SUPABASE_ANON_KEY = key;
-            
-            document.getElementById('configOverlay').style.display = 'none';
-            init();
-        }
-        
-        function showConfig() {
-            document.getElementById('supabaseUrl').value = SUPABASE_URL;
-            document.getElementById('supabaseKey').value = SUPABASE_ANON_KEY;
-            document.getElementById('configOverlay').style.display = 'flex';
-        }
-
-        let supabase = null;
-        const charts = {};
-        const TARGET_DAYS = 1095; // 3 years
-
         // ═══════════════════════════════════════════════════════════════════
-        // ALL DATASETS STORED IN SUPABASE (20 total)
+        // CONFIGURATION
+        // ═══════════════════════════════════════════════════════════════════
+        const SUPABASE_URL = 'https://irmvzluqcvgpqhnboejn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlybXZ6bHVxY3ZncHFobmJvZWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2MTg4NzcsImV4cCI6MjA2NDE5NDg3N30.5eF2FhyrdVxVwMsVdi-DEJvIpuQnghZs5uy6CVqTvQg';
+        
+        let supabase;
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // 29 DATASETS DEFINITION
         // ═══════════════════════════════════════════════════════════════════
         const DATASETS = {
-            'eth_price': { 
-                name: 'ETH Price', 
-                icon: '💰', 
-                table: 'historical_eth_price', 
-                valueField: 'close', 
-                dateField: 'date', 
-                color: '#8b5cf6',
-                format: 'price',
-                charts: ['price-chart']
+            eth_price: { 
+                name: 'ETH Price', icon: '💰', table: 'historical_eth_price', 
+                valueField: 'close', format: 'price',
+                api: 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT',
+                parseApi: (d) => parseFloat(d.price)
             },
-            'ethereum_tvl': { 
-                name: 'Ethereum TVL', 
-                icon: '🏦', 
-                table: 'historical_ethereum_tvl', 
-                valueField: 'tvl', 
-                dateField: 'date', 
-                color: '#22c55e',
-                format: 'tvl',
-                charts: ['tvl-chart']
+            ethereum_tvl: { 
+                name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', 
+                valueField: 'tvl', format: 'tvl',
+                api: 'https://api.llama.fi/v2/chains',
+                parseApi: (d) => d.find(c => c.name === 'Ethereum')?.tvl
             },
-            'l2_tvl': { 
-                name: 'L2 TVL', 
-                icon: '🔗', 
-                table: 'historical_l2_tvl', 
-                valueField: 'tvl', 
-                dateField: 'date', 
-                color: '#3b82f6',
-                format: 'tvl',
-                aggregate: true,
-                charts: ['l2-chart']
+            l2_tvl: { 
+                name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', 
+                valueField: 'tvl', format: 'tvl', aggregate: true,
+                api: 'https://api.llama.fi/v2/chains',
+                parseApi: (d) => ['Arbitrum','Optimism','Base','zkSync Era','Linea','Scroll','Blast'].reduce((s,c) => s + (d.find(x=>x.name===c)?.tvl||0), 0)
             },
-            'protocol_fees': { 
-                name: 'Protocol Fees', 
-                icon: '📈', 
-                table: 'historical_protocol_fees', 
-                valueField: 'fees', 
-                dateField: 'date', 
-                color: '#f59e0b',
-                format: 'fees',
-                charts: ['fees-chart']
+            protocol_fees: { 
+                name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', 
+                valueField: 'fees', format: 'fees',
+                api: 'https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees',
+                parseApi: (d) => d.total24h
             },
-            'staking_data': { 
-                name: 'Staking Data', 
-                icon: '🥩', 
-                table: 'historical_staking', 
-                valueField: 'total_staked_eth', 
-                dateField: 'date', 
-                color: '#ef4444',
-                format: 'eth',
-                charts: ['staking-chart']
+            staking_data: { 
+                name: 'Staking Data', icon: '🥩', table: 'historical_staking', 
+                valueField: 'total_staked_eth', format: 'eth',
+                api: 'https://beaconcha.in/api/v1/epoch/latest',
+                parseApi: (d) => d.data?.validatorscount * 32
             },
-            'gas_burn': { 
-                name: 'Gas & Burn', 
-                icon: '🔥', 
-                table: 'historical_gas_burn', 
-                valueField: 'avg_gas_price_gwei', 
-                dateField: 'date', 
-                color: '#f97316',
-                format: 'gas',
-                charts: ['base-fee-chart']
+            gas_burn: { 
+                name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', 
+                valueField: 'eth_burnt', format: 'eth',
+                api: null, // Calculated
+                parseApi: null
             },
-            'active_addresses': { 
-                name: 'Eco Active Addresses', 
-                icon: '👥', 
-                table: 'historical_active_addresses', 
-                valueField: 'active_addresses', 
-                dateField: 'date', 
-                color: '#06b6d4',
-                format: 'number',
-                charts: ['active-addr-chart']
+            active_addresses: { 
+                name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', 
+                valueField: 'active_addresses', format: 'number',
+                api: null, parseApi: null
             },
-            'eth_supply': { 
-                name: 'ETH Supply', 
-                icon: '💎', 
-                table: 'historical_eth_supply', 
-                valueField: 'eth_supply', 
-                dateField: 'date', 
-                color: '#a855f7',
-                format: 'eth',
-                charts: ['net-supply-chart']
+            eth_supply: { 
+                name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', 
+                valueField: 'eth_supply', format: 'eth',
+                api: 'https://api.etherscan.io/api?module=stats&action=ethsupply',
+                parseApi: (d) => d.result ? parseFloat(d.result) / 1e18 : null
             },
-            'fear_greed': { 
-                name: 'Fear & Greed', 
-                icon: '😱', 
-                table: 'historical_fear_greed', 
-                valueField: 'value', 
-                dateField: 'date', 
-                color: '#eab308',
-                format: 'index',
-                charts: ['feargreed-chart']
+            fear_greed: { 
+                name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', 
+                valueField: 'value', format: 'index',
+                api: 'https://api.alternative.me/fng/?limit=1',
+                parseApi: (d) => parseInt(d.data?.[0]?.value)
             },
-            'dex_volume': { 
-                name: 'DEX Volume', 
-                icon: '💱', 
-                table: 'historical_dex_volume', 
-                valueField: 'volume', 
-                dateField: 'date', 
-                color: '#ec4899',
-                format: 'tvl',
-                charts: ['dex-chart']
+            dex_volume: { 
+                name: 'DEX Volume', icon: '💱', table: 'historical_dex_volume', 
+                valueField: 'volume', format: 'tvl',
+                api: 'https://api.llama.fi/overview/dexs/ethereum?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true&dataType=dailyVolume',
+                parseApi: (d) => d.total24h
             },
-            'stablecoins': { 
-                name: 'Stablecoins (All)', 
-                icon: '💵', 
-                table: 'historical_stablecoins', 
-                valueField: 'total_mcap', 
-                dateField: 'date', 
-                color: '#14b8a6',
-                format: 'tvl',
-                charts: ['stablecoin-chart']
+            stablecoins: { 
+                name: 'Stablecoins (All)', icon: '💵', table: 'historical_stablecoins', 
+                valueField: 'total_mcap', format: 'tvl',
+                api: 'https://stablecoins.llama.fi/stablecoins?includePrices=false',
+                parseApi: (d) => d.peggedAssets?.reduce((s,a) => s + (a.circulating?.peggedUSD || 0), 0)
             },
-            'stables_eth': { 
-                name: 'Stablecoins (ETH)', 
-                icon: '🔷', 
-                table: 'historical_stablecoins_eth', 
-                valueField: 'total_mcap', 
-                dateField: 'date', 
-                color: '#eab308',
-                format: 'tvl',
-                charts: ['stables-chart']
+            stablecoins_eth: { 
+                name: 'Stablecoins (ETH)', icon: '🔷', table: 'historical_stablecoins_eth', 
+                valueField: 'total_mcap', format: 'tvl',
+                api: 'https://stablecoins.llama.fi/stablecoinchains',
+                parseApi: (d) => d.find(c => c.name === 'Ethereum')?.totalCirculatingUSD?.peggedUSD
             },
-            'eth_btc': { 
-                name: 'ETH/BTC Ratio', 
-                icon: '₿', 
-                table: 'historical_eth_btc', 
-                valueField: 'ratio', 
-                dateField: 'date', 
-                color: '#f7931a',
-                format: 'ratio',
-                charts: ['ethbtc-chart']
+            eth_btc: { 
+                name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', 
+                valueField: 'ratio', format: 'ratio',
+                api: 'https://api.binance.com/api/v3/ticker/price?symbol=ETHBTC',
+                parseApi: (d) => parseFloat(d.price)
             },
-            'funding_rate': { 
-                name: 'Funding Rate', 
-                icon: '📊', 
-                table: 'historical_funding_rate', 
-                valueField: 'funding_rate', 
-                dateField: 'date', 
-                color: '#6366f1',
-                format: 'percent',
-                charts: ['funding-chart']
+            funding_rate: { 
+                name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', 
+                valueField: 'funding_rate', format: 'percent8',
+                api: 'https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1',
+                parseApi: (d) => parseFloat(d[0]?.fundingRate)
             },
-            'exchange_reserve': { 
-                name: 'Exchange Reserve', 
-                icon: '🏛️', 
-                table: 'historical_exchange_reserve', 
-                valueField: 'reserve_eth', 
-                dateField: 'date', 
-                color: '#84cc16',
-                format: 'eth',
-                charts: ['reserve-chart']
+            exchange_reserve: { 
+                name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', 
+                valueField: 'reserve_eth', format: 'eth',
+                api: null, parseApi: null // CryptoQuant paid
             },
-            'eth_dominance': { 
-                name: 'ETH Dominance', 
-                icon: '👑', 
-                table: 'historical_eth_dominance', 
-                valueField: 'eth_dominance', 
-                dateField: 'date', 
-                color: '#0ea5e9',
-                format: 'percent',
-                charts: ['dominance-chart']
+            eth_dominance: { 
+                name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', 
+                valueField: 'eth_dominance', format: 'percent',
+                api: 'https://api.coingecko.com/api/v3/global',
+                parseApi: (d) => d.data?.market_cap_percentage?.eth
             },
-            'blob_data': { 
-                name: 'Blob Data', 
-                icon: '🫧', 
-                table: 'historical_blob_data', 
-                valueField: 'blob_count', 
-                dateField: 'date', 
-                color: '#8b5cf6',
-                format: 'number',
-                charts: ['blob-count-chart'],
-                startDate: '2024-03-13' // EIP-4844 Dencun 활성화일
+            blob_data: { 
+                name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', 
+                valueField: 'blob_count', format: 'number', startDate: '2024-03-13',
+                api: null, parseApi: null
             },
-            'lending_tvl': { 
-                name: 'Lending TVL', 
-                icon: '🏦', 
-                table: 'historical_lending_tvl', 
-                valueField: 'total_tvl', 
-                dateField: 'date', 
-                color: '#f43f5e',
-                format: 'tvl',
-                charts: ['lending-chart']
+            lending_tvl: { 
+                name: 'Lending TVL', icon: '🏦', table: 'historical_lending_tvl', 
+                valueField: 'total_tvl', format: 'tvl',
+                api: 'https://api.llama.fi/v2/protocols',
+                parseApi: (d) => d.filter(p => p.category === 'Lending' && p.chain === 'Ethereum').reduce((s,p) => s + (p.tvl||0), 0)
             },
-            'volatility': { 
-                name: 'Volatility', 
-                icon: '📉', 
-                table: 'historical_volatility', 
-                valueField: 'volatility_30d', 
-                dateField: 'date', 
-                color: '#ef4444',
-                format: 'percent',
-                charts: ['volatility-chart']
+            volatility: { 
+                name: 'Volatility', icon: '📉', table: 'historical_volatility', 
+                valueField: 'volatility_30d', format: 'percent',
+                api: null, parseApi: null // Calculated
             },
-            'nvt': { 
-                name: 'NVT Ratio', 
-                icon: '📐', 
-                table: 'historical_nvt', 
-                valueField: 'nvt_ratio', 
-                dateField: 'date', 
-                color: '#22d3ee',
-                format: 'number',
-                charts: ['nvt-chart']
+            nvt: { 
+                name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', 
+                valueField: 'nvt_ratio', format: 'number',
+                api: null, parseApi: null // Calculated
             },
-            'transactions': { 
-                name: 'Transactions', 
-                icon: '📝', 
-                table: 'historical_transactions', 
-                valueField: 'tx_count', 
-                dateField: 'date', 
-                color: '#a3e635',
-                format: 'number',
-                charts: ['tx-total-chart']
+            transactions: { 
+                name: 'Transactions', icon: '📝', table: 'historical_transactions', 
+                valueField: 'tx_count', format: 'number',
+                api: null, parseApi: null
             },
-            'l2_transactions': { 
-                name: 'L2 Transactions', 
-                icon: '🔗', 
-                table: 'historical_l2_transactions', 
-                valueField: 'tx_count', 
-                dateField: 'date', 
-                color: '#3b82f6',
-                format: 'number',
-                aggregate: true,
-                charts: ['tx-eth-chart']
+            l2_transactions: { 
+                name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', 
+                valueField: 'tx_count', format: 'number', aggregate: true,
+                api: null, parseApi: null
             },
-            'l2_addresses': { 
-                name: 'L2 Addresses', 
-                icon: '👤', 
-                table: 'historical_l2_addresses', 
-                valueField: 'active_addresses', 
-                dateField: 'date', 
-                color: '#06b6d4',
-                format: 'number',
-                aggregate: true,
-                charts: []
+            l2_addresses: { 
+                name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', 
+                valueField: 'active_addresses', format: 'number', aggregate: true,
+                api: null, parseApi: null
             },
-            'protocol_tvl': { 
-                name: 'Protocol TVL', 
-                icon: '📊', 
-                table: 'historical_protocol_tvl', 
-                valueField: 'tvl', 
-                dateField: 'date', 
-                color: '#8b5cf6',
-                format: 'tvl',
-                aggregate: true,
-                charts: []
+            protocol_tvl: { 
+                name: 'Protocol TVL', icon: '📊', table: 'historical_protocol_tvl', 
+                valueField: 'tvl', format: 'tvl', aggregate: true,
+                api: null, parseApi: null
             },
-            'staking_apr': { 
-                name: 'Staking APR', 
-                icon: '💹', 
-                table: 'historical_staking_apr', 
-                valueField: 'lido_apr', 
-                dateField: 'date', 
-                color: '#22c55e',
-                format: 'percent',
-                charts: ['staking-yield-chart']
+            staking_apr: { 
+                name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', 
+                valueField: 'lido_apr', format: 'percent',
+                api: 'https://eth-api.lido.fi/v1/protocol/steth/apr/sma',
+                parseApi: (d) => d.data?.smaApr
             },
-            'eth_in_defi': { 
-                name: 'ETH in DeFi', 
-                icon: '🔒', 
-                table: 'historical_eth_in_defi', 
-                valueField: 'eth_locked', 
-                dateField: 'date', 
-                color: '#f59e0b',
-                format: 'eth',
-                charts: ['eth-defi-chart']
+            eth_in_defi: { 
+                name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', 
+                valueField: 'eth_locked', format: 'eth',
+                api: null, parseApi: null // Calculated
             },
-            'global_mcap': { 
-                name: 'Global Market Cap', 
-                icon: '🌍', 
-                table: 'historical_global_mcap', 
-                valueField: 'total_mcap', 
-                dateField: 'date', 
-                color: '#ec4899',
-                format: 'tvl',
-                charts: []
+            global_mcap: { 
+                name: 'Global Market Cap', icon: '🌍', table: 'historical_global_mcap', 
+                valueField: 'total_mcap', format: 'tvl',
+                api: 'https://api.coingecko.com/api/v3/global',
+                parseApi: (d) => d.data?.total_market_cap?.usd
             },
-            'dex_by_protocol': { 
-                name: 'DEX by Protocol', 
-                icon: '💱', 
-                table: 'historical_dex_by_protocol', 
-                valueField: 'volume', 
-                dateField: 'date', 
-                color: '#14b8a6',
-                format: 'tvl',
-                aggregate: true,
-                charts: []
+            dex_by_protocol: { 
+                name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', 
+                valueField: 'volume', format: 'tvl', aggregate: true,
+                api: null, parseApi: null
             },
-            'network_stats': { 
-                name: 'Network Stats', 
-                icon: '⛓️', 
-                table: 'historical_network_stats', 
-                valueField: 'block_count', 
-                dateField: 'date', 
-                color: '#6366f1',
-                format: 'number',
-                charts: []
+            network_stats: { 
+                name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', 
+                valueField: 'block_count', format: 'number',
+                api: 'https://beaconcha.in/api/v1/epoch/latest',
+                parseApi: (d) => d.data?.epoch
             }
         };
 
-        function openGitHubActions() {
-            window.open('https://github.com/seojoonkim/eth-value/actions', '_blank');
+        // ═══════════════════════════════════════════════════════════════════
+        // UTILITIES
+        // ═══════════════════════════════════════════════════════════════════
+        function formatValue(val, format) {
+            if (val === null || val === undefined) return '-';
+            switch(format) {
+                case 'price': return '$' + parseFloat(val).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                case 'tvl': return '$' + (val >= 1e9 ? (val/1e9).toFixed(2) + 'B' : val >= 1e6 ? (val/1e6).toFixed(2) + 'M' : val.toLocaleString());
+                case 'eth': return parseFloat(val).toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ETH';
+                case 'percent': return parseFloat(val).toFixed(2) + '%';
+                case 'percent8': return (parseFloat(val) * 100).toFixed(4) + '%';
+                case 'ratio': return parseFloat(val).toFixed(6);
+                case 'index': return Math.round(val);
+                case 'number': return Math.round(val).toLocaleString();
+                case 'fees': return '$' + parseFloat(val).toLocaleString(undefined, {maximumFractionDigits: 0});
+                default: return val;
+            }
         }
 
-        async function init() {
-            // Check if Supabase is configured
-            if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes('YOUR_PROJECT')) {
-                document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionText').textContent = 'Not Configured';
-                showConfig();
+        function log(msg, type = '') {
+            const el = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            el.innerHTML += `<span class="${type}">[${time}] ${msg}</span>\n`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function fetchJSON(url) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DATA LOADING
+        // ═══════════════════════════════════════════════════════════════════
+        let dataStatus = {};
+
+        async function loadDataStatus() {
+            log('Loading data status from Supabase...', 'info');
+            const keys = Object.keys(DATASETS);
+            let ok = 0, partial = 0, failed = 0, totalRecords = 0;
+
+            for (const key of keys) {
+                const ds = DATASETS[key];
+                try {
+                    let query = supabase.from(ds.table).select('*', { count: 'exact', head: false });
+                    
+                    if (ds.aggregate) {
+                        // For aggregate tables, get sum of latest date
+                        const { data, count, error } = await supabase
+                            .from(ds.table)
+                            .select('*')
+                            .order('date', { ascending: false })
+                            .limit(100);
+                        
+                        if (error) throw error;
+                        
+                        const { count: totalCount } = await supabase.from(ds.table).select('*', { count: 'exact', head: true });
+                        
+                        const latestDate = data?.[0]?.date;
+                        const latestData = data?.filter(d => d.date === latestDate);
+                        const latestValue = latestData?.reduce((s, d) => s + (d[ds.valueField] || 0), 0);
+                        
+                        dataStatus[key] = {
+                            count: totalCount || 0,
+                            latest: latestDate,
+                            value: latestValue,
+                            error: null
+                        };
+                    } else {
+                        const { data, count, error } = await supabase
+                            .from(ds.table)
+                            .select('*')
+                            .order('date', { ascending: false })
+                            .limit(1);
+                        
+                        if (error) throw error;
+                        
+                        const { count: totalCount } = await supabase.from(ds.table).select('*', { count: 'exact', head: true });
+                        
+                        dataStatus[key] = {
+                            count: totalCount || 0,
+                            latest: data?.[0]?.date,
+                            value: data?.[0]?.[ds.valueField],
+                            error: null
+                        };
+                    }
+                    
+                    totalRecords += dataStatus[key].count;
+                    
+                    // Determine status
+                    const coverage = dataStatus[key].count / 1095;
+                    if (coverage >= 0.9) ok++;
+                    else if (coverage >= 0.3) partial++;
+                    else failed++;
+                    
+                } catch (e) {
+                    dataStatus[key] = { count: 0, latest: null, value: null, error: e.message };
+                    failed++;
+                }
+            }
+
+            document.getElementById('statOk').textContent = ok;
+            document.getElementById('statPartial').textContent = partial;
+            document.getElementById('statFailed').textContent = failed;
+            document.getElementById('statRecords').textContent = totalRecords.toLocaleString();
+            document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date().toLocaleTimeString();
+            
+            renderTable();
+            log(`Loaded: ${ok} OK, ${partial} Partial, ${failed} Failed`, 'success');
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('dataTable');
+            tbody.innerHTML = '';
+            
+            let idx = 1;
+            for (const [key, ds] of Object.entries(DATASETS)) {
+                const status = dataStatus[key] || { count: 0, latest: null, value: null };
+                const coverage = status.count / 1095;
+                const coveragePct = Math.min(100, Math.round(coverage * 100));
+                
+                let statusClass = 'ok', statusText = 'OK';
+                if (status.error) { statusClass = 'fail'; statusText = 'Error'; }
+                else if (coverage < 0.3) { statusClass = 'fail'; statusText = 'Missing'; }
+                else if (coverage < 0.9) { statusClass = 'warn'; statusText = 'Partial'; }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="mono">${idx}</td>
+                    <td>
+                        <span class="icon">${ds.icon}</span>
+                        <span class="name">${ds.name}</span>
+                    </td>
+                    <td><span class="table-name">${ds.table}</span></td>
+                    <td class="mono">${status.count.toLocaleString()}</td>
+                    <td class="mono">${status.latest || '-'}</td>
+                    <td class="mono">${formatValue(status.value, ds.format)}</td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-fill" style="width: ${coveragePct}%; background: ${coveragePct >= 90 ? 'var(--success)' : coveragePct >= 30 ? 'var(--warning)' : 'var(--error)'}"></div>
+                        </div>
+                        <span class="mono" style="font-size:10px">${coveragePct}%</span>
+                    </td>
+                    <td><span class="status ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button>
+                        <button class="btn btn-secondary btn-sm" onclick="verifyOne('${key}')" ${ds.api ? '' : 'disabled'}>🔍</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                idx++;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // COLLECTION FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════════
+        const collectors = {
+            async eth_price() {
+                const data = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=1100');
+                if (!data) return 0;
+                const records = data.map(k => ({
+                    date: new Date(k[0]).toISOString().split('T')[0],
+                    open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]),
+                    close: parseFloat(k[4]), volume: parseFloat(k[5]), source: 'binance'
+                }));
+                const { error } = await supabase.from('historical_eth_price').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async ethereum_tvl() {
+                const data = await fetchJSON('https://api.llama.fi/v2/historicalChainTvl/Ethereum');
+                if (!data) return 0;
+                const cutoff = Date.now() / 1000 - (1095 * 86400);
+                const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
+                    date: new Date(d.date * 1000).toISOString().split('T')[0],
+                    tvl: parseFloat(d.tvl.toFixed(2)), source: 'defillama'
+                }));
+                const { error } = await supabase.from('historical_ethereum_tvl').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async l2_tvl() {
+                const chains = ['Arbitrum', 'Optimism', 'Base', 'zkSync Era', 'Linea', 'Scroll', 'Blast'];
+                const cutoff = Date.now() / 1000 - (1095 * 86400);
+                let total = 0;
+                for (const chain of chains) {
+                    const data = await fetchJSON(`https://api.llama.fi/v2/historicalChainTvl/${encodeURIComponent(chain)}`);
+                    if (data) {
+                        const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
+                            date: new Date(d.date * 1000).toISOString().split('T')[0],
+                            chain, tvl: parseFloat(d.tvl.toFixed(2))
+                        }));
+                        // Delete existing for this chain then insert
+                        await supabase.from('historical_l2_tvl').delete().eq('chain', chain);
+                        const { error } = await supabase.from('historical_l2_tvl').insert(records);
+                        if (!error) total += records.length;
+                    }
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                return total;
+            },
+            
+            async protocol_fees() {
+                const data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
+                if (!data?.totalDataChart) return 0;
+                const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
+                    date: new Date(d[0] * 1000).toISOString().split('T')[0],
+                    fees: parseFloat(d[1].toFixed(2)), source: 'defillama'
+                }));
+                const { error } = await supabase.from('historical_protocol_fees').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async staking_data() {
+                const chart = await fetchJSON('https://beaconcha.in/api/v1/chart/staked_ether');
+                const records = [];
+                if (chart?.status === 'OK' && chart.data) {
+                    for (const item of chart.data) {
+                        if (Array.isArray(item) && item[1] > 0) {
+                            records.push({
+                                date: new Date(item[0]).toISOString().split('T')[0],
+                                total_staked_eth: parseFloat(item[1]),
+                                total_validators: Math.floor(item[1] / 32),
+                                avg_apr: null, source: 'beaconchain'
+                            });
+                        }
+                    }
+                }
+                const epoch = await fetchJSON('https://beaconcha.in/api/v1/epoch/latest');
+                if (epoch?.status === 'OK' && epoch.data) {
+                    const today = new Date().toISOString().split('T')[0];
+                    const validators = epoch.data.validatorscount;
+                    records.push({ date: today, total_staked_eth: validators * 32, total_validators: validators, avg_apr: null, source: 'beaconchain' });
+                }
+                const unique = [...new Map(records.map(r => [r.date, r])).values()];
+                const { error } = await supabase.from('historical_staking').upsert(unique, { onConflict: 'date' });
+                return error ? 0 : unique.length;
+            },
+            
+            async gas_burn() {
+                const { data: fees } = await supabase.from('historical_protocol_fees').select('date, fees').order('date');
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                if (!fees || !prices) return 0;
+                const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
+                const records = [];
+                for (const f of fees) {
+                    const price = priceMap.get(f.date);
+                    if (!price || !f.fees) continue;
+                    const burn = (f.fees * 0.80) / price;
+                    if (burn >= 50 && burn <= 50000) {
+                        records.push({ date: f.date, eth_burnt: parseFloat(burn.toFixed(2)), avg_gas_price_gwei: null, transaction_count: null, source: 'calculated' });
+                    }
+                }
+                const { error } = await supabase.from('historical_gas_burn').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async active_addresses() {
+                const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
+                if (!txs || txs.length === 0) return 0;
+                const records = txs.map(t => ({ date: t.date, active_addresses: Math.floor(t.tx_count * 0.4), source: 'estimated' }));
+                const { error } = await supabase.from('historical_active_addresses').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async eth_supply() {
+                log('  ⚠️ ETH Supply requires Etherscan API key', 'warn');
+                return 0;
+            },
+            
+            async fear_greed() {
+                const data = await fetchJSON('https://api.alternative.me/fng/?limit=1095&format=json');
+                if (!data?.data) return 0;
+                const records = data.data.map(d => ({
+                    date: new Date(parseInt(d.timestamp) * 1000).toISOString().split('T')[0],
+                    value: parseInt(d.value), classification: d.value_classification, source: 'alternative_me'
+                }));
+                const { error } = await supabase.from('historical_fear_greed').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async dex_volume() {
+                const data = await fetchJSON('https://api.llama.fi/overview/dexs/ethereum?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true&dataType=dailyVolume');
+                if (!data?.totalDataChart) return 0;
+                const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
+                    date: new Date(d[0] * 1000).toISOString().split('T')[0],
+                    volume: parseFloat(d[1].toFixed(2)), source: 'defillama'
+                }));
+                const { error } = await supabase.from('historical_dex_volume').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async stablecoins() {
+                const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/all');
+                if (!data) return 0;
+                const cutoff = Date.now() / 1000 - (1095 * 86400);
+                const records = data.filter(d => d.date > cutoff).map(d => ({
+                    date: new Date(d.date * 1000).toISOString().split('T')[0],
+                    total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
+                    source: 'defillama'
+                })).filter(r => r.total_mcap > 0);
+                const { error } = await supabase.from('historical_stablecoins').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async stablecoins_eth() {
+                const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/Ethereum');
+                if (!data) return 0;
+                const cutoff = Date.now() / 1000 - (1095 * 86400);
+                const records = data.filter(d => d.date > cutoff).map(d => ({
+                    date: new Date(d.date * 1000).toISOString().split('T')[0],
+                    total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
+                    source: 'defillama'
+                })).filter(r => r.total_mcap > 0);
+                const { error } = await supabase.from('historical_stablecoins_eth').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async eth_btc() {
+                const data = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&limit=1100');
+                if (!data) return 0;
+                const records = data.map(k => ({
+                    date: new Date(k[0]).toISOString().split('T')[0],
+                    ratio: parseFloat(parseFloat(k[4]).toFixed(6)), source: 'binance'
+                }));
+                const { error } = await supabase.from('historical_eth_btc').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async funding_rate() {
+                const data = await fetchJSON('https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1000');
+                if (!data) return 0;
+                const byDate = new Map();
+                data.forEach(d => {
+                    const date = new Date(d.fundingTime).toISOString().split('T')[0];
+                    if (!byDate.has(date)) byDate.set(date, []);
+                    byDate.get(date).push(parseFloat(d.fundingRate));
+                });
+                const records = [];
+                byDate.forEach((rates, date) => {
+                    const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
+                    records.push({ date, funding_rate: parseFloat(avg.toFixed(8)), source: 'binance' });
+                });
+                const { error } = await supabase.from('historical_funding_rate').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async exchange_reserve() {
+                log('  ⚠️ Exchange Reserve requires CryptoQuant API', 'warn');
+                return 0;
+            },
+            
+            async eth_dominance() {
+                const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
+                if (!data?.data?.market_cap_percentage?.eth) return 0;
+                const today = new Date().toISOString().split('T')[0];
+                const records = [{
+                    date: today,
+                    eth_dominance: parseFloat(data.data.market_cap_percentage.eth.toFixed(2)),
+                    btc_dominance: parseFloat(data.data.market_cap_percentage.btc.toFixed(2)),
+                    total_mcap: data.data.total_market_cap.usd,
+                    source: 'coingecko'
+                }];
+                const { error } = await supabase.from('historical_eth_dominance').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async blob_data() {
+                log('  ⚠️ Blob Data requires beaconcha.in premium', 'warn');
+                return 0;
+            },
+            
+            async lending_tvl() {
+                const data = await fetchJSON('https://api.llama.fi/v2/historicalChainTvl/Ethereum');
+                if (!data) return 0;
+                const cutoff = Date.now() / 1000 - (1095 * 86400);
+                const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
+                    date: new Date(d.date * 1000).toISOString().split('T')[0],
+                    total_tvl: parseFloat((d.tvl * 0.5).toFixed(2)), source: 'defillama_estimated'
+                }));
+                const { error } = await supabase.from('historical_lending_tvl').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async volatility() {
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                if (!prices || prices.length < 30) return 0;
+                const records = [];
+                for (let i = 30; i < prices.length; i++) {
+                    const window = prices.slice(i - 30, i);
+                    const returns = [];
+                    for (let j = 1; j < window.length; j++) {
+                        returns.push(Math.log(window[j].close / window[j-1].close));
+                    }
+                    const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
+                    const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length;
+                    const volatility = Math.sqrt(variance * 365) * 100;
+                    records.push({ date: prices[i].date, volatility_30d: parseFloat(volatility.toFixed(2)), source: 'calculated' });
+                }
+                const { error } = await supabase.from('historical_volatility').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async nvt() {
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close, volume').order('date');
+                if (!prices) return 0;
+                const ETH_SUPPLY = 120400000;
+                const records = [];
+                for (const p of prices) {
+                    if (!p.volume || p.volume === 0) continue;
+                    const mcap = p.close * ETH_SUPPLY;
+                    const nvt = mcap / (p.volume * p.close);
+                    if (nvt > 0 && nvt < 1000) {
+                        records.push({ date: p.date, nvt_ratio: parseFloat(nvt.toFixed(2)), market_cap: mcap, tx_volume: p.volume * p.close, source: 'calculated' });
+                    }
+                }
+                const { error } = await supabase.from('historical_nvt').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async transactions() {
+                const data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
+                if (!data?.totalDataChart) return 0;
+                const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
+                    date: new Date(d[0] * 1000).toISOString().split('T')[0],
+                    tx_count: Math.floor(d[1] / 5), source: 'estimated'
+                }));
+                const { error } = await supabase.from('historical_transactions').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async l2_transactions() {
+                const chains = ['Arbitrum', 'Optimism', 'Base'];
+                let total = 0;
+                for (const chain of chains) {
+                    const data = await fetchJSON(`https://api.llama.fi/summary/fees/${chain.toLowerCase()}?dataType=dailyFees`);
+                    if (data?.totalDataChart) {
+                        const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
+                            date: new Date(d[0] * 1000).toISOString().split('T')[0],
+                            chain, tx_count: Math.floor(d[1] / 0.5)
+                        }));
+                        await supabase.from('historical_l2_transactions').delete().eq('chain', chain);
+                        const { error } = await supabase.from('historical_l2_transactions').insert(records);
+                        if (!error) total += records.length;
+                    }
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                return total;
+            },
+            
+            async l2_addresses() {
+                const { data: txs } = await supabase.from('historical_l2_transactions').select('date, chain, tx_count').order('date');
+                if (!txs) return 0;
+                const records = txs.map(t => ({ date: t.date, chain: t.chain, active_addresses: Math.floor(t.tx_count * 0.3), source: 'estimated' }));
+                for (const chain of ['Arbitrum', 'Optimism', 'Base']) {
+                    await supabase.from('historical_l2_addresses').delete().eq('chain', chain);
+                }
+                const { error } = await supabase.from('historical_l2_addresses').insert(records);
+                return error ? 0 : records.length;
+            },
+            
+            async protocol_tvl() {
+                const protocols = ['lido', 'aave', 'makerdao', 'uniswap', 'eigenlayer'];
+                const cutoff = Date.now() / 1000 - (1095 * 86400);
+                let total = 0;
+                for (const protocol of protocols) {
+                    const data = await fetchJSON(`https://api.llama.fi/protocol/${protocol}`);
+                    if (data?.tvl) {
+                        const records = data.tvl.filter(d => d.date > cutoff).map(d => ({
+                            date: new Date(d.date * 1000).toISOString().split('T')[0],
+                            protocol, tvl: parseFloat(d.totalLiquidityUSD.toFixed(2))
+                        }));
+                        await supabase.from('historical_protocol_tvl').delete().eq('protocol', protocol);
+                        const { error } = await supabase.from('historical_protocol_tvl').insert(records);
+                        if (!error) total += records.length;
+                    }
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                return total;
+            },
+            
+            async staking_apr() {
+                const data = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+                if (!data?.data) return 0;
+                const records = data.data.filter(d => d.apy > 0).map(d => ({
+                    date: d.timestamp.split('T')[0],
+                    lido_apr: parseFloat(d.apy.toFixed(2)), source: 'defillama'
+                }));
+                const { error } = await supabase.from('historical_staking_apr').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async eth_in_defi() {
+                const { data: tvl } = await supabase.from('historical_ethereum_tvl').select('date, tvl').order('date');
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                if (!tvl || !prices) return 0;
+                const priceMap = new Map(prices.map(p => [p.date, p.close]));
+                const records = tvl.map(t => {
+                    const price = priceMap.get(t.date) || 3000;
+                    return { date: t.date, eth_locked: parseFloat((t.tvl * 0.3 / price).toFixed(2)), source: 'estimated' };
+                }).filter(r => r.eth_locked > 0);
+                const { error } = await supabase.from('historical_eth_in_defi').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async global_mcap() {
+                const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
+                if (!data?.data) return 0;
+                const today = new Date().toISOString().split('T')[0];
+                const records = [{ date: today, total_mcap: data.data.total_market_cap.usd, btc_mcap: data.data.total_market_cap.btc, source: 'coingecko' }];
+                const { error } = await supabase.from('historical_global_mcap').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            },
+            
+            async dex_by_protocol() {
+                const protocols = ['uniswap', 'curve-dex', 'balancer'];
+                let total = 0;
+                for (const protocol of protocols) {
+                    const data = await fetchJSON(`https://api.llama.fi/summary/dexs/${protocol}?dataType=dailyVolume`);
+                    if (data?.totalDataChart) {
+                        const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
+                            date: new Date(d[0] * 1000).toISOString().split('T')[0],
+                            protocol, volume: parseFloat(d[1].toFixed(2))
+                        }));
+                        await supabase.from('historical_dex_by_protocol').delete().eq('protocol', protocol);
+                        const { error } = await supabase.from('historical_dex_by_protocol').insert(records);
+                        if (!error) total += records.length;
+                    }
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                return total;
+            },
+            
+            async network_stats() {
+                const data = await fetchJSON('https://beaconcha.in/api/v1/epoch/latest');
+                if (!data?.data) return 0;
+                const today = new Date().toISOString().split('T')[0];
+                const records = [{ date: today, epoch: data.data.epoch, block_count: 7200, avg_block_time: 12, source: 'beaconchain' }];
+                const { error } = await supabase.from('historical_network_stats').upsert(records, { onConflict: 'date' });
+                return error ? 0 : records.length;
+            }
+        };
+
+        async function collectOne(key) {
+            const ds = DATASETS[key];
+            log(`📥 Collecting ${ds.icon} ${ds.name}...`, 'info');
+            try {
+                const count = await collectors[key]();
+                if (count > 0) {
+                    log(`  ✅ Saved ${count} records`, 'success');
+                } else {
+                    log(`  ⚠️ No records saved`, 'warn');
+                }
+            } catch (e) {
+                log(`  ❌ Error: ${e.message}`, 'error');
+            }
+            await loadDataStatus();
+        }
+
+        async function collectAll() {
+            log('🚀 Starting full collection of 29 datasets...', 'info');
+            const keys = Object.keys(DATASETS);
+            let success = 0, failed = 0;
+            
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                const ds = DATASETS[key];
+                log(`[${i+1}/29] ${ds.icon} ${ds.name}...`, 'info');
+                try {
+                    const count = await collectors[key]();
+                    if (count > 0) {
+                        log(`  ✅ ${count} records`, 'success');
+                        success++;
+                    } else {
+                        log(`  ⚠️ 0 records`, 'warn');
+                        failed++;
+                    }
+                } catch (e) {
+                    log(`  ❌ ${e.message}`, 'error');
+                    failed++;
+                }
+                await new Promise(r => setTimeout(r, 500));
+            }
+            
+            log(`\n📊 Collection complete: ${success} success, ${failed} failed`, success > failed ? 'success' : 'warn');
+            await loadDataStatus();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // VERIFICATION FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════════
+        async function verifyOne(key) {
+            const ds = DATASETS[key];
+            if (!ds.api || !ds.parseApi) {
+                log(`⚠️ ${ds.name} has no API for verification`, 'warn');
                 return;
             }
+            
+            log(`🔍 Verifying ${ds.icon} ${ds.name}...`, 'info');
+            
+            // Get cached value from Supabase
+            const cached = dataStatus[key];
+            const cachedValue = cached?.value;
+            
+            // Get live API value
+            let liveValue = null;
+            try {
+                const data = await fetchJSON(ds.api);
+                if (data) {
+                    liveValue = ds.parseApi(data);
+                }
+            } catch (e) {
+                log(`  ❌ API error: ${e.message}`, 'error');
+            }
+            
+            // Show result
+            const modal = document.getElementById('verifyModal');
+            const content = document.getElementById('verifyContent');
+            document.getElementById('verifyTitle').textContent = `🔍 ${ds.icon} ${ds.name} Verification`;
+            
+            const match = cachedValue && liveValue && Math.abs(cachedValue - liveValue) / liveValue < 0.05;
+            const pctDiff = liveValue ? ((cachedValue - liveValue) / liveValue * 100).toFixed(2) : 'N/A';
+            
+            content.innerHTML = `
+                <div class="verify-result">
+                    <div class="verify-item">
+                        <span>📦 Cached (Supabase)</span>
+                        <span class="mono">${formatValue(cachedValue, ds.format)}</span>
+                    </div>
+                    <div class="verify-item">
+                        <span>🌐 Live (API)</span>
+                        <span class="mono">${formatValue(liveValue, ds.format)}</span>
+                    </div>
+                    <div class="verify-item">
+                        <span>📊 Difference</span>
+                        <span class="mono ${match ? 'verify-match' : 'verify-mismatch'}">${pctDiff}%</span>
+                    </div>
+                    <div class="verify-item">
+                        <span>✅ Status</span>
+                        <span class="${match ? 'verify-match' : 'verify-mismatch'}">${match ? '✅ MATCH' : '❌ MISMATCH'}</span>
+                    </div>
+                    <div class="verify-item">
+                        <span>🔗 API URL</span>
+                        <span class="mono" style="font-size:10px; word-break:break-all">${ds.api}</span>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+            log(`  ${match ? '✅ Match' : '❌ Mismatch'}: Cache=${formatValue(cachedValue, ds.format)}, Live=${formatValue(liveValue, ds.format)}`, match ? 'success' : 'error');
+        }
+
+        async function verifyAll() {
+            log('🔍 Starting verification of all datasets with APIs...', 'info');
+            
+            const results = [];
+            
+            for (const [key, ds] of Object.entries(DATASETS)) {
+                if (!ds.api || !ds.parseApi) continue;
+                
+                const cached = dataStatus[key]?.value;
+                let liveValue = null;
+                
+                try {
+                    const data = await fetchJSON(ds.api);
+                    if (data) {
+                        liveValue = ds.parseApi(data);
+                    }
+                } catch (e) {}
+                
+                const match = cached && liveValue && Math.abs(cached - liveValue) / liveValue < 0.05;
+                
+                results.push({
+                    name: ds.name,
+                    icon: ds.icon,
+                    cached: formatValue(cached, ds.format),
+                    live: formatValue(liveValue, ds.format),
+                    match
+                });
+                
+                await new Promise(r => setTimeout(r, 300));
+            }
+            
+            // Show all results
+            const modal = document.getElementById('verifyModal');
+            const content = document.getElementById('verifyContent');
+            document.getElementById('verifyTitle').textContent = '🔍 All Verifications';
+            
+            const matches = results.filter(r => r.match).length;
+            const mismatches = results.filter(r => !r.match).length;
+            
+            content.innerHTML = `
+                <div style="margin-bottom:16px">
+                    <span class="status ok">✅ ${matches} Match</span>
+                    <span class="status fail" style="margin-left:8px">❌ ${mismatches} Mismatch</span>
+                </div>
+                <table style="width:100%; font-size:12px">
+                    <thead>
+                        <tr>
+                            <th>Dataset</th>
+                            <th>Cached</th>
+                            <th>Live</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map(r => `
+                            <tr>
+                                <td>${r.icon} ${r.name}</td>
+                                <td class="mono">${r.cached}</td>
+                                <td class="mono">${r.live}</td>
+                                <td class="${r.match ? 'verify-match' : 'verify-mismatch'}">${r.match ? '✅' : '❌'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            modal.classList.add('show');
+            log(`📊 Verification complete: ${matches} match, ${mismatches} mismatch`, matches > mismatches ? 'success' : 'warn');
+        }
+
+        function closeModal() {
+            document.getElementById('verifyModal').classList.remove('show');
+        }
+
+        async function refreshData() {
+            await loadDataStatus();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════════════
+        async function init() {
+            log('🚀 ETHval Admin v6.0 starting...', 'info');
             
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 
                 // Test connection
-                const { data, error } = await supabase.from('data_collection_status').select('*').limit(1);
+                const { data, error } = await supabase.from('historical_eth_price').select('date').limit(1);
                 
                 if (error) throw error;
                 
-                document.getElementById('connectionStatus').className = 'connection-status connected';
-                document.getElementById('connectionText').textContent = 'Connected';
+                document.getElementById('connStatus').className = 'connection-status connected';
+                document.getElementById('connDot').textContent = '●';
+                document.getElementById('connText').textContent = 'Connected';
+                log('✅ Connected to Supabase', 'success');
                 
-                await loadAllData();
-            } catch (e) {
-                console.error('Connection failed:', e);
-                document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionText').textContent = 'Disconnected';
-            }
-        }
-
-        async function loadAllData() {
-            // Build table and charts
-            buildDataTable();
-            buildCharts();
-            
-            // 동시성 제한 (6개씩 배치 처리)
-            const entries = Object.entries(DATASETS);
-            const results = [];
-            const batchSize = 6;
-            
-            for (let i = 0; i < entries.length; i += batchSize) {
-                const batch = entries.slice(i, i + batchSize);
-                const batchResults = await Promise.all(
-                    batch.map(([key, ds]) => loadDataset(key, ds))
-                );
-                results.push(...batchResults);
-            }
-            
-            // Update overview stats
-            updateOverviewStats(results);
-        }
-
-        function buildDataTable() {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = Object.entries(DATASETS).map(([key, ds]) => `
-                <tr id="row-${key}">
-                    <td>
-                        <span class="icon">${ds.icon}</span>
-                        <span class="name">${ds.name}</span>
-                        <span class="table-name">${ds.table}</span>
-                    </td>
-                    <td class="mono" id="records-${key}">
-                        <span class="loading">Loading...</span>
-                    </td>
-                    <td class="mono" id="range-${key}">-</td>
-                    <td id="coverage-${key}">
-                        <div class="progress-bar"><div class="progress-fill" id="progress-${key}" style="width:0%"></div></div>
-                        <div class="progress-text"><span id="pct-${key}">0%</span><span id="days-${key}">0 / ${TARGET_DAYS} days</span></div>
-                    </td>
-                    <td id="quality-${key}">-</td>
-                    <td id="status-${key}">
-                        <span class="status-badge loading"><span class="status-dot"></span>Loading</span>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function buildCharts() {
-            const grid = document.getElementById('chartsGrid');
-            grid.innerHTML = Object.entries(DATASETS).map(([key, ds]) => `
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3><span>${ds.icon}</span> ${ds.name}</h3>
-                        <div class="chart-meta">
-                            <span>Records: <span class="value" id="chart-records-${key}">-</span></span>
-                            <span>Range: <span class="value" id="chart-range-${key}">-</span></span>
-                        </div>
-                    </div>
-                    <div class="chart-body">
-                        <div class="loading" id="loading-${key}">Loading data...</div>
-                        <canvas id="chart-${key}" style="display:none;"></canvas>
-                    </div>
-                    <div class="chart-stats">
-                        <div class="chart-stat">
-                            <div class="label">Latest</div>
-                            <div class="value latest" id="latest-${key}">-</div>
-                        </div>
-                        <div class="chart-stat">
-                            <div class="label">Min</div>
-                            <div class="value min" id="min-${key}">-</div>
-                        </div>
-                        <div class="chart-stat">
-                            <div class="label">Max</div>
-                            <div class="value max" id="max-${key}">-</div>
-                        </div>
-                        <div class="chart-stat">
-                            <div class="label">Avg</div>
-                            <div class="value" id="avg-${key}">-</div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function loadDataset(key, ds) {
-            const result = { key, records: 0, days: 0, realDataPct: 0, status: 'loading' };
-            
-            try {
-                // ═══════════════════════════════════════════════════════════════
-                // STAGE 1: 빠른 메타데이터 조회 (count + date range)
-                // ═══════════════════════════════════════════════════════════════
-                
-                // Count 조회
-                const { count, error: countError } = await supabase
-                    .from(ds.table)
-                    .select('*', { count: 'exact', head: true });
-                
-                if (countError) throw countError;
-                result.records = count || 0;
-                
-                if (result.records === 0) {
-                    result.status = 'failed';
-                    updateTableRow(key, result, ds);
-                    return result;
-                }
-                
-                // Date range 조회 (첫 번째 + 마지막)
-                const [firstRes, lastRes] = await Promise.all([
-                    supabase.from(ds.table).select(ds.dateField).order(ds.dateField, { ascending: true }).limit(1).single(),
-                    supabase.from(ds.table).select(ds.dateField).order(ds.dateField, { ascending: false }).limit(1).single()
-                ]);
-                
-                if (firstRes.data && lastRes.data) {
-                    result.firstDate = firstRes.data[ds.dateField];
-                    result.lastDate = lastRes.data[ds.dateField];
-                    const firstDate = new Date(result.firstDate);
-                    const lastDate = new Date(result.lastDate);
-                    result.days = Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24));
-                }
-                
-                // 상태 결정 - startDate 있는 데이터셋은 해당 기간만 계산
-                let targetDays = TARGET_DAYS;
-                if (ds.startDate) {
-                    const startDate = new Date(ds.startDate);
-                    const today = new Date();
-                    targetDays = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
-                }
-                
-                const coveragePct = (result.days / targetDays) * 100;
-                if (coveragePct >= 95) {
-                    result.status = 'success';
-                } else if (coveragePct >= 50) {
-                    result.status = 'partial';
-                } else {
-                    result.status = 'failed';
-                }
-                
-                // 테이블에 표시할 targetDays 저장
-                result.targetDays = targetDays;
-                
-                // Data quality - 일단 100%로 (상세 분석은 차트 로드 시)
-                result.realDataPct = 100;
-                
-                // 테이블 즉시 업데이트
-                updateTableRow(key, result, ds);
-                
-                // ═══════════════════════════════════════════════════════════════
-                // STAGE 2: 차트용 데이터 (최근 400개만 - 지연 로딩)
-                // ═══════════════════════════════════════════════════════════════
-                
-                setTimeout(async () => {
-                    try {
-                        let chartData = [];
-                        
-                        if (ds.aggregate) {
-                            // Aggregate 테이블: 최근 데이터만
-                            const { data: rawData } = await supabase
-                                .from(ds.table)
-                                .select(`${ds.dateField}, ${ds.valueField}`)
-                                .order(ds.dateField, { ascending: false })
-                                .limit(5000);
-                            
-                            if (rawData) {
-                                const dateMap = new Map();
-                                rawData.forEach(row => {
-                                    const date = row[ds.dateField];
-                                    const val = parseFloat(row[ds.valueField]) || 0;
-                                    dateMap.set(date, (dateMap.get(date) || 0) + val);
-                                });
-                                
-                                chartData = Array.from(dateMap.entries())
-                                    .map(([date, val]) => ({ [ds.dateField]: date, [ds.valueField]: val }))
-                                    .sort((a, b) => a[ds.dateField].localeCompare(b[ds.dateField]))
-                                    .slice(-400);
-                            }
-                        } else {
-                            // 일반 테이블: 최근 400개만
-                            const { data: rawData } = await supabase
-                                .from(ds.table)
-                                .select(`${ds.dateField}, ${ds.valueField}`)
-                                .order(ds.dateField, { ascending: false })
-                                .limit(400);
-                            
-                            if (rawData) {
-                                chartData = rawData.reverse();
-                            }
-                        }
-                        
-                        if (chartData.length > 0) {
-                            renderChart(key, chartData, ds);
-                        }
-                    } catch (e) {
-                        console.warn(`Chart load failed for ${key}:`, e.message);
-                    }
-                }, 100 + Math.random() * 500); // 약간의 지연으로 분산
-                
-                return result;
+                await loadDataStatus();
                 
             } catch (e) {
-                console.error(`Failed to load ${key}:`, e);
-                result.status = 'failed';
-                updateTableRow(key, result, ds);
-                return result;
+                document.getElementById('connStatus').className = 'connection-status disconnected';
+                document.getElementById('connDot').textContent = '●';
+                document.getElementById('connText').textContent = 'Disconnected';
+                log('❌ Connection failed: ' + e.message, 'error');
             }
         }
 
-        function updateTableRow(key, result, ds) {
-            // Records
-            document.getElementById(`records-${key}`).innerHTML = result.records > 0 
-                ? `<span style="color:var(--success)">${result.records.toLocaleString()}</span>`
-                : `<span style="color:var(--error)">0</span>`;
-            
-            // Date range
-            if (result.firstDate && result.lastDate) {
-                document.getElementById(`range-${key}`).textContent = `${result.firstDate} → ${result.lastDate}`;
-            } else if (result.records === 0) {
-                document.getElementById(`range-${key}`).textContent = 'No data';
-            }
-            
-            // Coverage
-            const targetDays = result.targetDays || TARGET_DAYS;
-            const coveragePct = Math.min(100, Math.round((result.days / targetDays) * 100));
-            const progressEl = document.getElementById(`progress-${key}`);
-            progressEl.style.width = `${coveragePct}%`;
-            progressEl.className = `progress-fill ${coveragePct >= 95 ? 'success' : coveragePct >= 50 ? 'partial' : 'low'}`;
-            document.getElementById(`pct-${key}`).textContent = `${coveragePct}%`;
-            document.getElementById(`days-${key}`).textContent = `${result.days} / ${targetDays} days`;
-            
-            // Quality
-            const qualityEl = document.getElementById(`quality-${key}`);
-            if (result.realDataPct >= 80) {
-                qualityEl.innerHTML = `<span class="source-badge real">${result.realDataPct}% Real</span>`;
-            } else if (result.realDataPct > 0) {
-                qualityEl.innerHTML = `<span class="source-badge estimated">${result.realDataPct}% Real</span>`;
-            } else {
-                qualityEl.innerHTML = `<span style="color:var(--text-muted)">-</span>`;
-            }
-            
-            // Status
-            const statusMap = {
-                'success': { label: '✅ Complete', class: 'success' },
-                'partial': { label: '⚠️ Partial', class: 'partial' },
-                'failed': { label: '❌ Missing', class: 'failed' },
-                'loading': { label: '⏳ Loading', class: 'loading' }
-            };
-            const status = statusMap[result.status] || statusMap.loading;
-            document.getElementById(`status-${key}`).innerHTML = 
-                `<span class="status-badge ${status.class}"><span class="status-dot"></span>${status.label}</span>`;
-        }
-
-        function renderChart(key, data, ds) {
-            const loadingEl = document.getElementById(`loading-${key}`);
-            const canvasEl = document.getElementById(`chart-${key}`);
-            
-            loadingEl.style.display = 'none';
-            canvasEl.style.display = 'block';
-            
-            // Update chart meta
-            document.getElementById(`chart-records-${key}`).textContent = data.length.toLocaleString();
-            if (data.length > 0) {
-                document.getElementById(`chart-range-${key}`).textContent = 
-                    `${data[0][ds.dateField].slice(5)} → ${data[data.length - 1][ds.dateField].slice(5)}`;
-            }
-            
-            // Calculate stats
-            const values = data.map(d => parseFloat(d[ds.valueField]) || 0).filter(v => v > 0);
-            if (values.length > 0) {
-                document.getElementById(`latest-${key}`).textContent = formatValue(values[values.length - 1], ds.format);
-                document.getElementById(`min-${key}`).textContent = formatValue(Math.min(...values), ds.format);
-                document.getElementById(`max-${key}`).textContent = formatValue(Math.max(...values), ds.format);
-                document.getElementById(`avg-${key}`).textContent = formatValue(values.reduce((a,b) => a+b, 0) / values.length, ds.format);
-            }
-            
-            // Sample data for performance
-            const sampleRate = Math.max(1, Math.floor(data.length / 300));
-            const sampled = data.filter((_, i) => i % sampleRate === 0);
-            
-            if (charts[key]) charts[key].destroy();
-            
-            charts[key] = new Chart(canvasEl.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: sampled.map(d => d[ds.dateField]),
-                    datasets: [{
-                        data: sampled.map(d => parseFloat(d[ds.valueField]) || 0),
-                        borderColor: ds.color,
-                        backgroundColor: ds.color + '20',
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 0,
-                        borderWidth: 1.5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { intersect: false, mode: 'index' },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1a1a25',
-                            titleColor: '#e5e5e5',
-                            bodyColor: '#e5e5e5',
-                            borderColor: '#2a2a3a',
-                            borderWidth: 1,
-                            padding: 8,
-                            displayColors: false,
-                            callbacks: { label: ctx => formatValue(ctx.raw, ds.format) }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: '#1a1a25' },
-                            ticks: { color: '#666', maxTicksLimit: 5, maxRotation: 0, font: { size: 9 } }
-                        },
-                        y: {
-                            grid: { color: '#1a1a25' },
-                            ticks: { color: '#666', font: { size: 9 }, callback: v => formatShort(v, ds.format) }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateOverviewStats(results) {
-            const complete = results.filter(r => r.status === 'success').length;
-            const partial = results.filter(r => r.status === 'partial').length;
-            const missing = results.filter(r => r.status === 'failed').length;
-            const totalRecords = results.reduce((sum, r) => sum + r.records, 0);
-            
-            document.getElementById('totalDatasets').textContent = Object.keys(DATASETS).length;
-            document.getElementById('completeCount').textContent = complete;
-            document.getElementById('partialCount').textContent = partial;
-            document.getElementById('missingCount').textContent = missing;
-            document.getElementById('totalRecords').textContent = totalRecords.toLocaleString();
-            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
-        }
-
-        function formatValue(val, format) {
-            if (val === null || val === undefined || isNaN(val)) return '-';
-            const n = parseFloat(val);
-            
-            switch (format) {
-                case 'price': return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
-                case 'tvl':
-                case 'fees':
-                    if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
-                    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
-                    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
-                    return '$' + n.toLocaleString();
-                case 'eth':
-                    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
-                    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-                    return n.toLocaleString();
-                case 'gas': return n.toFixed(1) + ' Gwei';
-                case 'number':
-                    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-                    if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-                    return n.toLocaleString();
-                case 'index': return n.toFixed(0);
-                case 'ratio': return n.toFixed(4);
-                case 'percent': return n.toFixed(2) + '%';
-                default: return n.toLocaleString();
-            }
-        }
-
-        function formatShort(val, format) {
-            if (val === null || val === undefined || isNaN(val)) return '';
-            const n = parseFloat(val);
-            if (n >= 1e12) return (n / 1e12).toFixed(1) + 'T';
-            if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
-            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-            if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
-            return n.toFixed(0);
-        }
-
-        // Initialize
-        init();
-        
-        // ═══════════════════════════════════════════════════════════════
-        // DATA COLLECTION FUNCTIONS (Browser-based)
-        // ═══════════════════════════════════════════════════════════════
-        
-        function toggleCollectMenu() {
-            const menu = document.getElementById('collectMenu');
-            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.dropdown')) {
-                document.getElementById('collectMenu').style.display = 'none';
-            }
+        // Modal close on outside click
+        document.getElementById('verifyModal').addEventListener('click', (e) => {
+            if (e.target.id === 'verifyModal') closeModal();
         });
-        
-        async function collectDominance() {
-            toggleCollectMenu();
-            const statusEl = document.getElementById('connectionText');
-            const originalText = statusEl.textContent;
-            
-            try {
-                statusEl.textContent = 'Collecting Dominance (Binance)...';
-                console.log('=== collectDominance START ===');
-                
-                // 1. 현재 Global 데이터 가져오기 (현재 dominance 비율용)
-                let currentEthDom = 9;
-                let currentBtcDom = 58;
-                
-                try {
-                    const globalRes = await fetch('https://api.coingecko.com/api/v3/global');
-                    if (globalRes.ok) {
-                        const globalData = await globalRes.json();
-                        currentEthDom = globalData.data?.market_cap_percentage?.eth || 9;
-                        currentBtcDom = globalData.data?.market_cap_percentage?.btc || 58;
-                        console.log(`Current dominance: ETH ${currentEthDom.toFixed(2)}%, BTC ${currentBtcDom.toFixed(2)}%`);
-                    }
-                } catch (e) {
-                    console.log('CoinGecko failed, using defaults');
-                }
-                
-                // 2. Binance에서 ETH/USDT 가격 히스토리 가져오기 (1095일 = 3년)
-                // Binance는 한 번에 1000개만 반환하므로 여러 번 호출
-                const TARGET_DAYS = 1095;
-                const allEthKlines = [];
-                const allBtcKlines = [];
-                
-                // 첫 번째 호출: 최근 1000일
-                statusEl.textContent = 'Fetching ETH prices (1/2)...';
-                console.log('Fetching ETH/USDT history (recent 1000)...');
-                const ethRes1 = await fetch('https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=1000');
-                if (!ethRes1.ok) throw new Error('Failed to fetch ETH prices from Binance');
-                const ethKlines1 = await ethRes1.json();
-                
-                // 두 번째 호출: 1000일 전부터 추가 데이터
-                const oldestTimestamp = ethKlines1[0][0];
-                statusEl.textContent = 'Fetching ETH prices (2/2)...';
-                console.log('Fetching ETH/USDT history (older)...');
-                const ethRes2 = await fetch(`https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=100&endTime=${oldestTimestamp - 1}`);
-                if (ethRes2.ok) {
-                    const ethKlines2 = await ethRes2.json();
-                    allEthKlines.push(...ethKlines2);
-                }
-                allEthKlines.push(...ethKlines1);
-                console.log(`Got ${allEthKlines.length} ETH price points`);
-                
-                // BTC도 동일하게
-                statusEl.textContent = 'Fetching BTC prices (1/2)...';
-                console.log('Fetching BTC/USDT history (recent 1000)...');
-                const btcRes1 = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1000');
-                if (!btcRes1.ok) throw new Error('Failed to fetch BTC prices from Binance');
-                const btcKlines1 = await btcRes1.json();
-                
-                const btcOldestTimestamp = btcKlines1[0][0];
-                statusEl.textContent = 'Fetching BTC prices (2/2)...';
-                console.log('Fetching BTC/USDT history (older)...');
-                const btcRes2 = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=100&endTime=${btcOldestTimestamp - 1}`);
-                if (btcRes2.ok) {
-                    const btcKlines2 = await btcRes2.json();
-                    allBtcKlines.push(...btcKlines2);
-                }
-                allBtcKlines.push(...btcKlines1);
-                console.log(`Got ${allBtcKlines.length} BTC price points`);
-                
-                // 3. Dominance 계산
-                const ETH_SUPPLY = 120000000;
-                const BTC_SUPPLY = 19600000;
-                
-                statusEl.textContent = 'Calculating dominance...';
-                const records = [];
-                
-                // timestamp로 매칭
-                const btcMap = new Map();
-                for (const btcK of allBtcKlines) {
-                    const dateStr = new Date(btcK[0]).toISOString().split('T')[0];
-                    btcMap.set(dateStr, parseFloat(btcK[4]));
-                }
-                
-                for (const ethK of allEthKlines) {
-                    const timestamp = ethK[0];
-                    const dateStr = new Date(timestamp).toISOString().split('T')[0];
-                    const ethPrice = parseFloat(ethK[4]);
-                    const btcPrice = btcMap.get(dateStr);
-                    
-                    if (!btcPrice) continue;
-                    
-                    // Market cap 계산
-                    const ethMcap = ethPrice * ETH_SUPPLY;
-                    const btcMcap = btcPrice * BTC_SUPPLY;
-                    
-                    const combinedShare = (currentEthDom + currentBtcDom) / 100;
-                    const estimatedTotalMcap = (ethMcap + btcMcap) / combinedShare;
-                    
-                    let ethDominance = (ethMcap / estimatedTotalMcap) * 100;
-                    let btcDominance = (btcMcap / estimatedTotalMcap) * 100;
-                    
-                    ethDominance = Math.max(5, Math.min(25, ethDominance));
-                    btcDominance = Math.max(30, Math.min(75, btcDominance));
-                    
-                    records.push({
-                        date: dateStr,
-                        timestamp: Math.floor(timestamp / 1000),
-                        eth_dominance: parseFloat(ethDominance.toFixed(2)),
-                        btc_dominance: parseFloat(btcDominance.toFixed(2)),
-                        total_mcap: parseFloat(estimatedTotalMcap.toFixed(2)),
-                        source: 'binance_calculated'
-                    });
-                }
-                
-                // 중복 제거 및 정렬
-                const uniqueRecords = [];
-                const seenDates = new Set();
-                for (const r of records) {
-                    if (!seenDates.has(r.date)) {
-                        seenDates.add(r.date);
-                        uniqueRecords.push(r);
-                    }
-                }
-                uniqueRecords.sort((a, b) => a.date.localeCompare(b.date));
-                
-                // 마지막 레코드는 현재 dominance로 보정
-                if (uniqueRecords.length > 0) {
-                    uniqueRecords[uniqueRecords.length - 1].eth_dominance = parseFloat(currentEthDom.toFixed(2));
-                    uniqueRecords[uniqueRecords.length - 1].btc_dominance = parseFloat(currentBtcDom.toFixed(2));
-                }
-                
-                console.log(`Calculated ${uniqueRecords.length} dominance records`);
-                console.log(`Date range: ${uniqueRecords[0]?.date} to ${uniqueRecords[uniqueRecords.length-1]?.date}`);
-                
-                // 4. Supabase에 Upsert
-                statusEl.textContent = `Saving ${uniqueRecords.length} records to Supabase...`;
-                
-                for (let i = 0; i < uniqueRecords.length; i += 100) {
-                    const batch = uniqueRecords.slice(i, i + 100);
-                    const { error } = await supabase
-                        .from('historical_eth_dominance')
-                        .upsert(batch, { onConflict: 'date' });
-                    
-                    if (error) {
-                        console.error('Supabase upsert error:', error);
-                        throw error;
-                    }
-                }
-                
-                statusEl.textContent = `✅ Collected ${uniqueRecords.length} dominance records (${uniqueRecords[0]?.date} ~ ${uniqueRecords[uniqueRecords.length-1]?.date})`;
-                console.log('=== collectDominance COMPLETE ===');
-                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
-                
-                loadAllData();
-                
-            } catch (error) {
-                console.error('Collect Dominance error:', error);
-                statusEl.textContent = `❌ Error: ${error.message}`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
-            }
-        }
-        
-        async function collectEthBtc() {
-            toggleCollectMenu();
-            const statusEl = document.getElementById('connectionText');
-            const originalText = statusEl.textContent;
-            
-            try {
-                statusEl.textContent = 'Collecting ETH/BTC...';
-                
-                // Get ETH/BTC klines from Binance (365 days, 1d interval)
-                const res = await fetch('https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&limit=365');
-                const data = await res.json();
-                
-                const records = data.map(k => ({
-                    date: new Date(k[0]).toISOString().split('T')[0],
-                    timestamp: Math.floor(k[0] / 1000),
-                    ratio: parseFloat(parseFloat(k[4]).toFixed(6)), // Close price
-                    high: parseFloat(parseFloat(k[2]).toFixed(6)),
-                    low: parseFloat(parseFloat(k[3]).toFixed(6)),
-                    source: 'binance'
-                }));
-                
-                console.log(`Upserting ${records.length} ETH/BTC records...`);
-                
-                for (let i = 0; i < records.length; i += 100) {
-                    const batch = records.slice(i, i + 100);
-                    const { error } = await supabase
-                        .from('historical_eth_btc')
-                        .upsert(batch, { onConflict: 'date' });
-                    
-                    if (error) throw error;
-                }
-                
-                statusEl.textContent = `✅ Collected ${records.length} ETH/BTC records`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 3000);
-                loadAllData();
-                
-            } catch (error) {
-                console.error('Collect ETH/BTC error:', error);
-                statusEl.textContent = `❌ Error: ${error.message}`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
-            }
-        }
-        
-        async function collectStablecoinMcap() {
-            toggleCollectMenu();
-            const statusEl = document.getElementById('connectionText');
-            const originalText = statusEl.textContent;
-            
-            try {
-                statusEl.textContent = 'Collecting Stablecoin Mcap (All Chains)...';
-                
-                // Get stablecoin chart data from DefiLlama - ALL CHAINS
-                const res = await fetch('https://stablecoins.llama.fi/stablecoincharts/all');
-                const data = await res.json();
-                
-                // Filter last 1095 days
-                const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
-                
-                const records = data
-                    .filter(d => d.date * 1000 > cutoff)
-                    .map(d => ({
-                        date: new Date(d.date * 1000).toISOString().split('T')[0],
-                        timestamp: d.date,
-                        total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
-                        source: 'defillama-all'
-                    }))
-                    .filter(r => r.total_mcap > 0);
-                
-                console.log(`Upserting ${records.length} stablecoin mcap records (All Chains)...`);
-                console.log(`Latest: $${(records[records.length-1]?.total_mcap / 1e9).toFixed(1)}B`);
-                
-                for (let i = 0; i < records.length; i += 100) {
-                    const batch = records.slice(i, i + 100);
-                    const { error } = await supabase
-                        .from('historical_stablecoins')
-                        .upsert(batch, { onConflict: 'date' });
-                    
-                    if (error) throw error;
-                }
-                
-                statusEl.textContent = `✅ Collected ${records.length} stablecoin records (All Chains, $${(records[records.length-1]?.total_mcap / 1e9).toFixed(1)}B)`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 3000);
-                loadAllData();
-                
-            } catch (error) {
-                console.error('Collect Stablecoin error:', error);
-                statusEl.textContent = `❌ Error: ${error.message}`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
-            }
-        }
-        
-        async function collectStablesEth() {
-            toggleCollectMenu();
-            const statusEl = document.getElementById('connectionText');
-            const originalText = statusEl.textContent;
-            
-            try {
-                statusEl.textContent = 'Collecting Stablecoins on Ethereum...';
-                
-                // Get stablecoin chart data from DefiLlama - ETHEREUM ONLY
-                const res = await fetch('https://stablecoins.llama.fi/stablecoincharts/Ethereum');
-                const data = await res.json();
-                
-                // Filter last 1095 days
-                const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
-                
-                const records = data
-                    .filter(d => d.date * 1000 > cutoff)
-                    .map(d => ({
-                        date: new Date(d.date * 1000).toISOString().split('T')[0],
-                        timestamp: d.date,
-                        total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
-                        source: 'defillama-ethereum'
-                    }))
-                    .filter(r => r.total_mcap > 0);
-                
-                console.log(`Upserting ${records.length} stablecoin records (Ethereum)...`);
-                console.log(`Latest: $${(records[records.length-1]?.total_mcap / 1e9).toFixed(1)}B`);
-                
-                for (let i = 0; i < records.length; i += 100) {
-                    const batch = records.slice(i, i + 100);
-                    const { error } = await supabase
-                        .from('historical_stablecoins_eth')
-                        .upsert(batch, { onConflict: 'date' });
-                    
-                    if (error) throw error;
-                }
-                
-                statusEl.textContent = `✅ Collected ${records.length} stablecoin records (ETH, $${(records[records.length-1]?.total_mcap / 1e9).toFixed(1)}B)`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 3000);
-                loadAllData();
-                
-            } catch (error) {
-                console.error('Collect Stables ETH error:', error);
-                statusEl.textContent = `❌ Error: ${error.message}`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
-            }
-        }
-        
-        // Network Fees 수집 (DefiLlama)
-        async function collectNetworkFees() {
-            toggleCollectMenu();
-            const statusEl = document.getElementById('connectionText');
-            const originalText = statusEl.textContent;
-            
-            try {
-                statusEl.textContent = 'Collecting Network Fees...';
-                
-                // DefiLlama Fees API - 일별 수수료 데이터
-                const res = await fetch('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
-                const data = await res.json();
-                
-                if (!data.totalDataChart || !Array.isArray(data.totalDataChart)) {
-                    throw new Error('Invalid data format from DefiLlama');
-                }
-                
-                // 최근 3년 데이터만 필터링
-                const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
-                
-                const records = data.totalDataChart
-                    .filter(([ts, value]) => ts * 1000 > cutoff && value > 0)
-                    .map(([ts, value]) => ({
-                        date: new Date(ts * 1000).toISOString().split('T')[0],
-                        timestamp: ts,
-                        fees: parseFloat(value.toFixed(2))
-                    }));
-                
-                console.log(`Upserting ${records.length} fees records...`);
-                console.log(`Latest: $${(records[records.length-1]?.fees / 1e6).toFixed(2)}M`);
-                
-                for (let i = 0; i < records.length; i += 100) {
-                    const batch = records.slice(i, i + 100);
-                    const { error } = await supabase
-                        .from('historical_protocol_fees')
-                        .upsert(batch, { onConflict: 'date' });
-                    
-                    if (error) throw error;
-                }
-                
-                statusEl.textContent = `✅ Collected ${records.length} fees records ($${(records[records.length-1]?.fees / 1e6).toFixed(2)}M/day)`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 3000);
-                loadAllData();
-                
-            } catch (error) {
-                console.error('Collect Fees error:', error);
-                statusEl.textContent = `❌ Error: ${error.message}`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
-            }
-        }
-        
-        // Blob Data 수집 (L2Beat Activity API)
-        async function collectBlobData() {
-            toggleCollectMenu();
-            const statusEl = document.getElementById('connectionText');
-            const originalText = statusEl.textContent;
-            
-            try {
-                statusEl.textContent = 'Collecting Blob Data from L2Beat...';
-                
-                // L2Beat Activity API - daily blob transactions
-                // EIP-4844 activated March 13, 2024
-                const startDate = new Date('2024-03-13');
-                const endDate = new Date();
-                
-                // L2Beat scaling summary for blob data
-                const res = await fetch('https://l2beat.com/api/scaling/activity');
-                const data = await res.json();
-                
-                // L2Beat data has daily counts, we need to transform
-                const records = [];
-                
-                // Generate daily records from start date
-                let currentDate = new Date(startDate);
-                while (currentDate <= endDate) {
-                    const dateStr = currentDate.toISOString().split('T')[0];
-                    
-                    // Estimate blob count based on L2 activity
-                    // Average ~35-45K blobs per day based on recent data
-                    const daysSinceStart = Math.floor((currentDate - startDate) / (24 * 60 * 60 * 1000));
-                    const baseBlobs = 30000 + (daysSinceStart * 30); // Growing trend
-                    const variance = Math.random() * 10000 - 5000;
-                    const blobCount = Math.max(20000, Math.min(50000, baseBlobs + variance));
-                    
-                    // Blob fees in ETH (typically 1-10 ETH per day)
-                    const baseFees = 2 + (daysSinceStart * 0.005);
-                    const feesVariance = Math.random() * 2 - 1;
-                    const blobFees = Math.max(0.5, Math.min(10, baseFees + feesVariance));
-                    
-                    records.push({
-                        date: dateStr,
-                        blob_count: Math.round(blobCount),
-                        blob_fee_eth: parseFloat(blobFees.toFixed(4)),
-                        source: 'l2beat-estimate'
-                    });
-                    
-                    currentDate.setDate(currentDate.getDate() + 1);
-                }
-                
-                console.log(`Upserting ${records.length} blob records...`);
-                
-                for (let i = 0; i < records.length; i += 100) {
-                    const batch = records.slice(i, i + 100);
-                    const { error } = await supabase
-                        .from('historical_blob_data')
-                        .upsert(batch, { onConflict: 'date' });
-                    
-                    if (error) throw error;
-                }
-                
-                statusEl.textContent = `✅ Collected ${records.length} blob records (${records[records.length-1]?.blob_count.toLocaleString()} blobs/day)`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 3000);
-                loadAllData();
-                
-            } catch (error) {
-                console.error('Collect Blob error:', error);
-                statusEl.textContent = `❌ Error: ${error.message}`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
-            }
-        }
-        
-        // Staking Data 수집 - CORS 프록시 사용
-        async function collectStakingData() {
-            toggleCollectMenu();
-            const statusEl = document.getElementById('connectionText');
-            const originalText = statusEl.textContent;
-            
-            // CORS 프록시 옵션
-            const corsProxies = [
-                'https://api.allorigins.win/raw?url=',
-                'https://corsproxy.io/?',
-                'https://api.codetabs.com/v1/proxy?quest='
-            ];
-            
-            async function fetchWithProxy(url) {
-                // 직접 시도
-                try {
-                    const res = await fetch(url);
-                    if (res.ok) return await res.json();
-                } catch (e) {
-                    console.log('Direct fetch failed, trying proxies...');
-                }
-                
-                // 프록시 시도
-                for (const proxy of corsProxies) {
-                    try {
-                        const res = await fetch(proxy + encodeURIComponent(url));
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (data) return data;
-                        }
-                    } catch (e) {
-                        console.log(`Proxy ${proxy} failed`);
-                    }
-                }
-                throw new Error('All fetch attempts failed');
-            }
-            
-            try {
-                statusEl.textContent = 'Fetching Staking APR history...';
-                
-                const records = [];
-                let dataSource = '';
-                
-                // Method 1: DeFiLlama Yields API (via proxy)
-                try {
-                    statusEl.textContent = 'Fetching from DeFiLlama...';
-                    const lidoPoolId = '747c1d2a-c668-4682-b9f9-296708a3dd90';
-                    const chartData = await fetchWithProxy(`https://yields.llama.fi/chart/${lidoPoolId}`);
-                    
-                    if (chartData?.data?.length > 10) {
-                        console.log(`DeFiLlama: ${chartData.data.length} records`);
-                        for (const point of chartData.data) {
-                            const date = point.timestamp.split('T')[0];
-                            const apy = parseFloat(point.apy);
-                            const tvlUsd = parseFloat(point.tvlUsd) || 0;
-                            
-                            if (!isNaN(apy) && apy > 0) {
-                                records.push({
-                                    date: date,
-                                    timestamp: Math.floor(new Date(point.timestamp).getTime() / 1000),
-                                    avg_apr: parseFloat(apy.toFixed(2)),
-                                    total_staked_eth: tvlUsd > 0 ? Math.round(tvlUsd / 3000) : null,
-                                    total_validators: tvlUsd > 0 ? Math.floor(tvlUsd / 3000 / 32) : null,
-                                    source: 'defillama'
-                                });
-                            }
-                        }
-                        dataSource = 'DeFiLlama';
-                    }
-                } catch (e) {
-                    console.warn('DeFiLlama failed:', e);
-                }
-                
-                // Method 2: Lido Official History API
-                if (records.length < 10) {
-                    try {
-                        statusEl.textContent = 'Fetching from Lido API...';
-                        const lidoData = await fetchWithProxy('https://eth-api.lido.fi/v1/protocol/steth/apr/last');
-                        
-                        if (lidoData?.data?.aprs?.length > 0) {
-                            console.log(`Lido API: ${lidoData.data.aprs.length} records`);
-                            for (const item of lidoData.data.aprs) {
-                                records.push({
-                                    date: item.timeUnix ? new Date(item.timeUnix * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                                    timestamp: item.timeUnix || Math.floor(Date.now() / 1000),
-                                    avg_apr: parseFloat((item.apr || 0).toFixed(2)),
-                                    total_staked_eth: null,
-                                    total_validators: null,
-                                    source: 'lido_api'
-                                });
-                            }
-                            dataSource = 'Lido API';
-                        }
-                    } catch (e) {
-                        console.warn('Lido API failed:', e);
-                    }
-                }
-                
-                // Method 3: Beaconcha.in Staking History
-                if (records.length < 10) {
-                    try {
-                        statusEl.textContent = 'Fetching from Beaconcha.in...';
-                        // Beaconcha.in daily income chart
-                        const beaconData = await fetchWithProxy('https://beaconcha.in/api/v1/chart/stakedether');
-                        
-                        if (beaconData?.data?.length > 0) {
-                            console.log(`Beaconcha.in: ${beaconData.data.length} records`);
-                            for (const item of beaconData.data) {
-                                // item format: [timestamp, staked_eth]
-                                if (Array.isArray(item) && item.length >= 2) {
-                                    const date = new Date(item[0]).toISOString().split('T')[0];
-                                    const stakedEth = parseFloat(item[1]) || 0;
-                                    records.push({
-                                        date: date,
-                                        timestamp: Math.floor(item[0] / 1000),
-                                        avg_apr: null, // 나중에 계산
-                                        total_staked_eth: Math.round(stakedEth),
-                                        total_validators: Math.floor(stakedEth / 32),
-                                        source: 'beaconchain'
-                                    });
-                                }
-                            }
-                            dataSource = 'Beaconcha.in';
-                        }
-                    } catch (e) {
-                        console.warn('Beaconcha.in failed:', e);
-                    }
-                }
-                
-                // Get current APR from Lido SMA
-                try {
-                    const smaData = await fetchWithProxy('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
-                    if (smaData?.data?.smaApr) {
-                        const today = new Date().toISOString().split('T')[0];
-                        const currentApr = parseFloat(smaData.data.smaApr);
-                        
-                        const existingIdx = records.findIndex(r => r.date === today);
-                        if (existingIdx >= 0) {
-                            records[existingIdx].avg_apr = parseFloat(currentApr.toFixed(2));
-                        } else {
-                            records.push({
-                                date: today,
-                                timestamp: Math.floor(Date.now() / 1000),
-                                avg_apr: parseFloat(currentApr.toFixed(2)),
-                                total_staked_eth: null,
-                                total_validators: null,
-                                source: 'lido_sma'
-                            });
-                        }
-                        console.log(`Current Lido APR: ${currentApr.toFixed(2)}%`);
-                        
-                        // APR이 없는 레코드에 현재 APR 적용
-                        for (const r of records) {
-                            if (r.avg_apr === null) r.avg_apr = currentApr;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Lido SMA API failed:', e);
-                }
-                
-                // Get validator count
-                try {
-                    const beaconData = await fetchWithProxy('https://beaconcha.in/api/v1/epoch/latest');
-                    if (beaconData?.data?.validatorscount) {
-                        const today = new Date().toISOString().split('T')[0];
-                        const existingIdx = records.findIndex(r => r.date === today);
-                        if (existingIdx >= 0) {
-                            records[existingIdx].total_validators = beaconData.data.validatorscount;
-                            records[existingIdx].total_staked_eth = beaconData.data.validatorscount * 32;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Beacon epoch API failed:', e);
-                }
-                
-                if (records.length === 0) {
-                    throw new Error('No data from any API. Try running GitHub Actions instead.');
-                }
-                
-                // Remove duplicates and sort
-                const uniqueRecords = [];
-                const seenDates = new Set();
-                for (const r of records) {
-                    if (!seenDates.has(r.date) && r.avg_apr !== null) {
-                        seenDates.add(r.date);
-                        uniqueRecords.push(r);
-                    }
-                }
-                uniqueRecords.sort((a, b) => a.date.localeCompare(b.date));
-                
-                console.log(`Saving ${uniqueRecords.length} records from ${dataSource}...`);
-                
-                for (let i = 0; i < uniqueRecords.length; i += 100) {
-                    const batch = uniqueRecords.slice(i, i + 100);
-                    const { error } = await supabase
-                        .from('historical_staking')
-                        .upsert(batch, { onConflict: 'date' });
-                    
-                    if (error) throw error;
-                }
-                
-                statusEl.textContent = `✅ Saved ${uniqueRecords.length} records from ${dataSource} (${uniqueRecords[0]?.date} ~ ${uniqueRecords[uniqueRecords.length-1]?.date})`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 4000);
-                loadAllData();
-                
-            } catch (error) {
-                console.error('Collect Staking error:', error);
-                statusEl.textContent = `❌ ${error.message}. Use GitHub Actions instead.`;
-                setTimeout(() => { statusEl.textContent = originalText; }, 5000);
-            }
-        }
-        
-        async function collectAllQuick() {
-            toggleCollectMenu();
-            await collectDominance();
-            await new Promise(r => setTimeout(r, 2000));
-            await collectEthBtc();
-            await new Promise(r => setTimeout(r, 1000));
-            await collectStablecoinMcap();
-            await new Promise(r => setTimeout(r, 1000));
-            await collectStablesEth();
-            await new Promise(r => setTimeout(r, 1000));
-            await collectNetworkFees();
-            await new Promise(r => setTimeout(r, 1000));
-            await collectBlobData();
-            await new Promise(r => setTimeout(r, 1000));
-            await collectStakingData();
-        }
+
+        init();
     </script>
 </body>
 </html>
