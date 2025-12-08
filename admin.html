@@ -438,15 +438,21 @@
             async gas_burn() {
                 const { data: fees } = await supabase.from('historical_protocol_fees').select('date, fees').order('date');
                 const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
                 if (!fees?.length || !prices?.length) return 0;
                 const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
+                const txMap = new Map(txs?.map(t => [t.date, parseInt(t.tx_count)]) || []);
                 const records = [];
                 for (const f of fees) {
                     const price = priceMap.get(f.date);
                     if (!price || !f.fees) continue;
                     const burn = (f.fees * 0.80) / price;
                     if (burn >= 50 && burn <= 50000) {
-                        records.push({ date: f.date, eth_burnt: parseFloat(burn.toFixed(2)) });
+                        records.push({ 
+                            date: f.date, 
+                            eth_burnt: parseFloat(burn.toFixed(2)),
+                            transaction_count: txMap.get(f.date) || 0
+                        });
                     }
                 }
                 const { error } = await supabase.from('historical_gas_burn').upsert(records, { onConflict: 'date' });
@@ -964,10 +970,6 @@
                 const data = await fetchJSON('https://api.binance.com/api/v3/ticker/price?symbol=ETHBTC');
                 return data ? { live: parseFloat(data.price), label: 'ETH/BTC', unit: '', decimals: 6 } : null;
             },
-            async funding_rate() {
-                const data = await fetchJSON('https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1');
-                return data?.[0] ? { live: parseFloat(data[0].fundingRate), label: 'Funding Rate', unit: '', decimals: 6 } : null;
-            },
             async eth_dominance() {
                 const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
                 return data?.data ? { live: data.data.market_cap_percentage.eth, label: 'ETH Dominance', unit: '%', decimals: 2 } : null;
@@ -983,7 +985,15 @@
             },
             async dex_volume() {
                 const data = await fetchJSON('https://api.llama.fi/overview/dexs/ethereum?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true&dataType=dailyVolume');
-                return data ? { live: data.total24h, label: 'DEX Volume 24h', unit: '$', format: 'tvl' } : null;
+                // total24h는 rolling 24h, totalDataChart의 마지막이 어제 값
+                return data ? { live: data.total24h, label: 'DEX Volume 24h (rolling)', unit: '$', format: 'tvl', tolerance: 25 } : null;
+            },
+            async funding_rate() {
+                const data = await fetchJSON('https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=3');
+                // 최근 3개 평균 (하루치)
+                if (!data || data.length === 0) return null;
+                const avg = data.reduce((sum, d) => sum + parseFloat(d.fundingRate), 0) / data.length;
+                return { live: avg, label: 'Funding Rate (8h avg)', unit: '', decimals: 6, tolerance: 20 };
             },
             async stablecoins() {
                 const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/all');
@@ -1042,17 +1052,19 @@
                 
                 // Calculate difference
                 const diff = cachedValue && liveResult.live ? ((cachedValue - liveResult.live) / liveResult.live * 100) : null;
+                const tolerance = liveResult.tolerance || 5; // default 5%
                 
                 return {
                     key,
-                    status: Math.abs(diff) <= 5 ? 'match' : 'mismatch',
+                    status: Math.abs(diff) <= tolerance ? 'match' : 'mismatch',
                     cached: cachedValue,
                     live: liveResult.live,
                     diff,
                     label: liveResult.label,
                     unit: liveResult.unit || '',
                     format: liveResult.format,
-                    decimals: liveResult.decimals
+                    decimals: liveResult.decimals,
+                    tolerance
                 };
             } catch (e) {
                 return { key, status: 'error', reason: e.message };
