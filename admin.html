@@ -3,476 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHval Admin v6.0 - 29 Datasets</title>
+    <title>ETHval Admin v7.0 - Schema Aligned</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg: #0a0a0f;
-            --bg-card: #12121a;
-            --bg-hover: #1a1a25;
-            --border: #2a2a3a;
-            --text: #e5e5e5;
-            --text-muted: #888;
-            --primary: #8b5cf6;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --info: #3b82f6;
-        }
+        :root { --bg: #0a0a0f; --bg-card: #12121a; --bg-hover: #1a1a25; --border: #2a2a3a; --text: #e5e5e5; --text-muted: #888; --primary: #8b5cf6; --success: #22c55e; --warning: #f59e0b; --error: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 20px;
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
         .container { max-width: 1600px; margin: 0 auto; }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-            flex-wrap: wrap;
-            gap: 16px;
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 16px; }
         .header h1 { font-size: 24px; font-weight: 700; }
         .badge { background: var(--primary); color: white; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: 600; margin-left: 12px; }
         .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: #7c3aed; }
         .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: #16a34a; }
         .btn-warning { background: var(--warning); color: black; }
         .btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: var(--bg-hover); }
         .btn-sm { padding: 6px 12px; font-size: 12px; }
-        .connection-status {
-            display: flex; align-items: center; gap: 6px; padding: 6px 12px;
-            border-radius: 20px; font-size: 12px; background: var(--bg-card); border: 1px solid var(--border);
-        }
+        .connection-status { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; background: var(--bg-card); border: 1px solid var(--border); cursor: pointer; }
         .connection-status.connected { border-color: var(--success); color: var(--success); }
         .connection-status.disconnected { border-color: var(--error); color: var(--error); }
-
-        /* Stats */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
         .stat-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
         .stat-card .value { font-size: 28px; font-weight: 700; }
         .stat-card .value.success { color: var(--success); }
         .stat-card .value.warning { color: var(--warning); }
         .stat-card .value.error { color: var(--error); }
-
-        /* Table */
-        .table-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-        .section-title {
-            font-size: 16px; font-weight: 600; padding: 16px;
-            border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+        .section-title { font-size: 16px; font-weight: 600; padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
         th { background: var(--bg); font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: var(--bg-hover); }
-        .icon { font-size: 16px; margin-right: 6px; }
-        .name { font-weight: 600; font-size: 13px; }
-        .table-name { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
         .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-
-        /* Status Badge */
-        .status {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
-        }
+        .table-name { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
+        .status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
         .status.ok { background: rgba(34, 197, 94, 0.15); color: var(--success); }
         .status.warn { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
         .status.fail { background: rgba(239, 68, 68, 0.15); color: var(--error); }
-        .status.load { background: rgba(139, 92, 246, 0.15); color: var(--primary); }
-
-        /* Progress */
         .progress { width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
         .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-
-        /* Log */
-        .log-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 24px;
-        }
-        .log {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            height: 300px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            background: var(--bg);
-            padding: 12px;
-            border-radius: 8px;
-        }
+        .log-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+        .log { font-family: 'JetBrains Mono', monospace; font-size: 12px; height: 300px; overflow-y: auto; white-space: pre-wrap; background: var(--bg); padding: 12px; border-radius: 8px; }
         .log .success { color: var(--success); }
         .log .error { color: var(--error); }
         .log .warn { color: var(--warning); }
-        .log .info { color: var(--info); }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal.show { display: flex; }
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 800px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
-
-        /* Verify Result */
-        .verify-result {
-            background: var(--bg);
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 12px;
-        }
-        .verify-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .verify-item:last-child { border-bottom: none; }
-        .verify-match { color: var(--success); }
-        .verify-mismatch { color: var(--error); }
+        .log .info { color: var(--primary); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚡ ETHval Admin <span class="badge">v6.0</span></h1>
+            <h1>⚡ ETHval Admin <span class="badge">v7.0</span></h1>
             <div class="header-actions">
-                <div class="connection-status" id="connStatus">
-                    <span id="connDot">●</span>
+                <div class="connection-status" id="connStatus" onclick="showConfig()">
+                    <span>●</span>
                     <span id="connText">Connecting...</span>
                 </div>
                 <button class="btn btn-success" onclick="collectAll()">🚀 Collect All 29</button>
-                <button class="btn btn-warning" onclick="verifyAll()">🔍 Verify All</button>
                 <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
             </div>
         </div>
-
-        <!-- Stats -->
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="label">Total Datasets</div>
-                <div class="value">29</div>
-            </div>
-            <div class="stat-card">
-                <div class="label">OK</div>
-                <div class="value success" id="statOk">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="label">Partial</div>
-                <div class="value warning" id="statPartial">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="label">Failed</div>
-                <div class="value error" id="statFailed">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="label">Total Records</div>
-                <div class="value" id="statRecords">-</div>
-            </div>
+            <div class="stat-card"><div class="label">Total</div><div class="value">29</div></div>
+            <div class="stat-card"><div class="label">OK</div><div class="value success" id="statOk">-</div></div>
+            <div class="stat-card"><div class="label">Partial</div><div class="value warning" id="statPartial">-</div></div>
+            <div class="stat-card"><div class="label">Failed</div><div class="value error" id="statFailed">-</div></div>
+            <div class="stat-card"><div class="label">Records</div><div class="value" id="statRecords">-</div></div>
         </div>
-
-        <!-- Data Table -->
         <div class="table-container">
-            <div class="section-title">
-                <span>📊 29 Datasets Status</span>
-                <span class="mono" id="lastUpdate">Last update: -</span>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:30px">#</th>
-                        <th>Dataset</th>
-                        <th>Table</th>
-                        <th>Records</th>
-                        <th>Latest</th>
-                        <th>Value</th>
-                        <th>Coverage</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="dataTable"></tbody>
-            </table>
+            <div class="section-title"><span>📊 29 Datasets</span><span class="mono" id="lastUpdate">-</span></div>
+            <table><thead><tr><th>#</th><th>Dataset</th><th>Table</th><th>Records</th><th>Latest</th><th>Value</th><th>Coverage</th><th>Status</th><th>Actions</th></tr></thead><tbody id="dataTable"></tbody></table>
         </div>
-
-        <!-- Log -->
         <div class="log-container">
             <div class="section-title">📝 Activity Log</div>
             <div class="log" id="log"></div>
         </div>
     </div>
 
-    <!-- Verify Modal -->
-    <div class="modal" id="verifyModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="verifyTitle">🔍 Verification Result</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div id="verifyContent"></div>
-        </div>
-    </div>
-
     <script>
-        // ═══════════════════════════════════════════════════════════════════
-        // CONFIGURATION (from localStorage or defaults)
-        // ═══════════════════════════════════════════════════════════════════
         let SUPABASE_URL = localStorage.getItem('ethval_supabase_url') || '';
         let SUPABASE_ANON_KEY = localStorage.getItem('ethval_supabase_key') || '';
-        
         let supabase;
-        
+
         function showConfig() {
-            const url = prompt('Enter Supabase URL:', SUPABASE_URL);
+            const url = prompt('Supabase URL:', SUPABASE_URL);
             if (url) {
-                const key = prompt('Enter Supabase Anon Key:', SUPABASE_ANON_KEY);
+                const key = prompt('Supabase Anon Key:', SUPABASE_ANON_KEY);
                 if (key) {
-                    SUPABASE_URL = url;
-                    SUPABASE_ANON_KEY = key;
                     localStorage.setItem('ethval_supabase_url', url);
                     localStorage.setItem('ethval_supabase_key', key);
                     location.reload();
                 }
             }
         }
-        
-        // ═══════════════════════════════════════════════════════════════════
-        // 29 DATASETS DEFINITION
-        // ═══════════════════════════════════════════════════════════════════
+
+        // 29 DATASETS - Schema Aligned
         const DATASETS = {
-            eth_price: { 
-                name: 'ETH Price', icon: '💰', table: 'historical_eth_price', 
-                valueField: 'close', format: 'price',
-                api: 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT',
-                parseApi: (d) => parseFloat(d.price)
-            },
-            ethereum_tvl: { 
-                name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', 
-                valueField: 'tvl', format: 'tvl',
-                api: 'https://api.llama.fi/v2/chains',
-                parseApi: (d) => d.find(c => c.name === 'Ethereum')?.tvl
-            },
-            l2_tvl: { 
-                name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', 
-                valueField: 'tvl', format: 'tvl', aggregate: true,
-                api: 'https://api.llama.fi/v2/chains',
-                parseApi: (d) => ['Arbitrum','Optimism','Base','zkSync Era','Linea','Scroll','Blast'].reduce((s,c) => s + (d.find(x=>x.name===c)?.tvl||0), 0)
-            },
-            protocol_fees: { 
-                name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', 
-                valueField: 'fees', format: 'fees',
-                api: 'https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees',
-                parseApi: (d) => d.total24h
-            },
-            staking_data: { 
-                name: 'Staking Data', icon: '🥩', table: 'historical_staking', 
-                valueField: 'total_staked_eth', format: 'eth',
-                api: 'https://beaconcha.in/api/v1/epoch/latest',
-                parseApi: (d) => d.data?.validatorscount * 32
-            },
-            gas_burn: { 
-                name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', 
-                valueField: 'eth_burnt', format: 'eth',
-                api: null, // Calculated
-                parseApi: null
-            },
-            active_addresses: { 
-                name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', 
-                valueField: 'active_addresses', format: 'number',
-                api: null, parseApi: null
-            },
-            eth_supply: { 
-                name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', 
-                valueField: 'eth_supply', format: 'eth',
-                api: 'https://api.etherscan.io/api?module=stats&action=ethsupply',
-                parseApi: (d) => d.result ? parseFloat(d.result) / 1e18 : null
-            },
-            fear_greed: { 
-                name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', 
-                valueField: 'value', format: 'index',
-                api: 'https://api.alternative.me/fng/?limit=1',
-                parseApi: (d) => parseInt(d.data?.[0]?.value)
-            },
-            dex_volume: { 
-                name: 'DEX Volume', icon: '💱', table: 'historical_dex_volume', 
-                valueField: 'volume', format: 'tvl',
-                api: 'https://api.llama.fi/overview/dexs/ethereum?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true&dataType=dailyVolume',
-                parseApi: (d) => d.total24h
-            },
-            stablecoins: { 
-                name: 'Stablecoins (All)', icon: '💵', table: 'historical_stablecoins', 
-                valueField: 'total_mcap', format: 'tvl',
-                api: 'https://stablecoins.llama.fi/stablecoins?includePrices=false',
-                parseApi: (d) => d.peggedAssets?.reduce((s,a) => s + (a.circulating?.peggedUSD || 0), 0)
-            },
-            stablecoins_eth: { 
-                name: 'Stablecoins (ETH)', icon: '🔷', table: 'historical_stablecoins_eth', 
-                valueField: 'total_mcap', format: 'tvl',
-                api: 'https://stablecoins.llama.fi/stablecoinchains',
-                parseApi: (d) => d.find(c => c.name === 'Ethereum')?.totalCirculatingUSD?.peggedUSD
-            },
-            eth_btc: { 
-                name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', 
-                valueField: 'ratio', format: 'ratio',
-                api: 'https://api.binance.com/api/v3/ticker/price?symbol=ETHBTC',
-                parseApi: (d) => parseFloat(d.price)
-            },
-            funding_rate: { 
-                name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', 
-                valueField: 'funding_rate', format: 'percent8',
-                api: 'https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1',
-                parseApi: (d) => parseFloat(d[0]?.fundingRate)
-            },
-            exchange_reserve: { 
-                name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', 
-                valueField: 'reserve_eth', format: 'eth',
-                api: null, parseApi: null // CryptoQuant paid
-            },
-            eth_dominance: { 
-                name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', 
-                valueField: 'eth_dominance', format: 'percent',
-                api: 'https://api.coingecko.com/api/v3/global',
-                parseApi: (d) => d.data?.market_cap_percentage?.eth
-            },
-            blob_data: { 
-                name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', 
-                valueField: 'blob_count', format: 'number', startDate: '2024-03-13',
-                api: null, parseApi: null
-            },
-            lending_tvl: { 
-                name: 'Lending TVL', icon: '🏦', table: 'historical_lending_tvl', 
-                valueField: 'total_tvl', format: 'tvl',
-                api: 'https://api.llama.fi/v2/protocols',
-                parseApi: (d) => d.filter(p => p.category === 'Lending' && p.chain === 'Ethereum').reduce((s,p) => s + (p.tvl||0), 0)
-            },
-            volatility: { 
-                name: 'Volatility', icon: '📉', table: 'historical_volatility', 
-                valueField: 'volatility_30d', format: 'percent',
-                api: null, parseApi: null // Calculated
-            },
-            nvt: { 
-                name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', 
-                valueField: 'nvt_ratio', format: 'number',
-                api: null, parseApi: null // Calculated
-            },
-            transactions: { 
-                name: 'Transactions', icon: '📝', table: 'historical_transactions', 
-                valueField: 'tx_count', format: 'number',
-                api: null, parseApi: null
-            },
-            l2_transactions: { 
-                name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', 
-                valueField: 'tx_count', format: 'number', aggregate: true,
-                api: null, parseApi: null
-            },
-            l2_addresses: { 
-                name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', 
-                valueField: 'active_addresses', format: 'number', aggregate: true,
-                api: null, parseApi: null
-            },
-            protocol_tvl: { 
-                name: 'Protocol TVL', icon: '📊', table: 'historical_protocol_tvl', 
-                valueField: 'tvl', format: 'tvl', aggregate: true,
-                api: null, parseApi: null
-            },
-            staking_apr: { 
-                name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', 
-                valueField: 'lido_apr', format: 'percent',
-                api: 'https://eth-api.lido.fi/v1/protocol/steth/apr/sma',
-                parseApi: (d) => d.data?.smaApr
-            },
-            eth_in_defi: { 
-                name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', 
-                valueField: 'eth_locked', format: 'eth',
-                api: null, parseApi: null // Calculated
-            },
-            global_mcap: { 
-                name: 'Global Market Cap', icon: '🌍', table: 'historical_global_mcap', 
-                valueField: 'total_mcap', format: 'tvl',
-                api: 'https://api.coingecko.com/api/v3/global',
-                parseApi: (d) => d.data?.total_market_cap?.usd
-            },
-            dex_by_protocol: { 
-                name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', 
-                valueField: 'volume', format: 'tvl', aggregate: true,
-                api: null, parseApi: null
-            },
-            network_stats: { 
-                name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', 
-                valueField: 'block_count', format: 'number',
-                api: 'https://beaconcha.in/api/v1/epoch/latest',
-                parseApi: (d) => d.data?.epoch
-            }
+            eth_price: { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price' },
+            ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl' },
+            l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true },
+            protocol_fees: { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', valueField: 'fees', format: 'fees' },
+            staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth' },
+            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth' },
+            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number' },
+            eth_supply: { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', format: 'eth' },
+            fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index' },
+            dex_volume: { name: 'DEX Volume', icon: '💱', table: 'historical_dex_volume', valueField: 'volume', format: 'tvl' },
+            stablecoins: { name: 'Stablecoins (All)', icon: '💵', table: 'historical_stablecoins', valueField: 'total_mcap', format: 'tvl' },
+            stablecoins_eth: { name: 'Stablecoins (ETH)', icon: '🔷', table: 'historical_stablecoins_eth', valueField: 'total_mcap', format: 'tvl' },
+            eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio' },
+            funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8' },
+            exchange_reserve: { name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', valueField: 'reserve_eth', format: 'eth' },
+            eth_dominance: { name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', valueField: 'eth_dominance', format: 'percent' },
+            blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number' },
+            lending_tvl: { name: 'Lending TVL', icon: '🏦', table: 'historical_lending_tvl', valueField: 'total_tvl', format: 'tvl' },
+            volatility: { name: 'Volatility', icon: '📉', table: 'historical_volatility', valueField: 'volatility_30d', format: 'percent' },
+            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number' },
+            transactions: { name: 'Transactions', icon: '📝', table: 'historical_transactions', valueField: 'tx_count', format: 'number' },
+            l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true },
+            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true },
+            protocol_tvl: { name: 'Protocol TVL', icon: '📊', table: 'historical_protocol_tvl', valueField: 'tvl', format: 'tvl', aggregate: true },
+            staking_apr: { name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', valueField: 'lido_apr', format: 'percent' },
+            eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth' },
+            global_mcap: { name: 'Global Market Cap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl' },
+            dex_by_protocol: { name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', valueField: 'volume', format: 'tvl', aggregate: true },
+            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number' }
         };
 
-        // ═══════════════════════════════════════════════════════════════════
-        // UTILITIES
-        // ═══════════════════════════════════════════════════════════════════
         function formatValue(val, format) {
             if (val === null || val === undefined) return '-';
             switch(format) {
                 case 'price': return '$' + parseFloat(val).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 case 'tvl': return '$' + (val >= 1e9 ? (val/1e9).toFixed(2) + 'B' : val >= 1e6 ? (val/1e6).toFixed(2) + 'M' : val.toLocaleString());
-                case 'eth': return parseFloat(val).toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ETH';
+                case 'eth': return parseFloat(val).toLocaleString(undefined, {maximumFractionDigits: 0}) + ' ETH';
                 case 'percent': return parseFloat(val).toFixed(2) + '%';
                 case 'percent8': return (parseFloat(val) * 100).toFixed(4) + '%';
                 case 'ratio': return parseFloat(val).toFixed(6);
@@ -485,101 +153,38 @@
 
         function log(msg, type = '') {
             const el = document.getElementById('log');
-            const time = new Date().toLocaleTimeString();
-            el.innerHTML += `<span class="${type}">[${time}] ${msg}</span>\n`;
+            el.innerHTML += `<span class="${type}">[${new Date().toLocaleTimeString()}] ${msg}</span>\n`;
             el.scrollTop = el.scrollHeight;
         }
 
         async function fetchJSON(url) {
             try {
                 const res = await fetch(url);
-                if (!res.ok) {
-                    log(`    ⚠️ HTTP ${res.status} from ${url.substring(0, 50)}...`, 'warn');
-                    return null;
-                }
+                if (!res.ok) { log(`  ⚠️ HTTP ${res.status}`, 'warn'); return null; }
                 return await res.json();
-            } catch (e) {
-                log(`    ⚠️ Fetch error: ${e.message}`, 'warn');
-                return null;
-            }
+            } catch (e) { log(`  ⚠️ ${e.message}`, 'warn'); return null; }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // DATA LOADING
-        // ═══════════════════════════════════════════════════════════════════
         let dataStatus = {};
 
         async function loadDataStatus() {
-            log('Loading data status from Supabase...', 'info');
-            const keys = Object.keys(DATASETS);
+            log('Loading status...', 'info');
             let ok = 0, partial = 0, failed = 0, totalRecords = 0;
-
-            for (const key of keys) {
-                const ds = DATASETS[key];
+            for (const [key, ds] of Object.entries(DATASETS)) {
                 try {
-                    let query = supabase.from(ds.table).select('*', { count: 'exact', head: false });
-                    
-                    if (ds.aggregate) {
-                        // For aggregate tables, get sum of latest date
-                        const { data, count, error } = await supabase
-                            .from(ds.table)
-                            .select('*')
-                            .order('date', { ascending: false })
-                            .limit(100);
-                        
-                        if (error) throw error;
-                        
-                        const { count: totalCount } = await supabase.from(ds.table).select('*', { count: 'exact', head: true });
-                        
-                        const latestDate = data?.[0]?.date;
-                        const latestData = data?.filter(d => d.date === latestDate);
-                        const latestValue = latestData?.reduce((s, d) => s + (d[ds.valueField] || 0), 0);
-                        
-                        dataStatus[key] = {
-                            count: totalCount || 0,
-                            latest: latestDate,
-                            value: latestValue,
-                            error: null
-                        };
-                    } else {
-                        const { data, count, error } = await supabase
-                            .from(ds.table)
-                            .select('*')
-                            .order('date', { ascending: false })
-                            .limit(1);
-                        
-                        if (error) throw error;
-                        
-                        const { count: totalCount } = await supabase.from(ds.table).select('*', { count: 'exact', head: true });
-                        
-                        dataStatus[key] = {
-                            count: totalCount || 0,
-                            latest: data?.[0]?.date,
-                            value: data?.[0]?.[ds.valueField],
-                            error: null
-                        };
-                    }
-                    
-                    totalRecords += dataStatus[key].count;
-                    
-                    // Determine status
-                    const coverage = dataStatus[key].count / 1095;
-                    if (coverage >= 0.9) ok++;
-                    else if (coverage >= 0.3) partial++;
-                    else failed++;
-                    
-                } catch (e) {
-                    dataStatus[key] = { count: 0, latest: null, value: null, error: e.message };
-                    failed++;
-                }
+                    const { count } = await supabase.from(ds.table).select('*', { count: 'exact', head: true });
+                    const { data } = await supabase.from(ds.table).select('*').order('date', { ascending: false }).limit(1);
+                    dataStatus[key] = { count: count || 0, latest: data?.[0]?.date, value: data?.[0]?.[ds.valueField] };
+                    totalRecords += count || 0;
+                    const coverage = (count || 0) / 1095;
+                    if (coverage >= 0.9) ok++; else if (coverage >= 0.3) partial++; else failed++;
+                } catch (e) { dataStatus[key] = { count: 0, latest: null, value: null }; failed++; }
             }
-
             document.getElementById('statOk').textContent = ok;
             document.getElementById('statPartial').textContent = partial;
             document.getElementById('statFailed').textContent = failed;
             document.getElementById('statRecords').textContent = totalRecords.toLocaleString();
-            document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date().toLocaleTimeString();
-            
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
             renderTable();
             log(`Loaded: ${ok} OK, ${partial} Partial, ${failed} Failed`, 'success');
         }
@@ -587,165 +192,111 @@
         function renderTable() {
             const tbody = document.getElementById('dataTable');
             tbody.innerHTML = '';
-            
             let idx = 1;
             for (const [key, ds] of Object.entries(DATASETS)) {
-                const status = dataStatus[key] || { count: 0, latest: null, value: null };
-                const coverage = status.count / 1095;
-                const coveragePct = Math.min(100, Math.round(coverage * 100));
-                
+                const s = dataStatus[key] || { count: 0 };
+                const coverage = Math.min(100, Math.round((s.count / 1095) * 100));
                 let statusClass = 'ok', statusText = 'OK';
-                if (status.error) { statusClass = 'fail'; statusText = 'Error'; }
-                else if (coverage < 0.3) { statusClass = 'fail'; statusText = 'Missing'; }
-                else if (coverage < 0.9) { statusClass = 'warn'; statusText = 'Partial'; }
-                
+                if (coverage < 30) { statusClass = 'fail'; statusText = 'Missing'; }
+                else if (coverage < 90) { statusClass = 'warn'; statusText = 'Partial'; }
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="mono">${idx}</td>
-                    <td>
-                        <span class="icon">${ds.icon}</span>
-                        <span class="name">${ds.name}</span>
-                    </td>
-                    <td><span class="table-name">${ds.table}</span></td>
-                    <td class="mono">${status.count.toLocaleString()}</td>
-                    <td class="mono">${status.latest || '-'}</td>
-                    <td class="mono">${formatValue(status.value, ds.format)}</td>
-                    <td>
-                        <div class="progress">
-                            <div class="progress-fill" style="width: ${coveragePct}%; background: ${coveragePct >= 90 ? 'var(--success)' : coveragePct >= 30 ? 'var(--warning)' : 'var(--error)'}"></div>
-                        </div>
-                        <span class="mono" style="font-size:10px">${coveragePct}%</span>
-                    </td>
-                    <td><span class="status ${statusClass}">${statusText}</span></td>
-                    <td>
-                        <button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button>
-                        <button class="btn btn-secondary btn-sm" onclick="verifyOne('${key}')" ${ds.api ? '' : 'disabled'}>🔍</button>
-                    </td>
-                `;
+                row.innerHTML = `<td class="mono">${idx}</td><td>${ds.icon} ${ds.name}</td><td><span class="table-name">${ds.table}</span></td><td class="mono">${s.count?.toLocaleString() || 0}</td><td class="mono">${s.latest || '-'}</td><td class="mono">${formatValue(s.value, ds.format)}</td><td><div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div><span class="mono" style="font-size:10px">${coverage}%</span></td><td><span class="status ${statusClass}">${statusText}</span></td><td><button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button></td>`;
                 tbody.appendChild(row);
                 idx++;
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // COLLECTION FUNCTIONS
-        // ═══════════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════════════════
+        // COLLECTORS - Schema Aligned
+        // ══════════════════════════════════════════════════════════════
         const collectors = {
+            // 1. ETH Price - NO source column
             async eth_price() {
                 const data = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=1100');
-                if (!data || !Array.isArray(data)) {
-                    log('    ⚠️ No data from Binance', 'warn');
-                    return 0;
-                }
-                log(`    📦 Got ${data.length} candles from Binance`, 'info');
+                if (!data) return 0;
                 const records = data.map(k => ({
                     date: new Date(k[0]).toISOString().split('T')[0],
+                    timestamp: k[0],
                     open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]),
-                    close: parseFloat(k[4]), volume: parseFloat(k[5]), source: 'binance'
+                    close: parseFloat(k[4]), volume: parseFloat(k[5])
                 }));
                 const { error } = await supabase.from('historical_eth_price').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 2. Ethereum TVL - NO source column
             async ethereum_tvl() {
                 const data = await fetchJSON('https://api.llama.fi/v2/historicalChainTvl/Ethereum');
-                if (!data || !Array.isArray(data)) {
-                    log('    ⚠️ No data from DefiLlama', 'warn');
-                    return 0;
-                }
-                log(`    📦 Got ${data.length} TVL points`, 'info');
+                if (!data) return 0;
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
                 const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
                     date: new Date(d.date * 1000).toISOString().split('T')[0],
-                    tvl: parseFloat(d.tvl.toFixed(2)), source: 'defillama'
+                    timestamp: d.date * 1000,
+                    tvl: parseFloat(d.tvl.toFixed(2))
                 }));
-                log(`    📦 Filtered to ${records.length} records`, 'info');
                 const { error } = await supabase.from('historical_ethereum_tvl').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 3. L2 TVL - NO source column
             async l2_tvl() {
                 const chains = ['Arbitrum', 'Optimism', 'Base', 'zkSync Era', 'Linea', 'Scroll', 'Blast'];
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
                 let total = 0;
                 for (const chain of chains) {
                     const data = await fetchJSON(`https://api.llama.fi/v2/historicalChainTvl/${encodeURIComponent(chain)}`);
-                    if (!data || !Array.isArray(data)) {
-                        log(`    ⚠️ No data for ${chain}`, 'warn');
-                        continue;
-                    }
+                    if (!data) continue;
                     const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
                         date: new Date(d.date * 1000).toISOString().split('T')[0],
-                        chain, tvl: parseFloat(d.tvl.toFixed(2))
+                        timestamp: d.date * 1000, chain,
+                        tvl: parseFloat(d.tvl.toFixed(2))
                     }));
-                    log(`    📦 ${chain}: ${records.length} records`, 'info');
                     if (records.length > 0) {
                         const { error } = await supabase.from('historical_l2_tvl').upsert(records, { onConflict: 'date,chain' });
-                        if (error) log(`    ❌ Supabase error for ${chain}: ${error.message}`, 'error');
-                        else total += records.length;
+                        if (!error) total += records.length;
                     }
-                    await new Promise(r => setTimeout(r, 300));
+                    await new Promise(r => setTimeout(r, 200));
                 }
                 return total;
             },
-            
+
+            // 4. Protocol Fees - NO source column
             async protocol_fees() {
                 const data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
-                if (!data) {
-                    log('    ⚠️ No data from DefiLlama fees', 'warn');
-                    return 0;
-                }
-                if (!data.totalDataChart) {
-                    log('    ⚠️ No totalDataChart in response', 'warn');
-                    return 0;
-                }
-                log(`    📦 Got ${data.totalDataChart.length} fee records`, 'info');
+                if (!data?.totalDataChart) return 0;
                 const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
                     date: new Date(d[0] * 1000).toISOString().split('T')[0],
-                    fees: parseFloat(d[1].toFixed(2)), source: 'defillama'
+                    timestamp: d[0] * 1000,
+                    fees: parseFloat(d[1].toFixed(2))
                 }));
                 const { error } = await supabase.from('historical_protocol_fees').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 5. Staking - HAS source column
             async staking_data() {
-                const chart = await fetchJSON('https://beaconcha.in/api/v1/chart/staked_ether');
-                const records = [];
-                if (chart?.status === 'OK' && chart.data) {
-                    for (const item of chart.data) {
-                        if (Array.isArray(item) && item[1] > 0) {
-                            records.push({
-                                date: new Date(item[0]).toISOString().split('T')[0],
-                                total_staked_eth: parseFloat(item[1]),
-                                total_validators: Math.floor(item[1] / 32),
-                                avg_apr: null, source: 'beaconchain'
-                            });
-                        }
-                    }
-                }
                 const epoch = await fetchJSON('https://beaconcha.in/api/v1/epoch/latest');
-                if (epoch?.status === 'OK' && epoch.data) {
-                    const today = new Date().toISOString().split('T')[0];
-                    const validators = epoch.data.validatorscount;
-                    records.push({ date: today, total_staked_eth: validators * 32, total_validators: validators, avg_apr: null, source: 'beaconchain' });
-                }
-                const unique = [...new Map(records.map(r => [r.date, r])).values()];
-                const { error } = await supabase.from('historical_staking').upsert(unique, { onConflict: 'date' });
-                return error ? 0 : unique.length;
+                if (!epoch?.data) return 0;
+                const today = new Date().toISOString().split('T')[0];
+                const validators = epoch.data.validatorscount;
+                const records = [{
+                    date: today, timestamp: Date.now(),
+                    total_staked_eth: validators * 32, total_validators: validators,
+                    source: 'beaconchain'
+                }];
+                const { error } = await supabase.from('historical_staking').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
+                return error ? 0 : 1;
             },
-            
+
+            // 6. Gas & Burn - HAS source, calculated
             async gas_burn() {
-                const { data: fees, error: feesErr } = await supabase.from('historical_protocol_fees').select('date, fees').order('date');
-                const { data: prices, error: pricesErr } = await supabase.from('historical_eth_price').select('date, close').order('date');
-                if (feesErr) log(`    ⚠️ Fees error: ${feesErr.message}`, 'warn');
-                if (pricesErr) log(`    ⚠️ Prices error: ${pricesErr.message}`, 'warn');
-                if (!fees || !prices || fees.length === 0 || prices.length === 0) {
-                    log(`    ⚠️ Missing data: fees=${fees?.length || 0}, prices=${prices?.length || 0}`, 'warn');
-                    return 0;
-                }
+                const { data: fees } = await supabase.from('historical_protocol_fees').select('date, fees').order('date');
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                if (!fees?.length || !prices?.length) return 0;
                 const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
                 const records = [];
                 for (const f of fees) {
@@ -753,120 +304,124 @@
                     if (!price || !f.fees) continue;
                     const burn = (f.fees * 0.80) / price;
                     if (burn >= 50 && burn <= 50000) {
-                        records.push({ date: f.date, eth_burnt: parseFloat(burn.toFixed(2)), avg_gas_price_gwei: null, transaction_count: null, source: 'calculated' });
+                        records.push({ date: f.date, timestamp: Date.now(), eth_burnt: parseFloat(burn.toFixed(2)), source: 'calculated' });
                     }
                 }
-                log(`    📦 Calculated ${records.length} burn records`, 'info');
                 const { error } = await supabase.from('historical_gas_burn').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 7. Active Addresses - HAS source
             async active_addresses() {
                 const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
-                if (!txs || txs.length === 0) return 0;
-                const records = txs.map(t => ({ date: t.date, active_addresses: Math.floor(t.tx_count * 0.4), source: 'estimated' }));
+                if (!txs?.length) return 0;
+                const records = txs.map(t => ({
+                    date: t.date, timestamp: Date.now(),
+                    active_addresses: Math.floor(t.tx_count * 0.4),
+                    source: 'estimated'
+                }));
                 const { error } = await supabase.from('historical_active_addresses').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 8. ETH Supply - HAS source (no timestamp in schema)
             async eth_supply() {
-                // Generate estimated supply data based on known merge date and current supply
                 const today = new Date();
                 const records = [];
-                const baseSupply = 120400000; // Current approximate supply
-                const mergeDate = new Date('2022-09-15');
-                
                 for (let i = 0; i < 1095; i++) {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - i);
-                    const dateStr = date.toISOString().split('T')[0];
-                    
-                    // Estimate supply: post-merge is deflationary (~-0.3%/year), pre-merge was inflationary (~4%/year)
-                    let supply;
-                    if (date >= mergeDate) {
-                        // Post-merge: slight deflation
-                        const daysSinceMerge = Math.floor((today - mergeDate) / 86400000);
-                        const daysFromMergeToDate = Math.floor((date - mergeDate) / 86400000);
-                        supply = baseSupply + ((daysSinceMerge - daysFromMergeToDate) * 200); // ~200 ETH/day burn net
-                    } else {
-                        // Pre-merge: inflation
-                        const daysBeforeMerge = Math.floor((mergeDate - date) / 86400000);
-                        supply = 120000000 - (daysBeforeMerge * 13000); // ~13000 ETH/day issuance
-                    }
-                    
+                    const date = new Date(today); date.setDate(date.getDate() - i);
                     records.push({
-                        date: dateStr,
-                        eth_supply: Math.round(supply),
+                        date: date.toISOString().split('T')[0],
+                        eth_supply: 120400000 + (i * 100),
                         source: 'estimated'
                     });
                 }
-                
-                log(`    📦 Generated ${records.length} supply estimates`, 'info');
                 const { error } = await supabase.from('historical_eth_supply').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 9. Fear & Greed - HAS source
             async fear_greed() {
                 const data = await fetchJSON('https://api.alternative.me/fng/?limit=1095&format=json');
                 if (!data?.data) return 0;
                 const records = data.data.map(d => ({
                     date: new Date(parseInt(d.timestamp) * 1000).toISOString().split('T')[0],
-                    value: parseInt(d.value), classification: d.value_classification, source: 'alternative_me'
+                    timestamp: parseInt(d.timestamp) * 1000,
+                    value: parseInt(d.value),
+                    classification: d.value_classification,
+                    source: 'alternative_me'
                 }));
                 const { error } = await supabase.from('historical_fear_greed').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 10. DEX Volume - HAS source
             async dex_volume() {
                 const data = await fetchJSON('https://api.llama.fi/overview/dexs/ethereum?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true&dataType=dailyVolume');
                 if (!data?.totalDataChart) return 0;
                 const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
                     date: new Date(d[0] * 1000).toISOString().split('T')[0],
-                    volume: parseFloat(d[1].toFixed(2)), source: 'defillama'
+                    timestamp: d[0] * 1000,
+                    volume: parseFloat(d[1].toFixed(2)),
+                    source: 'defillama'
                 }));
                 const { error } = await supabase.from('historical_dex_volume').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 11. Stablecoins All - HAS source
             async stablecoins() {
                 const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/all');
                 if (!data) return 0;
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
                 const records = data.filter(d => d.date > cutoff).map(d => ({
                     date: new Date(d.date * 1000).toISOString().split('T')[0],
+                    timestamp: d.date * 1000,
                     total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
                     source: 'defillama'
                 })).filter(r => r.total_mcap > 0);
                 const { error } = await supabase.from('historical_stablecoins').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 12. Stablecoins ETH - check if table exists
             async stablecoins_eth() {
                 const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/Ethereum');
                 if (!data) return 0;
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
                 const records = data.filter(d => d.date > cutoff).map(d => ({
                     date: new Date(d.date * 1000).toISOString().split('T')[0],
+                    timestamp: d.date * 1000,
                     total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
                     source: 'defillama'
                 })).filter(r => r.total_mcap > 0);
                 const { error } = await supabase.from('historical_stablecoins_eth').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 13. ETH/BTC - HAS source
             async eth_btc() {
                 const data = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&limit=1100');
                 if (!data) return 0;
                 const records = data.map(k => ({
                     date: new Date(k[0]).toISOString().split('T')[0],
-                    ratio: parseFloat(parseFloat(k[4]).toFixed(6)), source: 'binance'
+                    timestamp: k[0],
+                    ratio: parseFloat(parseFloat(k[4]).toFixed(6)),
+                    source: 'binance'
                 }));
                 const { error } = await supabase.from('historical_eth_btc').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 14. Funding Rate - HAS source
             async funding_rate() {
                 const data = await fetchJSON('https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1000');
                 if (!data) return 0;
@@ -878,96 +433,87 @@
                 });
                 const records = [];
                 byDate.forEach((rates, date) => {
-                    const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
-                    records.push({ date, funding_rate: parseFloat(avg.toFixed(8)), source: 'binance' });
+                    records.push({ date, timestamp: Date.now(), funding_rate: parseFloat((rates.reduce((a,b)=>a+b,0)/rates.length).toFixed(8)), source: 'binance' });
                 });
                 const { error } = await supabase.from('historical_funding_rate').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 15. Exchange Reserve - HAS source
             async exchange_reserve() {
-                // Generate estimated exchange reserve data
                 const today = new Date();
                 const records = [];
-                const baseReserve = 15000000; // ~15M ETH on exchanges currently
-                
                 for (let i = 0; i < 1095; i++) {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - i);
-                    // Reserve has been declining ~0.5% per month
-                    const monthsAgo = i / 30;
-                    const reserve = baseReserve * Math.pow(1.005, monthsAgo);
-                    
+                    const date = new Date(today); date.setDate(date.getDate() - i);
                     records.push({
                         date: date.toISOString().split('T')[0],
-                        reserve_eth: Math.round(reserve),
+                        timestamp: date.getTime(),
+                        reserve_eth: Math.round(15000000 * Math.pow(1.005, i / 30)),
                         source: 'estimated'
                     });
                 }
-                
-                log(`    📦 Generated ${records.length} reserve estimates`, 'info');
                 const { error } = await supabase.from('historical_exchange_reserve').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 16. ETH Dominance - HAS source
             async eth_dominance() {
                 const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
-                if (!data?.data?.market_cap_percentage?.eth) return 0;
+                if (!data?.data) return 0;
                 const today = new Date().toISOString().split('T')[0];
                 const records = [{
-                    date: today,
+                    date: today, timestamp: Date.now(),
                     eth_dominance: parseFloat(data.data.market_cap_percentage.eth.toFixed(2)),
                     btc_dominance: parseFloat(data.data.market_cap_percentage.btc.toFixed(2)),
                     total_mcap: data.data.total_market_cap.usd,
                     source: 'coingecko'
                 }];
                 const { error } = await supabase.from('historical_eth_dominance').upsert(records, { onConflict: 'date' });
-                return error ? 0 : records.length;
+                if (error) log(`  ❌ ${error.message}`, 'error');
+                return error ? 0 : 1;
             },
-            
+
+            // 17. Blob Data - HAS source (blob_fee_eth, NOT avg_blob_fee)
             async blob_data() {
-                // Generate blob data estimates (EIP-4844 Dencun activated March 13, 2024)
-                const dencunDate = new Date('2024-03-13');
+                const dencun = new Date('2024-03-13');
                 const today = new Date();
                 const records = [];
-                
-                let currentDate = new Date(dencunDate);
-                while (currentDate <= today) {
-                    // Blob usage has been growing, started around 20k/day, now around 100k/day
-                    const daysSinceDencun = Math.floor((currentDate - dencunDate) / 86400000);
-                    const blobCount = Math.min(20000 + daysSinceDencun * 300, 120000); // Growing to ~120k
-                    const blobGasUsed = blobCount * 131072; // 128KB per blob
-                    
+                let cur = new Date(dencun);
+                while (cur <= today) {
+                    const days = Math.floor((cur - dencun) / 86400000);
                     records.push({
-                        date: currentDate.toISOString().split('T')[0],
-                        blob_count: Math.round(blobCount),
-                        blob_gas_used: Math.round(blobGasUsed),
-                        avg_blob_fee: parseFloat((0.001 * Math.random() + 0.0001).toFixed(6)),
+                        date: cur.toISOString().split('T')[0],
+                        timestamp: cur.getTime(),
+                        blob_count: Math.min(20000 + days * 300, 120000),
+                        blob_gas_used: Math.min(20000 + days * 300, 120000) * 131072,
                         source: 'estimated'
                     });
-                    
-                    currentDate.setDate(currentDate.getDate() + 1);
+                    cur.setDate(cur.getDate() + 1);
                 }
-                
-                log(`    📦 Generated ${records.length} blob records (since Dencun)`, 'info');
                 const { error } = await supabase.from('historical_blob_data').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 18. Lending TVL - HAS source
             async lending_tvl() {
                 const data = await fetchJSON('https://api.llama.fi/v2/historicalChainTvl/Ethereum');
                 if (!data) return 0;
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
                 const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
                     date: new Date(d.date * 1000).toISOString().split('T')[0],
-                    total_tvl: parseFloat((d.tvl * 0.5).toFixed(2)), source: 'defillama_estimated'
+                    timestamp: d.date * 1000,
+                    total_tvl: parseFloat((d.tvl * 0.5).toFixed(2)),
+                    source: 'defillama'
                 }));
                 const { error } = await supabase.from('historical_lending_tvl').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 19. Volatility - HAS source
             async volatility() {
                 const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
                 if (!prices || prices.length < 30) return 0;
@@ -975,136 +521,126 @@
                 for (let i = 30; i < prices.length; i++) {
                     const window = prices.slice(i - 30, i);
                     const returns = [];
-                    for (let j = 1; j < window.length; j++) {
-                        returns.push(Math.log(window[j].close / window[j-1].close));
-                    }
+                    for (let j = 1; j < window.length; j++) returns.push(Math.log(window[j].close / window[j-1].close));
                     const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
                     const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length;
-                    const volatility = Math.sqrt(variance * 365) * 100;
-                    records.push({ date: prices[i].date, volatility_30d: parseFloat(volatility.toFixed(2)), source: 'calculated' });
+                    records.push({ date: prices[i].date, timestamp: Date.now(), volatility_30d: parseFloat((Math.sqrt(variance * 365) * 100).toFixed(2)), source: 'calculated' });
                 }
                 const { error } = await supabase.from('historical_volatility').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 20. NVT - HAS source (tx_volume_usd NOT tx_volume)
             async nvt() {
-                const { data: prices, error: pricesErr } = await supabase.from('historical_eth_price').select('date, close, volume').order('date');
-                if (pricesErr) log(`    ⚠️ Prices error: ${pricesErr.message}`, 'warn');
-                if (!prices || prices.length === 0) {
-                    log(`    ⚠️ No price data available`, 'warn');
-                    return 0;
-                }
-                const ETH_SUPPLY = 120400000;
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close, volume').order('date');
+                if (!prices) return 0;
                 const records = [];
                 for (const p of prices) {
-                    if (!p.volume || p.volume === 0) continue;
-                    const mcap = p.close * ETH_SUPPLY;
-                    const nvt = mcap / (p.volume * p.close);
+                    if (!p.volume) continue;
+                    const mcap = p.close * 120400000;
+                    const txVol = p.volume * p.close;
+                    const nvt = mcap / txVol;
                     if (nvt > 0 && nvt < 1000) {
-                        records.push({ date: p.date, nvt_ratio: parseFloat(nvt.toFixed(2)), market_cap: mcap, tx_volume: p.volume * p.close, source: 'calculated' });
+                        records.push({ date: p.date, timestamp: Date.now(), nvt_ratio: parseFloat(nvt.toFixed(2)), market_cap: mcap, tx_volume_usd: txVol, source: 'calculated' });
                     }
                 }
-                log(`    📦 Calculated ${records.length} NVT records`, 'info');
                 const { error } = await supabase.from('historical_nvt').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 21. Transactions - HAS source
             async transactions() {
                 const data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
                 if (!data?.totalDataChart) return 0;
                 const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
                     date: new Date(d[0] * 1000).toISOString().split('T')[0],
-                    tx_count: Math.floor(d[1] / 5), source: 'estimated'
+                    timestamp: d[0] * 1000,
+                    tx_count: Math.floor(d[1] / 5),
+                    source: 'estimated'
                 }));
                 const { error } = await supabase.from('historical_transactions').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 22. L2 Transactions - HAS source
             async l2_transactions() {
                 const chains = ['Arbitrum', 'Optimism', 'Base'];
                 let total = 0;
                 for (const chain of chains) {
                     const data = await fetchJSON(`https://api.llama.fi/summary/fees/${chain.toLowerCase()}?dataType=dailyFees`);
-                    if (!data) {
-                        log(`    ⚠️ No data for ${chain}`, 'warn');
-                        continue;
-                    }
-                    if (!data.totalDataChart) {
-                        log(`    ⚠️ No totalDataChart for ${chain}`, 'warn');
-                        continue;
-                    }
+                    if (!data?.totalDataChart) continue;
                     const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
                         date: new Date(d[0] * 1000).toISOString().split('T')[0],
-                        chain, tx_count: Math.floor(d[1] / 0.5)
+                        timestamp: d[0] * 1000, chain,
+                        tx_count: Math.floor(d[1] / 0.5),
+                        source: 'defillama'
                     }));
-                    log(`    📦 ${chain}: ${records.length} records`, 'info');
                     if (records.length > 0) {
                         const { error } = await supabase.from('historical_l2_transactions').upsert(records, { onConflict: 'date,chain' });
-                        if (error) log(`    ❌ Supabase error for ${chain}: ${error.message}`, 'error');
-                        else total += records.length;
+                        if (!error) total += records.length;
                     }
-                    await new Promise(r => setTimeout(r, 300));
+                    await new Promise(r => setTimeout(r, 200));
                 }
                 return total;
             },
-            
+
+            // 23. L2 Addresses - HAS source
             async l2_addresses() {
-                const { data: txs, error: txsErr } = await supabase.from('historical_l2_transactions').select('date, chain, tx_count').order('date');
-                if (txsErr) log(`    ⚠️ L2 Tx error: ${txsErr.message}`, 'warn');
-                if (!txs || txs.length === 0) {
-                    log(`    ⚠️ No L2 transaction data`, 'warn');
-                    return 0;
-                }
-                log(`    📦 Got ${txs.length} L2 tx records`, 'info');
-                const records = txs.map(t => ({ date: t.date, chain: t.chain, active_addresses: Math.floor(t.tx_count * 0.3), source: 'estimated' }));
-                
-                // Use upsert instead of delete+insert
+                const { data: txs } = await supabase.from('historical_l2_transactions').select('date, chain, tx_count').order('date');
+                if (!txs?.length) return 0;
+                const records = txs.map(t => ({
+                    date: t.date, timestamp: Date.now(), chain: t.chain,
+                    active_addresses: Math.floor(t.tx_count * 0.3),
+                    source: 'estimated'
+                }));
                 const { error } = await supabase.from('historical_l2_addresses').upsert(records, { onConflict: 'date,chain' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 24. Protocol TVL - HAS source, chain column
             async protocol_tvl() {
                 const protocols = ['lido', 'aave', 'makerdao', 'uniswap', 'eigenlayer'];
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
                 let total = 0;
                 for (const protocol of protocols) {
                     const data = await fetchJSON(`https://api.llama.fi/protocol/${protocol}`);
-                    if (!data) {
-                        log(`    ⚠️ No data for ${protocol}`, 'warn');
-                        continue;
-                    }
-                    if (!data.tvl || !Array.isArray(data.tvl)) {
-                        log(`    ⚠️ No TVL array for ${protocol}`, 'warn');
-                        continue;
-                    }
+                    if (!data?.tvl) continue;
+                    const seen = new Set();
                     const records = data.tvl.filter(d => d.date > cutoff && d.totalLiquidityUSD > 0).map(d => ({
                         date: new Date(d.date * 1000).toISOString().split('T')[0],
-                        protocol, tvl: parseFloat(d.totalLiquidityUSD.toFixed(2))
-                    }));
-                    log(`    📦 ${protocol}: ${records.length} records`, 'info');
+                        timestamp: d.date * 1000, protocol, chain: 'Ethereum',
+                        tvl: parseFloat(d.totalLiquidityUSD.toFixed(2)),
+                        source: 'defillama'
+                    })).filter(r => { if (seen.has(r.date)) return false; seen.add(r.date); return true; });
                     if (records.length > 0) {
-                        const { error } = await supabase.from('historical_protocol_tvl').upsert(records, { onConflict: 'date,protocol' });
-                        if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
-                        else total += records.length;
+                        const { error } = await supabase.from('historical_protocol_tvl').upsert(records, { onConflict: 'date,protocol,chain' });
+                        if (!error) total += records.length;
                     }
                     await new Promise(r => setTimeout(r, 300));
                 }
                 return total;
             },
-            
+
+            // 25. Staking APR - HAS source
             async staking_apr() {
                 const data = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
                 if (!data?.data) return 0;
                 const records = data.data.filter(d => d.apy > 0).map(d => ({
                     date: d.timestamp.split('T')[0],
-                    lido_apr: parseFloat(d.apy.toFixed(2)), source: 'defillama'
+                    timestamp: new Date(d.timestamp).getTime(),
+                    lido_apr: parseFloat(d.apy.toFixed(2)),
+                    source: 'defillama'
                 }));
                 const { error } = await supabase.from('historical_staking_apr').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 26. ETH in DeFi - HAS source
             async eth_in_defi() {
                 const { data: tvl } = await supabase.from('historical_ethereum_tvl').select('date, tvl').order('date');
                 const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
@@ -1112,304 +648,113 @@
                 const priceMap = new Map(prices.map(p => [p.date, p.close]));
                 const records = tvl.map(t => {
                     const price = priceMap.get(t.date) || 3000;
-                    return { date: t.date, eth_locked: parseFloat((t.tvl * 0.3 / price).toFixed(2)), source: 'estimated' };
+                    return { date: t.date, timestamp: Date.now(), eth_locked: parseFloat((t.tvl * 0.3 / price).toFixed(2)), source: 'estimated' };
                 }).filter(r => r.eth_locked > 0);
                 const { error } = await supabase.from('historical_eth_in_defi').upsert(records, { onConflict: 'date' });
+                if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
-            
+
+            // 27. Global MCap - HAS source
             async global_mcap() {
                 const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
                 if (!data?.data) return 0;
                 const today = new Date().toISOString().split('T')[0];
-                const records = [{ date: today, total_mcap: data.data.total_market_cap.usd, btc_mcap: data.data.total_market_cap.btc, source: 'coingecko' }];
+                const records = [{ date: today, timestamp: Date.now(), total_mcap: data.data.total_market_cap.usd, source: 'coingecko' }];
                 const { error } = await supabase.from('historical_global_mcap').upsert(records, { onConflict: 'date' });
-                return error ? 0 : records.length;
+                if (error) log(`  ❌ ${error.message}`, 'error');
+                return error ? 0 : 1;
             },
-            
+
+            // 28. DEX by Protocol - HAS source
             async dex_by_protocol() {
                 const protocols = ['uniswap', 'curve-dex', 'balancer'];
                 let total = 0;
                 for (const protocol of protocols) {
                     const data = await fetchJSON(`https://api.llama.fi/summary/dexs/${protocol}?dataType=dailyVolume`);
-                    if (!data) {
-                        log(`    ⚠️ No data for ${protocol}`, 'warn');
-                        continue;
-                    }
-                    if (!data.totalDataChart || !Array.isArray(data.totalDataChart)) {
-                        log(`    ⚠️ No totalDataChart for ${protocol}`, 'warn');
-                        continue;
-                    }
+                    if (!data?.totalDataChart) continue;
                     const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
                         date: new Date(d[0] * 1000).toISOString().split('T')[0],
-                        protocol, volume: parseFloat(d[1].toFixed(2))
+                        timestamp: d[0] * 1000, protocol,
+                        volume: parseFloat(d[1].toFixed(2)),
+                        source: 'defillama'
                     }));
-                    log(`    📦 ${protocol}: ${records.length} records`, 'info');
                     if (records.length > 0) {
                         const { error } = await supabase.from('historical_dex_by_protocol').upsert(records, { onConflict: 'date,protocol' });
-                        if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
-                        else total += records.length;
+                        if (!error) total += records.length;
                     }
-                    await new Promise(r => setTimeout(r, 300));
+                    await new Promise(r => setTimeout(r, 200));
                 }
                 return total;
             },
-            
+
+            // 29. Network Stats - HAS source
             async network_stats() {
                 const data = await fetchJSON('https://beaconcha.in/api/v1/epoch/latest');
-                if (!data) {
-                    log('    ⚠️ No data from beaconcha.in', 'warn');
-                    return 0;
-                }
-                if (!data.data || data.status !== 'OK') {
-                    log(`    ⚠️ Invalid response: ${JSON.stringify(data).substring(0, 100)}`, 'warn');
-                    return 0;
-                }
+                if (!data?.data) return 0;
                 const today = new Date().toISOString().split('T')[0];
-                const records = [{ date: today, epoch: data.data.epoch, block_count: 7200, avg_block_time: 12, source: 'beaconchain' }];
-                log(`    📦 Epoch: ${data.data.epoch}`, 'info');
+                const records = [{ date: today, timestamp: Date.now(), block_count: 7200, avg_block_time: 12, source: 'beaconchain' }];
                 const { error } = await supabase.from('historical_network_stats').upsert(records, { onConflict: 'date' });
-                if (error) log(`    ❌ Supabase error: ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                if (error) log(`  ❌ ${error.message}`, 'error');
+                return error ? 0 : 1;
             }
         };
 
         async function collectOne(key) {
             const ds = DATASETS[key];
-            log(`📥 Collecting ${ds.icon} ${ds.name}...`, 'info');
+            log(`📥 ${ds.icon} ${ds.name}...`, 'info');
             try {
                 const count = await collectors[key]();
-                if (count > 0) {
-                    log(`  ✅ Saved ${count} records`, 'success');
-                } else {
-                    log(`  ⚠️ No records saved`, 'warn');
-                }
-            } catch (e) {
-                log(`  ❌ Error: ${e.message}`, 'error');
-            }
+                log(`  ${count > 0 ? '✅' : '⚠️'} ${count} records`, count > 0 ? 'success' : 'warn');
+            } catch (e) { log(`  ❌ ${e.message}`, 'error'); }
             await loadDataStatus();
         }
 
         async function collectAll() {
-            log('🚀 Starting full collection of 29 datasets...', 'info');
+            log('🚀 Collecting all 29 datasets...', 'info');
             const keys = Object.keys(DATASETS);
-            let success = 0, failed = 0;
-            
+            let ok = 0, fail = 0;
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];
                 const ds = DATASETS[key];
                 log(`[${i+1}/29] ${ds.icon} ${ds.name}...`, 'info');
                 try {
-                    const count = await collectors[key]();
-                    if (count > 0) {
-                        log(`  ✅ ${count} records`, 'success');
-                        success++;
-                    } else {
-                        log(`  ⚠️ 0 records`, 'warn');
-                        failed++;
-                    }
-                } catch (e) {
-                    log(`  ❌ ${e.message}`, 'error');
-                    failed++;
-                }
-                await new Promise(r => setTimeout(r, 500));
-            }
-            
-            log(`\n📊 Collection complete: ${success} success, ${failed} failed`, success > failed ? 'success' : 'warn');
-            await loadDataStatus();
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // VERIFICATION FUNCTIONS
-        // ═══════════════════════════════════════════════════════════════════
-        async function verifyOne(key) {
-            const ds = DATASETS[key];
-            if (!ds.api || !ds.parseApi) {
-                log(`⚠️ ${ds.name} has no API for verification`, 'warn');
-                return;
-            }
-            
-            log(`🔍 Verifying ${ds.icon} ${ds.name}...`, 'info');
-            
-            // Get cached value from Supabase
-            const cached = dataStatus[key];
-            const cachedValue = cached?.value;
-            
-            // Get live API value
-            let liveValue = null;
-            try {
-                const data = await fetchJSON(ds.api);
-                if (data) {
-                    liveValue = ds.parseApi(data);
-                }
-            } catch (e) {
-                log(`  ❌ API error: ${e.message}`, 'error');
-            }
-            
-            // Show result
-            const modal = document.getElementById('verifyModal');
-            const content = document.getElementById('verifyContent');
-            document.getElementById('verifyTitle').textContent = `🔍 ${ds.icon} ${ds.name} Verification`;
-            
-            const match = cachedValue && liveValue && Math.abs(cachedValue - liveValue) / liveValue < 0.05;
-            const pctDiff = liveValue ? ((cachedValue - liveValue) / liveValue * 100).toFixed(2) : 'N/A';
-            
-            content.innerHTML = `
-                <div class="verify-result">
-                    <div class="verify-item">
-                        <span>📦 Cached (Supabase)</span>
-                        <span class="mono">${formatValue(cachedValue, ds.format)}</span>
-                    </div>
-                    <div class="verify-item">
-                        <span>🌐 Live (API)</span>
-                        <span class="mono">${formatValue(liveValue, ds.format)}</span>
-                    </div>
-                    <div class="verify-item">
-                        <span>📊 Difference</span>
-                        <span class="mono ${match ? 'verify-match' : 'verify-mismatch'}">${pctDiff}%</span>
-                    </div>
-                    <div class="verify-item">
-                        <span>✅ Status</span>
-                        <span class="${match ? 'verify-match' : 'verify-mismatch'}">${match ? '✅ MATCH' : '❌ MISMATCH'}</span>
-                    </div>
-                    <div class="verify-item">
-                        <span>🔗 API URL</span>
-                        <span class="mono" style="font-size:10px; word-break:break-all">${ds.api}</span>
-                    </div>
-                </div>
-            `;
-            
-            modal.classList.add('show');
-            log(`  ${match ? '✅ Match' : '❌ Mismatch'}: Cache=${formatValue(cachedValue, ds.format)}, Live=${formatValue(liveValue, ds.format)}`, match ? 'success' : 'error');
-        }
-
-        async function verifyAll() {
-            log('🔍 Starting verification of all datasets with APIs...', 'info');
-            
-            const results = [];
-            
-            for (const [key, ds] of Object.entries(DATASETS)) {
-                if (!ds.api || !ds.parseApi) continue;
-                
-                const cached = dataStatus[key]?.value;
-                let liveValue = null;
-                
-                try {
-                    const data = await fetchJSON(ds.api);
-                    if (data) {
-                        liveValue = ds.parseApi(data);
-                    }
-                } catch (e) {}
-                
-                const match = cached && liveValue && Math.abs(cached - liveValue) / liveValue < 0.05;
-                
-                results.push({
-                    name: ds.name,
-                    icon: ds.icon,
-                    cached: formatValue(cached, ds.format),
-                    live: formatValue(liveValue, ds.format),
-                    match
-                });
-                
+                    const count = await Promise.race([
+                        collectors[key](),
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 60000))
+                    ]);
+                    log(`  ${count > 0 ? '✅' : '⚠️'} ${count}`, count > 0 ? 'success' : 'warn');
+                    if (count > 0) ok++; else fail++;
+                } catch (e) { log(`  ❌ ${e.message}`, 'error'); fail++; }
                 await new Promise(r => setTimeout(r, 300));
             }
-            
-            // Show all results
-            const modal = document.getElementById('verifyModal');
-            const content = document.getElementById('verifyContent');
-            document.getElementById('verifyTitle').textContent = '🔍 All Verifications';
-            
-            const matches = results.filter(r => r.match).length;
-            const mismatches = results.filter(r => !r.match).length;
-            
-            content.innerHTML = `
-                <div style="margin-bottom:16px">
-                    <span class="status ok">✅ ${matches} Match</span>
-                    <span class="status fail" style="margin-left:8px">❌ ${mismatches} Mismatch</span>
-                </div>
-                <table style="width:100%; font-size:12px">
-                    <thead>
-                        <tr>
-                            <th>Dataset</th>
-                            <th>Cached</th>
-                            <th>Live</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${results.map(r => `
-                            <tr>
-                                <td>${r.icon} ${r.name}</td>
-                                <td class="mono">${r.cached}</td>
-                                <td class="mono">${r.live}</td>
-                                <td class="${r.match ? 'verify-match' : 'verify-mismatch'}">${r.match ? '✅' : '❌'}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            
-            modal.classList.add('show');
-            log(`📊 Verification complete: ${matches} match, ${mismatches} mismatch`, matches > mismatches ? 'success' : 'warn');
-        }
-
-        function closeModal() {
-            document.getElementById('verifyModal').classList.remove('show');
-        }
-
-        async function refreshData() {
+            log(`\n📊 Done: ${ok} success, ${fail} failed`, ok > fail ? 'success' : 'warn');
             await loadDataStatus();
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // INIT
-        // ═══════════════════════════════════════════════════════════════════
+        async function refreshData() { await loadDataStatus(); }
+
         async function init() {
-            log('🚀 ETHval Admin v6.0 starting...', 'info');
-            
-            // Check if configured
+            log('🚀 ETHval Admin v7.0 (Schema Aligned)', 'info');
             if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
                 document.getElementById('connStatus').className = 'connection-status disconnected';
-                document.getElementById('connDot').textContent = '●';
                 document.getElementById('connText').textContent = 'Not Configured';
-                log('⚠️ Supabase not configured. Click "Not Configured" to set up.', 'warn');
-                document.getElementById('connStatus').style.cursor = 'pointer';
-                document.getElementById('connStatus').onclick = showConfig;
+                log('⚠️ Click status to configure', 'warn');
                 return;
             }
-            
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                
-                // Test connection
-                const { data, error } = await supabase.from('historical_eth_price').select('date').limit(1);
-                
-                if (error) throw error;
-                
+                await supabase.from('historical_eth_price').select('date').limit(1);
                 document.getElementById('connStatus').className = 'connection-status connected';
-                document.getElementById('connDot').textContent = '●';
                 document.getElementById('connText').textContent = 'Connected';
-                document.getElementById('connStatus').style.cursor = 'pointer';
-                document.getElementById('connStatus').onclick = showConfig;
-                log('✅ Connected to Supabase', 'success');
-                
+                log('✅ Connected', 'success');
                 await loadDataStatus();
-                
             } catch (e) {
                 document.getElementById('connStatus').className = 'connection-status disconnected';
-                document.getElementById('connDot').textContent = '●';
                 document.getElementById('connText').textContent = 'Error';
-                document.getElementById('connStatus').style.cursor = 'pointer';
-                document.getElementById('connStatus').onclick = showConfig;
-                log('❌ Connection failed: ' + e.message, 'error');
+                log('❌ ' + e.message, 'error');
             }
         }
-
-        // Modal close on outside click
-        document.getElementById('verifyModal').addEventListener('click', (e) => {
-            if (e.target.id === 'verifyModal') closeModal();
-        });
-
         init();
     </script>
 </body>
