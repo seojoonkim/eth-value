@@ -274,12 +274,26 @@
 
     <script>
         // ═══════════════════════════════════════════════════════════════════
-        // CONFIGURATION
+        // CONFIGURATION (from localStorage or defaults)
         // ═══════════════════════════════════════════════════════════════════
-        const SUPABASE_URL = 'https://irmvzluqcvgpqhnboejn.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlybXZ6bHVxY3ZncHFobmJvZWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2MTg4NzcsImV4cCI6MjA2NDE5NDg3N30.5eF2FhyrdVxVwMsVdi-DEJvIpuQnghZs5uy6CVqTvQg';
+        let SUPABASE_URL = localStorage.getItem('ethval_supabase_url') || '';
+        let SUPABASE_ANON_KEY = localStorage.getItem('ethval_supabase_key') || '';
         
         let supabase;
+        
+        function showConfig() {
+            const url = prompt('Enter Supabase URL:', SUPABASE_URL);
+            if (url) {
+                const key = prompt('Enter Supabase Anon Key:', SUPABASE_ANON_KEY);
+                if (key) {
+                    SUPABASE_URL = url;
+                    SUPABASE_ANON_KEY = key;
+                    localStorage.setItem('ethval_supabase_url', url);
+                    localStorage.setItem('ethval_supabase_key', key);
+                    location.reload();
+                }
+            }
+        }
         
         // ═══════════════════════════════════════════════════════════════════
         // 29 DATASETS DEFINITION
@@ -1192,6 +1206,17 @@
         async function init() {
             log('🚀 ETHval Admin v6.0 starting...', 'info');
             
+            // Check if configured
+            if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                document.getElementById('connStatus').className = 'connection-status disconnected';
+                document.getElementById('connDot').textContent = '●';
+                document.getElementById('connText').textContent = 'Not Configured';
+                log('⚠️ Supabase not configured. Click "Not Configured" to set up.', 'warn');
+                document.getElementById('connStatus').style.cursor = 'pointer';
+                document.getElementById('connStatus').onclick = showConfig;
+                return;
+            }
+            
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 
@@ -1203,6 +1228,8 @@
                 document.getElementById('connStatus').className = 'connection-status connected';
                 document.getElementById('connDot').textContent = '●';
                 document.getElementById('connText').textContent = 'Connected';
+                document.getElementById('connStatus').style.cursor = 'pointer';
+                document.getElementById('connStatus').onclick = showConfig;
                 log('✅ Connected to Supabase', 'success');
                 
                 await loadDataStatus();
@@ -1210,7 +1237,9 @@
             } catch (e) {
                 document.getElementById('connStatus').className = 'connection-status disconnected';
                 document.getElementById('connDot').textContent = '●';
-                document.getElementById('connText').textContent = 'Disconnected';
+                document.getElementById('connText').textContent = 'Error';
+                document.getElementById('connStatus').style.cursor = 'pointer';
+                document.getElementById('connStatus').onclick = showConfig;
                 log('❌ Connection failed: ' + e.message, 'error');
             }
         }
