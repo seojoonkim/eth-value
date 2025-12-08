@@ -53,6 +53,21 @@
         .log .error { color: var(--error); }
         .log .warn { color: var(--warning); }
         .log .info { color: var(--primary); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .modal-header h2 { font-size: 18px; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
+        .verify-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .verify-table th, .verify-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        .verify-table th { background: var(--bg); font-size: 11px; text-transform: uppercase; color: var(--text-muted); }
+        .verify-match { color: var(--success); }
+        .verify-mismatch { color: var(--error); }
+        .verify-skip { color: var(--text-muted); }
+        .diff-good { color: var(--success); }
+        .diff-warn { color: var(--warning); }
+        .diff-bad { color: var(--error); }
     </style>
 </head>
 <body>
@@ -65,6 +80,7 @@
                     <span id="connText">Connecting...</span>
                 </div>
                 <button class="btn btn-success" onclick="collectAll()">🚀 Collect All 29</button>
+                <button class="btn btn-primary" onclick="verifyAll()">🔍 Verify All</button>
                 <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
             </div>
         </div>
@@ -82,6 +98,17 @@
         <div class="log-container">
             <div class="section-title">📝 Activity Log</div>
             <div class="log" id="log"></div>
+        </div>
+        
+        <!-- Verify Modal -->
+        <div class="modal" id="verifyModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🔍 Data Verification Results</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div id="verifyResults"></div>
+            </div>
         </div>
     </div>
 
@@ -754,26 +781,55 @@
                 return error ? 0 : records.length;
             },
 
-            // 24. Protocol TVL - HAS source, chain column
+            // 24. Protocol TVL - HAS source, chain column (optimized)
             async protocol_tvl() {
                 const protocols = ['lido', 'aave', 'makerdao', 'uniswap', 'eigenlayer'];
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
                 let total = 0;
+                
                 for (const protocol of protocols) {
-                    const data = await fetchJSON(`https://api.llama.fi/protocol/${protocol}`);
-                    if (!data?.tvl) continue;
-                    const seen = new Set();
-                    const records = data.tvl.filter(d => d.date > cutoff && d.totalLiquidityUSD > 0).map(d => ({
-                        date: new Date(d.date * 1000).toISOString().split('T')[0],
-                        timestamp: d.date * 1000, protocol, chain: 'Ethereum',
-                        tvl: parseFloat(d.totalLiquidityUSD.toFixed(2)),
-                        source: 'defillama'
-                    })).filter(r => { if (seen.has(r.date)) return false; seen.add(r.date); return true; });
-                    if (records.length > 0) {
-                        const { error } = await supabase.from('historical_protocol_tvl').upsert(records, { onConflict: 'date,protocol,chain' });
-                        if (!error) total += records.length;
+                    try {
+                        const data = await fetchJSON(`https://api.llama.fi/protocol/${protocol}`);
+                        if (!data?.tvl) {
+                            log(`    ⚠️ No data for ${protocol}`, 'warn');
+                            continue;
+                        }
+                        
+                        const seen = new Set();
+                        const records = data.tvl
+                            .filter(d => d.date > cutoff && d.totalLiquidityUSD > 0)
+                            .map(d => ({
+                                date: new Date(d.date * 1000).toISOString().split('T')[0],
+                                timestamp: d.date * 1000,
+                                protocol,
+                                chain: 'Ethereum',
+                                tvl: parseFloat(d.totalLiquidityUSD.toFixed(2)),
+                                source: 'defillama'
+                            }))
+                            .filter(r => {
+                                if (seen.has(r.date)) return false;
+                                seen.add(r.date);
+                                return true;
+                            });
+                        
+                        log(`    📦 ${protocol}: ${records.length} records`, 'info');
+                        
+                        if (records.length > 0) {
+                            // Batch upsert in chunks of 500 for speed
+                            for (let i = 0; i < records.length; i += 500) {
+                                const chunk = records.slice(i, i + 500);
+                                const { error } = await supabase.from('historical_protocol_tvl').upsert(chunk, { onConflict: 'date,protocol,chain' });
+                                if (error) {
+                                    log(`    ❌ ${protocol} chunk error: ${error.message}`, 'error');
+                                    break;
+                                }
+                            }
+                            total += records.length;
+                        }
+                    } catch (e) {
+                        log(`    ⚠️ ${protocol} error: ${e.message}`, 'warn');
                     }
-                    await new Promise(r => setTimeout(r, 300));
+                    await new Promise(r => setTimeout(r, 200));
                 }
                 return total;
             },
@@ -874,7 +930,7 @@
                 try {
                     const count = await Promise.race([
                         collectors[key](),
-                        new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 60000))
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 120000))
                     ]);
                     log(`  ${count > 0 ? '✅' : '⚠️'} ${count}`, count > 0 ? 'success' : 'warn');
                     if (count > 0) ok++; else fail++;
@@ -886,6 +942,212 @@
         }
 
         async function refreshData() { await loadDataStatus(); }
+        
+        // ══════════════════════════════════════════════════════════════
+        // VERIFICATION - Compare cache vs live API
+        // ══════════════════════════════════════════════════════════════
+        const verifiers = {
+            async eth_price() {
+                const data = await fetchJSON('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+                return data ? { live: parseFloat(data.price), label: 'ETH Price', unit: '$' } : null;
+            },
+            async ethereum_tvl() {
+                const data = await fetchJSON('https://api.llama.fi/v2/chains');
+                const eth = data?.find(c => c.name === 'Ethereum');
+                return eth ? { live: eth.tvl, label: 'Ethereum TVL', unit: '$', format: 'tvl' } : null;
+            },
+            async fear_greed() {
+                const data = await fetchJSON('https://api.alternative.me/fng/?limit=1');
+                return data?.data?.[0] ? { live: parseInt(data.data[0].value), label: 'Fear & Greed', unit: '' } : null;
+            },
+            async eth_btc() {
+                const data = await fetchJSON('https://api.binance.com/api/v3/ticker/price?symbol=ETHBTC');
+                return data ? { live: parseFloat(data.price), label: 'ETH/BTC', unit: '', decimals: 6 } : null;
+            },
+            async funding_rate() {
+                const data = await fetchJSON('https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1');
+                return data?.[0] ? { live: parseFloat(data[0].fundingRate), label: 'Funding Rate', unit: '', decimals: 6 } : null;
+            },
+            async eth_dominance() {
+                const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
+                return data?.data ? { live: data.data.market_cap_percentage.eth, label: 'ETH Dominance', unit: '%', decimals: 2 } : null;
+            },
+            async global_mcap() {
+                const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
+                return data?.data ? { live: data.data.total_market_cap.usd, label: 'Global MCap', unit: '$', format: 'tvl' } : null;
+            },
+            async staking_apr() {
+                const data = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+                const latest = data?.data?.[data.data.length - 1];
+                return latest ? { live: latest.apy, label: 'Lido APR', unit: '%', decimals: 2 } : null;
+            },
+            async dex_volume() {
+                const data = await fetchJSON('https://api.llama.fi/overview/dexs/ethereum?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true&dataType=dailyVolume');
+                return data ? { live: data.total24h, label: 'DEX Volume 24h', unit: '$', format: 'tvl' } : null;
+            },
+            async stablecoins() {
+                const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/all');
+                const latest = data?.[data.length - 1];
+                const mcap = latest?.totalCirculatingUSD?.peggedUSD || latest?.totalCirculating?.peggedUSD;
+                return mcap ? { live: mcap, label: 'Stablecoin MCap', unit: '$', format: 'tvl' } : null;
+            },
+            async stablecoins_eth() {
+                const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/Ethereum');
+                const latest = data?.[data.length - 1];
+                const mcap = latest?.totalCirculatingUSD?.peggedUSD || latest?.totalCirculating?.peggedUSD;
+                return mcap ? { live: mcap, label: 'ETH Stablecoin MCap', unit: '$', format: 'tvl' } : null;
+            },
+            async lending_tvl() {
+                const data = await fetchJSON('https://api.llama.fi/v2/chains');
+                const eth = data?.find(c => c.name === 'Ethereum');
+                // Lending is roughly 50% of TVL
+                return eth ? { live: eth.tvl * 0.5, label: 'Lending TVL (est)', unit: '$', format: 'tvl' } : null;
+            }
+        };
+        
+        function formatVerifyValue(val, opts = {}) {
+            if (val === null || val === undefined) return '-';
+            if (opts.format === 'tvl') {
+                return opts.unit + (val >= 1e9 ? (val/1e9).toFixed(2) + 'B' : val >= 1e6 ? (val/1e6).toFixed(2) + 'M' : val.toFixed(0));
+            }
+            const decimals = opts.decimals ?? 2;
+            return opts.unit + parseFloat(val).toFixed(decimals);
+        }
+        
+        function getDiffClass(diff) {
+            const absDiff = Math.abs(diff);
+            if (absDiff <= 1) return 'diff-good';
+            if (absDiff <= 5) return 'diff-warn';
+            return 'diff-bad';
+        }
+        
+        async function verifyOne(key) {
+            const ds = DATASETS[key];
+            const verifier = verifiers[key];
+            
+            if (!verifier) {
+                return { key, status: 'skip', reason: 'No live API' };
+            }
+            
+            try {
+                // Get cached value
+                const { data: cached } = await supabase.from(ds.table).select('*').order('date', { ascending: false }).limit(1);
+                const cachedValue = cached?.[0]?.[ds.valueField];
+                
+                // Get live value
+                const liveResult = await verifier();
+                if (!liveResult) {
+                    return { key, status: 'error', reason: 'API failed' };
+                }
+                
+                // Calculate difference
+                const diff = cachedValue && liveResult.live ? ((cachedValue - liveResult.live) / liveResult.live * 100) : null;
+                
+                return {
+                    key,
+                    status: Math.abs(diff) <= 5 ? 'match' : 'mismatch',
+                    cached: cachedValue,
+                    live: liveResult.live,
+                    diff,
+                    label: liveResult.label,
+                    unit: liveResult.unit || '',
+                    format: liveResult.format,
+                    decimals: liveResult.decimals
+                };
+            } catch (e) {
+                return { key, status: 'error', reason: e.message };
+            }
+        }
+        
+        async function verifyAll() {
+            log('🔍 Starting verification...', 'info');
+            document.getElementById('verifyModal').classList.add('show');
+            document.getElementById('verifyResults').innerHTML = '<p style="text-align:center;padding:40px;">Loading...</p>';
+            
+            const results = [];
+            const keys = Object.keys(DATASETS);
+            
+            for (const key of keys) {
+                const result = await verifyOne(key);
+                results.push(result);
+            }
+            
+            // Render results
+            const matches = results.filter(r => r.status === 'match').length;
+            const mismatches = results.filter(r => r.status === 'mismatch').length;
+            const skipped = results.filter(r => r.status === 'skip').length;
+            const errors = results.filter(r => r.status === 'error').length;
+            
+            let html = `
+                <div style="display:flex;gap:20px;margin-bottom:20px;">
+                    <div style="padding:12px 20px;background:rgba(34,197,94,0.15);border-radius:8px;">
+                        <span style="color:var(--success);font-weight:600;">✅ ${matches} Match</span>
+                    </div>
+                    <div style="padding:12px 20px;background:rgba(239,68,68,0.15);border-radius:8px;">
+                        <span style="color:var(--error);font-weight:600;">❌ ${mismatches} Mismatch</span>
+                    </div>
+                    <div style="padding:12px 20px;background:rgba(136,136,136,0.15);border-radius:8px;">
+                        <span style="color:var(--text-muted);font-weight:600;">⏭️ ${skipped} Skipped</span>
+                    </div>
+                </div>
+                <table class="verify-table">
+                    <thead>
+                        <tr>
+                            <th>Dataset</th>
+                            <th>Cached (Supabase)</th>
+                            <th>Live (API)</th>
+                            <th>Diff</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            for (const r of results) {
+                const ds = DATASETS[r.key];
+                let statusHtml, cachedHtml, liveHtml, diffHtml;
+                
+                if (r.status === 'skip') {
+                    statusHtml = '<span class="verify-skip">⏭️ Skip</span>';
+                    cachedHtml = '-';
+                    liveHtml = '<span style="color:var(--text-muted)">No live API</span>';
+                    diffHtml = '-';
+                } else if (r.status === 'error') {
+                    statusHtml = '<span class="verify-mismatch">⚠️ Error</span>';
+                    cachedHtml = '-';
+                    liveHtml = `<span style="color:var(--text-muted)">${r.reason}</span>`;
+                    diffHtml = '-';
+                } else {
+                    statusHtml = r.status === 'match' 
+                        ? '<span class="verify-match">✅ Match</span>' 
+                        : '<span class="verify-mismatch">❌ Mismatch</span>';
+                    cachedHtml = formatVerifyValue(r.cached, r);
+                    liveHtml = formatVerifyValue(r.live, r);
+                    diffHtml = r.diff !== null 
+                        ? `<span class="${getDiffClass(r.diff)}">${r.diff > 0 ? '+' : ''}${r.diff.toFixed(2)}%</span>` 
+                        : '-';
+                }
+                
+                html += `
+                    <tr>
+                        <td>${ds.icon} ${ds.name}</td>
+                        <td class="mono">${cachedHtml}</td>
+                        <td class="mono">${liveHtml}</td>
+                        <td class="mono">${diffHtml}</td>
+                        <td>${statusHtml}</td>
+                    </tr>
+                `;
+            }
+            
+            html += '</tbody></table>';
+            document.getElementById('verifyResults').innerHTML = html;
+            
+            log(`🔍 Verification complete: ${matches} match, ${mismatches} mismatch, ${skipped} skipped`, matches >= mismatches ? 'success' : 'warn');
+        }
+        
+        function closeModal() {
+            document.getElementById('verifyModal').classList.remove('show');
+        }
 
         async function init() {
             log('🚀 ETHval Admin v7.0 (Schema Aligned)', 'info');
