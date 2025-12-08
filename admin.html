@@ -169,36 +169,51 @@
 
         async function loadDataStatus() {
             log('Loading status...', 'info');
-            let ok = 0, partial = 0, failed = 0, totalRecords = 0;
-            for (const [key, ds] of Object.entries(DATASETS)) {
+            
+            // Parallel fetch all datasets
+            const entries = Object.entries(DATASETS);
+            const results = await Promise.all(entries.map(async ([key, ds]) => {
                 try {
-                    const { count, error: countErr } = await supabase.from(ds.table).select('*', { count: 'exact', head: true });
-                    if (countErr) {
-                        log(`  ⚠️ ${ds.table}: ${countErr.message}`, 'warn');
-                        dataStatus[key] = { count: 0, latest: null, oldest: null, value: null };
-                        failed++;
-                        continue;
-                    }
-                    // Get latest
-                    const { data: latestData } = await supabase.from(ds.table).select('*').order('date', { ascending: false }).limit(1);
-                    // Get oldest
-                    const { data: oldestData } = await supabase.from(ds.table).select('date').order('date', { ascending: true }).limit(1);
+                    const [countRes, latestRes, oldestRes] = await Promise.all([
+                        supabase.from(ds.table).select('*', { count: 'exact', head: true }),
+                        supabase.from(ds.table).select('*').order('date', { ascending: false }).limit(1),
+                        supabase.from(ds.table).select('date').order('date', { ascending: true }).limit(1)
+                    ]);
                     
-                    dataStatus[key] = { 
-                        count: count || 0, 
-                        latest: latestData?.[0]?.date, 
-                        oldest: oldestData?.[0]?.date,
-                        value: latestData?.[0]?.[ds.valueField] 
+                    if (countRes.error) {
+                        return { key, status: { count: 0, latest: null, oldest: null, value: null }, error: countRes.error.message };
+                    }
+                    
+                    return {
+                        key,
+                        status: {
+                            count: countRes.count || 0,
+                            latest: latestRes.data?.[0]?.date,
+                            oldest: oldestRes.data?.[0]?.date,
+                            value: latestRes.data?.[0]?.[ds.valueField]
+                        }
                     };
-                    totalRecords += count || 0;
-                    const coverage = (count || 0) / (ds.expectedDays || 1095);
-                    if (coverage >= 0.9) ok++; else if (coverage >= 0.3) partial++; else failed++;
                 } catch (e) {
-                    log(`  ❌ ${ds.table}: ${e.message}`, 'error');
-                    dataStatus[key] = { count: 0, latest: null, oldest: null, value: null };
+                    return { key, status: { count: 0, latest: null, oldest: null, value: null }, error: e.message };
+                }
+            }));
+            
+            // Process results
+            let ok = 0, partial = 0, failed = 0, totalRecords = 0;
+            for (const result of results) {
+                const ds = DATASETS[result.key];
+                if (result.error) {
+                    log(`  ⚠️ ${ds.table}: ${result.error}`, 'warn');
                     failed++;
                 }
+                dataStatus[result.key] = result.status;
+                totalRecords += result.status.count || 0;
+                
+                const expected = ds.expectedDays || 1095;
+                const coverage = (result.status.count || 0) / expected;
+                if (coverage >= 0.9) ok++; else if (coverage >= 0.3) partial++; else failed++;
             }
+            
             document.getElementById('statOk').textContent = ok;
             document.getElementById('statPartial').textContent = partial;
             document.getElementById('statFailed').textContent = failed;
@@ -320,20 +335,59 @@
                 return error ? 0 : records.length;
             },
 
-            // 5. Staking - HAS source column
+            // 5. Staking - Real data from beaconcha.in chart API
             async staking_data() {
-                const epoch = await fetchJSON('https://beaconcha.in/api/v1/epoch/latest');
-                if (!epoch?.data) return 0;
-                const today = new Date().toISOString().split('T')[0];
-                const validators = epoch.data.validatorscount;
-                const records = [{
-                    date: today, timestamp: Date.now(),
-                    total_staked_eth: validators * 32, total_validators: validators,
-                    source: 'beaconchain'
-                }];
-                const { error } = await supabase.from('historical_staking').upsert(records, { onConflict: 'date' });
+                // beaconcha.in chart API - 한 번에 전체 히스토리
+                const stakedData = await fetchJSON('https://beaconcha.in/api/v1/chart/staked_ether');
+                
+                if (!stakedData?.data) {
+                    log('  ⚠️ No beaconcha.in staked_ether data', 'warn');
+                    return 0;
+                }
+                
+                log(`  📦 Got ${stakedData.data.length} records from beaconcha.in`, 'info');
+                
+                // 3년치만 필터링
+                const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
+                const records = [];
+                
+                for (const point of stakedData.data) {
+                    // point format: [timestamp_ms, staked_eth] or {x: timestamp, y: value}
+                    const timestamp = point.x || point[0];
+                    const stakedEth = point.y || point[1];
+                    
+                    if (timestamp < cutoff) continue;
+                    
+                    const date = new Date(timestamp).toISOString().split('T')[0];
+                    const validators = Math.round(stakedEth / 32);
+                    
+                    records.push({
+                        date,
+                        timestamp,
+                        total_staked_eth: Math.round(stakedEth),
+                        total_validators: validators,
+                        source: 'beaconchain'
+                    });
+                }
+                
+                // Deduplicate by date (keep latest)
+                const seen = new Set();
+                const uniqueRecords = records.filter(r => {
+                    if (seen.has(r.date)) return false;
+                    seen.add(r.date);
+                    return true;
+                });
+                
+                log(`  📦 Filtered to ${uniqueRecords.length} records (3 years)`, 'info');
+                
+                if (uniqueRecords.length === 0) {
+                    log('  ⚠️ No records after filtering', 'warn');
+                    return 0;
+                }
+                
+                const { error } = await supabase.from('historical_staking').upsert(uniqueRecords, { onConflict: 'date' });
                 if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : 1;
+                return error ? 0 : uniqueRecords.length;
             },
 
             // 6. Gas & Burn - NO source
