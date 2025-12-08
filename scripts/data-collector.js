@@ -1,17 +1,11 @@
 /**
- * ETHval Data Collector v2.0
+ * ETHval Data Collector v3.0
  * 
- * 핵심 원칙: Rate limit 문제 해결
- * - 초기 데이터: CoinMetrics GitHub CSV에서 한 번에 다운로드 (전체 히스토리)
- * - 일일 업데이트: 각 API 1회씩만 호출하여 증분 추가
- * 
- * 데이터 소스:
- * - NVT, 가격, 온체인 데이터: CoinMetrics Community CSV
- * - Staked ETH: beaconcha.in 차트 데이터
- * - Staking APR: beaconcha.in ETH.STORE
- * - Daily Burn: Etherscan ethsupply2 누적 차이
- * - TVL, DEX Volume, Fees: DefiLlama (한 번 호출로 전체 반환)
- * - Fear & Greed: Alternative.me
+ * 수정사항:
+ * - Etherscan API v2 대응
+ * - NVT 계산 방식 변경 (Market Cap / Transaction Volume)
+ * - CoinGecko → CryptoCompare로 변경 (ETH/BTC)
+ * - L2 TVL source 컬럼 제거 (스키마 호환)
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -20,6 +14,7 @@ const { createClient } = require('@supabase/supabase-js');
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || '';
+const CRYPTOCOMPARE_API_KEY = process.env.CRYPTOCOMPARE_API_KEY || '';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -32,7 +27,7 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
       const response = await fetch(url, {
         ...options,
         headers: {
-          'User-Agent': 'ETHval-DataCollector/2.0',
+          'User-Agent': 'ETHval-DataCollector/3.0',
           ...options.headers
         }
       });
@@ -50,34 +45,39 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
 
 // ============================================
 // 1. CoinMetrics CSV 데이터 수집
-// 한 번의 다운로드로 전체 히스토리 획득
+// NVT 직접 계산: Market Cap / Transaction Volume
 // ============================================
 async function collectCoinMetricsData() {
   console.log('\n📊 Collecting CoinMetrics data (single CSV download)...');
   
   try {
-    // GitHub raw에서 ETH CSV 다운로드
     const csvUrl = 'https://raw.githubusercontent.com/coinmetrics/data/master/csv/eth.csv';
     const response = await fetchWithRetry(csvUrl);
     const csvText = await response.text();
     
-    // CSV 파싱
     const lines = csvText.trim().split('\n');
     const headers = lines[0].split(',');
     
-    // 필요한 컬럼 인덱스 찾기
+    // 모든 컬럼 출력 (디버깅)
+    console.log('Available columns:', headers.slice(0, 20).join(', '), '...');
+    
+    // 컬럼 인덱스 찾기
     const timeIdx = headers.indexOf('time');
     const priceIdx = headers.indexOf('PriceUSD');
-    const nvtIdx = headers.indexOf('NVTAdj');
-    const nvt90Idx = headers.indexOf('NVTAdj90');
     const capMrktIdx = headers.indexOf('CapMrktCurUSD');
-    const txVolIdx = headers.indexOf('TxTfrValAdjUSD');
-    const activeAddrIdx = headers.indexOf('AdrActCnt');
+    const txVolIdx = headers.indexOf('TxTfrValAdjUSD'); // 온체인 거래량
+    const txVolNtvIdx = headers.indexOf('TxTfrValNtv'); // Native 거래량
     const splyCurIdx = headers.indexOf('SplyCur');
     
-    console.log(`Found ${lines.length - 1} rows in CoinMetrics CSV`);
+    // NVT 관련 컬럼 찾기 (여러 가능한 이름)
+    const nvtIdx = headers.indexOf('NVTAdj');
+    const nvt90Idx = headers.indexOf('NVTAdj90');
+    const nvtAltIdx = headers.indexOf('NVT');
     
-    // 최근 3년 데이터만 필터링
+    console.log(`Columns found - time:${timeIdx}, price:${priceIdx}, mcap:${capMrktIdx}, txVol:${txVolIdx}, nvt:${nvtIdx}, nvt90:${nvt90Idx}`);
+    console.log(`Total rows: ${lines.length - 1}`);
+    
+    // 최근 3년 필터링
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
     
@@ -87,29 +87,39 @@ async function collectCoinMetricsData() {
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].split(',');
       const dateStr = cols[timeIdx];
-      const date = new Date(dateStr);
+      if (!dateStr) continue;
       
+      const date = new Date(dateStr);
       if (date < threeYearsAgo) continue;
       
-      // NVT 데이터
-      const nvtValue = parseFloat(cols[nvtIdx]) || parseFloat(cols[nvt90Idx]);
-      if (nvtValue && nvtValue > 0 && nvtValue < 500) {
+      const marketCap = parseFloat(cols[capMrktIdx]);
+      const txVolume = parseFloat(cols[txVolIdx]) || parseFloat(cols[txVolNtvIdx]);
+      const price = parseFloat(cols[priceIdx]);
+      
+      // NVT 계산: CSV에 있으면 사용, 없으면 직접 계산
+      let nvtValue = parseFloat(cols[nvtIdx]) || parseFloat(cols[nvt90Idx]) || parseFloat(cols[nvtAltIdx]);
+      
+      // NVT가 없으면 직접 계산 (Market Cap / Daily Transaction Volume)
+      if ((!nvtValue || isNaN(nvtValue)) && marketCap > 0 && txVolume > 0) {
+        nvtValue = marketCap / txVolume;
+      }
+      
+      // 유효한 NVT 범위 (10-500)
+      if (nvtValue && nvtValue > 10 && nvtValue < 500) {
         nvtRecords.push({
           date: dateStr,
-          nvt_ratio: nvtValue,
-          market_cap: parseFloat(cols[capMrktIdx]) || null,
-          transaction_volume: parseFloat(cols[txVolIdx]) || null,
-          source: 'coinmetrics'
+          nvt_ratio: Math.round(nvtValue * 100) / 100,
+          market_cap: marketCap || null,
+          transaction_volume: txVolume || null
         });
       }
       
-      // 가격 데이터 (다른 용도로 활용 가능)
-      const price = parseFloat(cols[priceIdx]);
+      // 가격 데이터
       if (price && price > 0) {
         priceRecords.push({
           date: dateStr,
           price_usd: price,
-          market_cap: parseFloat(cols[capMrktIdx]) || null,
+          market_cap: marketCap || null,
           supply: parseFloat(cols[splyCurIdx]) || null
         });
       }
@@ -117,9 +127,8 @@ async function collectCoinMetricsData() {
     
     console.log(`Parsed ${nvtRecords.length} NVT records, ${priceRecords.length} price records`);
     
-    // NVT 데이터 Supabase에 저장
+    // NVT 저장
     if (nvtRecords.length > 0) {
-      // 배치로 upsert (500개씩)
       for (let i = 0; i < nvtRecords.length; i += 500) {
         const batch = nvtRecords.slice(i, i + 500);
         const { error } = await supabase
@@ -141,74 +150,48 @@ async function collectCoinMetricsData() {
 }
 
 // ============================================
-// 2. Staking 데이터 수집 (beaconcha.in)
-// 차트 JSON에서 전체 히스토리 한 번에 획득
+// 2. Staking 데이터 (beaconcha.in)
 // ============================================
 async function collectStakingData() {
   console.log('\n🥩 Collecting Staking data (beaconcha.in)...');
   
   try {
-    // beaconcha.in 차트 페이지에서 staked_ether 데이터 가져오기
-    // 차트가 사용하는 JSON 엔드포인트
-    const chartUrl = 'https://beaconcha.in/api/v1/chart/staked_ether';
-    
     let stakingRecords = [];
     
+    // 현재 epoch에서 데이터 가져오기
     try {
-      const response = await fetchWithRetry(chartUrl);
+      const epochUrl = 'https://beaconcha.in/api/v1/epoch/latest';
+      const response = await fetchWithRetry(epochUrl);
       const data = await response.json();
       
-      if (data.status === 'OK' && Array.isArray(data.data)) {
-        stakingRecords = data.data.map(item => ({
-          date: new Date(item.ts * 1000).toISOString().split('T')[0],
-          total_staked_eth: item.v, // staked ETH value
-          validator_count: null, // 별도 API 필요
-          staking_apr: null, // ETH.STORE에서 가져옴
-          source: 'beaconchain'
-        })).filter(r => r.total_staked_eth > 0);
+      if (data.status === 'OK' && data.data) {
+        const validatorCount = data.data.validatorscount;
+        const avgBalance = data.data.averagevalidatorbalance / 1e9;
+        const totalStaked = validatorCount * avgBalance;
+        
+        stakingRecords.push({
+          date: new Date().toISOString().split('T')[0],
+          total_staked_eth: totalStaked,
+          validator_count: validatorCount,
+          staking_apr: null
+        });
+        
+        console.log(`Current staking: ${(totalStaked / 1e6).toFixed(2)}M ETH, ${validatorCount.toLocaleString()} validators`);
       }
     } catch (e) {
-      console.log('Chart API failed, trying alternative method...');
+      console.error('Epoch API failed:', e.message);
     }
     
-    // 대안: 현재 epoch에서 validator 수 × 32 ETH 계산
-    if (stakingRecords.length === 0) {
-      try {
-        const epochUrl = 'https://beaconcha.in/api/v1/epoch/latest';
-        const response = await fetchWithRetry(epochUrl);
-        const data = await response.json();
-        
-        if (data.status === 'OK' && data.data) {
-          const validatorCount = data.data.validatorscount;
-          const avgBalance = data.data.averagevalidatorbalance / 1e9; // Gwei to ETH
-          const totalStaked = validatorCount * avgBalance;
-          
-          stakingRecords.push({
-            date: new Date().toISOString().split('T')[0],
-            total_staked_eth: totalStaked,
-            validator_count: validatorCount,
-            staking_apr: null,
-            source: 'beaconchain'
-          });
-          
-          console.log(`Current staking: ${(totalStaked / 1e6).toFixed(2)}M ETH, ${validatorCount.toLocaleString()} validators`);
-        }
-      } catch (e) {
-        console.error('Epoch API also failed:', e.message);
-      }
-    }
-    
-    // ETH.STORE에서 APR 가져오기
+    // ETH.STORE APR
     try {
       const ethstoreUrl = 'https://beaconcha.in/api/v1/ethstore/latest';
       const response = await fetchWithRetry(ethstoreUrl);
       const data = await response.json();
       
       if (data.status === 'OK' && data.data) {
-        const apr = data.data.apr * 100; // Convert to percentage
+        const apr = data.data.apr * 100;
         console.log(`Current staking APR: ${apr.toFixed(2)}%`);
         
-        // 최신 레코드에 APR 추가
         if (stakingRecords.length > 0) {
           stakingRecords[stakingRecords.length - 1].staking_apr = apr;
         }
@@ -217,7 +200,7 @@ async function collectStakingData() {
       console.error('ETH.STORE API failed:', e.message);
     }
     
-    // Supabase에 저장
+    // 저장
     if (stakingRecords.length > 0) {
       const { error } = await supabase
         .from('historical_staking')
@@ -238,33 +221,46 @@ async function collectStakingData() {
 }
 
 // ============================================
-// 3. Daily Burn 데이터 (Etherscan)
-// ethsupply2에서 누적 burn 차이 계산
+// 3. Daily Burn (Etherscan API v2)
 // ============================================
 async function collectBurnData() {
-  console.log('\n🔥 Collecting Burn data (Etherscan)...');
+  console.log('\n🔥 Collecting Burn data (Etherscan v2)...');
   
   try {
-    const apiKey = ETHERSCAN_API_KEY ? `&apikey=${ETHERSCAN_API_KEY}` : '';
-    const url = `https://api.etherscan.io/api?module=stats&action=ethsupply2${apiKey}`;
+    if (!ETHERSCAN_API_KEY) {
+      console.log('⚠️ No Etherscan API key, skipping burn data');
+      return [];
+    }
+    
+    // Etherscan API v2 형식
+    const url = `https://api.etherscan.io/v2/api?chainid=1&module=stats&action=ethsupply2&apikey=${ETHERSCAN_API_KEY}`;
     
     const response = await fetchWithRetry(url);
     const data = await response.json();
     
     if (data.status !== '1' || !data.result) {
-      throw new Error('Etherscan API returned invalid response');
+      // v1 API 시도
+      console.log('Trying Etherscan v1 API...');
+      const urlV1 = `https://api.etherscan.io/api?module=stats&action=ethsupply2&apikey=${ETHERSCAN_API_KEY}`;
+      const responseV1 = await fetchWithRetry(urlV1);
+      const dataV1 = await responseV1.json();
+      
+      if (dataV1.status !== '1' || !dataV1.result) {
+        throw new Error('Both Etherscan v1 and v2 APIs failed');
+      }
+      
+      Object.assign(data, dataV1);
     }
     
     const currentBurntFees = parseFloat(data.result.BurntFees) / 1e18;
     const ethSupply = parseFloat(data.result.EthSupply) / 1e18;
-    const eth2Staking = parseFloat(data.result.Eth2Staking) / 1e18;
     
     console.log(`Total burnt: ${currentBurntFees.toLocaleString()} ETH`);
     console.log(`ETH Supply: ${(ethSupply / 1e6).toFixed(2)}M`);
     
     const today = new Date().toISOString().split('T')[0];
     
-    // 어제 데이터 조회하여 일일 burn 계산
+    // 어제 데이터로 일일 burn 계산
     const { data: yesterdayData } = await supabase
       .from('historical_gas_burn')
       .select('cumulative_burn')
@@ -273,18 +269,17 @@ async function collectBurnData() {
       .limit(1);
     
     let dailyBurn = null;
-    if (yesterdayData && yesterdayData.length > 0) {
+    if (yesterdayData && yesterdayData.length > 0 && yesterdayData[0].cumulative_burn) {
       dailyBurn = currentBurntFees - yesterdayData[0].cumulative_burn;
-      if (dailyBurn < 0) dailyBurn = null; // 데이터 오류 방지
+      if (dailyBurn < 0 || dailyBurn > 50000) dailyBurn = null; // 비정상 값 필터
     }
     
     const burnRecord = {
       date: today,
       eth_burnt: dailyBurn,
       cumulative_burn: currentBurntFees,
-      avg_gas_price: null, // 별도 API 필요
-      total_transactions: null,
-      source: 'etherscan'
+      avg_gas_price: null,
+      total_transactions: null
     };
     
     if (dailyBurn) {
@@ -309,8 +304,7 @@ async function collectBurnData() {
 }
 
 // ============================================
-// 4. TVL 데이터 (DefiLlama)
-// 한 번 호출로 전체 히스토리 반환
+// 4. TVL (DefiLlama)
 // ============================================
 async function collectTVLData() {
   console.log('\n📈 Collecting TVL data (DefiLlama)...');
@@ -324,20 +318,17 @@ async function collectTVLData() {
       throw new Error('Invalid response format');
     }
     
-    // 최근 3년만 필터링
     const threeYearsAgo = Date.now() / 1000 - (3 * 365 * 24 * 60 * 60);
     
     const tvlRecords = data
       .filter(item => item.date > threeYearsAgo)
       .map(item => ({
         date: new Date(item.date * 1000).toISOString().split('T')[0],
-        total_tvl: item.tvl,
-        source: 'defillama'
+        total_tvl: item.tvl
       }));
     
     console.log(`Found ${tvlRecords.length} TVL records`);
     
-    // 배치 upsert
     for (let i = 0; i < tvlRecords.length; i += 500) {
       const batch = tvlRecords.slice(i, i + 500);
       const { error } = await supabase
@@ -358,7 +349,7 @@ async function collectTVLData() {
 }
 
 // ============================================
-// 5. L2 TVL 데이터 (DefiLlama)
+// 5. L2 TVL (DefiLlama) - source 컬럼 제거
 // ============================================
 async function collectL2TVLData() {
   console.log('\n🔗 Collecting L2 TVL data (DefiLlama)...');
@@ -374,7 +365,6 @@ async function collectL2TVLData() {
       
       if (!Array.isArray(data)) continue;
       
-      // 최근 3년만
       const threeYearsAgo = Date.now() / 1000 - (3 * 365 * 24 * 60 * 60);
       
       const records = data
@@ -388,13 +378,13 @@ async function collectL2TVLData() {
       allRecords.push(...records);
       console.log(`  ${chain}: ${records.length} records`);
       
-      await sleep(200); // Rate limit 방지
+      await sleep(200);
     } catch (error) {
       console.error(`  ${chain} failed:`, error.message);
     }
   }
   
-  // 날짜별로 그룹핑하여 총 L2 TVL 계산
+  // 날짜별 그룹핑
   const dateMap = new Map();
   for (const record of allRecords) {
     if (!dateMap.has(record.date)) {
@@ -405,17 +395,16 @@ async function collectL2TVLData() {
     entry.total += record.tvl;
   }
   
+  // source 컬럼 없이 저장
   const l2Records = Array.from(dateMap.values()).map(entry => ({
     date: entry.date,
     total_l2_tvl: entry.total,
     arbitrum_tvl: entry.chains['arbitrum'] || 0,
     optimism_tvl: entry.chains['optimism'] || 0,
     base_tvl: entry.chains['base'] || 0,
-    zksync_tvl: entry.chains['zksync_era'] || 0,
-    source: 'defillama'
+    zksync_tvl: entry.chains['zksync_era'] || 0
   }));
   
-  // 배치 upsert
   for (let i = 0; i < l2Records.length; i += 500) {
     const batch = l2Records.slice(i, i + 500);
     const { error } = await supabase
@@ -432,7 +421,7 @@ async function collectL2TVLData() {
 }
 
 // ============================================
-// 6. Fees 데이터 (DefiLlama)
+// 6. Fees (DefiLlama)
 // ============================================
 async function collectFeesData() {
   console.log('\n💰 Collecting Fees data (DefiLlama)...');
@@ -448,8 +437,7 @@ async function collectFeesData() {
     
     const feesRecords = data.totalDataChart.map(([timestamp, fees]) => ({
       date: new Date(timestamp * 1000).toISOString().split('T')[0],
-      daily_fees_usd: fees,
-      source: 'defillama'
+      daily_fees_usd: fees
     }));
     
     console.log(`Found ${feesRecords.length} fees records`);
@@ -474,7 +462,7 @@ async function collectFeesData() {
 }
 
 // ============================================
-// 7. DEX Volume 데이터 (DefiLlama)
+// 7. DEX Volume (DefiLlama)
 // ============================================
 async function collectDEXVolumeData() {
   console.log('\n📊 Collecting DEX Volume data (DefiLlama)...');
@@ -490,8 +478,7 @@ async function collectDEXVolumeData() {
     
     const volumeRecords = data.totalDataChart.map(([timestamp, volume]) => ({
       date: new Date(timestamp * 1000).toISOString().split('T')[0],
-      daily_volume_usd: volume,
-      source: 'defillama'
+      daily_volume_usd: volume
     }));
     
     console.log(`Found ${volumeRecords.length} DEX volume records`);
@@ -516,13 +503,12 @@ async function collectDEXVolumeData() {
 }
 
 // ============================================
-// 8. Fear & Greed Index (Alternative.me)
+// 8. Fear & Greed (Alternative.me)
 // ============================================
 async function collectFearGreedData() {
   console.log('\n😱 Collecting Fear & Greed data (Alternative.me)...');
   
   try {
-    // 최대 1095일 (3년) 데이터 요청
     const url = 'https://api.alternative.me/fng/?limit=1095&format=json';
     const response = await fetchWithRetry(url);
     const data = await response.json();
@@ -534,8 +520,7 @@ async function collectFearGreedData() {
     const fgRecords = data.data.map(item => ({
       date: new Date(parseInt(item.timestamp) * 1000).toISOString().split('T')[0],
       fear_greed_index: parseInt(item.value),
-      classification: item.value_classification,
-      source: 'alternative_me'
+      classification: item.value_classification
     }));
     
     console.log(`Found ${fgRecords.length} Fear & Greed records`);
@@ -560,7 +545,7 @@ async function collectFearGreedData() {
 }
 
 // ============================================
-// 9. Stablecoin 데이터 (DefiLlama)
+// 9. Stablecoins (DefiLlama)
 // ============================================
 async function collectStablecoinData() {
   console.log('\n💵 Collecting Stablecoin data (DefiLlama)...');
@@ -574,12 +559,20 @@ async function collectStablecoinData() {
       throw new Error('Invalid response format');
     }
     
-    const stablecoinRecords = data.map(item => ({
-      date: new Date(item.date * 1000).toISOString().split('T')[0],
-      total_stablecoin_mcap: Object.values(item.totalCirculating || {})
-        .reduce((sum, val) => sum + (val?.peggedUSD || 0), 0),
-      source: 'defillama'
-    }));
+    const stablecoinRecords = data.map(item => {
+      let totalMcap = 0;
+      if (item.totalCirculating) {
+        for (const val of Object.values(item.totalCirculating)) {
+          if (val && val.peggedUSD) {
+            totalMcap += val.peggedUSD;
+          }
+        }
+      }
+      return {
+        date: new Date(item.date * 1000).toISOString().split('T')[0],
+        total_stablecoin_mcap: totalMcap
+      };
+    });
     
     console.log(`Found ${stablecoinRecords.length} stablecoin records`);
     
@@ -603,25 +596,26 @@ async function collectStablecoinData() {
 }
 
 // ============================================
-// 10. ETH/BTC Ratio (CoinGecko)
+// 10. ETH/BTC Ratio (CryptoCompare) - CoinGecko 대체
 // ============================================
 async function collectETHBTCRatio() {
-  console.log('\n📉 Collecting ETH/BTC Ratio (CoinGecko)...');
+  console.log('\n📉 Collecting ETH/BTC Ratio (CryptoCompare)...');
   
   try {
-    // CoinGecko market chart - 최대 365일
-    const url = 'https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=btc&days=max&interval=daily';
+    // CryptoCompare daily historical data (최대 2000일)
+    const apiKey = CRYPTOCOMPARE_API_KEY ? `&api_key=${CRYPTOCOMPARE_API_KEY}` : '';
+    const url = `https://min-api.cryptocompare.com/data/v2/histoday?fsym=ETH&tsym=BTC&limit=1095${apiKey}`;
+    
     const response = await fetchWithRetry(url);
     const data = await response.json();
     
-    if (!data.prices || !Array.isArray(data.prices)) {
-      throw new Error('Invalid response format');
+    if (data.Response !== 'Success' || !data.Data || !data.Data.Data) {
+      throw new Error('Invalid response from CryptoCompare');
     }
     
-    const ratioRecords = data.prices.map(([timestamp, price]) => ({
-      date: new Date(timestamp).toISOString().split('T')[0],
-      eth_btc_ratio: price,
-      source: 'coingecko'
+    const ratioRecords = data.Data.Data.map(item => ({
+      date: new Date(item.time * 1000).toISOString().split('T')[0],
+      eth_btc_ratio: item.close
     }));
     
     console.log(`Found ${ratioRecords.length} ETH/BTC ratio records`);
@@ -649,7 +643,7 @@ async function collectETHBTCRatio() {
 // Main execution
 // ============================================
 async function main() {
-  console.log('🚀 ETHval Data Collector v2.0 Starting...');
+  console.log('🚀 ETHval Data Collector v3.0 Starting...');
   console.log(`📅 ${new Date().toISOString()}`);
   console.log('='.repeat(50));
   
@@ -667,43 +661,43 @@ async function main() {
   };
   
   try {
-    // 1. CoinMetrics (NVT, 가격 등) - 전체 히스토리 한 번에
+    // 1. CoinMetrics (NVT 직접 계산)
     results.coinmetrics = await collectCoinMetricsData();
     await sleep(1000);
     
-    // 2. Staking 데이터
+    // 2. Staking
     results.staking = await collectStakingData();
     await sleep(1000);
     
-    // 3. Burn 데이터
+    // 3. Burn (Etherscan v2)
     results.burn = await collectBurnData();
     await sleep(1000);
     
-    // 4. TVL 데이터
+    // 4. TVL
     results.tvl = await collectTVLData();
     await sleep(1000);
     
-    // 5. L2 TVL 데이터
+    // 5. L2 TVL
     results.l2tvl = await collectL2TVLData();
     await sleep(1000);
     
-    // 6. Fees 데이터
+    // 6. Fees
     results.fees = await collectFeesData();
     await sleep(1000);
     
-    // 7. DEX Volume 데이터
+    // 7. DEX Volume
     results.dexVolume = await collectDEXVolumeData();
     await sleep(1000);
     
-    // 8. Fear & Greed Index
+    // 8. Fear & Greed
     results.fearGreed = await collectFearGreedData();
     await sleep(1000);
     
-    // 9. Stablecoin 데이터
+    // 9. Stablecoins
     results.stablecoins = await collectStablecoinData();
     await sleep(1000);
     
-    // 10. ETH/BTC Ratio
+    // 10. ETH/BTC (CryptoCompare)
     results.ethBtc = await collectETHBTCRatio();
     
   } catch (error) {
