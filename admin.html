@@ -335,42 +335,65 @@
                 return error ? 0 : records.length;
             },
 
-            // 5. Staking - Real data from beaconcha.in chart API
+            // 5. Staking - DefiLlama yields API (Lido stETH pool)
             async staking_data() {
-                // beaconcha.in chart API - 한 번에 전체 히스토리
-                const stakedData = await fetchJSON('https://beaconcha.in/api/v1/chart/staked_ether');
+                // DefiLlama yields chart - Lido stETH pool
+                // Pool ID: 747c1d2a-c668-4682-b9f9-296708a3dd90 (Lido stETH)
+                const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
                 
-                if (!stakedData?.data) {
-                    log('  ⚠️ No beaconcha.in staked_ether data', 'warn');
+                if (!yieldData?.data || yieldData.data.length === 0) {
+                    log('  ⚠️ No DefiLlama yield data', 'warn');
                     return 0;
                 }
                 
-                log(`  📦 Got ${stakedData.data.length} records from beaconcha.in`, 'info');
+                log(`  📦 Got ${yieldData.data.length} yield records from DefiLlama`, 'info');
                 
-                // 3년치만 필터링
+                // Get ETH prices for TVL calculation
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
+                
                 const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
                 const records = [];
                 
-                for (const point of stakedData.data) {
-                    // point format: [timestamp_ms, staked_eth] or {x: timestamp, y: value}
-                    const timestamp = point.x || point[0];
-                    const stakedEth = point.y || point[1];
-                    
+                // Lido market share by year
+                const getMarketShare = (date) => {
+                    const year = new Date(date).getFullYear();
+                    if (year <= 2022) return 0.30;
+                    if (year === 2023) return 0.32;
+                    return 0.28;
+                };
+                
+                for (const point of yieldData.data) {
+                    const timestamp = new Date(point.timestamp).getTime();
                     if (timestamp < cutoff) continue;
                     
-                    const date = new Date(timestamp).toISOString().split('T')[0];
-                    const validators = Math.round(stakedEth / 32);
+                    const date = point.timestamp.split('T')[0];
+                    const lidoTvlUsd = point.tvlUsd || 0;
+                    const apr = point.apy || 0;
+                    const price = priceMap.get(date) || 3500;
+                    
+                    if (lidoTvlUsd <= 0) continue;
+                    
+                    // Lido staked ETH
+                    const lidoStakedEth = lidoTvlUsd / price;
+                    
+                    // Total network = Lido / market share
+                    const marketShare = getMarketShare(date);
+                    const totalStakedEth = lidoStakedEth / marketShare;
+                    const totalValidators = Math.round(totalStakedEth / 32);
                     
                     records.push({
                         date,
                         timestamp,
-                        total_staked_eth: Math.round(stakedEth),
-                        total_validators: validators,
-                        source: 'beaconchain'
+                        total_staked_eth: Math.round(totalStakedEth),
+                        staked_eth: Math.round(lidoStakedEth),
+                        total_validators: totalValidators,
+                        apr: parseFloat(apr.toFixed(2)),
+                        source: 'defillama'
                     });
                 }
                 
-                // Deduplicate by date (keep latest)
+                // Deduplicate by date
                 const seen = new Set();
                 const uniqueRecords = records.filter(r => {
                     if (seen.has(r.date)) return false;
@@ -378,13 +401,7 @@
                     return true;
                 });
                 
-                log(`  📦 Filtered to ${uniqueRecords.length} records (3 years)`, 'info');
-                
-                if (uniqueRecords.length === 0) {
-                    log('  ⚠️ No records after filtering', 'warn');
-                    return 0;
-                }
-                
+                log(`  📦 Filtered to ${uniqueRecords.length} records`, 'info');
                 const { error } = await supabase.from('historical_staking').upsert(uniqueRecords, { onConflict: 'date' });
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : uniqueRecords.length;
