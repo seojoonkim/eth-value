@@ -445,13 +445,19 @@
                 const records = [];
                 for (const f of fees) {
                     const price = priceMap.get(f.date);
+                    const txCount = txMap.get(f.date) || 1200000;
                     if (!price || !f.fees) continue;
-                    const burn = (f.fees * 0.80) / price;
+                    const burn = (f.fees * 0.80) / price; // 80% of fees are burned
+                    // Gas price estimation: fees_eth / (tx_count * avg_gas) * 1e9
+                    const feesEth = f.fees / price;
+                    const avgGasPerTx = 50000; // average gas per transaction
+                    const gasPrice = (feesEth / (txCount * avgGasPerTx)) * 1e9;
                     if (burn >= 50 && burn <= 50000) {
                         records.push({ 
                             date: f.date, 
                             eth_burnt: parseFloat(burn.toFixed(2)),
-                            transaction_count: txMap.get(f.date) || 0
+                            transaction_count: txCount,
+                            avg_gas_price_gwei: parseFloat(Math.min(500, Math.max(5, gasPrice)).toFixed(2))
                         });
                     }
                 }
