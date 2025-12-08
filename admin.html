@@ -77,7 +77,7 @@
         </div>
         <div class="table-container">
             <div class="section-title"><span>📊 29 Datasets</span><span class="mono" id="lastUpdate">-</span></div>
-            <table><thead><tr><th>#</th><th>Dataset</th><th>Table</th><th>Records</th><th>Latest</th><th>Value</th><th>Coverage</th><th>Status</th><th>Actions</th></tr></thead><tbody id="dataTable"></tbody></table>
+            <table><thead><tr><th>#</th><th>Dataset</th><th>Table</th><th>Records</th><th>Date Range</th><th>Value</th><th>Coverage</th><th>Status</th><th>Actions</th></tr></thead><tbody id="dataTable"></tbody></table>
         </div>
         <div class="log-container">
             <div class="section-title">📝 Activity Log</div>
@@ -102,37 +102,37 @@
             }
         }
 
-        // 29 DATASETS - Schema Aligned
+        // 29 DATASETS - Schema Aligned with expected days
         const DATASETS = {
-            eth_price: { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price' },
-            ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl' },
-            l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true },
-            protocol_fees: { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', valueField: 'fees', format: 'fees' },
-            staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth' },
-            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth' },
-            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number' },
-            eth_supply: { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', format: 'eth' },
-            fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index' },
-            dex_volume: { name: 'DEX Volume', icon: '💱', table: 'historical_dex_volume', valueField: 'volume', format: 'tvl' },
-            stablecoins: { name: 'Stablecoins (All)', icon: '💵', table: 'historical_stablecoins', valueField: 'total_mcap', format: 'tvl' },
-            stablecoins_eth: { name: 'Stablecoins (ETH)', icon: '🔷', table: 'historical_stablecoins_eth', valueField: 'total_mcap', format: 'tvl' },
-            eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio' },
-            funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8' },
-            exchange_reserve: { name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', valueField: 'reserve_eth', format: 'eth' },
-            eth_dominance: { name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', valueField: 'eth_dominance', format: 'percent' },
-            blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number' },
-            lending_tvl: { name: 'Lending TVL', icon: '🏦', table: 'historical_lending_tvl', valueField: 'total_tvl', format: 'tvl' },
-            volatility: { name: 'Volatility', icon: '📉', table: 'historical_volatility', valueField: 'volatility_30d', format: 'percent' },
-            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number' },
-            transactions: { name: 'Transactions', icon: '📝', table: 'historical_transactions', valueField: 'tx_count', format: 'number' },
-            l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true },
-            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true },
-            protocol_tvl: { name: 'Protocol TVL', icon: '📊', table: 'historical_protocol_tvl', valueField: 'tvl', format: 'tvl', aggregate: true },
-            staking_apr: { name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', valueField: 'lido_apr', format: 'percent' },
-            eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth' },
-            global_mcap: { name: 'Global Market Cap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl' },
-            dex_by_protocol: { name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', valueField: 'volume', format: 'tvl', aggregate: true },
-            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number' }
+            eth_price: { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price', expectedDays: 1095 },
+            ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl', expectedDays: 1095 },
+            l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 6000 },
+            protocol_fees: { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', valueField: 'fees', format: 'fees', expectedDays: 1095 },
+            staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth', expectedDays: 1095 },
+            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095 },
+            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095 },
+            eth_supply: { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', format: 'eth', expectedDays: 1095 },
+            fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095 },
+            dex_volume: { name: 'DEX Volume', icon: '💱', table: 'historical_dex_volume', valueField: 'volume', format: 'tvl', expectedDays: 1095 },
+            stablecoins: { name: 'Stablecoins (All)', icon: '💵', table: 'historical_stablecoins', valueField: 'total_mcap', format: 'tvl', expectedDays: 1095 },
+            stablecoins_eth: { name: 'Stablecoins (ETH)', icon: '🔷', table: 'historical_stablecoins_eth', valueField: 'total_mcap', format: 'tvl', expectedDays: 1095 },
+            eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio', expectedDays: 1095 },
+            funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8', expectedDays: 1095 },
+            exchange_reserve: { name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', valueField: 'reserve_eth', format: 'eth', expectedDays: 1095 },
+            eth_dominance: { name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', valueField: 'eth_dominance', format: 'percent', expectedDays: 1 },
+            blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, note: 'Since Dencun 2024-03-13' },
+            lending_tvl: { name: 'Lending TVL', icon: '🏦', table: 'historical_lending_tvl', valueField: 'total_tvl', format: 'tvl', expectedDays: 1095 },
+            volatility: { name: 'Volatility', icon: '📉', table: 'historical_volatility', valueField: 'volatility_30d', format: 'percent', expectedDays: 1065 },
+            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095 },
+            transactions: { name: 'Transactions', icon: '📝', table: 'historical_transactions', valueField: 'tx_count', format: 'number', expectedDays: 1095 },
+            l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true, expectedDays: 3000 },
+            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true, expectedDays: 3000 },
+            protocol_tvl: { name: 'Protocol TVL', icon: '📊', table: 'historical_protocol_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 5000 },
+            staking_apr: { name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', valueField: 'lido_apr', format: 'percent', expectedDays: 1095 },
+            eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth', expectedDays: 1095 },
+            global_mcap: { name: 'Global Market Cap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl', expectedDays: 1 },
+            dex_by_protocol: { name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', valueField: 'volume', format: 'tvl', aggregate: true, expectedDays: 3000 },
+            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number', expectedDays: 1 }
         };
 
         function formatValue(val, format) {
@@ -172,13 +172,32 @@
             let ok = 0, partial = 0, failed = 0, totalRecords = 0;
             for (const [key, ds] of Object.entries(DATASETS)) {
                 try {
-                    const { count } = await supabase.from(ds.table).select('*', { count: 'exact', head: true });
-                    const { data } = await supabase.from(ds.table).select('*').order('date', { ascending: false }).limit(1);
-                    dataStatus[key] = { count: count || 0, latest: data?.[0]?.date, value: data?.[0]?.[ds.valueField] };
+                    const { count, error: countErr } = await supabase.from(ds.table).select('*', { count: 'exact', head: true });
+                    if (countErr) {
+                        log(`  ⚠️ ${ds.table}: ${countErr.message}`, 'warn');
+                        dataStatus[key] = { count: 0, latest: null, oldest: null, value: null };
+                        failed++;
+                        continue;
+                    }
+                    // Get latest
+                    const { data: latestData } = await supabase.from(ds.table).select('*').order('date', { ascending: false }).limit(1);
+                    // Get oldest
+                    const { data: oldestData } = await supabase.from(ds.table).select('date').order('date', { ascending: true }).limit(1);
+                    
+                    dataStatus[key] = { 
+                        count: count || 0, 
+                        latest: latestData?.[0]?.date, 
+                        oldest: oldestData?.[0]?.date,
+                        value: latestData?.[0]?.[ds.valueField] 
+                    };
                     totalRecords += count || 0;
-                    const coverage = (count || 0) / 1095;
+                    const coverage = (count || 0) / (ds.expectedDays || 1095);
                     if (coverage >= 0.9) ok++; else if (coverage >= 0.3) partial++; else failed++;
-                } catch (e) { dataStatus[key] = { count: 0, latest: null, value: null }; failed++; }
+                } catch (e) {
+                    log(`  ❌ ${ds.table}: ${e.message}`, 'error');
+                    dataStatus[key] = { count: 0, latest: null, oldest: null, value: null };
+                    failed++;
+                }
             }
             document.getElementById('statOk').textContent = ok;
             document.getElementById('statPartial').textContent = partial;
@@ -195,12 +214,19 @@
             let idx = 1;
             for (const [key, ds] of Object.entries(DATASETS)) {
                 const s = dataStatus[key] || { count: 0 };
-                const coverage = Math.min(100, Math.round((s.count / 1095) * 100));
+                const expected = ds.expectedDays || 1095;
+                const coverage = Math.min(100, Math.round((s.count / expected) * 100));
                 let statusClass = 'ok', statusText = 'OK';
                 if (coverage < 30) { statusClass = 'fail'; statusText = 'Missing'; }
                 else if (coverage < 90) { statusClass = 'warn'; statusText = 'Partial'; }
+                
+                // Format date range
+                const dateRange = s.oldest && s.latest 
+                    ? `${s.oldest} → ${s.latest}` 
+                    : (s.latest || '-');
+                
                 const row = document.createElement('tr');
-                row.innerHTML = `<td class="mono">${idx}</td><td>${ds.icon} ${ds.name}</td><td><span class="table-name">${ds.table}</span></td><td class="mono">${s.count?.toLocaleString() || 0}</td><td class="mono">${s.latest || '-'}</td><td class="mono">${formatValue(s.value, ds.format)}</td><td><div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div><span class="mono" style="font-size:10px">${coverage}%</span></td><td><span class="status ${statusClass}">${statusText}</span></td><td><button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button></td>`;
+                row.innerHTML = `<td class="mono">${idx}</td><td>${ds.icon} ${ds.name}</td><td><span class="table-name">${ds.table}</span></td><td class="mono">${s.count?.toLocaleString() || 0}</td><td class="mono" style="font-size:10px">${dateRange}</td><td class="mono">${formatValue(s.value, ds.format)}</td><td><div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div><span class="mono" style="font-size:10px">${coverage}%</span></td><td><span class="status ${statusClass}">${statusText}</span></td><td><button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button></td>`;
                 tbody.appendChild(row);
                 idx++;
             }
