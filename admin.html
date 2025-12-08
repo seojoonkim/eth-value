@@ -210,29 +210,48 @@
         // COLLECTORS - Schema Aligned
         // ══════════════════════════════════════════════════════════════
         const collectors = {
-            // 1. ETH Price - NO source column
+            // 1. ETH Price - NO source column, pagination for 3 years
             async eth_price() {
-                const data = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=1100');
-                if (!data) return 0;
-                const records = data.map(k => ({
-                    date: new Date(k[0]).toISOString().split('T')[0],
-                    timestamp: k[0],
-                    open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]),
-                    close: parseFloat(k[4]), volume: parseFloat(k[5])
-                }));
-                const { error } = await supabase.from('historical_eth_price').upsert(records, { onConflict: 'date' });
+                const allRecords = [];
+                const now = Date.now();
+                const threeYearsAgo = now - (1095 * 24 * 60 * 60 * 1000);
+                
+                // Fetch in chunks (Binance limit is 1000)
+                let startTime = threeYearsAgo;
+                while (startTime < now) {
+                    const url = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&startTime=${startTime}&limit=1000`;
+                    const data = await fetchJSON(url);
+                    if (!data || data.length === 0) break;
+                    
+                    const records = data.map(k => ({
+                        date: new Date(k[0]).toISOString().split('T')[0],
+                        timestamp: k[0],
+                        open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]),
+                        close: parseFloat(k[4]), volume: parseFloat(k[5])
+                    }));
+                    allRecords.push(...records);
+                    
+                    // Move to next chunk
+                    startTime = data[data.length - 1][0] + 86400000;
+                    if (data.length < 1000) break;
+                    await new Promise(r => setTimeout(r, 100));
+                }
+                
+                log(`  📦 Got ${allRecords.length} total candles`, 'info');
+                if (allRecords.length === 0) return 0;
+                
+                const { error } = await supabase.from('historical_eth_price').upsert(allRecords, { onConflict: 'date' });
                 if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                return error ? 0 : allRecords.length;
             },
 
-            // 2. Ethereum TVL - NO source column
+            // 2. Ethereum TVL - NO source, NO timestamp
             async ethereum_tvl() {
                 const data = await fetchJSON('https://api.llama.fi/v2/historicalChainTvl/Ethereum');
                 if (!data) return 0;
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
                 const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
                     date: new Date(d.date * 1000).toISOString().split('T')[0],
-                    timestamp: d.date * 1000,
                     tvl: parseFloat(d.tvl.toFixed(2))
                 }));
                 const { error } = await supabase.from('historical_ethereum_tvl').upsert(records, { onConflict: 'date' });
@@ -240,7 +259,7 @@
                 return error ? 0 : records.length;
             },
 
-            // 3. L2 TVL - NO source column
+            // 3. L2 TVL - NO source, NO timestamp
             async l2_tvl() {
                 const chains = ['Arbitrum', 'Optimism', 'Base', 'zkSync Era', 'Linea', 'Scroll', 'Blast'];
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
@@ -250,7 +269,7 @@
                     if (!data) continue;
                     const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
                         date: new Date(d.date * 1000).toISOString().split('T')[0],
-                        timestamp: d.date * 1000, chain,
+                        chain,
                         tvl: parseFloat(d.tvl.toFixed(2))
                     }));
                     if (records.length > 0) {
@@ -262,13 +281,12 @@
                 return total;
             },
 
-            // 4. Protocol Fees - NO source column
+            // 4. Protocol Fees - NO source, NO timestamp
             async protocol_fees() {
                 const data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
                 if (!data?.totalDataChart) return 0;
                 const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
                     date: new Date(d[0] * 1000).toISOString().split('T')[0],
-                    timestamp: d[0] * 1000,
                     fees: parseFloat(d[1].toFixed(2))
                 }));
                 const { error } = await supabase.from('historical_protocol_fees').upsert(records, { onConflict: 'date' });
@@ -292,7 +310,7 @@
                 return error ? 0 : 1;
             },
 
-            // 6. Gas & Burn - HAS source, calculated
+            // 6. Gas & Burn - NO source
             async gas_burn() {
                 const { data: fees } = await supabase.from('historical_protocol_fees').select('date, fees').order('date');
                 const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
@@ -304,7 +322,7 @@
                     if (!price || !f.fees) continue;
                     const burn = (f.fees * 0.80) / price;
                     if (burn >= 50 && burn <= 50000) {
-                        records.push({ date: f.date, timestamp: Date.now(), eth_burnt: parseFloat(burn.toFixed(2)), source: 'calculated' });
+                        records.push({ date: f.date, eth_burnt: parseFloat(burn.toFixed(2)) });
                     }
                 }
                 const { error } = await supabase.from('historical_gas_burn').upsert(records, { onConflict: 'date' });
@@ -406,35 +424,73 @@
                 return error ? 0 : records.length;
             },
 
-            // 13. ETH/BTC - HAS source
+            // 13. ETH/BTC - HAS source, pagination for 3 years
             async eth_btc() {
-                const data = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&limit=1100');
-                if (!data) return 0;
-                const records = data.map(k => ({
-                    date: new Date(k[0]).toISOString().split('T')[0],
-                    timestamp: k[0],
-                    ratio: parseFloat(parseFloat(k[4]).toFixed(6)),
-                    source: 'binance'
-                }));
-                const { error } = await supabase.from('historical_eth_btc').upsert(records, { onConflict: 'date' });
+                const allRecords = [];
+                const now = Date.now();
+                const threeYearsAgo = now - (1095 * 24 * 60 * 60 * 1000);
+                
+                let startTime = threeYearsAgo;
+                while (startTime < now) {
+                    const url = `https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&startTime=${startTime}&limit=1000`;
+                    const data = await fetchJSON(url);
+                    if (!data || data.length === 0) break;
+                    
+                    const records = data.map(k => ({
+                        date: new Date(k[0]).toISOString().split('T')[0],
+                        timestamp: k[0],
+                        ratio: parseFloat(parseFloat(k[4]).toFixed(6)),
+                        source: 'binance'
+                    }));
+                    allRecords.push(...records);
+                    
+                    startTime = data[data.length - 1][0] + 86400000;
+                    if (data.length < 1000) break;
+                    await new Promise(r => setTimeout(r, 100));
+                }
+                
+                log(`  📦 Got ${allRecords.length} total candles`, 'info');
+                if (allRecords.length === 0) return 0;
+                
+                const { error } = await supabase.from('historical_eth_btc').upsert(allRecords, { onConflict: 'date' });
                 if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                return error ? 0 : allRecords.length;
             },
 
-            // 14. Funding Rate - HAS source
+            // 14. Funding Rate - HAS source, pagination for 3 years
             async funding_rate() {
-                const data = await fetchJSON('https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1000');
-                if (!data) return 0;
+                const allData = [];
+                const now = Date.now();
+                const threeYearsAgo = now - (1095 * 24 * 60 * 60 * 1000);
+                
+                let startTime = threeYearsAgo;
+                while (startTime < now) {
+                    const url = `https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&startTime=${startTime}&limit=1000`;
+                    const data = await fetchJSON(url);
+                    if (!data || data.length === 0) break;
+                    
+                    allData.push(...data);
+                    startTime = data[data.length - 1].fundingTime + 1;
+                    if (data.length < 1000) break;
+                    await new Promise(r => setTimeout(r, 100));
+                }
+                
+                log(`  📦 Got ${allData.length} funding records`, 'info');
+                if (allData.length === 0) return 0;
+                
+                // Aggregate by date
                 const byDate = new Map();
-                data.forEach(d => {
+                allData.forEach(d => {
                     const date = new Date(d.fundingTime).toISOString().split('T')[0];
                     if (!byDate.has(date)) byDate.set(date, []);
                     byDate.get(date).push(parseFloat(d.fundingRate));
                 });
+                
                 const records = [];
                 byDate.forEach((rates, date) => {
                     records.push({ date, timestamp: Date.now(), funding_rate: parseFloat((rates.reduce((a,b)=>a+b,0)/rates.length).toFixed(8)), source: 'binance' });
                 });
+                
                 const { error } = await supabase.from('historical_funding_rate').upsert(records, { onConflict: 'date' });
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
