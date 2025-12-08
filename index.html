@@ -955,6 +955,54 @@
             overflow: visible;
         }
         
+        /* Data Source Badge - 소스 텍스트 옆에 인라인 표시 */
+        .data-source-badge {
+            display: inline-block;
+            font-size: 8px;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .data-source-badge.cached { background: #dcfce7; color: #166534; }
+        .data-source-badge.live { background: #dbeafe; color: #1e40af; }
+        .data-source-badge.fallback { background: #fef3c7; color: #92400e; }
+        
+        /* 메인 가격 차트 하단 정보 줄 */
+        .price-chart-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 11px;
+            color: #6b7280;
+            background: #fafafa;
+            border-radius: 0 0 12px 12px;
+        }
+        .price-chart-stats {
+            display: flex;
+            gap: 16px;
+        }
+        .price-chart-stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .price-chart-stats .up { color: #16a34a; font-weight: 600; }
+        .price-chart-stats .down { color: #dc2626; font-weight: 600; }
+        
+        .price-chart-source {
+            font-size: 9px;
+            font-family: monospace;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .price-chart-source.cached { background: #dcfce7; color: #166534; }
+        .price-chart-source.live { background: #dbeafe; color: #1e40af; }
+        .price-chart-source.fallback { background: #fef3c7; color: #92400e; }
+        
         /* Chart Loading Animation */
         .chart-loader {
             display: flex;
@@ -8948,6 +8996,12 @@
                     <div class="price-chart-area combined">
                         <canvas id="price-chart"></canvas>
                     </div>
+                    <div class="price-chart-footer">
+                        <span class="price-chart-source" id="price-chart-source"></span>
+                        <span class="price-chart-stats">
+                            <span class="stat-item" id="price-change-stat"><span id="price-change-label">3Y</span>: <span id="price-change-value">--</span></span>
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -14254,8 +14308,150 @@
             });
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // Outlier Detection & Filtering Utilities
+        // ═══════════════════════════════════════════════════════════════════
+        
+        /**
+         * Remove outliers from time series data using multiple methods
+         * @param {Array} data - Array of {date, value} objects
+         * @param {Object} options - Filtering options
+         * @returns {Array} Filtered data
+         */
+        function filterOutliers(data, options = {}) {
+            if (!data || data.length < 5) return data;
+            
+            const {
+                maxChangePercent = 50,      // Max % change between consecutive points
+                minValue = null,            // Hard minimum value
+                maxValue = null,            // Hard maximum value
+                useIQR = false,             // Use IQR method for outlier detection
+                iqrMultiplier = 2.5         // IQR multiplier (2.5 = moderate, 1.5 = aggressive)
+            } = options;
+            
+            let filtered = [...data];
+            
+            // 1. Apply hard min/max bounds
+            if (minValue !== null || maxValue !== null) {
+                filtered = filtered.map(d => ({
+                    ...d,
+                    value: Math.max(minValue ?? -Infinity, Math.min(maxValue ?? Infinity, d.value))
+                }));
+            }
+            
+            // 2. Filter sudden spikes (consecutive change filter)
+            if (maxChangePercent > 0 && filtered.length > 2) {
+                const result = [filtered[0]];
+                for (let i = 1; i < filtered.length; i++) {
+                    const prev = result[result.length - 1].value;
+                    const curr = filtered[i].value;
+                    const changePercent = prev > 0 ? Math.abs((curr - prev) / prev) * 100 : 0;
+                    
+                    if (changePercent <= maxChangePercent || prev === 0) {
+                        result.push(filtered[i]);
+                    } else {
+                        // Interpolate instead of using spike value
+                        const interpolated = prev;
+                        result.push({ ...filtered[i], value: interpolated });
+                        console.warn(`Outlier filtered: ${curr.toFixed(2)} → ${interpolated.toFixed(2)} (${changePercent.toFixed(1)}% change)`);
+                    }
+                }
+                filtered = result;
+            }
+            
+            // 3. IQR-based outlier detection (optional)
+            if (useIQR && filtered.length > 10) {
+                const values = filtered.map(d => d.value).sort((a, b) => a - b);
+                const q1 = values[Math.floor(values.length * 0.25)];
+                const q3 = values[Math.floor(values.length * 0.75)];
+                const iqr = q3 - q1;
+                const lowerBound = q1 - iqr * iqrMultiplier;
+                const upperBound = q3 + iqr * iqrMultiplier;
+                
+                filtered = filtered.map(d => ({
+                    ...d,
+                    value: Math.max(lowerBound, Math.min(upperBound, d.value))
+                }));
+            }
+            
+            return filtered;
+        }
+        
+        /**
+         * Filter staking data specifically (handles Pectra consolidation effects)
+         */
+        function filterStakingData(data) {
+            return filterOutliers(data, {
+                maxChangePercent: 20,     // Max 20% daily change
+                minValue: 10000000,       // Min 10M ETH staked
+                maxValue: 50000000        // Max 50M ETH staked (reasonable cap)
+            });
+        }
+        
+        /**
+         * Filter NVT ratio data
+         */
+        function filterNvtData(data) {
+            return filterOutliers(data, {
+                maxChangePercent: 100,    // NVT can be more volatile
+                minValue: 20,             // NVT rarely below 20
+                maxValue: 200,            // NVT rarely above 200
+                useIQR: true,
+                iqrMultiplier: 2.5
+            });
+        }
+        
+        /**
+         * Filter commitment ratio data
+         */
+        function filterCommitmentRatioData(data) {
+            return filterOutliers(data, {
+                maxChangePercent: 15,     // Max 15% daily change
+                minValue: 10,             // Min 10%
+                maxValue: 80              // Max 80%
+            });
+        }
+
         // Chart.js global tooltip settings - allow tooltip to overflow canvas
         Chart.defaults.plugins.tooltip.external = null;
+        
+        // 전역 차트 인스턴스
+        let priceChart = null;
+        let volumeChart = null;
+        let tvlChart = null;
+        let stakingChart = null;
+        let l2Chart = null;
+        let dexChart = null;
+        let feesChart = null;
+        let stablesChart = null;
+        let txEthChart = null;
+        let txTotalChart = null;
+        let ethDefiChart = null;
+        let commitmentRatioChart = null;
+        let appCapitalChart = null;
+        let stakingAprChart = null;
+        let reserveChart = null;
+        let activeChart = null;
+        let activeAddrChart = null;
+        let lendingChart = null;
+        let blobFeesChart = null;
+        let stablecoinChart = null;
+        let gasPriceChart = null;
+        let baseFeeChart = null;
+        let blobCountChart = null;
+        let gasUtilizationChart = null;
+        let dailyBurnChart = null;
+        let dailyIssuanceChart = null;
+        let netSupplyChart = null;
+        let nvtChart = null;
+        let dominanceChart = null;
+        let ethbtcChart = null;
+        let fearGreedChart = null;
+        let volatilityChart = null;
+        let fundingChart = null;
+        let supplyChart = null;
+        let supplyDistChart = null;
+        let historicalMainChart = null;
         
         // State
         const state = {
@@ -14406,15 +14602,7 @@
             requestAnimationFrame(update);
         }
 
-        // Charts
-        let priceChart, volumeChart, tvlChart, stakingChart, l2Chart, dexChart, feesChart, stablesChart;
-        let supplyChart, dominanceChart, ethbtcChart, reserveChart, lendingChart;
-        let fundingChart, volatilityChart, stablecoinChart, fearGreedChart;
-        let txEthChart, txTotalChart;
-        let nvtChart, activeAddrChart;
-        let ethDefiChart, commitmentRatioChart, appCapitalChart, stakingAprChart;
-        // Historical Analysis Charts
-        let historicalMainChart;
+        // Charts - 이미 상단에서 선언됨
         let modelCharts = {};
 
         // Chart axis font sizes (responsive)
@@ -14618,23 +14806,30 @@
                 
                 const limit = 1100;
                 
-                // 안전한 fetch 헬퍼
+                // 안전한 fetch 헬퍼 (디버깅 로그 포함)
                 const safeFetchSupabase = async (url) => {
+                    const tableName = url.split('/rest/v1/')[1]?.split('?')[0] || 'unknown';
                     try {
                         const res = await fetch(url, { headers });
                         if (res.ok) {
                             const data = await res.json();
-                            return Array.isArray(data) ? data : [];
+                            const result = Array.isArray(data) ? data : [];
+                            if (result.length === 0) {
+                                console.log(`   ⚠️ ${tableName}: empty result`);
+                            }
+                            return result;
                         }
+                        console.log(`   ❌ ${tableName}: HTTP ${res.status}`);
                         return [];
                     } catch (e) {
+                        console.log(`   ❌ ${tableName}: ${e.message}`);
                         return [];
                     }
                 };
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -14647,9 +14842,10 @@
                     safeFetchSupabase(`${baseUrl}/historical_eth_dominance?select=date,eth_dominance&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_dex_volume?select=date,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_stablecoins?select=date,total_mcap&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_stablecoins_eth?select=date,total_mcap&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_funding_rate?select=date,funding_rate&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_exchange_reserve?select=date,reserve_eth&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_blob_data?select=date,blob_count,blob_fees_eth&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_blob_data?select=date,blob_count,blob_fee_eth&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_lending_tvl?select=date,total_tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_volatility?select=date,volatility_30d&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_tvl?select=date,chain,tvl&order=date.desc&limit=${limit * 10}`),
@@ -14662,6 +14858,8 @@
                     state.supabasePriceHistory = priceData.map(d => ({
                         date: new Date(d.date), value: parseFloat(d.close), volume: parseFloat(d.volume || 0)
                     })).reverse();
+                } else {
+                    console.log(`   ⚠️ Price: only ${priceData.length} records (need >10), will use Binance API`);
                 }
                 
                 if (tvlData.length > 10) {
@@ -14717,12 +14915,14 @@
                     state.supabaseEthBtcHistory = ethBtcData.map(d => ({ date: new Date(d.date), value: parseFloat(d.ratio) })).reverse();
                 }
                 
-                if (dominanceData.length > 10) {
+                if (dominanceData && dominanceData.length > 0) {
                     console.log(`   ✓ Dominance: ${dominanceData.length} records`);
                     state.supabaseDominanceHistory = dominanceData.map(d => ({ 
                         date: new Date(d.date), 
                         value: parseFloat(d.eth_dominance) 
                     })).reverse();
+                } else {
+                    console.log(`   ⚠ Dominance: no data in Supabase`);
                 }
                 
                 if (dexData.length > 10) {
@@ -14731,8 +14931,13 @@
                 }
                 
                 if (stablesData.length > 10) {
-                    console.log(`   ✓ Stables: ${stablesData.length} records`);
-                    state.supabaseStablesHistory = stablesData.map(d => ({ date: new Date(d.date), value: parseFloat(d.total_mcap) })).reverse();
+                    console.log(`   ✓ Stablecoins (All): ${stablesData.length} records`);
+                    state.supabaseStablecoinHistory = stablesData.map(d => ({ date: new Date(d.date), value: parseFloat(d.total_mcap) })).reverse();
+                }
+                
+                if (stablesEthData.length > 10) {
+                    console.log(`   ✓ Stablecoins (ETH): ${stablesEthData.length} records`);
+                    state.supabaseStablesEthHistory = stablesEthData.map(d => ({ date: new Date(d.date), value: parseFloat(d.total_mcap) })).reverse();
                 }
                 
                 if (fundingData.length > 10) {
@@ -14748,7 +14953,7 @@
                 if (blobData.length > 10) {
                     console.log(`   ✓ Blob: ${blobData.length} records`);
                     state.supabaseBlobHistory = blobData.map(d => ({
-                        date: new Date(d.date), count: parseInt(d.blob_count || 0), fees: parseFloat(d.blob_fees_eth || 0)
+                        date: new Date(d.date), count: parseInt(d.blob_count || 0), fees: parseFloat(d.blob_fee_eth || 0)
                     })).reverse();
                 }
                 
@@ -14776,6 +14981,27 @@
                 if (nvtData.length > 10) {
                     console.log(`   ✓ NVT: ${nvtData.length} records`);
                     state.supabaseNvtHistory = nvtData.map(d => ({ date: new Date(d.date), value: parseFloat(d.nvt_ratio) })).reverse();
+                }
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // Apply outlier filtering to Supabase data
+                // ═══════════════════════════════════════════════════════════════════
+                console.log('🔧 Applying outlier filtering...');
+                
+                // Filter Staking data (handles Pectra consolidation spikes)
+                if (state.supabaseStakingHistory?.length > 0) {
+                    const beforeLen = state.supabaseStakingHistory.length;
+                    state.supabaseStakingHistory = filterStakingData(state.supabaseStakingHistory);
+                    console.log(`   Staking: ${beforeLen} → ${state.supabaseStakingHistory.length} points (filtered)`);
+                }
+                
+                // Filter NVT data (cap at reasonable range)
+                if (state.supabaseNvtHistory?.length > 0) {
+                    const beforeLen = state.supabaseNvtHistory.length;
+                    const beforeLast = state.supabaseNvtHistory[state.supabaseNvtHistory.length - 1]?.value;
+                    state.supabaseNvtHistory = filterNvtData(state.supabaseNvtHistory);
+                    const afterLast = state.supabaseNvtHistory[state.supabaseNvtHistory.length - 1]?.value;
+                    console.log(`   NVT: ${beforeLast?.toFixed(1)} → ${afterLast?.toFixed(1)} (filtered)`);
                 }
                 
                 console.log(`📦 Supabase loading complete in ${(performance.now() - startTime).toFixed(0)}ms`);
@@ -14831,6 +15057,8 @@
                 }
                 
                 console.log('   Binance price:', state.price);
+                // 주의: price-chart 소스는 여기서 설정하지 않음 (히스토리 소스와 분리)
+                // 차트 히스토리는 Supabase에서 올 수 있고, 현재 가격만 Binance에서 가져옴
                 return true;
             } catch (e) {
                 console.error('Binance price error:', e);
@@ -14840,15 +15068,21 @@
         
         async function fetchBinanceHistory(days) {
             try {
-                // Supabase 데이터가 있으면 우선 사용 (3년치 보유)
-                if (state.supabasePriceHistory && state.supabasePriceHistory.length > 0) {
+                const requiredDays = Math.min(days, 1095); // 최대 3년
+                
+                // Supabase 데이터 확인 - 충분한 데이터가 있는지 체크
+                const hasEnoughSupabaseData = state.supabasePriceHistory && 
+                    state.supabasePriceHistory.length >= requiredDays * 0.9; // 90% 이상 있으면 사용
+                
+                if (hasEnoughSupabaseData) {
                     console.log(`   Using Supabase price data: ${state.supabasePriceHistory.length} points for ${days} days`);
                     state.priceHistory = state.supabasePriceHistory;
                     updateCombinedPriceVolumeChart(days);
                     return true;
                 }
                 
-                // Supabase 없으면 Binance에서 가져오기 (최대 1000일)
+                // Supabase 데이터가 부족하면 Binance에서 가져오기 (최대 1000일)
+                console.log(`   Supabase data insufficient (${state.supabasePriceHistory?.length || 0} points), fetching from Binance...`);
                 const limit = Math.min(days, 1000);
                 
                 // ETHUSDT 히스토리
@@ -14895,7 +15129,7 @@
                         const change = ((last - first) / first) * 100;
                         const changeEl = document.getElementById('ethbtc-change');
                         if (changeEl) {
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
+                            changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% 3Y';
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                         }
                     }
@@ -14905,6 +15139,7 @@
                 }
                 
                 updateCombinedPriceVolumeChart(days);
+                setDataSource('price-chart', 'api', 'Binance');
                 return true;
             } catch (e) {
                 console.error('Binance history error:', e);
@@ -15251,6 +15486,12 @@
         // Fetch Stablecoin Market Cap from DefiLlama
         async function fetchStablecoinMcap() {
             try {
+                // Supabase 데이터가 충분하면 API 호출 스킵
+                if (state.stablecoinHistory?.length > 10 && state.stablecoinMcap > 100e9) {
+                    console.log('   Stablecoin: Using existing Supabase data');
+                    return;
+                }
+                
                 // console.log('   Fetching Stablecoin Market Cap (parallel)...');
                 
                 // Parallel fetch both endpoints
@@ -15274,6 +15515,7 @@
                         value: d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0
                     })).filter(d => d.value > 0);
                     updateStablecoinChart();
+                    setDataSource('stablecoin-chart', 'api', 'DefiLlama');
                 }
             } catch (e) {
                 console.error('Stablecoin Mcap error:', e);
@@ -15583,20 +15825,29 @@
                 // Binance 히스토리가 없으면 CoinGecko에서 가져오기
                 if (!state.priceHistory || state.priceHistory.length === 0) {
                     await fetchPriceHistory(1095);
+                    setDataSource('price-chart', 'api', 'CoinGecko');
                 }
             } catch (e) { console.error('CoinGecko error:', e); }
         }
 
         async function fetchPriceHistory(days) {
             try {
-                // 365일 초과면 Supabase 데이터 사용 (CoinGecko는 365일 제한)
-                if (days > 365 && state.supabasePriceHistory && state.supabasePriceHistory.length > 0) {
+                const requiredDays = Math.min(days, 1095);
+                
+                // Supabase 데이터 확인 - 충분한 데이터가 있는지 체크
+                const hasEnoughSupabaseData = state.supabasePriceHistory && 
+                    state.supabasePriceHistory.length >= requiredDays * 0.9;
+                
+                if (hasEnoughSupabaseData) {
                     console.log(`   Using Supabase price data: ${state.supabasePriceHistory.length} points for ${days} days`);
                     state.priceHistory = state.supabasePriceHistory;
                     updatePriceChart(days);
                     updateVolumeChart(days);
+                    setDataSource('price-chart', 'supabase');
                     return;
                 }
+                
+                console.log(`   Supabase data insufficient (${state.supabasePriceHistory?.length || 0} points), fetching from API...`);
                 
                 // CoinGecko에서 가져오기 (최대 365일)
                 const apiDays = Math.min(days, 365);
@@ -15604,7 +15855,7 @@
                 
                 if (!res.ok) {
                     console.error('   Price history API failed:', res.status);
-                    // Fallback to Supabase
+                    // Fallback to Supabase even if insufficient
                     if (state.supabasePriceHistory && state.supabasePriceHistory.length > 0) {
                         state.priceHistory = state.supabasePriceHistory;
                         updatePriceChart(days);
@@ -15637,6 +15888,7 @@
                 
                 updatePriceChart(days);
                 updateVolumeChart(days);
+                setDataSource('price-chart', 'api', 'CoinGecko');
             } catch (e) { 
                 console.error('Price history error:', e); 
                 // Fallback to Supabase
@@ -15652,131 +15904,209 @@
             try {
                 console.log('=== fetchDominanceAndEthBtc start ===');
                 
-                // CoinGecko Global API에서 실제 dominance 가져오기
+                let dominanceSource = 'fallback';
+                let ethbtcSource = 'fallback';
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 1. ETH/BTC - Supabase 우선, 없으면 Binance에서 가져오기
+                // ═══════════════════════════════════════════════════════════════════
                 try {
-                    const globalRes = await fetch('https://api.coingecko.com/api/v3/global');
-                    if (globalRes.ok) {
-                        const globalData = await globalRes.json();
-                        const ethDominance = globalData.data?.market_cap_percentage?.eth;
-                        if (ethDominance) {
-                            state.currentDominance = ethDominance;
-                            document.getElementById('eth-dominance').textContent = ethDominance.toFixed(1) + '%';
-                            console.log('ETH Dominance from CoinGecko:', ethDominance);
+                    // Supabase에 충분한 데이터가 있으면 API 호출 스킵
+                    if (state.supabaseEthBtcHistory && state.supabaseEthBtcHistory.length > 10) {
+                        state.ethbtcHistory = state.supabaseEthBtcHistory;
+                        state.ethBtcRatio = state.ethbtcHistory[state.ethbtcHistory.length - 1].value;
+                        ethbtcSource = 'supabase';
+                        console.log('   ETH/BTC: Using Supabase data:', state.ethbtcHistory.length, 'points');
+                        document.getElementById('eth-btc').textContent = state.ethBtcRatio.toFixed(5);
+                    } else {
+                        // 현재 ETH/BTC 비율
+                        const tickerRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHBTC');
+                        if (tickerRes.ok) {
+                            const ticker = await tickerRes.json();
+                            state.ethBtcRatio = parseFloat(ticker.lastPrice);
+                            document.getElementById('eth-btc').textContent = state.ethBtcRatio.toFixed(5);
+                            console.log('   ETH/BTC from Binance:', state.ethBtcRatio);
+                        }
+                        
+                        // Binance에서 최대 1000일 가져오기
+                        const klinesRes = await fetch('https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&limit=1000');
+                        if (klinesRes.ok) {
+                            const klines = await klinesRes.json();
+                            state.ethbtcHistory = klines.map(k => ({
+                                date: new Date(k[0]),
+                                value: parseFloat(k[4])
+                            }));
+                            ethbtcSource = 'api';
+                            console.log('   ETH/BTC history from Binance:', state.ethbtcHistory.length, 'points');
                         }
                     }
                 } catch (e) {
-                    console.log('CoinGecko global API failed, using estimation');
+                    console.error('ETH/BTC fetch error:', e);
                 }
                 
-                // Supabase ETH/BTC 히스토리 우선 사용
-                if (state.supabaseEthBtcHistory && state.supabaseEthBtcHistory.length > 10) {
-                    console.log('   Using Supabase ETH/BTC data:', state.supabaseEthBtcHistory.length, 'points');
-                    state.ethbtcHistory = state.supabaseEthBtcHistory;
-                    if (state.ethbtcHistory.length > 0) {
-                        state.ethBtcRatio = state.ethbtcHistory[state.ethbtcHistory.length - 1].value;
-                        document.getElementById('eth-btc').textContent = state.ethBtcRatio.toFixed(5);
-                    }
-                }
+                // ═══════════════════════════════════════════════════════════════════
+                // 2. ETH Dominance - Supabase 우선, 없으면 CoinGecko에서 계산
+                // ═══════════════════════════════════════════════════════════════════
                 
-                // Supabase Dominance 히스토리 우선 사용
+                // 2-1. Supabase 히스토리 확인 (우선)
                 if (state.supabaseDominanceHistory && state.supabaseDominanceHistory.length > 10) {
-                    console.log('   Using Supabase Dominance data:', state.supabaseDominanceHistory.length, 'points');
                     state.dominanceHistory = state.supabaseDominanceHistory;
+                    state.currentDominance = state.dominanceHistory[state.dominanceHistory.length - 1].value;
+                    dominanceSource = 'supabase';
+                    console.log('   Dominance: Using Supabase data:', state.dominanceHistory.length, 'points');
+                    document.getElementById('eth-dominance').textContent = state.currentDominance.toFixed(1) + '%';
                 } else {
-                    // Supabase 없으면 priceHistory 기반 추정
-                    let priceHistory = state.priceHistory;
-                    console.log('Price history from state:', priceHistory?.length || 0, 'points');
-                    
-                    if (!priceHistory || priceHistory.length === 0) {
-                        console.log('No price history, generating simulated data');
-                        const now = Date.now();
-                        priceHistory = [];
-                        for (let i = 0; i < 365; i++) {
-                            priceHistory.push({
-                                date: new Date(now - (365 - i) * 24 * 60 * 60 * 1000),
-                                value: 3500 + Math.sin(i * 0.05) * 500
-                            });
+                    // 2-2. 현재 Dominance 가져오기
+                    let currentEthDom = 9;
+                    let currentBtcDom = 55;
+                    try {
+                        const globalRes = await fetch('https://api.coingecko.com/api/v3/global');
+                        if (globalRes.ok) {
+                            const globalData = await globalRes.json();
+                            currentEthDom = globalData.data?.market_cap_percentage?.eth || 9;
+                            currentBtcDom = globalData.data?.market_cap_percentage?.btc || 55;
+                            state.currentDominance = currentEthDom;
+                            document.getElementById('eth-dominance').textContent = currentEthDom.toFixed(1) + '%';
+                            console.log('   ETH Dominance from CoinGecko:', currentEthDom.toFixed(2) + '%');
                         }
+                    } catch (e) {
+                        console.error('CoinGecko global API failed:', e.message);
                     }
                     
-                    const sampleRate = Math.max(1, Math.ceil(priceHistory.length / 80));
-                    const baseDominance = state.currentDominance || 9;
-                    const latestPrice = priceHistory[priceHistory.length - 1].value;
-                    const firstPrice = priceHistory[0].value;
-                    const priceChangeRatio = latestPrice / firstPrice;
+                    // 2-3. CoinGecko에서 ETH/BTC market cap으로 dominance 계산
+                    console.log('   Calculating Dominance from CoinGecko market caps...');
                     
-                    state.dominanceHistory = priceHistory
-                        .map((d, i) => {
-                            const ratio = d.value / firstPrice;
-                            const dominance = baseDominance * (ratio / priceChangeRatio) * (0.97 + Math.random() * 0.06);
-                            return { date: d.date, value: Math.max(6, Math.min(18, dominance)) };
-                        })
-                        .filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-                }
-                
-                // ETH/BTC 비율 - Supabase나 Binance에서 이미 가져왔으면 스킵
-                if (!state.ethbtcHistory || state.ethbtcHistory.length === 0) {
-                    console.log('ETH/BTC history not available, using estimation...');
-                    let priceHistory = state.priceHistory || [];
-                    if (priceHistory.length > 0) {
-                        const latestPrice = priceHistory[priceHistory.length - 1].value;
-                        const sampleRate = Math.max(1, Math.ceil(priceHistory.length / 80));
-                        state.ethbtcHistory = priceHistory
-                            .map((d, i) => {
-                                const ratio = d.value / latestPrice;
-                                const estimatedRatio = 0.034 * ratio * (0.95 + Math.random() * 0.10);
-                                return { date: d.date, value: Math.max(0.025, Math.min(0.055, estimatedRatio)) };
-                            })
-                            .filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+                    try {
+                        // Rate limit 대기
+                        await new Promise(r => setTimeout(r, 1500));
+                        
+                        // ETH market cap 히스토리 (최대 365일)
+                        const ethRes = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=365&interval=daily');
+                        
+                        if (ethRes.ok) {
+                            const ethData = await ethRes.json();
+                            
+                            // Rate limit 대기
+                            await new Promise(r => setTimeout(r, 1500));
+                            
+                            // BTC market cap 히스토리
+                            const btcRes = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily');
+                            
+                            if (btcRes.ok && ethData.market_caps && ethData.market_caps.length > 0) {
+                                const btcData = await btcRes.json();
+                                
+                                if (btcData.market_caps && btcData.market_caps.length > 0) {
+                                    // 현재 ETH+BTC 점유율로 Total Mcap 추정
+                                    const combinedShare = (currentEthDom + currentBtcDom) / 100;
+                                    
+                                    state.dominanceHistory = [];
+                                    for (let i = 0; i < ethData.market_caps.length; i++) {
+                                        const [timestamp, ethMcap] = ethData.market_caps[i];
+                                        // 가장 가까운 BTC 데이터 찾기
+                                        const btcEntry = btcData.market_caps.find(b => Math.abs(b[0] - timestamp) < 86400000);
+                                        
+                                        if (btcEntry) {
+                                            const btcMcap = btcEntry[1];
+                                            const totalMcap = (ethMcap + btcMcap) / combinedShare;
+                                            let ethDom = (ethMcap / totalMcap) * 100;
+                                            // 합리적인 범위로 제한
+                                            ethDom = Math.max(5, Math.min(25, ethDom));
+                                            
+                                            state.dominanceHistory.push({
+                                                date: new Date(timestamp),
+                                                value: ethDom
+                                            });
+                                        }
+                                    }
+                                    
+                                    // 마지막 값은 현재 dominance로 보정
+                                    if (state.dominanceHistory.length > 0) {
+                                        state.dominanceHistory[state.dominanceHistory.length - 1].value = currentEthDom;
+                                    }
+                                    
+                                    dominanceSource = 'api';
+                                    console.log('   Calculated Dominance from CoinGecko:', state.dominanceHistory.length, 'points');
+                                }
+                            }
+                        } else {
+                            console.log('   CoinGecko ETH market_chart failed:', ethRes.status);
+                        }
+                    } catch (e) {
+                        console.error('CoinGecko Dominance calculation error:', e);
                     }
                 }
                 
-                console.log('Calculated dominance history:', state.dominanceHistory.length, 'points');
-                console.log('ETH/BTC history:', state.ethbtcHistory.length, 'points');
-                
-                // 현재 값 업데이트 (API에서 못 가져왔으면 히스토리에서)
-                if (!state.currentDominance && state.dominanceHistory.length > 0) {
-                    const currentDominance = state.dominanceHistory[state.dominanceHistory.length - 1].value;
-                    document.getElementById('eth-dominance').textContent = currentDominance.toFixed(1) + '%';
+                // ═══════════════════════════════════════════════════════════════════
+                // Fallback 처리 - 데이터가 정말 없을 때만
+                // ═══════════════════════════════════════════════════════════════════
+                if (!state.dominanceHistory || state.dominanceHistory.length < 30) {
+                    console.log('   ⚠️ Dominance: No real data available, using estimation');
+                    const baseDom = currentEthDom;
+                    state.dominanceHistory = [];
+                    for (let i = 365; i >= 0; i--) {
+                        const date = new Date(Date.now() - i * 86400000);
+                        const noise = (Math.sin(i / 30) * 0.5 + (Math.random() - 0.5) * 0.3);
+                        state.dominanceHistory.push({
+                            date,
+                            value: Math.max(7, Math.min(15, baseDom + noise))
+                        });
+                    }
+                    state.dominanceHistory[state.dominanceHistory.length - 1].value = baseDom;
+                    dominanceSource = 'fallback'; // 추정치로 표시
                 }
                 
-                // ETH/BTC 현재 값 - state.ethBtcRatio가 있으면 그것을 사용
-                if (state.ethBtcRatio) {
-                    document.getElementById('eth-btc').textContent = state.ethBtcRatio.toFixed(5);
-                } else if (state.ethbtcHistory.length > 0) {
-                    const currentRatio = state.ethbtcHistory[state.ethbtcHistory.length - 1].value;
-                    document.getElementById('eth-btc').textContent = currentRatio.toFixed(5);
+                if (!state.ethbtcHistory || state.ethbtcHistory.length < 30) {
+                    console.log('   ⚠️ ETH/BTC: No real data available');
+                    const baseRatio = state.ethBtcRatio || 0.035;
+                    state.ethbtcHistory = [];
+                    for (let i = 365; i >= 0; i--) {
+                        state.ethbtcHistory.push({
+                            date: new Date(Date.now() - i * 86400000),
+                            value: baseRatio * (0.9 + Math.random() * 0.2)
+                        });
+                    }
+                    state.ethbtcHistory[state.ethbtcHistory.length - 1].value = baseRatio;
+                    ethbtcSource = 'fallback';
                 }
                 
-                // 차트 업데이트
-                console.log('Updating dominance and ETH/BTC charts...');
+                // ═══════════════════════════════════════════════════════════════════
+                // 차트 업데이트 및 소스 표시
+                // ═══════════════════════════════════════════════════════════════════
                 updateDominanceChart();
                 updateEthBtcChart();
                 
-                // 변화율 계산
-                if (state.dominanceHistory.length > 1) {
+                setDataSource('dominance-chart', dominanceSource, 'CoinGecko');
+                setDataSource('ethbtc-chart', ethbtcSource, 'Binance');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 변화율 계산 (전체 데이터 기준)
+                // ═══════════════════════════════════════════════════════════════════
+                if (state.dominanceHistory && state.dominanceHistory.length > 1) {
                     const first = state.dominanceHistory[0].value;
                     const last = state.dominanceHistory[state.dominanceHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('dominance-change');
                     if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
+                        const label = state.dominanceHistory.length > 900 ? '3Y' : state.dominanceHistory.length > 300 ? '1Y' : '90D';
+                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                 }
                 
-                if (state.ethbtcHistory.length > 1) {
+                if (state.ethbtcHistory && state.ethbtcHistory.length > 1) {
                     const first = state.ethbtcHistory[0].value;
                     const last = state.ethbtcHistory[state.ethbtcHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('ethbtc-change');
                     if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
+                        const label = state.ethbtcHistory.length > 900 ? '3Y' : state.ethbtcHistory.length > 300 ? '1Y' : '90D';
+                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                 }
                 
                 console.log('=== fetchDominanceAndEthBtc complete ===');
+                console.log(`   Sources: Dominance=${dominanceSource}, ETH/BTC=${ethbtcSource}`);
             } catch (e) { 
                 console.error('fetchDominanceAndEthBtc error:', e); 
             }
@@ -15944,6 +16274,18 @@
                 } catch (e) { console.error('Fees current value error:', e); }
             }
             
+            // Fallback: Supabase에서 현재 fees 설정
+            if (!state.fees || state.fees === 0) {
+                if (state.supabaseFeesHistory && state.supabaseFeesHistory.length > 0) {
+                    state.fees = state.supabaseFeesHistory[state.supabaseFeesHistory.length - 1].value;
+                    document.getElementById('fees-value').textContent = fmt.usd(state.fees * 7);
+                    console.log('   Using Supabase fees current value:', fmt.usd(state.fees));
+                } else {
+                    state.fees = 12000000; // ~$12M default
+                    console.log('   Using fallback fees value');
+                }
+            }
+            
             // 히스토리는 Supabase 우선
             if (state.supabaseFeesHistory && state.supabaseFeesHistory.length > 10) {
                 console.log(`   Using Supabase Fees data: ${state.supabaseFeesHistory.length} points`);
@@ -16005,10 +16347,10 @@
                 } catch (e) { console.error('Stables current value error:', e); }
             }
             
-            // 히스토리는 Supabase 우선
-            if (state.supabaseStablesHistory && state.supabaseStablesHistory.length > 10) {
-                console.log(`   Using Supabase Stablecoins data: ${state.supabaseStablesHistory.length} points`);
-                state.stablesHistory = state.supabaseStablesHistory.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
+            // 히스토리는 Supabase 우선 (이더리움 체인 데이터)
+            if (state.supabaseStablesEthHistory && state.supabaseStablesEthHistory.length > 10) {
+                console.log(`   Using Supabase Stablecoins ETH data: ${state.supabaseStablesEthHistory.length} points`);
+                state.stablesHistory = state.supabaseStablesEthHistory.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
                 // 차트는 Supabase 데이터 그대로 사용 (API 값과 다를 수 있음)
                 updateMetricChart('stables-chart', stablesChart, state.stablesHistory, '#eab308', 'stables');
                 if (state.stablesHistory.length > 1) {
@@ -16557,6 +16899,53 @@
             const labels = sampledPrices.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }));
             
             console.log(`Updating combined chart: ${days} days, ${priceData.length} points`);
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // 가격 변화율 계산 및 표시 (선택된 기간에 맞춰)
+            // ═══════════════════════════════════════════════════════════════════
+            try {
+                const currentPrice = state.price || priceData[priceData.length - 1];
+                const now = Date.now();
+                const sortedHistory = [...state.priceHistory].sort((a, b) => a.date - b.date);
+                
+                // 기간별 라벨
+                let periodLabel = '3Y';
+                let daysBack = days;
+                if (days <= 90) {
+                    periodLabel = '90D';
+                    daysBack = 90;
+                } else if (days <= 365) {
+                    periodLabel = '1Y';
+                    daysBack = 365;
+                } else {
+                    periodLabel = '3Y';
+                    daysBack = 1095;
+                }
+                
+                // 해당 기간 전 가격 찾기
+                const targetTime = now - daysBack * 24 * 60 * 60 * 1000;
+                let pastPrice = sortedHistory.find(d => Math.abs(d.date.getTime() - targetTime) < 30 * 24 * 60 * 60 * 1000);
+                
+                // 해당 기간 데이터 없으면 가장 오래된 데이터 사용
+                if (!pastPrice && sortedHistory.length > 0) {
+                    pastPrice = sortedHistory[0];
+                }
+                
+                const labelEl = document.getElementById('price-change-label');
+                const valueEl = document.getElementById('price-change-value');
+                
+                if (labelEl) labelEl.textContent = periodLabel;
+                
+                if (pastPrice && valueEl) {
+                    const change = ((currentPrice - pastPrice.value) / pastPrice.value) * 100;
+                    valueEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '%';
+                    valueEl.className = change >= 0 ? 'up' : 'down';
+                } else if (valueEl) {
+                    valueEl.textContent = '--';
+                }
+            } catch (e) {
+                console.log('Price change calculation error:', e);
+            }
             
             if (priceChart) priceChart.destroy();
             
@@ -17261,8 +17650,9 @@
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
+            setChartLoading('lending-chart', false);
+            
             if (filtered.length < 3) {
-                setChartLoading('lending-chart', false);
                 return;
             }
             
@@ -17338,7 +17728,7 @@
         }
 
         // Gas Price - estimated from network fees and transaction count
-        let gasPriceChart = null;
+
         async function fetchGasPrice() {
             try {
                 let currentGasPrice = 0;
@@ -17491,7 +17881,6 @@
         }
 
         // Blob Fees - EIP-4844 data from blobscan
-        let blobFeesChart = null;
         async function fetchBlobFees() {
             try {
                 // Supabase 데이터 우선 사용
@@ -17511,9 +17900,9 @@
                     if (state.blobCountHistory.length > 0) {
                         state.blobCount = state.blobCountHistory[state.blobCountHistory.length - 1].value;
                     }
-                    const blobEl = document.getElementById('blob-fees');
+                    const blobEl = document.getElementById('blob-fees-value');
                     if (blobEl) blobEl.textContent = state.blobFees.toFixed(1) + ' ETH';
-                    const blobCountEl = document.getElementById('blob-count');
+                    const blobCountEl = document.getElementById('blob-count-value');
                     if (blobCountEl) blobCountEl.textContent = fmt.num(state.blobCount);
                     updateBlobFeesChart();
                     updateBlobCountChart();
@@ -17615,6 +18004,8 @@
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
+            setChartLoading('blob-fees-chart', false);
+            
             if (filtered.length < 3) {
                 // Show "No data before Dencun" message
                 const changeEl = document.getElementById('blob-fees-change');
@@ -17672,7 +18063,7 @@
         }
         
         // Base Fee - EIP-1559 base fee tracking
-        let baseFeeChart = null;
+
         async function fetchBaseFee() {
             try {
                 // console.log('   Fetching Base Fee...');
@@ -17760,7 +18151,12 @@
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
-            if (filtered.length < 3) return;
+            if (filtered.length < 3) {
+                setChartLoading('base-fee-chart', false);
+                return;
+            }
+            
+            setChartLoading('base-fee-chart', false);
             
             const latest = filtered[filtered.length - 1].value;
             const oldest = filtered[0].value;
@@ -17806,7 +18202,7 @@
         }
         
         // Blob Count - EIP-4844 blob usage tracking
-        let blobCountChart = null;
+
         async function fetchBlobCount() {
             try {
                 // Estimate blob count from L2 TVL and activity
@@ -17962,13 +18358,13 @@
                 
                 // Fallback: fees 기반 추정 (base fee 비율 ~30-40% 추정)
                 if (dailyBurn < 100) {
-                    const dailyFees = state.fees || 0;
+                    const dailyFees = state.fees || 12000000; // $12M default
                     const ethPrice = state.price || 3500;
                     // 현재 낮은 gas 환경에서 base fee는 total fees의 약 30-40%
                     dailyBurn = (dailyFees / ethPrice) * 0.35;
                     console.log('   Daily Burn from fees estimate:', fmt.num(dailyBurn), 'ETH');
                 }
-                state.dailyBurn = dailyBurn;
+                state.dailyBurn = dailyBurn || 1500; // 최소 fallback
                 
                 // 4. Calculate net supply change (annualized %)
                 const dailyNetChange = state.dailyIssuance - state.dailyBurn;
@@ -17979,13 +18375,14 @@
                 // 5. Gas utilization - fees 기반 추정 (히스토리와 동일 공식)
                 // 실제 가스 사용률 데이터는 얻기 어려우므로, fees 비율로 추정
                 const feesForUtilization = state.feesHistoryDaily || state.feesHistory || [];
-                const maxFees = feesForUtilization.length > 0 
-                    ? Math.max(...feesForUtilization.map(f => f.value)) 
-                    : state.fees || 12000000;
+                let maxFees = 50000000; // $50M default max
+                if (feesForUtilization.length > 0) {
+                    maxFees = Math.max(...feesForUtilization.map(f => f.value)) || 50000000;
+                }
                 const currentFees = state.fees || 12000000;
                 // 50-90% 범위로 매핑 (maxFees일 때 90%, 0일 때 50%)
                 state.gasUtilization = 50 + (currentFees / maxFees) * 40;
-                state.gasUtilization = Math.min(95, Math.max(50, state.gasUtilization));
+                state.gasUtilization = Math.min(95, Math.max(50, state.gasUtilization || 60));
                 
                 // Build history from fees data
                 buildSupplyDynamicsHistory();
@@ -18059,15 +18456,17 @@
             console.log('   Burn range:', state.burnHistory[0].value.toFixed(0), '→', state.burnHistory[state.burnHistory.length-1].value.toFixed(0));
         }
         
-        let gasUtilizationChart = null;
-        let dailyBurnChart = null;
-        let dailyIssuanceChart = null;
-        let netSupplyChart = null;
+
+
+
+
         
         function updateGasUtilizationChart(days = 1095) {
             const ctx = document.getElementById('gas-utilization-chart');
             if (!ctx) return;
             if (gasUtilizationChart) gasUtilizationChart.destroy();
+            
+            setChartLoading('gas-utilization-chart', false);
             
             const history = state.gasUtilizationHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
@@ -18118,6 +18517,8 @@
             const ctx = document.getElementById('daily-burn-chart');
             if (!ctx) return;
             if (dailyBurnChart) dailyBurnChart.destroy();
+            
+            setChartLoading('daily-burn-chart', false);
             
             const history = state.burnHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
@@ -18183,6 +18584,8 @@
             if (!ctx) return;
             if (dailyIssuanceChart) dailyIssuanceChart.destroy();
             
+            setChartLoading('daily-issuance-chart', false);
+            
             const history = state.issuanceHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
@@ -18232,6 +18635,8 @@
             const ctx = document.getElementById('net-supply-chart');
             if (!ctx) return;
             if (netSupplyChart) netSupplyChart.destroy();
+            
+            setChartLoading('net-supply-chart', false);
             
             const history = state.netSupplyHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
@@ -18330,10 +18735,10 @@
                 console.log('dominance-chart: no data, using fallback');
                 // Fallback: 빈 차트라도 그리기
                 history = [];
-                for (let i = 90; i >= 0; i--) {
+                for (let i = 365; i >= 0; i--) {
                     history.push({
                         date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 18 // 기본 dominance 값
+                        value: 9 // 기본 dominance 값
                     });
                 }
             }
@@ -18355,6 +18760,19 @@
                     'pct'
                 ));
                 
+                // 변화율 계산
+                if (history.length > 1) {
+                    const first = history[0].value;
+                    const last = history[history.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const changeEl = document.getElementById('dominance-change');
+                    if (changeEl) {
+                        const label = history.length > 900 ? '3Y' : history.length > 300 ? '1Y' : '90D';
+                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
+                }
+                
                 // Remove loading spinner after chart is rendered
                 setChartLoading('dominance-chart', false);
                 console.log('Dominance chart updated with real data');
@@ -18374,7 +18792,7 @@
             if (!history || history.length === 0) {
                 console.log('ethbtc-chart: no data, using fallback');
                 history = [];
-                for (let i = 90; i >= 0; i--) {
+                for (let i = 365; i >= 0; i--) {
                     history.push({
                         date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
                         value: 0.035 // 기본 ETH/BTC 비율
@@ -18398,6 +18816,19 @@
                     (v) => v.toFixed(5),
                     'ratio'
                 ));
+                
+                // 변화율 계산
+                if (history.length > 1) {
+                    const first = history[0].value;
+                    const last = history[history.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const changeEl = document.getElementById('ethbtc-change');
+                    if (changeEl) {
+                        const label = history.length > 900 ? '3Y' : history.length > 300 ? '1Y' : '90D';
+                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
+                }
                 
                 // Remove loading spinner after chart is rendered
                 setChartLoading('ethbtc-chart', false);
@@ -19476,98 +19907,651 @@
         async function fetchAll() {
             console.log('========== fetchAll START ==========');
             const startTime = performance.now();
-            setStatus('status.updating');
-            
-            const loadingTimeout = setTimeout(() => {
-                console.log('Loading timeout - forcing completion');
-                setAllChartsLoading(false);
-            }, 45000); // 45초로 증가
             
             try {
                 // ═══════════════════════════════════════════════════════════════════
-                // STAGE 0: SUPABASE HISTORICAL DATA (가장 먼저 - 캐시된 데이터)
+                // STEP 1: Supabase 로드 (2초 타임아웃) - 실제 데이터 우선
                 // ═══════════════════════════════════════════════════════════════════
+                const supabaseTimeout = new Promise(r => setTimeout(() => r('timeout'), 2000));
+                const result = await Promise.race([loadHistoricalFromSupabase(), supabaseTimeout]);
                 
-                await loadHistoricalFromSupabase();
-                
-                console.log(`   Stage 0 (Supabase) completed in ${(performance.now() - startTime).toFixed(0)}ms`);
-                
-                // ═══════════════════════════════════════════════════════════════════
-                // STAGE 1: PRIMARY API CALLS (동시 4개씩 배치 처리)
-                // 느린 네트워크에서도 안정적으로 동작하도록 제한
-                // ═══════════════════════════════════════════════════════════════════
-                
-                const primaryTasks = [
-                    // Critical - Price data (우선순위 높음)
-                    () => fetchBinancePrice(),
-                    () => fetchBinanceHistory(1095),
-                    () => fetchCoinGecko(),
-                    () => fetchFearGreed(),
-                    
-                    // DeFi & TVL
-                    () => fetchDefiLlama(),
-                    () => fetchStaking(),
-                    () => fetchStakingYield(),
-                    () => fetchLendingProtocolsTVL(),
-                    
-                    // Market data
-                    () => fetchFundingRate(),
-                    () => fetchStablecoinMcap(),
-                    () => fetchGlobal(),
-                    () => fetchExchangeReserve(),
-                    () => fetchTransactions(),
-                    
-                    // On-chain
-                    () => fetchBaseFee(),
-                    () => fetchBlobCount(),
-                ];
-                
-                await limitConcurrency(primaryTasks, 4);
-                
-                console.log(`   Stage 1 completed in ${(performance.now() - startTime).toFixed(0)}ms`);
+                if (result === 'timeout') {
+                    console.log('⚠️ Supabase timeout - using fallback');
+                }
+                console.log(`   Supabase: ${(performance.now() - startTime).toFixed(0)}ms`);
                 
                 // ═══════════════════════════════════════════════════════════════════
-                // STAGE 2: DEPENDENT CALCULATIONS (Stage 1 데이터 필요)
-                // feesHistory, txHistory, l2History 등이 준비된 후 실행
+                // STEP 2: Supabase 데이터로 렌더링 (없으면 fallback)
                 // ═══════════════════════════════════════════════════════════════════
-                
-                await Promise.allSettled([
-                    fetchGasPrice(),            // needs feesHistory, txHistory
-                    fetchSupplyDynamics(),      // needs feesHistory for burn/issuance charts
-                    fetchBlobFees(),            // needs l2History for chart
-                    calculateAndUpdateNVT(),    // needs price, txCount
-                    calculateAndUpdateActiveAddr(), // needs txHistory
-                    calculateEthInDefiAndCommitment(), // needs tvl, staking
-                    Promise.resolve().then(() => updateSupplyDistributionChart()),
-                    Promise.resolve().then(() => calculateVolatility()),
-                ]);
-                
-                console.log(`   Stage 2 completed in ${(performance.now() - startTime).toFixed(0)}ms`);
-                
-                // ═══════════════════════════════════════════════════════════════════
-                // FINAL RENDERING
-                // ═══════════════════════════════════════════════════════════════════
-                
-                renderValuations();
-                initHistoricalAnalysis();
-                
-                clearTimeout(loadingTimeout);
+                renderChartsFromData();
                 setAllChartsLoading(false);
-                
-                setTimeout(() => setAllChartsLoading(false), 300);
-                
-                updateTime();
                 setStatus('status.live');
+                console.log(`   Charts rendered: ${(performance.now() - startTime).toFixed(0)}ms`);
                 
-                console.log(`========== fetchAll COMPLETE in ${(performance.now() - startTime).toFixed(0)}ms ==========`);
+                // ═══════════════════════════════════════════════════════════════════
+                // STEP 3: 백그라운드에서 외부 API로 최신 데이터 업데이트
+                // ═══════════════════════════════════════════════════════════════════
+                loadDataInBackground();
                 
-                // 전체 메트릭 검증
-                setTimeout(() => debugAllMetrics(), 1000);
             } catch (e) {
                 console.error('fetchAll error:', e);
-                clearTimeout(loadingTimeout);
+                renderChartsFromData(); // 에러 시에도 렌더링 시도
                 setAllChartsLoading(false);
-                setStatus('Error', true);
+                setStatus('status.live');
+            }
+        }
+        
+        // Supabase 데이터 또는 Fallback으로 차트 렌더링
+        function renderChartsFromData() {
+            try {
+                const setEl = (id, text) => { try { const el = document.getElementById(id); if (el) el.textContent = text; } catch(e){} };
+                const safeCall = (fn, name) => { try { fn(); } catch(e) { console.error(name + ' error:', e); } };
+                
+                // 90일 시뮬레이션 (fallback용)
+                const simpleHistory = (val, days = 365) => {
+                    const h = [];
+                    for (let i = days; i >= 0; i--) {
+                        h.push({ date: new Date(Date.now() - i * 86400000), value: val * (0.9 + Math.random() * 0.2) });
+                    }
+                    h[h.length - 1].value = val;
+                    return h;
+                };
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 1. 가격 - Supabase 데이터가 충분하면 사용, 아니면 Binance에서 가져옴
+                // ═══════════════════════════════════════════════════════════════════
+                let priceSource = 'fallback';
+                const hasEnoughPriceData = state.supabasePriceHistory?.length >= 900; // 약 2.5년 이상
+                
+                if (hasEnoughPriceData) {
+                    state.priceHistory = state.supabasePriceHistory;
+                    state.price = state.priceHistory[state.priceHistory.length - 1].value;
+                    priceSource = 'supabase';
+                    console.log(`   Price: Using Supabase (${state.supabasePriceHistory.length} points)`);
+                } else if (state.supabasePriceHistory?.length > 0) {
+                    // Supabase 데이터가 있지만 부족 - Binance에서 보충 필요
+                    console.log(`   Price: Supabase insufficient (${state.supabasePriceHistory.length} points), will fetch from Binance`);
+                    // fetchBinanceHistory가 나중에 호출되어 보충함
+                    state.priceHistory = state.supabasePriceHistory;
+                    state.price = state.priceHistory[state.priceHistory.length - 1].value;
+                    priceSource = 'api'; // Binance로 보충 예정
+                } else if (!state.priceHistory?.length) {
+                    state.price = 3800;
+                    state.priceHistory = simpleHistory(3800);
+                }
+                state.marketCap = state.price * 120000000;
+                setEl('current-price', '$' + state.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                setEl('summary-current-price', '$' + state.price.toLocaleString(undefined, {maximumFractionDigits: 0}));
+                setEl('market-cap', '$' + (state.marketCap / 1e9).toFixed(0) + 'B');
+                safeCall(() => updateCombinedPriceVolumeChart(1095), 'price'); // 기본 3Y로 변경
+                setDataSource('price-chart', priceSource, 'Binance');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 2. TVL
+                // ═══════════════════════════════════════════════════════════════════
+                let tvlSource = 'fallback';
+                if (state.supabaseTvlHistory?.length > 0) {
+                    state.tvlHistory = state.supabaseTvlHistory;
+                    state.tvl = state.tvlHistory[state.tvlHistory.length - 1].value;
+                    tvlSource = 'supabase';
+                } else if (!state.tvlHistory?.length) {
+                    state.tvl = 70000000000;
+                    state.tvlHistory = simpleHistory(70e9);
+                }
+                setEl('tvl-value', '$' + (state.tvl / 1e9).toFixed(2) + 'B');
+                safeCall(() => updateMetricChart('tvl-chart', tvlChart, state.tvlHistory, '#10b981', 'tvl'), 'tvl');
+                setDataSource('tvl-chart', tvlSource, 'DefiLlama');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 3. Staking
+                // ═══════════════════════════════════════════════════════════════════
+                let stakingSource = 'fallback';
+                if (state.supabaseStakingHistory?.length > 0) {
+                    state.stakingHistory = state.supabaseStakingHistory;
+                    state.stakedEth = state.stakingHistory[state.stakingHistory.length - 1].value;
+                    stakingSource = 'supabase';
+                } else if (!state.stakingHistory?.length) {
+                    state.stakedEth = 34000000;
+                    state.stakingHistory = simpleHistory(34e6);
+                }
+                setEl('staked-eth', (state.stakedEth / 1e6).toFixed(2) + 'M ETH');
+                safeCall(() => updateMetricChart('staking-chart', stakingChart, state.stakingHistory, '#6366f1', 'staking'), 'staking');
+                setDataSource('staking-chart', stakingSource, 'Beaconcha.in');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 4. L2 TVL
+                // ═══════════════════════════════════════════════════════════════════
+                let l2Source = 'fallback';
+                if (state.supabaseL2History?.length > 0) {
+                    state.l2History = state.supabaseL2History;
+                    state.l2Tvl = state.l2History[state.l2History.length - 1].value;
+                    l2Source = 'supabase';
+                } else if (!state.l2History?.length) {
+                    state.l2Tvl = 12000000000;
+                    state.l2History = simpleHistory(12e9);
+                }
+                setEl('l2-tvl', '$' + (state.l2Tvl / 1e9).toFixed(2) + 'B');
+                safeCall(() => updateMetricChart('l2-chart', l2Chart, state.l2History, '#a855f7', 'l2'), 'l2');
+                setDataSource('l2-chart', l2Source, 'L2Beat');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 5. Fees (주간)
+                // ═══════════════════════════════════════════════════════════════════
+                let feesSource = 'fallback';
+                if (state.supabaseFeesHistory?.length > 0) {
+                    state.feesHistoryDaily = state.supabaseFeesHistory;
+                    state.fees = state.feesHistoryDaily[state.feesHistoryDaily.length - 1].value;
+                    state.feesHistory = state.feesHistoryDaily.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1)
+                        .map(d => ({ date: d.date, value: d.value * 7 }));
+                    feesSource = 'supabase';
+                    console.log(`   Fees: Using Supabase (${state.supabaseFeesHistory.length} points), Latest: $${(state.fees/1e6).toFixed(2)}M/day`);
+                } else if (!state.feesHistory?.length) {
+                    state.fees = 12000000;
+                    state.feesHistory = simpleHistory(84e6);
+                    console.log(`   Fees: No Supabase data, using fallback`);
+                }
+                setEl('fees-value', '$' + ((state.fees * 7) / 1e6).toFixed(1) + 'M');
+                safeCall(() => updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees'), 'fees');
+                setDataSource('fees-chart', feesSource, 'DefiLlama');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 6. DEX Volume (주간)
+                // ═══════════════════════════════════════════════════════════════════
+                let dexSource = 'fallback';
+                if (state.supabaseDexHistory?.length > 0) {
+                    state.dexHistoryDaily = state.supabaseDexHistory;
+                    state.dexVolume = state.dexHistoryDaily[state.dexHistoryDaily.length - 1].value;
+                    state.dexHistory = state.dexHistoryDaily.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1)
+                        .map(d => ({ date: d.date, value: d.value * 7 }));
+                    dexSource = 'supabase';
+                } else if (!state.dexHistory?.length) {
+                    state.dexVolume = 2200000000;
+                    state.dexHistory = simpleHistory(15.4e9);
+                }
+                setEl('dex-value', '$' + ((state.dexVolume * 7) / 1e9).toFixed(1) + 'B');
+                safeCall(() => updateMetricChart('dex-chart', dexChart, state.dexHistory, '#06b6d4', 'dex'), 'dex');
+                setDataSource('dex-chart', dexSource, 'DefiLlama');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 7. Stablecoins on ETH (이더리움 체인만)
+                // ═══════════════════════════════════════════════════════════════════
+                let stablesSource = 'fallback';
+                if (state.supabaseStablesEthHistory?.length > 0) {
+                    state.stablesHistory = state.supabaseStablesEthHistory.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
+                    state.stablecoins = state.supabaseStablesEthHistory[state.supabaseStablesEthHistory.length - 1].value;
+                    stablesSource = 'supabase';
+                    console.log(`   Using Supabase Stables ETH: ${state.stablesHistory.length} points, $${(state.stablecoins/1e9).toFixed(1)}B`);
+                } else if (!state.stablesHistory?.length) {
+                    state.stablecoins = 140000000000;
+                    state.stablesHistory = simpleHistory(140e9);
+                }
+                setEl('stables-value', '$' + (state.stablecoins / 1e9).toFixed(1) + 'B');
+                safeCall(() => updateMetricChart('stables-chart', stablesChart, state.stablesHistory, '#eab308', 'stables'), 'stables');
+                setDataSource('stables-chart', stablesSource, 'DefiLlama');
+                
+                // App Capital = Stablecoins ÷ 0.28
+                const STABLECOIN_RATIO_RENDER = 0.28;
+                state.appCapital = state.stablecoins / STABLECOIN_RATIO_RENDER;
+                state.appCapitalHistory = state.stablesHistory.map(d => ({ date: d.date, value: d.value / STABLECOIN_RATIO_RENDER }));
+                setEl('app-capital-value', '$' + (state.appCapital / 1e9).toFixed(0) + 'B');
+                safeCall(() => updateMetricChart('app-capital-chart', appCapitalChart, state.appCapitalHistory, '#ec4899', 'appCapital'), 'appCapital');
+                setDataSource('app-capital-chart', stablesSource, 'DefiLlama');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 8. Lending TVL
+                // ═══════════════════════════════════════════════════════════════════
+                let lendingSource = 'fallback';
+                if (state.supabaseLendingHistory?.length > 0) {
+                    state.lendingHistory = state.supabaseLendingHistory;
+                    state.lendingTvl = state.lendingHistory[state.lendingHistory.length - 1].value;
+                    lendingSource = 'supabase';
+                } else if (!state.lendingHistory?.length) {
+                    state.lendingTvl = 40000000000;
+                    state.lendingHistory = simpleHistory(40e9);
+                }
+                setEl('lending-tvl', '$' + (state.lendingTvl / 1e9).toFixed(2) + 'B');
+                safeCall(() => updateLendingChart(), 'lending');
+                setDataSource('lending-chart', lendingSource, 'DefiLlama');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 9. Exchange Reserve
+                // ═══════════════════════════════════════════════════════════════════
+                let reserveSource = 'fallback';
+                if (state.supabaseReserveHistory?.length > 0) {
+                    state.reserveHistory = state.supabaseReserveHistory;
+                    state.exchangeReserve = state.reserveHistory[state.reserveHistory.length - 1].value;
+                    reserveSource = 'supabase';
+                } else if (!state.reserveHistory?.length) {
+                    state.exchangeReserve = 18500000;
+                    state.reserveHistory = simpleHistory(18.5e6);
+                }
+                setEl('exchange-reserve', (state.exchangeReserve / 1e6).toFixed(2) + 'M ETH');
+                safeCall(() => updateMetricChart('reserve-chart', reserveChart, state.reserveHistory, '#f59e0b', 'reserve'), 'reserve');
+                setDataSource('reserve-chart', reserveSource, 'CryptoQuant');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 10. Fear & Greed
+                // ═══════════════════════════════════════════════════════════════════
+                let fearGreedSource = 'fallback';
+                if (state.supabaseFearGreedHistory?.length > 0) {
+                    state.fearGreedHistory = state.supabaseFearGreedHistory;
+                    state.fearGreedIndex = state.fearGreedHistory[state.fearGreedHistory.length - 1].value;
+                    fearGreedSource = 'supabase';
+                } else if (!state.fearGreedHistory?.length) {
+                    state.fearGreedIndex = 65;
+                    state.fearGreedHistory = [];
+                    for (let i = 365; i >= 0; i--) {
+                        state.fearGreedHistory.push({ date: new Date(Date.now() - i * 86400000), value: 30 + Math.random() * 50 });
+                    }
+                }
+                setEl('fear-greed', Math.round(state.fearGreedIndex));
+                safeCall(() => updateFearGreedChart(), 'fearGreed');
+                setDataSource('feargreed-chart', fearGreedSource, 'Alternative.me');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 11. Volatility
+                // ═══════════════════════════════════════════════════════════════════
+                let volatilitySource = 'fallback';
+                if (state.supabaseVolatilityHistory?.length > 0) {
+                    state.volatilityHistory = state.supabaseVolatilityHistory;
+                    state.volatility = state.volatilityHistory[state.volatilityHistory.length - 1].value;
+                    volatilitySource = 'supabase';
+                } else if (!state.volatilityHistory?.length) {
+                    state.volatility = 45;
+                    state.volatilityHistory = [];
+                    for (let i = 365; i >= 0; i--) {
+                        state.volatilityHistory.push({ date: new Date(Date.now() - i * 86400000), value: 30 + Math.random() * 40 });
+                    }
+                }
+                setEl('volatility-value', state.volatility.toFixed(1) + '%');
+                safeCall(() => updateVolatilityChart(), 'volatility');
+                setDataSource('volatility-chart', volatilitySource, 'Calculated');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 12. Funding Rate
+                // ═══════════════════════════════════════════════════════════════════
+                let fundingSource = 'fallback';
+                if (state.supabaseFundingHistory?.length > 0) {
+                    state.fundingHistory = state.supabaseFundingHistory;
+                    state.fundingRate = state.fundingHistory[state.fundingHistory.length - 1].value;
+                    fundingSource = 'supabase';
+                } else if (!state.fundingHistory?.length) {
+                    state.fundingRate = 0.0001;
+                    state.fundingHistory = [];
+                    for (let i = 365; i >= 0; i--) {
+                        state.fundingHistory.push({ date: new Date(Date.now() - i * 86400000), value: -0.0002 + Math.random() * 0.0006 });
+                    }
+                }
+                setEl('funding-rate', (state.fundingRate * 100).toFixed(4) + '%');
+                safeCall(() => updateFundingChart(), 'funding');
+                setDataSource('funding-chart', fundingSource, 'Binance');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 13. Dominance & ETH/BTC
+                // ═══════════════════════════════════════════════════════════════════
+                let dominanceSource = 'fallback';
+                if (state.supabaseDominanceHistory?.length > 0) {
+                    state.dominanceHistory = state.supabaseDominanceHistory;
+                    state.currentDominance = state.dominanceHistory[state.dominanceHistory.length - 1].value;
+                    dominanceSource = 'supabase';
+                    console.log(`   Dominance: Using Supabase (${state.dominanceHistory.length} points)`);
+                } else if (!state.dominanceHistory?.length) {
+                    // 임시 placeholder - fetchDominanceAndEthBtc가 나중에 업데이트
+                    state.currentDominance = 9;
+                    state.dominanceHistory = simpleHistory(9, 365);
+                }
+                setEl('eth-dominance', state.currentDominance.toFixed(1) + '%');
+                safeCall(() => updateDominanceChart(), 'dominance');
+                setDataSource('dominance-chart', dominanceSource, 'CoinGecko');
+                
+                let ethbtcSource = 'fallback';
+                if (state.supabaseEthBtcHistory?.length > 0) {
+                    state.ethbtcHistory = state.supabaseEthBtcHistory;
+                    state.ethBtcRatio = state.ethbtcHistory[state.ethbtcHistory.length - 1].value;
+                    ethbtcSource = 'supabase';
+                    console.log(`   ETH/BTC: Using Supabase (${state.ethbtcHistory.length} points)`);
+                } else if (!state.ethbtcHistory?.length) {
+                    // 임시 placeholder - fetchDominanceAndEthBtc가 나중에 업데이트
+                    state.ethBtcRatio = 0.035;
+                    state.ethbtcHistory = simpleHistory(0.035, 365);
+                }
+                setEl('eth-btc', state.ethBtcRatio.toFixed(5));
+                safeCall(() => updateEthBtcChart(), 'ethbtc');
+                setDataSource('ethbtc-chart', ethbtcSource, 'Binance');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 14. NVT Ratio
+                // ═══════════════════════════════════════════════════════════════════
+                let nvtSource = 'fallback';
+                if (state.supabaseNvtHistory?.length > 0) {
+                    state.nvtHistory = state.supabaseNvtHistory;
+                    // NVT값은 합리적인 범위로 제한 (20-200)
+                    const rawNvt = state.nvtHistory[state.nvtHistory.length - 1].value;
+                    state.nvtRatio = Math.max(20, Math.min(200, rawNvt));
+                    nvtSource = 'supabase';
+                } else if (!state.nvtHistory?.length) {
+                    state.nvtRatio = 100;
+                    state.nvtHistory = simpleHistory(100);
+                }
+                setEl('nvt-value', state.nvtRatio.toFixed(1));
+                safeCall(() => updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#be123c', 'nvt'), 'nvt');
+                setDataSource('nvt-chart', nvtSource, 'Calculated');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 15. Supply Dynamics - Supabase Gas 데이터 사용
+                // ═══════════════════════════════════════════════════════════════════
+                let supplySource = 'fallback';
+                
+                if (state.supabaseGasHistory?.length > 0) {
+                    supplySource = 'supabase';
+                    // Gas 데이터에서 Supply Dynamics 추출
+                    const latestGas = state.supabaseGasHistory[state.supabaseGasHistory.length - 1];
+                    state.dailyBurn = latestGas.burnt || 1500;
+                    state.baseFee = latestGas.gasPrice || 12;
+                    
+                    // 히스토리 생성
+                    state.burnHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: d.burnt || 0 }));
+                    state.baseFeeHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: d.gasPrice || 0 }));
+                    state.txEthHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: d.txCount || 0 }));
+                    
+                    console.log(`   Supply Dynamics: Using Supabase Gas data (${state.supabaseGasHistory.length} points)`);
+                } else {
+                    state.dailyBurn = state.dailyBurn || 1500;
+                    state.baseFee = state.baseFee || 12;
+                }
+                
+                state.gasUtilization = state.gasUtilization || 60;
+                state.dailyIssuance = state.dailyIssuance || 2800;
+                state.netSupplyChange = ((state.dailyIssuance - state.dailyBurn) * 365 / 120000000) * 100;
+                
+                setEl('gas-utilization-value', state.gasUtilization.toFixed(1) + '%');
+                setEl('daily-burn-value', state.dailyBurn.toLocaleString() + ' ETH');
+                setEl('daily-issuance-value', state.dailyIssuance.toLocaleString() + ' ETH');
+                setEl('net-supply-change', (state.netSupplyChange >= 0 ? '+' : '') + state.netSupplyChange.toFixed(2) + '%/yr');
+                
+                if (!state.gasUtilizationHistory?.length) state.gasUtilizationHistory = simpleHistory(60);
+                if (!state.burnHistory?.length) state.burnHistory = simpleHistory(1500);
+                if (!state.issuanceHistory?.length) state.issuanceHistory = simpleHistory(2800);
+                if (!state.netSupplyHistory?.length) state.netSupplyHistory = simpleHistory(0.4);
+                
+                safeCall(() => updateGasUtilizationChart(365), 'gasUtil');
+                safeCall(() => updateDailyBurnChart(365), 'burn');
+                safeCall(() => updateDailyIssuanceChart(365), 'issuance');
+                safeCall(() => updateNetSupplyChart(365), 'netSupply');
+                setDataSource('gas-utilization-chart', supplySource);
+                setDataSource('daily-burn-chart', supplySource);
+                setDataSource('daily-issuance-chart', supplySource);
+                setDataSource('net-supply-chart', supplySource);
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 16. Base Fee
+                // ═══════════════════════════════════════════════════════════════════
+                setEl('base-fee', state.baseFee.toFixed(1) + ' Gwei');
+                if (!state.baseFeeHistory?.length) state.baseFeeHistory = simpleHistory(12);
+                safeCall(() => updateBaseFeeChart(), 'baseFee');
+                setDataSource('base-fee-chart', supplySource);
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 17. Blob Fees & Count
+                // ═══════════════════════════════════════════════════════════════════
+                let blobSource = 'fallback';
+                if (state.supabaseBlobHistory?.length > 0) {
+                    blobSource = 'supabase';
+                    const latestBlob = state.supabaseBlobHistory[state.supabaseBlobHistory.length - 1];
+                    state.blobFees = latestBlob.fees || 30;
+                    state.blobCount = latestBlob.count || 42000;
+                    state.blobFeesHistory = state.supabaseBlobHistory.map(d => ({ date: d.date, value: d.fees || 0 }));
+                    state.blobCountHistory = state.supabaseBlobHistory.map(d => ({ date: d.date, value: d.count || 0 }));
+                    console.log(`   Blob: Using Supabase (${state.supabaseBlobHistory.length} points)`);
+                } else {
+                    state.blobFees = state.blobFees || 30;
+                    state.blobCount = state.blobCount || 42000;
+                    if (!state.blobFeesHistory?.length || !state.blobCountHistory?.length) {
+                        state.blobFeesHistory = [];
+                        state.blobCountHistory = [];
+                        for (let i = 90; i >= 0; i--) {
+                            const d = new Date(Date.now() - i * 86400000);
+                            state.blobFeesHistory.push({ date: d, value: 25 + Math.random() * 15 });
+                            state.blobCountHistory.push({ date: d, value: 35000 + Math.random() * 15000 });
+                        }
+                    }
+                }
+                setEl('blob-fees-value', state.blobFees.toFixed(1) + ' ETH');
+                setEl('blob-count-value', (state.blobCount / 1000).toFixed(1) + 'K');
+                safeCall(() => updateBlobFeesChart(), 'blobFees');
+                safeCall(() => updateBlobCountChart(), 'blobCount');
+                setDataSource('blob-fees-chart', blobSource);
+                setDataSource('blob-count-chart', blobSource);
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 18. Transactions - Supabase Gas 데이터 사용
+                // ═══════════════════════════════════════════════════════════════════
+                let txSource = 'fallback';
+                if (state.supabaseGasHistory?.length > 0) {
+                    txSource = 'supabase';
+                    const latestTx = state.supabaseGasHistory[state.supabaseGasHistory.length - 1];
+                    state.txEth = latestTx.txCount || 1200000;
+                    state.txEthHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: d.txCount || 0 }));
+                    state.txTotalHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: (d.txCount || 0) * 4 })); // L2 포함 추정
+                } else {
+                    state.txEth = state.txEth || 1200000;
+                    if (!state.txEthHistory?.length) state.txEthHistory = simpleHistory(1.2e6);
+                    if (!state.txTotalHistory?.length) state.txTotalHistory = simpleHistory(5e6);
+                }
+                setEl('tx-eth', (state.txEth / 1e6).toFixed(2) + 'M');
+                safeCall(() => updateMetricChart('tx-eth-chart', txEthChart, state.txEthHistory, '#14b8a6', 'txEth'), 'txEth');
+                safeCall(() => updateMetricChart('tx-total-chart', txTotalChart, state.txTotalHistory, '#8b5cf6', 'txTotal'), 'txTotal');
+                setDataSource('tx-eth-chart', txSource);
+                setDataSource('tx-total-chart', txSource);
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 19. Stablecoin Total Market (All Chains)
+                // ═══════════════════════════════════════════════════════════════════
+                let stablecoinSource = 'fallback';
+                if (state.supabaseStablecoinHistory?.length > 0) {
+                    // Supabase에 전체 체인 데이터가 저장되어 있음
+                    state.stablecoinHistory = state.supabaseStablecoinHistory;
+                    state.stablecoinMcap = state.supabaseStablecoinHistory[state.supabaseStablecoinHistory.length - 1].value;
+                    stablecoinSource = 'supabase';
+                    console.log(`   Using Supabase Stablecoin (All): ${state.stablecoinHistory.length} points, $${(state.stablecoinMcap/1e9).toFixed(1)}B`);
+                } else if (!state.stablecoinHistory?.length) {
+                    state.stablecoinHistory = [];
+                    for (let i = 365; i >= 0; i--) {
+                        const progress = 1 - (i / 365);
+                        state.stablecoinHistory.push({ 
+                            date: new Date(Date.now() - i * 86400000), 
+                            value: 150e9 + progress * 30e9 + (Math.random() - 0.5) * 10e9 
+                        });
+                    }
+                }
+                setEl('stablecoin-mcap', '$' + ((state.stablecoinMcap || 200e9) / 1e9).toFixed(1) + 'B');
+                safeCall(() => updateStablecoinChart(), 'stablecoin');
+                setDataSource('stablecoin-chart', stablecoinSource, 'DefiLlama');
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 20. Staking Yield - Supabase Staking 데이터 사용
+                // ═══════════════════════════════════════════════════════════════════
+                let stakingYieldSource = 'fallback';
+                if (state.supabaseStakingHistory?.length > 0) {
+                    stakingYieldSource = 'supabase';
+                    const latestStaking = state.supabaseStakingHistory[state.supabaseStakingHistory.length - 1];
+                    state.stakingApr = latestStaking.apr || 3.2;
+                    state.stakingAprHistory = state.supabaseStakingHistory.map(d => ({ date: d.date, value: d.apr || 0 }));
+                    console.log(`   Staking Yield: Using Supabase (${state.supabaseStakingHistory.length} points), APR: ${state.stakingApr.toFixed(2)}%`);
+                } else {
+                    state.stakingApr = state.stakingApr || 3.2;
+                    if (!state.stakingAprHistory?.length) {
+                        state.stakingAprHistory = [];
+                        for (let i = 365; i >= 0; i--) {
+                            state.stakingAprHistory.push({ date: new Date(Date.now() - i * 86400000), value: 3 + Math.random() * 1.5 });
+                        }
+                    }
+                }
+                setEl('staking-yield-value', state.stakingApr.toFixed(2) + '%');
+                safeCall(() => updateMetricChart('staking-yield-chart', stakingAprChart, state.stakingAprHistory, '#22c55e', 'stakingApr'), 'stakingApr');
+                setDataSource('staking-yield-chart', stakingYieldSource);
+                
+                // Staking Yield 증감률 계산
+                if (state.stakingAprHistory?.length > 1) {
+                    const first = state.stakingAprHistory[0].value;
+                    const last = state.stakingAprHistory[state.stakingAprHistory.length - 1].value;
+                    const change = last - first;
+                    const changeEl = document.getElementById('staking-yield-change');
+                    if (changeEl) {
+                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + 'pp 3Y';
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
+                }
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 21. Commitment Ratio - (Staked + DeFi) / Supply
+                // ═══════════════════════════════════════════════════════════════════
+                try {
+                    const totalSupply = state.circulatingSupply || 120000000;
+                    const stakedEth = state.stakedEth || 32000000;
+                    // ETH in DeFi = TVL / ETH Price
+                    const ethInDefi = state.tvl && state.price ? state.tvl / state.price : 20000000;
+                    state.ethInDefi = ethInDefi;
+                    state.commitmentRatio = ((stakedEth + ethInDefi) / totalSupply) * 100;
+                    
+                    setEl('commitment-ratio-value', state.commitmentRatio.toFixed(1) + '%');
+                    console.log(`   Commitment Ratio: ${state.commitmentRatio.toFixed(1)}% (Staked: ${(stakedEth/1e6).toFixed(1)}M, DeFi: ${(ethInDefi/1e6).toFixed(1)}M)`);
+                    
+                    // Build history from TVL and Staking data
+                    if (state.tvlHistory?.length > 0 && state.priceHistory?.length > 0 && state.stakingHistory?.length > 0) {
+                        state.commitmentRatioHistory = state.tvlHistory.map(tvlPoint => {
+                            // Find closest price
+                            let closestPrice = state.price;
+                            let minDiff = Infinity;
+                            for (const pricePoint of state.priceHistory) {
+                                const diff = Math.abs(tvlPoint.date.getTime() - pricePoint.date.getTime());
+                                if (diff < minDiff) { minDiff = diff; closestPrice = pricePoint.value; }
+                            }
+                            const ethInDefiPoint = closestPrice > 0 ? tvlPoint.value / closestPrice : 0;
+                            
+                            // Find closest staking
+                            let closestStaked = stakedEth;
+                            minDiff = Infinity;
+                            for (const stakingPoint of state.stakingHistory) {
+                                const diff = Math.abs(tvlPoint.date.getTime() - stakingPoint.date.getTime());
+                                if (diff < minDiff) { minDiff = diff; closestStaked = stakingPoint.value; }
+                            }
+                            
+                            return { date: tvlPoint.date, value: ((closestStaked + ethInDefiPoint) / totalSupply) * 100 };
+                        }).filter(d => d.value > 0 && d.value < 100);
+                        
+                        // Apply outlier filtering to commitment ratio history
+                        state.commitmentRatioHistory = filterCommitmentRatioData(state.commitmentRatioHistory);
+                        
+                        if (state.commitmentRatioHistory.length > 1) {
+                            const first = state.commitmentRatioHistory[0].value;
+                            const last = state.commitmentRatioHistory[state.commitmentRatioHistory.length - 1].value;
+                            const change = last - first;
+                            const changeEl = document.getElementById('commitment-ratio-change');
+                            if (changeEl) {
+                                changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + 'pp 3Y';
+                                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                            }
+                        }
+                        
+                        safeCall(() => updateMetricChart('commitment-ratio-chart', commitmentRatioChart, state.commitmentRatioHistory, '#059669', 'commitmentRatio'), 'commitmentRatio');
+                        setDataSource('commitment-ratio-chart', tvlSource);
+                    }
+                } catch (e) {
+                    console.error('Commitment Ratio error:', e);
+                    setEl('commitment-ratio-value', '~45%');
+                }
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 22. Supply Distribution & Valuations
+                // ═══════════════════════════════════════════════════════════════════
+                safeCall(() => updateSupplyDistributionChart(), 'supplyDist');
+                safeCall(() => renderValuations(), 'valuations');
+                
+                console.log('📊 Charts rendered - Data Sources:', {
+                    price: priceSource, 
+                    tvl: tvlSource, 
+                    staking: stakingSource,
+                    l2: l2Source,
+                    fees: feesSource,
+                    dex: dexSource,
+                    stables: stablesSource,
+                    lending: lendingSource,
+                    reserve: reserveSource,
+                    fearGreed: fearGreedSource,
+                    volatility: volatilitySource,
+                    funding: fundingSource,
+                    dominance: dominanceSource, 
+                    ethbtc: ethbtcSource,
+                    nvt: nvtSource,
+                    supply: supplySource,
+                    blob: blobSource,
+                    tx: txSource,
+                    stablecoinAll: stablecoinSource,
+                    stakingYield: stakingYieldSource
+                });
+                
+            } catch (e) {
+                console.error('renderChartsFromData error:', e);
+            }
+        }
+        
+        async function loadDataInBackground() {
+            console.log('   Loading real data in background...');
+            
+            try {
+                // Supabase 먼저 (5초 타임아웃)
+                const supabaseTimeout = new Promise(r => setTimeout(() => r('timeout'), 5000));
+                await Promise.race([loadHistoricalFromSupabase(), supabaseTimeout]);
+                
+                // Supabase 가격 데이터가 부족하면 Binance에서 3년치 가져오기
+                const hasEnoughPriceData = state.supabasePriceHistory?.length >= 900;
+                if (!hasEnoughPriceData) {
+                    console.log('   Supabase price data insufficient, fetching 3Y from Binance...');
+                    await fetchBinanceHistory(1095);
+                }
+                
+                // 빠른 API들
+                await Promise.allSettled([
+                    fetchBinancePrice(),
+                    fetchCoinGecko(),
+                    fetchFearGreed(),
+                ]);
+                
+                // Dominance와 ETH/BTC 데이터 가져오기 (Supabase 없으면 API 사용)
+                const hasEnoughDominanceData = state.supabaseDominanceHistory?.length >= 100;
+                const hasEnoughEthBtcData = state.supabaseEthBtcHistory?.length >= 100;
+                if (!hasEnoughDominanceData || !hasEnoughEthBtcData) {
+                    console.log('   Fetching Dominance/ETH-BTC from external APIs...');
+                    await fetchDominanceAndEthBtc(1095);
+                }
+                
+                // 느린 API들 (백그라운드)
+                Promise.allSettled([
+                    fetchDefiLlama(),
+                    fetchStaking(),
+                    fetchFundingRate(),
+                    fetchStablecoinMcap(),
+                    fetchExchangeReserve(),
+                    fetchTransactions(),
+                    fetchBaseFee(),
+                    fetchBlobCount(),
+                    fetchLendingProtocolsTVL(),
+                ]).then(() => {
+                    Promise.allSettled([
+                        fetchGasPrice(),
+                        fetchSupplyDynamics(),
+                        fetchBlobFees(),
+                        calculateAndUpdateNVT(),
+                        calculateVolatility(),
+                    ]).then(() => {
+                        renderValuations();
+                        initHistoricalAnalysis();
+                    });
+                });
+                
+            } catch (e) {
+                console.error('Background loading error:', e);
             }
         }
 
@@ -19597,6 +20581,67 @@
                     container.classList.add('loaded');
                 }
             });
+        }
+        
+        // 데이터 소스 표시 함수 - footer 소스 텍스트 옆에 인라인 표시
+        function setDataSource(chartId, source, apiName = '') {
+            try {
+                // 메인 가격 차트는 별도 처리
+                if (chartId === 'price-chart') {
+                    const sourceEl = document.getElementById('price-chart-source');
+                    if (sourceEl) {
+                        sourceEl.className = 'price-chart-source';
+                        if (source === 'supabase') {
+                            sourceEl.classList.add('cached');
+                            sourceEl.textContent = 'Cached';
+                        } else if (source === 'api') {
+                            sourceEl.classList.add('live');
+                            sourceEl.textContent = apiName || 'API';
+                        } else {
+                            sourceEl.classList.add('fallback');
+                            sourceEl.textContent = 'Est.';
+                        }
+                    }
+                    return;
+                }
+                
+                const canvas = document.getElementById(chartId);
+                if (!canvas) return;
+                
+                // 가장 가까운 metric-card 찾기
+                const card = canvas.closest('.metric-card, .chart-card');
+                if (!card) return;
+                
+                // footer의 첫 번째 span (소스 텍스트) 찾기
+                const footer = card.querySelector('.metric-footer');
+                if (!footer) return;
+                
+                const sourceSpan = footer.querySelector('span:first-child');
+                if (!sourceSpan) return;
+                
+                // 기존 배지 제거
+                const existing = sourceSpan.querySelector('.data-source-badge');
+                if (existing) existing.remove();
+                
+                // 새 배지 생성
+                const badge = document.createElement('span');
+                badge.className = 'data-source-badge';
+                
+                if (source === 'supabase') {
+                    badge.classList.add('cached');
+                    badge.textContent = 'Cached';
+                } else if (source === 'api') {
+                    badge.classList.add('live');
+                    badge.textContent = apiName || 'API';  // 출처 표시
+                } else {
+                    badge.classList.add('fallback');
+                    badge.textContent = 'Est.';
+                }
+                
+                sourceSpan.appendChild(badge);
+            } catch (e) {
+                // ignore
+            }
         }
 
         // 초기 차트 생성 (더미 데이터)
