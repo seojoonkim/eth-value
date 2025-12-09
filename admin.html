@@ -386,6 +386,38 @@
         }
 
         // ══════════════════════════════════════════════════════════════
+        // BATCH UPSERT HELPER - 대량 데이터를 500개씩 나눠서 저장
+        // ══════════════════════════════════════════════════════════════
+        async function batchUpsert(table, records, conflictKey = 'date', batchSize = 500) {
+            if (!records || records.length === 0) return { error: null, count: 0 };
+            
+            let totalInserted = 0;
+            const batches = Math.ceil(records.length / batchSize);
+            
+            for (let i = 0; i < batches; i++) {
+                const start = i * batchSize;
+                const end = Math.min(start + batchSize, records.length);
+                const batch = records.slice(start, end);
+                
+                const { error } = await supabase.from(table).upsert(batch, { onConflict: conflictKey });
+                
+                if (error) {
+                    log(`  ⚠️ Batch ${i + 1}/${batches} error: ${error.message}`, 'warn');
+                    return { error, count: totalInserted };
+                }
+                
+                totalInserted += batch.length;
+                
+                if (batches > 1 && i < batches - 1) {
+                    log(`  📤 Batch ${i + 1}/${batches}: ${totalInserted}/${records.length}`, 'info');
+                    await new Promise(r => setTimeout(r, 100)); // 배치 간 짧은 딜레이
+                }
+            }
+            
+            return { error: null, count: totalInserted };
+        }
+
+        // ══════════════════════════════════════════════════════════════
         // COLLECTORS - Schema Aligned
         // ══════════════════════════════════════════════════════════════
         const collectors = {
@@ -419,9 +451,9 @@
                 log(`  📦 Got ${allRecords.length} total candles`, 'info');
                 if (allRecords.length === 0) return 0;
                 
-                const { error } = await supabase.from('historical_eth_price').upsert(allRecords, { onConflict: 'date' });
+                const { error, count } = await batchUpsert('historical_eth_price', allRecords);
                 if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : allRecords.length;
+                return error ? 0 : count;
             },
 
             // 2. Ethereum TVL - NO source, NO timestamp
@@ -433,9 +465,10 @@
                     date: new Date(d.date * 1000).toISOString().split('T')[0],
                     tvl: parseFloat(d.tvl.toFixed(2))
                 }));
-                const { error } = await supabase.from('historical_ethereum_tvl').upsert(records, { onConflict: 'date' });
+                log(`  📦 Got ${records.length} TVL records`, 'info');
+                const { error, count } = await batchUpsert('historical_ethereum_tvl', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                return error ? 0 : count;
             },
 
             // 3. L2 TVL - NO source, NO timestamp
@@ -452,7 +485,7 @@
                         tvl: parseFloat(d.tvl.toFixed(2))
                     }));
                     if (records.length > 0) {
-                        const { error } = await supabase.from('historical_l2_tvl').upsert(records, { onConflict: 'date,chain' });
+                        const { error } = await batchUpsert('historical_l2_tvl', records, 'date,chain');
                         if (!error) total += records.length;
                     }
                     await new Promise(r => setTimeout(r, 200));
@@ -468,7 +501,7 @@
                     date: new Date(d[0] * 1000).toISOString().split('T')[0],
                     fees: parseFloat(d[1].toFixed(2))
                 }));
-                const { error } = await supabase.from('historical_protocol_fees').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_protocol_fees', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -486,8 +519,8 @@
                 
                 log(`  📦 Got ${yieldData.data.length} yield records from DefiLlama`, 'info');
                 
-                // Get ETH prices for TVL calculation
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                // Get ETH prices for TVL calculation (limit to 3 years)
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
                 const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
                 
                 const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
@@ -540,7 +573,7 @@
                 });
                 
                 log(`  📦 Filtered to ${uniqueRecords.length} records`, 'info');
-                const { error } = await supabase.from('historical_staking').upsert(uniqueRecords, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_staking', uniqueRecords);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : uniqueRecords.length;
             },
@@ -561,7 +594,7 @@
                     fetchJSON(`https://api.etherscan.io/api?module=stats&action=dailygasused&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`)
                 ]);
                 
-                const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
+                const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date', { ascending: false }).limit(1100);
                 const txMap = new Map(txs?.map(t => [t.date, parseInt(t.tx_count)]) || []);
                 
                 if (gasPriceData?.status === '1' && gasUsedData?.status === '1') {
@@ -590,7 +623,7 @@
                         }
                     }
                     
-                    const { error } = await supabase.from('historical_gas_burn').upsert(records, { onConflict: 'date' });
+                    const { error } = await batchUpsert('historical_gas_burn', records);
                     if (error) log(`  ❌ ${error.message}`, 'error');
                     return error ? 0 : records.length;
                 }
@@ -601,14 +634,14 @@
 
             // 7. Active Addresses - HAS source
             async active_addresses() {
-                const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
+                const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date', { ascending: false }).limit(1100);
                 if (!txs?.length) return 0;
                 const records = txs.map(t => ({
                     date: t.date, timestamp: Date.now(),
                     active_addresses: Math.floor(t.tx_count * 0.4),
                     source: 'estimated'
                 }));
-                const { error } = await supabase.from('historical_active_addresses').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_active_addresses', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -625,7 +658,7 @@
                         source: 'estimated'
                     });
                 }
-                const { error } = await supabase.from('historical_eth_supply').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_eth_supply', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -641,7 +674,7 @@
                     classification: d.value_classification,
                     source: 'alternative_me'
                 }));
-                const { error } = await supabase.from('historical_fear_greed').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_fear_greed', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -656,7 +689,7 @@
                     volume: parseFloat(d[1].toFixed(2)),
                     source: 'defillama'
                 }));
-                const { error } = await supabase.from('historical_dex_volume').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_dex_volume', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -672,7 +705,7 @@
                     total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
                     source: 'defillama'
                 })).filter(r => r.total_mcap > 0);
-                const { error } = await supabase.from('historical_stablecoins').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_stablecoins', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -688,7 +721,7 @@
                     total_mcap: parseFloat((d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0).toFixed(2)),
                     source: 'defillama'
                 })).filter(r => r.total_mcap > 0);
-                const { error } = await supabase.from('historical_stablecoins_eth').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_stablecoins_eth', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -721,7 +754,7 @@
                 log(`  📦 Got ${allRecords.length} total candles`, 'info');
                 if (allRecords.length === 0) return 0;
                 
-                const { error } = await supabase.from('historical_eth_btc').upsert(allRecords, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_eth_btc', allRecords);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : allRecords.length;
             },
@@ -760,7 +793,7 @@
                     records.push({ date, timestamp: Date.now(), funding_rate: parseFloat((rates.reduce((a,b)=>a+b,0)/rates.length).toFixed(8)), source: 'binance' });
                 });
                 
-                const { error } = await supabase.from('historical_funding_rate').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_funding_rate', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -796,7 +829,7 @@
                         source: 'estimated'
                     });
                 }
-                const { error } = await supabase.from('historical_exchange_reserve').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_exchange_reserve', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -813,7 +846,7 @@
                     total_mcap: data.data.total_market_cap.usd,
                     source: 'coingecko'
                 }];
-                const { error } = await supabase.from('historical_eth_dominance').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_eth_dominance', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : 1;
             },
@@ -850,7 +883,7 @@
                     });
                     cur.setDate(cur.getDate() + 1);
                 }
-                const { error } = await supabase.from('historical_blob_data').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_blob_data', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -866,14 +899,14 @@
                     total_tvl: parseFloat((d.tvl * 0.5).toFixed(2)),
                     source: 'defillama'
                 }));
-                const { error } = await supabase.from('historical_lending_tvl').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_lending_tvl', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
 
             // 19. Volatility - HAS source
             async volatility() {
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
                 if (!prices || prices.length < 30) return 0;
                 const records = [];
                 for (let i = 30; i < prices.length; i++) {
@@ -884,7 +917,7 @@
                     const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length;
                     records.push({ date: prices[i].date, timestamp: Date.now(), volatility_30d: parseFloat((Math.sqrt(variance * 365) * 100).toFixed(2)), source: 'calculated' });
                 }
-                const { error } = await supabase.from('historical_volatility').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_volatility', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -892,8 +925,8 @@
             // 20. NVT - Market Cap / On-chain Activity proxy
             // NVT 범위: bull market 20-40, bear market 80-150, normal 40-80
             async nvt() {
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
-                const { data: fees } = await supabase.from('historical_protocol_fees').select('date, fees').order('date');
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
+                const { data: fees } = await supabase.from('historical_protocol_fees').select('date, fees').order('date', { ascending: false }).limit(1100);
                 if (!prices || !fees) return 0;
                 
                 const feeMap = new Map(fees.map(f => [f.date, parseFloat(f.fees || 0)]));
@@ -929,7 +962,7 @@
                     });
                 }
                 
-                const { error } = await supabase.from('historical_nvt').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_nvt', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -956,7 +989,7 @@
                         tx_count: parseInt(d.transactionCount),
                         source: 'etherscan'
                     }));
-                    const { error } = await supabase.from('historical_transactions').upsert(records, { onConflict: 'date' });
+                    const { error } = await batchUpsert('historical_transactions', records);
                     if (error) log(`  ❌ ${error.message}`, 'error');
                     return error ? 0 : records.length;
                 }
@@ -979,7 +1012,7 @@
                         source: 'defillama'
                     }));
                     if (records.length > 0) {
-                        const { error } = await supabase.from('historical_l2_transactions').upsert(records, { onConflict: 'date,chain' });
+                        const { error } = await batchUpsert('historical_l2_transactions', records, 'date,chain');
                         if (!error) total += records.length;
                     }
                     await new Promise(r => setTimeout(r, 200));
@@ -989,14 +1022,14 @@
 
             // 23. L2 Addresses - HAS source
             async l2_addresses() {
-                const { data: txs } = await supabase.from('historical_l2_transactions').select('date, chain, tx_count').order('date');
+                const { data: txs } = await supabase.from('historical_l2_transactions').select('date, chain, tx_count').order('date', { ascending: false }).limit(8000);
                 if (!txs?.length) return 0;
                 const records = txs.map(t => ({
                     date: t.date, timestamp: Date.now(), chain: t.chain,
                     active_addresses: Math.floor(t.tx_count * 0.3),
                     source: 'estimated'
                 }));
-                const { error } = await supabase.from('historical_l2_addresses').upsert(records, { onConflict: 'date,chain' });
+                const { error } = await batchUpsert('historical_l2_addresses', records, 'date,chain');
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -1064,22 +1097,22 @@
                     lido_apr: parseFloat(d.apy.toFixed(2)),
                     source: 'defillama'
                 }));
-                const { error } = await supabase.from('historical_staking_apr').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_staking_apr', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
 
             // 26. ETH in DeFi - HAS source
             async eth_in_defi() {
-                const { data: tvl } = await supabase.from('historical_ethereum_tvl').select('date, tvl').order('date');
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+                const { data: tvl } = await supabase.from('historical_ethereum_tvl').select('date, tvl').order('date', { ascending: false }).limit(1100);
+                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
                 if (!tvl || !prices) return 0;
                 const priceMap = new Map(prices.map(p => [p.date, p.close]));
                 const records = tvl.map(t => {
                     const price = priceMap.get(t.date) || 3000;
                     return { date: t.date, timestamp: Date.now(), eth_locked: parseFloat((t.tvl * 0.3 / price).toFixed(2)), source: 'estimated' };
                 }).filter(r => r.eth_locked > 0);
-                const { error } = await supabase.from('historical_eth_in_defi').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_eth_in_defi', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
             },
@@ -1090,7 +1123,7 @@
                 if (!data?.data) return 0;
                 const today = new Date().toISOString().split('T')[0];
                 const records = [{ date: today, timestamp: Date.now(), total_mcap: data.data.total_market_cap.usd, source: 'coingecko' }];
-                const { error } = await supabase.from('historical_global_mcap').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_global_mcap', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : 1;
             },
@@ -1109,7 +1142,7 @@
                         source: 'defillama'
                     }));
                     if (records.length > 0) {
-                        const { error } = await supabase.from('historical_dex_by_protocol').upsert(records, { onConflict: 'date,protocol' });
+                        const { error } = await batchUpsert('historical_dex_by_protocol', records, 'date,protocol');
                         if (!error) total += records.length;
                     }
                     await new Promise(r => setTimeout(r, 200));
@@ -1123,7 +1156,7 @@
                 if (!data?.data) return 0;
                 const today = new Date().toISOString().split('T')[0];
                 const records = [{ date: today, timestamp: Date.now(), block_count: 7200, avg_block_time: 12, source: 'beaconchain' }];
-                const { error } = await supabase.from('historical_network_stats').upsert(records, { onConflict: 'date' });
+                const { error } = await batchUpsert('historical_network_stats', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : 1;
             }
