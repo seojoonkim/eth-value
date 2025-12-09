@@ -111,6 +111,34 @@
                 <div id="verifyResults"></div>
             </div>
         </div>
+        
+        <!-- Config Modal -->
+        <div class="modal" id="configModal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2>⚙️ Configuration</h2>
+                    <button class="modal-close" onclick="closeConfigModal()">&times;</button>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Supabase URL</label>
+                        <input type="text" id="configSupabaseUrl" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="https://xxxxx.supabase.co">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Supabase Anon Key</label>
+                        <input type="text" id="configSupabaseKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Etherscan API Key <span style="font-weight: normal; opacity: 0.7;">(free at etherscan.io/apis)</span></label>
+                        <input type="text" id="configEtherscanKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="Optional - for transactions & gas data">
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button class="btn btn-secondary" onclick="closeConfigModal()">Cancel</button>
+                        <button class="btn btn-success" onclick="saveConfig()">💾 Save & Reload</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -120,17 +148,31 @@
         let supabase;
 
         function showConfig() {
-            const url = prompt('Supabase URL:', SUPABASE_URL);
-            if (url) {
-                const key = prompt('Supabase Anon Key:', SUPABASE_ANON_KEY);
-                if (key) {
-                    const etherscanKey = prompt('Etherscan API Key (free at etherscan.io/apis):', ETHERSCAN_API_KEY);
-                    localStorage.setItem('ethval_supabase_url', url);
-                    localStorage.setItem('ethval_supabase_key', key);
-                    if (etherscanKey) localStorage.setItem('ethval_etherscan_key', etherscanKey);
-                    location.reload();
-                }
+            document.getElementById('configSupabaseUrl').value = SUPABASE_URL;
+            document.getElementById('configSupabaseKey').value = SUPABASE_ANON_KEY;
+            document.getElementById('configEtherscanKey').value = ETHERSCAN_API_KEY;
+            document.getElementById('configModal').classList.add('show');
+        }
+        
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('show');
+        }
+        
+        function saveConfig() {
+            const url = document.getElementById('configSupabaseUrl').value.trim();
+            const key = document.getElementById('configSupabaseKey').value.trim();
+            const etherscanKey = document.getElementById('configEtherscanKey').value.trim();
+            
+            if (!url || !key) {
+                alert('Supabase URL and Key are required!');
+                return;
             }
+            
+            localStorage.setItem('ethval_supabase_url', url);
+            localStorage.setItem('ethval_supabase_key', key);
+            if (etherscanKey) localStorage.setItem('ethval_etherscan_key', etherscanKey);
+            
+            location.reload();
         }
 
         // 29 DATASETS - Schema Aligned with expected days
