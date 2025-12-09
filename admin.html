@@ -246,12 +246,31 @@
             el.scrollTop = el.scrollHeight;
         }
 
-        async function fetchJSON(url) {
-            try {
-                const res = await fetch(url);
-                if (!res.ok) { log(`  ⚠️ HTTP ${res.status}`, 'warn'); return null; }
-                return await res.json();
-            } catch (e) { log(`  ⚠️ ${e.message}`, 'warn'); return null; }
+        async function fetchJSON(url, retries = 2) {
+            for (let i = 0; i <= retries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+                    
+                    const res = await fetch(url, { signal: controller.signal });
+                    clearTimeout(timeout);
+                    
+                    if (!res.ok) { 
+                        log(`  ⚠️ HTTP ${res.status}`, 'warn'); 
+                        return null; 
+                    }
+                    return await res.json();
+                } catch (e) { 
+                    if (i < retries) {
+                        log(`  ⚠️ Fetch retry ${i + 1}...`, 'warn');
+                        await new Promise(r => setTimeout(r, 1000));
+                        continue;
+                    }
+                    log(`  ⚠️ ${e.message}`, 'warn'); 
+                    return null; 
+                }
+            }
+            return null;
         }
 
         let dataStatus = {};
@@ -386,9 +405,9 @@
         }
 
         // ══════════════════════════════════════════════════════════════
-        // BATCH UPSERT HELPER - 대량 데이터를 500개씩 나눠서 저장
+        // BATCH UPSERT HELPER - 100개씩 나눠서 저장 + 재시도
         // ══════════════════════════════════════════════════════════════
-        async function batchUpsert(table, records, conflictKey = 'date', batchSize = 500) {
+        async function batchUpsert(table, records, conflictKey = 'date', batchSize = 100) {
             if (!records || records.length === 0) return { error: null, count: 0 };
             
             let totalInserted = 0;
@@ -399,18 +418,40 @@
                 const end = Math.min(start + batchSize, records.length);
                 const batch = records.slice(start, end);
                 
-                const { error } = await supabase.from(table).upsert(batch, { onConflict: conflictKey });
-                
-                if (error) {
-                    log(`  ⚠️ Batch ${i + 1}/${batches} error: ${error.message}`, 'warn');
-                    return { error, count: totalInserted };
+                // 최대 3회 재시도
+                let lastError = null;
+                for (let retry = 0; retry < 3; retry++) {
+                    try {
+                        const { error } = await supabase.from(table).upsert(batch, { onConflict: conflictKey });
+                        if (!error) {
+                            totalInserted += batch.length;
+                            lastError = null;
+                            break;
+                        }
+                        lastError = error;
+                    } catch (e) {
+                        lastError = e;
+                    }
+                    
+                    if (retry < 2) {
+                        log(`  ⚠️ Batch ${i + 1} retry ${retry + 1}...`, 'warn');
+                        await new Promise(r => setTimeout(r, 1000 * (retry + 1))); // 1초, 2초 대기
+                    }
                 }
                 
-                totalInserted += batch.length;
+                if (lastError) {
+                    log(`  ⚠️ Batch ${i + 1}/${batches} failed after 3 retries`, 'warn');
+                    return { error: lastError, count: totalInserted };
+                }
                 
-                if (batches > 1 && i < batches - 1) {
-                    log(`  📤 Batch ${i + 1}/${batches}: ${totalInserted}/${records.length}`, 'info');
-                    await new Promise(r => setTimeout(r, 100)); // 배치 간 짧은 딜레이
+                // 진행상황 (5배치마다 또는 마지막)
+                if ((i + 1) % 5 === 0 || i === batches - 1) {
+                    log(`  📤 ${totalInserted}/${records.length} saved`, 'info');
+                }
+                
+                // 배치 간 딜레이 (Supabase rate limit 회피)
+                if (i < batches - 1) {
+                    await new Promise(r => setTimeout(r, 200));
                 }
             }
             
@@ -1192,7 +1233,7 @@
                 try {
                     const count = await Promise.race([
                         collectors[key](),
-                        new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 120000))
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 300000))
                     ]);
                     log(`  ${count > 0 ? '✅' : '⚠️'} ${count}`, count > 0 ? 'success' : 'warn');
                     if (count > 0) ok++; else fail++;
