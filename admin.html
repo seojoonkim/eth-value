@@ -79,6 +79,7 @@
                     <span>●</span>
                     <span id="connText">Connecting...</span>
                 </div>
+                <button class="btn btn-secondary" onclick="showConfig()">⚙️ Config</button>
                 <button class="btn btn-success" onclick="collectAll()">🚀 Collect All 29</button>
                 <button class="btn btn-primary" onclick="verifyAll()">🔍 Verify All</button>
                 <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
@@ -1342,27 +1343,51 @@
         }
 
         async function init() {
-            log('🚀 ETHval Admin v7.0 (Schema Aligned)', 'info');
-            if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-                document.getElementById('connStatus').className = 'connection-status disconnected';
-                document.getElementById('connText').textContent = 'Not Configured';
-                log('⚠️ Click status to configure', 'warn');
-                return;
-            }
             try {
+                log('🚀 ETHval Admin v7.0 (Schema Aligned)', 'info');
+                
+                // Etherscan API 키 상태 표시
+                if (ETHERSCAN_API_KEY) {
+                    log('✅ Etherscan API key configured', 'success');
+                } else {
+                    log('⚠️ Etherscan API key not set - click ⚙️ Config', 'warn');
+                }
+                
+                if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                    document.getElementById('connStatus').className = 'connection-status disconnected';
+                    document.getElementById('connText').textContent = 'Not Configured';
+                    log('⚠️ Supabase not configured - click ⚙️ Config', 'warn');
+                    return;
+                }
+                
+                // SDK 로드 체크
+                if (!window.supabase) {
+                    document.getElementById('connStatus').className = 'connection-status disconnected';
+                    document.getElementById('connText').textContent = 'SDK Error';
+                    log('❌ Supabase SDK not loaded', 'error');
+                    return;
+                }
+                
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 await supabase.from('historical_eth_price').select('date').limit(1);
                 document.getElementById('connStatus').className = 'connection-status connected';
                 document.getElementById('connText').textContent = 'Connected';
-                log('✅ Connected', 'success');
+                log('✅ Supabase connected', 'success');
                 await loadDataStatus();
             } catch (e) {
                 document.getElementById('connStatus').className = 'connection-status disconnected';
                 document.getElementById('connText').textContent = 'Error';
-                log('❌ ' + e.message, 'error');
+                log('❌ Init error: ' + e.message, 'error');
+                console.error('Init error:', e);
             }
         }
-        init();
+        
+        // DOM 로드 후 실행
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
