@@ -115,6 +115,7 @@
     <script>
         let SUPABASE_URL = localStorage.getItem('ethval_supabase_url') || '';
         let SUPABASE_ANON_KEY = localStorage.getItem('ethval_supabase_key') || '';
+        let ETHERSCAN_API_KEY = localStorage.getItem('ethval_etherscan_key') || '';
         let supabase;
 
         function showConfig() {
@@ -122,8 +123,10 @@
             if (url) {
                 const key = prompt('Supabase Anon Key:', SUPABASE_ANON_KEY);
                 if (key) {
+                    const etherscanKey = prompt('Etherscan API Key (free at etherscan.io/apis):', ETHERSCAN_API_KEY);
                     localStorage.setItem('ethval_supabase_url', url);
                     localStorage.setItem('ethval_supabase_key', key);
+                    if (etherscanKey) localStorage.setItem('ethval_etherscan_key', etherscanKey);
                     location.reload();
                 }
             }
@@ -501,34 +504,56 @@
 
             // 6. Gas & Burn - NO source
             async gas_burn() {
-                const { data: fees } = await supabase.from('historical_protocol_fees').select('date, fees').order('date');
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
-                const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
-                if (!fees?.length || !prices?.length) return 0;
-                const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
-                const txMap = new Map(txs?.map(t => [t.date, parseInt(t.tx_count)]) || []);
-                const records = [];
-                for (const f of fees) {
-                    const price = priceMap.get(f.date);
-                    const txCount = txMap.get(f.date) || 1200000;
-                    if (!price || !f.fees) continue;
-                    const burn = (f.fees * 0.80) / price; // 80% of fees are burned
-                    // Gas price estimation: fees_eth / (tx_count * avg_gas) * 1e9
-                    const feesEth = f.fees / price;
-                    const avgGasPerTx = 50000; // average gas per transaction
-                    const gasPrice = (feesEth / (txCount * avgGasPerTx)) * 1e9;
-                    if (burn >= 50 && burn <= 50000) {
-                        records.push({ 
-                            date: f.date, 
-                            eth_burnt: parseFloat(burn.toFixed(2)),
-                            transaction_count: txCount,
-                            avg_gas_price_gwei: parseFloat(Math.min(500, Math.max(5, gasPrice)).toFixed(2))
-                        });
-                    }
+                // Etherscan API - Daily Average Gas Price + Gas Used (무료)
+                if (!ETHERSCAN_API_KEY) {
+                    log('  ⚠️ Etherscan API key not set. Go to ⚙️ Config to add it.', 'warn');
+                    return 0;
                 }
-                const { error } = await supabase.from('historical_gas_burn').upsert(records, { onConflict: 'date' });
-                if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                
+                const endDate = new Date().toISOString().split('T')[0];
+                const startDate = new Date(Date.now() - 1095 * 86400000).toISOString().split('T')[0];
+                
+                const [gasPriceData, gasUsedData] = await Promise.all([
+                    fetchJSON(`https://api.etherscan.io/api?module=stats&action=dailyavggasprice&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`),
+                    fetchJSON(`https://api.etherscan.io/api?module=stats&action=dailygasused&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`)
+                ]);
+                
+                const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
+                const txMap = new Map(txs?.map(t => [t.date, parseInt(t.tx_count)]) || []);
+                
+                if (gasPriceData?.status === '1' && gasUsedData?.status === '1') {
+                    log(`  📦 Got ${gasPriceData.result.length} days from Etherscan`, 'info');
+                    
+                    const gasUsedMap = new Map(gasUsedData.result.map(d => [d.UTCDate, parseFloat(d.gasUsed)]));
+                    const records = [];
+                    
+                    for (const d of gasPriceData.result) {
+                        const gasPrice = parseFloat(d.avgGasPrice_Wei) / 1e9; // Wei to Gwei
+                        const gasUsed = gasUsedMap.get(d.UTCDate) || 0;
+                        const txCount = txMap.get(d.UTCDate) || 1150000;
+                        
+                        // ETH burnt = gasUsed * baseFee (roughly 80% of gas price post EIP-1559)
+                        const baseFeeGwei = gasPrice * 0.8;
+                        const ethBurnt = (gasUsed * baseFeeGwei) / 1e9; // Convert to ETH
+                        
+                        if (ethBurnt > 0) {
+                            records.push({
+                                date: d.UTCDate,
+                                eth_burnt: parseFloat(ethBurnt.toFixed(2)),
+                                avg_gas_price_gwei: parseFloat(gasPrice.toFixed(2)),
+                                transaction_count: txCount,
+                                source: 'etherscan'
+                            });
+                        }
+                    }
+                    
+                    const { error } = await supabase.from('historical_gas_burn').upsert(records, { onConflict: 'date' });
+                    if (error) log(`  ❌ ${error.message}`, 'error');
+                    return error ? 0 : records.length;
+                }
+                
+                log(`  ❌ Etherscan API error: ${gasPriceData?.message || gasUsedData?.message || 'Unknown'}`, 'error');
+                return 0;
             },
 
             // 7. Active Addresses - HAS source
@@ -699,14 +724,32 @@
 
             // 15. Exchange Reserve - HAS source
             async exchange_reserve() {
+                // ⚠️ 무료 API 없음 - CryptoQuant/Glassnode 유료
+                // 추정 데이터: 2020년 피크 ~35M → 2024년 ~15-18M
+                log('  ⚠️ No free API available - using estimates', 'warn');
+                
                 const today = new Date();
                 const records = [];
+                
                 for (let i = 0; i < 1095; i++) {
-                    const date = new Date(today); date.setDate(date.getDate() - i);
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    
+                    // 3년 전 (Dec 2022): ~24M ETH → 현재 (Dec 2025): ~15M ETH
+                    const daysFromStart = 1095 - i;
+                    const progress = daysFromStart / 1095;
+                    const baseTrend = 24000000 - (9000000 * progress);
+                    
+                    // 월별 변동
+                    const monthCycle = Math.sin(daysFromStart * 0.02) * baseTrend * 0.03;
+                    const weekCycle = Math.sin(daysFromStart * 0.09) * baseTrend * 0.015;
+                    
+                    const reserve = Math.max(13000000, baseTrend + monthCycle + weekCycle);
+                    
                     records.push({
                         date: date.toISOString().split('T')[0],
                         timestamp: date.getTime(),
-                        reserve_eth: Math.round(15000000 * Math.pow(1.005, i / 30)),
+                        reserve_eth: Math.round(reserve),
                         source: 'estimated'
                     });
                 }
@@ -734,17 +777,32 @@
 
             // 17. Blob Data - HAS source (blob_fee_eth, NOT avg_blob_fee)
             async blob_data() {
+                // ⚠️ 무료 API 없음 - 추정 데이터
+                log('  ⚠️ No free API available - using estimates', 'warn');
+                
                 const dencun = new Date('2024-03-13');
                 const today = new Date();
                 const records = [];
                 let cur = new Date(dencun);
+                
                 while (cur <= today) {
                     const days = Math.floor((cur - dencun) / 86400000);
+                    
+                    // 성장 곡선: 초기 빠른 성장 → 점진적 포화
+                    const growthCurve = 1 - Math.exp(-days / 60);
+                    const baseCount = 20000 + 100000 * growthCurve;
+                    
+                    // 주말/평일 변동
+                    const dayOfWeek = cur.getDay();
+                    const weekendFactor = (dayOfWeek === 0 || dayOfWeek === 6) ? 0.85 : 1.0;
+                    
+                    const blobCount = Math.round(baseCount * weekendFactor);
+                    
                     records.push({
                         date: cur.toISOString().split('T')[0],
                         timestamp: cur.getTime(),
-                        blob_count: Math.min(20000 + days * 300, 120000),
-                        blob_gas_used: Math.min(20000 + days * 300, 120000) * 131072,
+                        blob_count: Math.min(blobCount, 150000),
+                        blob_gas_used: Math.min(blobCount, 150000) * 131072,
                         source: 'estimated'
                     });
                     cur.setDate(cur.getDate() + 1);
@@ -835,35 +893,33 @@
 
             // 21. Transactions - HAS source
             async transactions() {
-                // ETH 메인넷 일일 트랜잭션: ~1.1-1.3M (상당히 안정적)
-                // 시간에 따른 트렌드: 2022 ~1.25M → 2024 ~1.1M (L2로 이동)
-                const startDate = new Date('2022-01-01');
-                const today = new Date();
-                const records = [];
-                
-                let currentDate = new Date(startDate);
-                while (currentDate <= today) {
-                    const daysSinceStart = Math.floor((currentDate - startDate) / 86400000);
-                    const totalDays = Math.floor((today - startDate) / 86400000);
-                    
-                    // 트렌드: 1.25M → 1.1M (L2 이동으로 인한 감소)
-                    const trend = 1250000 - (150000 * (daysSinceStart / totalDays));
-                    // 일별 변동 ±5%
-                    const variation = trend * (0.95 + Math.random() * 0.1);
-                    
-                    records.push({
-                        date: currentDate.toISOString().split('T')[0],
-                        timestamp: currentDate.getTime(),
-                        tx_count: Math.floor(variation),
-                        source: 'estimated'
-                    });
-                    
-                    currentDate.setDate(currentDate.getDate() + 1);
+                // Etherscan API - Daily Transaction Count (무료)
+                if (!ETHERSCAN_API_KEY) {
+                    log('  ⚠️ Etherscan API key not set. Go to ⚙️ Config to add it.', 'warn');
+                    return 0;
                 }
                 
-                const { error } = await supabase.from('historical_transactions').upsert(records, { onConflict: 'date' });
-                if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                const endDate = new Date().toISOString().split('T')[0];
+                const startDate = new Date(Date.now() - 1095 * 86400000).toISOString().split('T')[0];
+                const url = `https://api.etherscan.io/api?module=stats&action=dailytx&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
+                
+                const data = await fetchJSON(url);
+                
+                if (data?.status === '1' && data.result?.length > 0) {
+                    log(`  📦 Got ${data.result.length} days from Etherscan`, 'info');
+                    const records = data.result.map(d => ({
+                        date: d.UTCDate,
+                        timestamp: parseInt(d.unixTimeStamp) * 1000,
+                        tx_count: parseInt(d.transactionCount),
+                        source: 'etherscan'
+                    }));
+                    const { error } = await supabase.from('historical_transactions').upsert(records, { onConflict: 'date' });
+                    if (error) log(`  ❌ ${error.message}`, 'error');
+                    return error ? 0 : records.length;
+                }
+                
+                log(`  ❌ Etherscan API error: ${data?.message || 'Unknown'}`, 'error');
+                return 0;
             },
 
             // 22. L2 Transactions - HAS source
