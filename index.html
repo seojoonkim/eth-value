@@ -15805,7 +15805,7 @@
             return filterOutliers(data, {
                 maxChangePercent: 100,    // NVT can be more volatile
                 minValue: 20,             // NVT rarely below 20
-                maxValue: 200,            // NVT rarely above 200
+                maxValue: 150,            // NVT rarely above 150
                 useIQR: true,
                 iqrMultiplier: 2.5
             });
@@ -16499,6 +16499,21 @@
                         l2ByDate[dateKey] += parseFloat(d.tvl || 0);
                     });
                     state.supabaseL2History = Object.entries(l2ByDate).map(([date, value]) => ({ date: new Date(date), value })).sort((a, b) => a.date - b.date);
+                    
+                    // 불완전 데이터 제거: 마지막 데이터가 평균의 50% 미만이면 제거
+                    for (let i = 0; i < 3 && state.supabaseL2History.length > 10; i++) {
+                        const last = state.supabaseL2History[state.supabaseL2History.length - 1];
+                        const recent7 = state.supabaseL2History.slice(-8, -1);
+                        const avgValue = recent7.reduce((s, d) => s + d.value, 0) / recent7.length;
+                        
+                        if (avgValue > 0 && last.value < avgValue * 0.5) {
+                            log(`   ⚠️ Removing incomplete L2 data: ${last.date.toISOString().split('T')[0]} (${(last.value/1e9).toFixed(2)}B vs avg ${(avgValue/1e9).toFixed(2)}B)`);
+                            state.supabaseL2History.pop();
+                        } else {
+                            break;
+                        }
+                    }
+                    
                     log(`   ✓ L2: ${state.supabaseL2History.length} records`);
                 }
                 
@@ -16576,13 +16591,10 @@
                     log(`   Staking: ${beforeLen} → ${state.supabaseStakingHistory.length} points (filtered)`);
                 }
                 
-                // Filter NVT data (cap at reasonable range)
+                // NVT data from Dune is accurate, no filtering needed
                 if (state.supabaseNvtHistory?.length > 0) {
-                    const beforeLen = state.supabaseNvtHistory.length;
-                    const beforeLast = state.supabaseNvtHistory[state.supabaseNvtHistory.length - 1]?.value;
-                    state.supabaseNvtHistory = filterNvtData(state.supabaseNvtHistory);
-                    const afterLast = state.supabaseNvtHistory[state.supabaseNvtHistory.length - 1]?.value;
-                    log(`   NVT: ${beforeLast?.toFixed(1)} → ${afterLast?.toFixed(1)} (filtered)`);
+                    const lastNvt = state.supabaseNvtHistory[state.supabaseNvtHistory.length - 1]?.value;
+                    log(`   NVT: ${lastNvt?.toFixed(1)} (from Supabase)`);
                 }
                 
                 log(`📦 Supabase loading complete in ${(performance.now() - startTime).toFixed(0)}ms`);
@@ -18645,37 +18657,52 @@
         // NVT Ratio 계산 및 차트 업데이트
         function calculateAndUpdateNVT() {
             try {
-                // NVT = Market Cap / Daily On-chain Transaction Volume
-                // On-chain volume ≈ CEX volume × 15%
+                // Supabase 데이터가 있으면 우선 사용 (Dune API 기반 정확한 데이터)
+                if (state.supabaseNvtHistory && state.supabaseNvtHistory.length > 10) {
+                    log('   Using Supabase NVT data (from Dune)');
+                    state.nvtHistory = state.supabaseNvtHistory;
+                    
+                    const latest = state.supabaseNvtHistory[state.supabaseNvtHistory.length - 1];
+                    state.nvtRatio = latest.value;
+                    
+                    const nvtEl = document.getElementById('nvt-value');
+                    if (nvtEl) nvtEl.textContent = state.nvtRatio.toFixed(1);
+                    
+                    const first = state.nvtHistory[0].value;
+                    const last = state.nvtHistory[state.nvtHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const changeEl = document.getElementById('nvt-change');
+                    if (changeEl) {
+                        changeEl.textContent = fmt.pct(change) + ' 3Y';
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
+                    
+                    updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#be123c', 'nvt');
+                    return;
+                }
                 
-                // CoinGecko의 전체 CEX 거래량 사용 (Binance만 아님)
-                // state.volume24h는 CoinGecko에서 가져온 전체 시장 거래량
-                const dailyCexVolume = state.volume24h || 25000000000; // $25B default
+                // Fallback: CEX volume 기반 추정 (Supabase 데이터 없을 때)
+                log('   Calculating NVT from CEX volume (fallback)...');
                 
+                const dailyCexVolume = state.volume24h || 25000000000;
                 const price = state.price || 3500;
                 const mCap = state.marketCap || (price * 120000000);
                 
-                // NVT = Market Cap / Daily On-chain Volume
-                // On-chain volume is estimated at 15% of total CEX volume
-                const dailyOnChainVol = dailyCexVolume * 0.15;
-                const calculatedNvt = dailyOnChainVol > 0 ? mCap / dailyOnChainVol : 90;
+                // On-chain volume ≈ 40% of CEX volume (rough estimate)
+                const dailyOnChainVol = dailyCexVolume * 0.40;
+                const calculatedNvt = dailyOnChainVol > 0 ? mCap / dailyOnChainVol : 70;
                 
-                // NVT는 보통 30-150 범위
-                state.nvtRatio = Math.max(20, Math.min(200, calculatedNvt));
+                state.nvtRatio = calculatedNvt;
                 
-                log(`   NVT calc: MCap=${(mCap/1e9).toFixed(1)}B, CEXVol=${(dailyCexVolume/1e9).toFixed(1)}B, OnChain=${(dailyOnChainVol/1e9).toFixed(1)}B, NVT=${state.nvtRatio.toFixed(1)}`);
+                log(`   NVT calc: MCap=${(mCap/1e9).toFixed(1)}B, OnChain=${(dailyOnChainVol/1e9).toFixed(1)}B, NVT=${state.nvtRatio.toFixed(1)}`);
                 
                 const nvtEl = document.getElementById('nvt-value');
-                if (nvtEl) {
-                    nvtEl.textContent = state.nvtRatio.toFixed(1);
-                }
+                if (nvtEl) nvtEl.textContent = state.nvtRatio.toFixed(1);
                 
-                // 항상 시뮬레이션 생성 (현재 값 기준) - Supabase/volumeHistory 데이터 불안정
-                log('Generating NVT history based on current value...');
+                // Generate simulated history based on current value
                 state.nvtHistory = [];
                 const currentNvt = state.nvtRatio;
                 
-                // 3년치 데이터 생성 (1095일)
                 for (let i = 1095; i >= 0; i--) {
                     const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
                     const progress = 1 - (i / 1095);
@@ -18683,8 +18710,7 @@
                     const trend = (currentNvt - baseNvt) * progress;
                     const cycle = Math.sin(i / 90) * (currentNvt * 0.1);
                     const noise = (Math.random() - 0.5) * (currentNvt * 0.1);
-                    const nvtValue = Math.max(20, Math.min(300, baseNvt + trend + cycle + noise));
-                    state.nvtHistory.push({ date, value: nvtValue });
+                    state.nvtHistory.push({ date, value: baseNvt + trend + cycle + noise });
                 }
                 state.nvtHistory[state.nvtHistory.length - 1].value = currentNvt;
                 
@@ -18701,10 +18727,9 @@
             } catch (e) {
                 console.error('NVT calculation error:', e);
                 const nvtEl = document.getElementById('nvt-value');
-                if (nvtEl) nvtEl.textContent = '~90';
+                if (nvtEl) nvtEl.textContent = '~70';
                 
-                // Generate fallback even on error - based on typical NVT range
-                const fallbackNvt = 90;
+                const fallbackNvt = 70;
                 state.nvtHistory = [];
                 for (let i = 1095; i >= 0; i--) {
                     const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);

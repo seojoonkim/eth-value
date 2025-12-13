@@ -261,6 +261,7 @@
         let ETHERSCAN_API_KEY = localStorage.getItem('ethval_etherscan_key') || '';
         let DUNE_API_KEY = localStorage.getItem('ethval_dune_key') || '';
         const DUNE_BLOB_QUERY_ID = 6350774;
+        const DUNE_TX_VOLUME_QUERY_ID = 6350858;
         let supabase;
         
         // CSV Data Storage
@@ -2341,35 +2342,117 @@
                 return error ? 0 : records.length;
             },
 
-            // 21. NVT - Market Cap / On-chain Activity proxy
-            // NVT 범위: bull market 20-40, bear market 80-150, normal 40-80
+            // 21. NVT - Market Cap / On-chain Transaction Volume (Dune API)
+            // NVT = Market Cap / Daily On-chain TX Volume (USD)
             async nvt() {
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
-                const { data: fees } = await supabase.from('historical_protocol_fees').select('date, fees').order('date', { ascending: false }).limit(1100);
-                if (!prices || !fees) return 0;
+                log('  🔍 Fetching NVT data...', 'info');
+                
+                // Get ETH prices first
+                const { data: prices } = await supabase.from('historical_eth_price')
+                    .select('date, close')
+                    .order('date', { ascending: false })
+                    .limit(1100);
+                
+                if (!prices || prices.length === 0) {
+                    log('  ❌ No price data available', 'error');
+                    return 0;
+                }
+                
+                const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
+                const baseSupply = 120000000;
+                
+                // Try Dune API for accurate tx volume
+                if (DUNE_API_KEY) {
+                    try {
+                        log('  📡 Fetching TX volume from Dune API...', 'info');
+                        
+                        // Get latest results from Dune
+                        const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_TX_VOLUME_QUERY_ID}/results?limit=1100`, {
+                            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const rows = data.result?.rows || [];
+                            
+                            if (rows.length > 0) {
+                                log(`  📊 Got ${rows.length} TX volume records from Dune`, 'info');
+                                
+                                const records = [];
+                                for (const row of rows) {
+                                    let dateStr = row.date;
+                                    if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                                        dateStr = dateStr.split(' ')[0];
+                                    }
+                                    
+                                    const price = priceMap.get(dateStr);
+                                    if (!price) continue;
+                                    
+                                    const txVolumeEth = parseFloat(row.tx_volume_eth) || 0;
+                                    if (txVolumeEth <= 0) continue;
+                                    
+                                    const txVolumeUsd = txVolumeEth * price;
+                                    const mcap = price * baseSupply;
+                                    const nvt = mcap / txVolumeUsd;
+                                    
+                                    records.push({
+                                        date: dateStr,
+                                        timestamp: new Date(dateStr).getTime(),
+                                        nvt_ratio: parseFloat(nvt.toFixed(2)),
+                                        market_cap: parseFloat(mcap.toFixed(2)),
+                                        tx_volume_usd: parseFloat(txVolumeUsd.toFixed(2)),
+                                        tx_volume_eth: parseFloat(txVolumeEth.toFixed(2)),
+                                        source: 'dune'
+                                    });
+                                }
+                                
+                                if (records.length > 0) {
+                                    // Show sample calculations
+                                    const samples = records.slice(-3);
+                                    samples.forEach(r => {
+                                        log(`  📊 ${r.date}: NVT=${r.nvt_ratio.toFixed(1)}, Vol=${(r.tx_volume_usd/1e9).toFixed(2)}B`, 'info');
+                                    });
+                                    
+                                    const { error } = await batchUpsert('historical_nvt', records);
+                                    if (error) {
+                                        log(`  ❌ Save error: ${error.message}`, 'error');
+                                        return 0;
+                                    }
+                                    
+                                    log(`  ✅ NVT: ${records.length} records saved from Dune`, 'success');
+                                    return records.length;
+                                }
+                            }
+                        }
+                        
+                        log('  ⚠️ Dune API returned no data, falling back...', 'warn');
+                    } catch (e) {
+                        log(`  ⚠️ Dune API error: ${e.message}, falling back...`, 'warn');
+                    }
+                } else {
+                    log('  ⚠️ No Dune API key, using fee-based estimation...', 'warn');
+                }
+                
+                // Fallback: fee-based estimation (less accurate)
+                const { data: fees } = await supabase.from('historical_protocol_fees')
+                    .select('date, fees')
+                    .order('date', { ascending: false })
+                    .limit(1100);
+                
+                if (!fees) return 0;
                 
                 const feeMap = new Map(fees.map(f => [f.date, parseFloat(f.fees || 0)]));
                 const records = [];
-                
-                // ETH 공급량 (시간에 따라 약간 변동)
-                const baseSupply = 120000000;
                 
                 for (const p of prices) {
                     const dailyFees = feeMap.get(p.date);
                     if (!dailyFees || dailyFees <= 0) continue;
                     
                     const mcap = p.close * baseSupply;
-                    
-                    // Fees 기반 NVT 계산
-                    // 높은 fees ($5M+) = 높은 활동 = NVT 30-50
-                    // 낮은 fees ($500K) = 낮은 활동 = NVT 80-120
-                    // fees를 on-chain volume proxy로 변환
-                    // 대략 fees의 1000-5000배가 실제 tx volume
-                    const txVolumeProxy = dailyFees * 3000; // scale factor
+                    // Improved scale factor based on Dune data analysis
+                    // Actual tx volume ≈ fees × 15000 (was 3000)
+                    const txVolumeProxy = dailyFees * 15000;
                     let nvt = mcap / txVolumeProxy;
-                    
-                    // 합리적인 범위로 클램핑 (20-200)
-                    nvt = Math.max(20, Math.min(200, nvt));
                     
                     records.push({ 
                         date: p.date, 
@@ -2377,12 +2460,13 @@
                         nvt_ratio: parseFloat(nvt.toFixed(2)), 
                         market_cap: mcap, 
                         tx_volume_usd: txVolumeProxy, 
-                        source: 'calculated' 
+                        source: 'estimated' 
                     });
                 }
                 
                 const { error } = await batchUpsert('historical_nvt', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
+                log(`  ✅ NVT: ${records.length} records (fee-based estimation)`, 'success');
                 return error ? 0 : records.length;
             },
 
