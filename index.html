@@ -21148,6 +21148,11 @@
                     chartDiffEl.className = 'chart-price-diff ' + (avgDiff >= 0 ? 'up' : 'down');
                 }
             }
+            
+            // Update simulator current fair value if it exists
+            if (typeof updateSimulation === 'function') {
+                try { updateSimulation(); } catch(e) {}
+            }
         }
 
         // Price chart mini-tabs (in price-card)
@@ -24374,12 +24379,21 @@ Check out ETHval 👇`;
                 var simFV = count > 0 ? simTotal / count : 0;
                 var marketPrice = baseParams.price;
                 
+                // Use actual composite fair value from DOM if available
+                var displayCurrentFV = currentFV;
+                var compositePriceEl = document.getElementById('composite-price');
+                if (compositePriceEl) {
+                    var compositeText = compositePriceEl.textContent.replace(/[^0-9.]/g, '');
+                    var compositeVal = parseFloat(compositeText);
+                    if (compositeVal > 0) displayCurrentFV = compositeVal;
+                }
+                
                 // Calculate changes vs Market Price
-                var currentVsMarket = marketPrice > 0 ? ((currentFV - marketPrice) / marketPrice) * 100 : 0;
+                var currentVsMarket = marketPrice > 0 ? ((displayCurrentFV - marketPrice) / marketPrice) * 100 : 0;
                 var simVsMarket = marketPrice > 0 ? ((simFV - marketPrice) / marketPrice) * 100 : 0;
                 
                 // Update summary
-                document.getElementById('sim-current-value').textContent = formatPrice(currentFV);
+                document.getElementById('sim-current-value').textContent = formatPrice(displayCurrentFV);
                 document.getElementById('sim-new-value').textContent = formatPrice(simFV);
                 
                 // Current Fair Value vs Market Price badge
