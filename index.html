@@ -21148,11 +21148,6 @@
                     chartDiffEl.className = 'chart-price-diff ' + (avgDiff >= 0 ? 'up' : 'down');
                 }
             }
-            
-            // Update simulator current fair value if it exists
-            if (typeof updateSimulation === 'function') {
-                try { updateSimulation(); } catch(e) {}
-            }
         }
 
         // Price chart mini-tabs (in price-card)
@@ -24379,13 +24374,15 @@ Check out ETHval 👇`;
                 var simFV = count > 0 ? simTotal / count : 0;
                 var marketPrice = baseParams.price;
                 
-                // Use actual composite fair value from DOM if available
+                // Use actual state.compositeFairValue if available (more accurate than simulator's simplified formulas)
                 var displayCurrentFV = currentFV;
-                var compositePriceEl = document.getElementById('composite-price');
-                if (compositePriceEl) {
-                    var compositeText = compositePriceEl.textContent.replace(/[^0-9.]/g, '');
-                    var compositeVal = parseFloat(compositeText);
-                    if (compositeVal > 0) displayCurrentFV = compositeVal;
+                if (typeof state !== 'undefined' && state.compositeFairValue > 0) {
+                    displayCurrentFV = state.compositeFairValue;
+                }
+                
+                // When at reset, simulated should equal current
+                if (isReset) {
+                    simFV = displayCurrentFV;
                 }
                 
                 // Calculate changes vs Market Price
