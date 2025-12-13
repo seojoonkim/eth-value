@@ -16456,6 +16456,29 @@
                     
                     // 날짜순 정렬 보장
                     state.supabaseBlobHistory.sort((a, b) => a.date - b.date);
+                    
+                    // 불완전 데이터 제거: 마지막 데이터가 평균의 30% 미만이면 제거
+                    for (let i = 0; i < 3 && state.supabaseBlobHistory.length > 10; i++) {
+                        const last = state.supabaseBlobHistory[state.supabaseBlobHistory.length - 1];
+                        const recent7 = state.supabaseBlobHistory.slice(-8, -1);
+                        const avgFees = recent7.reduce((s, d) => s + d.fees, 0) / recent7.length;
+                        
+                        if (avgFees > 0 && last.fees < avgFees * 0.3) {
+                            log(`   ⚠️ Removing incomplete blob data: ${last.date.toISOString().split('T')[0]} (${last.fees.toFixed(2)} vs avg ${avgFees.toFixed(2)})`);
+                            state.supabaseBlobHistory.pop();
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    // blobFeesHistory, blobCountHistory도 설정
+                    state.blobFeesHistory = state.supabaseBlobHistory.map(d => ({ date: d.date, value: d.fees }));
+                    state.blobCountHistory = state.supabaseBlobHistory.map(d => ({ date: d.date, value: d.count }));
+                    
+                    // 주간 합계 계산
+                    const last7 = state.supabaseBlobHistory.slice(-7);
+                    state.blobFees = last7.reduce((sum, d) => sum + d.fees, 0);
+                    state.blobCount = last7.reduce((sum, d) => sum + d.count, 0);
                 }
                 
                 if (lendingData.length > 10) {
@@ -19474,53 +19497,36 @@
 
         // Blob Fees - EIP-4844 data from blobscan
         async function fetchBlobFees() {
+            console.log('🔵 fetchBlobFees called, supabaseBlobHistory:', state.supabaseBlobHistory?.length || 0);
             try {
                 // Supabase 데이터 우선 사용
                 if (state.supabaseBlobHistory && state.supabaseBlobHistory.length > 10) {
-                    log('   Using Supabase Blob data:', state.supabaseBlobHistory.length, 'points');
+                    console.log('🔵 Using Supabase Blob data:', state.supabaseBlobHistory.length, 'points');
                     
-                    // 오늘부터 3일 전까지 제외 (불완전 데이터)
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const cutoff = new Date(today);
-                    cutoff.setDate(cutoff.getDate() - 3);
+                    // 불완전 데이터 제거: 마지막 데이터가 평균의 30% 미만이면 제거
+                    let blobData = [...state.supabaseBlobHistory];
                     
-                    const filteredHistory = state.supabaseBlobHistory.filter(d => {
-                        const dDate = new Date(d.date);
-                        dDate.setHours(0, 0, 0, 0);
-                        return dDate.getTime() < cutoff.getTime();
-                    });
-                    
-                    // Remove trailing outliers (if last point is significantly lower than recent average)
-                    const removeTrailingOutliers = (data) => {
-                        if (data.length < 10) return data;
-                        const result = [...data];
-                        // Check last 3 points and remove if they're significantly lower than previous average
-                        for (let i = 0; i < 3 && result.length > 10; i++) {
-                            const lastIdx = result.length - 1;
-                            const lastValue = result[lastIdx].value;
-                            const recentAvg = result.slice(-15, -1).reduce((sum, d) => sum + d.value, 0) / Math.min(14, result.length - 1);
-                            // If last value is less than 50% of recent average, remove it
-                            if (recentAvg > 0 && lastValue < recentAvg * 0.5) {
-                                result.pop();
-                            } else {
-                                break;
-                            }
+                    // 마지막 3개까지 검사
+                    for (let i = 0; i < 3 && blobData.length > 10; i++) {
+                        const last = blobData[blobData.length - 1];
+                        const recent7 = blobData.slice(-8, -1);
+                        const avgFees = recent7.reduce((s, d) => s + d.fees, 0) / recent7.length;
+                        
+                        console.log(`   Checking: ${last.date.toISOString().split('T')[0]} = ${last.fees.toFixed(2)} ETH (avg: ${avgFees.toFixed(2)})`);
+                        
+                        if (avgFees > 0 && last.fees < avgFees * 0.3) {
+                            console.log(`   ⚠️ Removing incomplete: ${last.date.toISOString().split('T')[0]}`);
+                            blobData.pop();
+                        } else {
+                            break;
                         }
-                        return result;
-                    };
+                    }
                     
-                    state.blobFeesHistory = removeTrailingOutliers(filteredHistory.map(d => ({
-                        date: d.date,
-                        value: d.fees
-                    })));
-                    state.blobCountHistory = removeTrailingOutliers(filteredHistory.map(d => ({
-                        date: d.date,
-                        value: d.count
-                    })));
+                    state.blobFeesHistory = blobData.map(d => ({ date: d.date, value: d.fees }));
+                    state.blobCountHistory = blobData.map(d => ({ date: d.date, value: d.count }));
                     
                     // 주간 합계 계산 (최근 7일)
-                    const last7Days = filteredHistory.slice(-7);
+                    const last7Days = blobData.slice(-7);
                     const weeklyFees = last7Days.reduce((sum, d) => sum + (d.fees || 0), 0);
                     const weeklyCount = last7Days.reduce((sum, d) => sum + (d.count || 0), 0);
                     
