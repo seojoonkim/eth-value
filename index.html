@@ -11112,7 +11112,7 @@
                     <div class="metric-footer">
                         <span>Calculated</span>
                         <span class="change" id="nvt-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.nvt">Market cap ÷ transaction volume. Lower ratio suggests undervaluation.</div>
+                        <div class="metric-desc" data-i18n="desc.nvt">Market cap ÷ on-chain volume (7-day avg). Lower = undervalued.</div>
                     </div>
                 </div>
 
@@ -14761,7 +14761,7 @@
                 'desc.fees': "Total fees paid to network. Revenue proxy for Ethereum value.",
                 'desc.txEth': "Daily mainnet transactions. Core network usage indicator.",
                 'desc.txTotal': "Combined L1+L2 daily transactions. Full ecosystem activity measure.",
-                'desc.nvt': "Market cap ÷ transaction volume. Lower ratio suggests undervaluation.",
+                'desc.nvt': "Market cap ÷ on-chain volume (7-day avg). Lower = undervalued.",
                 'desc.commitment': "Staked + DeFi ETH ÷ supply. Higher ratio = more committed holders.",
                 'desc.appCapital': "Capital deployed in Ethereum apps (DeFi, stables, etc.).",
                 'desc.stakingYield': "Annual staking return. Benchmark yield for ETH investment."
@@ -15049,7 +15049,7 @@
                 'desc.fees': "네트워크에 지불된 총 수수료. ETH 가치의 수익 지표.",
                 'desc.txEth': "일일 메인넷 트랜잭션. 핵심 네트워크 사용 지표.",
                 'desc.txTotal': "L1+L2 일일 트랜잭션 합계. 전체 생태계 활동.",
-                'desc.nvt': "시총 ÷ 거래량. 낮을수록 저평가 가능성.",
+                'desc.nvt': "시총 ÷ 온체인 거래량 (7일 평균). 낮을수록 저평가.",
                 'desc.commitment': "스테이킹+DeFi ETH ÷ 공급량. 높을수록 장기 보유자 많음.",
                 'desc.appCapital': "이더리움 앱에 배치된 자본 (DeFi, 스테이블 등).",
                 'desc.stakingYield': "연간 스테이킹 수익률. ETH 투자 벤치마크 수익률."
@@ -16519,7 +16519,26 @@
                 
                 if (nvtData.length > 10) {
                     log(`   ✓ NVT: ${nvtData.length} records`);
-                    state.supabaseNvtHistory = nvtData.map(d => ({ date: new Date(d.date), value: parseFloat(d.nvt_ratio) })).reverse();
+                    // Exclude today and yesterday (incomplete data)
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const twoDaysAgo = new Date(today);
+                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                    
+                    const rawNvt = nvtData
+                        .map(d => ({ date: new Date(d.date), value: parseFloat(d.nvt_ratio) }))
+                        .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
+                        .reverse();
+                    
+                    // Apply 7-day moving average for smoother valuation metric
+                    state.supabaseNvtHistory = rawNvt.map((d, i, arr) => {
+                        if (i < 6) return { date: d.date, value: d.value };
+                        const window = arr.slice(i - 6, i + 1);
+                        const avg = window.reduce((sum, x) => sum + x.value, 0) / 7;
+                        return { date: d.date, value: avg };
+                    });
+                    
+                    log(`   ✓ NVT: ${state.supabaseNvtHistory.length} records (7-day MA)`);
                 }
                 
                 if (issuanceData.length > 10) {
