@@ -238,9 +238,13 @@
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">Supabase Anon Key</label>
                         <input type="text" id="configSupabaseKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
                     </div>
-                    <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">Etherscan API Key <span style="font-weight: normal; opacity: 0.7;">(free at etherscan.io/apis)</span></label>
                         <input type="text" id="configEtherscanKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="Optional - for transactions & gas data">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Dune API Key <span style="font-weight: normal; opacity: 0.7;">(for blob data - dune.com/settings/api)</span></label>
+                        <input type="text" id="configDuneKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="Optional - for accurate blob count data">
                     </div>
                     <div style="display: flex; gap: 10px; justify-content: flex-end;">
                         <button class="btn btn-secondary" onclick="closeConfigModal()">Cancel</button>
@@ -255,6 +259,8 @@
         let SUPABASE_URL = localStorage.getItem('ethval_supabase_url') || '';
         let SUPABASE_ANON_KEY = localStorage.getItem('ethval_supabase_key') || '';
         let ETHERSCAN_API_KEY = localStorage.getItem('ethval_etherscan_key') || '';
+        let DUNE_API_KEY = localStorage.getItem('ethval_dune_key') || '';
+        const DUNE_BLOB_QUERY_ID = 6350774;
         let supabase;
         
         // CSV Data Storage
@@ -928,6 +934,7 @@
             document.getElementById('configSupabaseUrl').value = SUPABASE_URL;
             document.getElementById('configSupabaseKey').value = SUPABASE_ANON_KEY;
             document.getElementById('configEtherscanKey').value = ETHERSCAN_API_KEY;
+            document.getElementById('configDuneKey').value = DUNE_API_KEY;
             document.getElementById('configModal').classList.add('show');
         }
         
@@ -939,6 +946,7 @@
             const url = document.getElementById('configSupabaseUrl').value.trim();
             const key = document.getElementById('configSupabaseKey').value.trim();
             const etherscanKey = document.getElementById('configEtherscanKey').value.trim();
+            const duneKey = document.getElementById('configDuneKey').value.trim();
             
             if (!url || !key) {
                 alert('Supabase URL and Key are required!');
@@ -948,6 +956,7 @@
             localStorage.setItem('ethval_supabase_url', url);
             localStorage.setItem('ethval_supabase_key', key);
             if (etherscanKey) localStorage.setItem('ethval_etherscan_key', etherscanKey);
+            if (duneKey) localStorage.setItem('ethval_dune_key', duneKey);
             
             location.reload();
         }
@@ -2009,206 +2018,174 @@
                 return error ? 0 : records.length;
             },
 
-            // 17. Blob Data - eth_feeHistory via public RPC (실제 온체인 데이터)
+            // 17. Blob Data - Dune API (정확한 온체인 데이터)
             async blob_data() {
                 log('  🔍 Fetching blob data...', 'info');
                 
-                const dencun = new Date('2024-03-13');
-                const today = new Date();
-                const todayStr = today.toISOString().split('T')[0];
-                
-                // Constants
-                const MAX_BLOB_GAS_PER_BLOCK = 786432; // 6 blobs * 131072 gas
-                const GAS_PER_BLOB = 131072;
-                const BLOCKS_PER_DAY = 7200;
-                
-                // 1. 모든 blob 데이터 조회
-                const { data: allBlobs, error: fetchError } = await supabase.from('historical_blob_data')
-                    .select('date, blob_count, blob_fee_eth')
-                    .order('date', { ascending: true });
-                
-                if (fetchError) {
-                    log(`  ❌ Failed to fetch blob data: ${fetchError.message}`, 'error');
+                // Dune API 사용 가능한지 확인
+                if (!DUNE_API_KEY) {
+                    log('  ⚠️ No Dune API key configured. Add it in Config to collect blob data.', 'warn');
                     return 0;
                 }
                 
-                log(`  📋 Found ${allBlobs?.length || 0} total blob records`, 'info');
-                
-                // 2. blob_fee_eth가 0이거나 없는 레코드 백필
-                const zeroFeeRecords = allBlobs?.filter(r => 
-                    r.blob_count > 0 && (!r.blob_fee_eth || r.blob_fee_eth === 0 || r.blob_fee_eth < 0.0001)
-                ) || [];
-                
-                if (zeroFeeRecords.length > 0) {
-                    log(`  🔄 Backfilling ${zeroFeeRecords.length} records with missing fees...`, 'info');
+                try {
+                    // 1. 먼저 최신 캐시된 결과 시도
+                    log('  📡 Fetching from Dune API (query #' + DUNE_BLOB_QUERY_ID + ')...', 'info');
                     
-                    const backfillRecords = zeroFeeRecords.map(r => {
-                        const date = new Date(r.date);
-                        const daysSinceDencun = Math.floor((date - dencun) / 86400000);
-                        
-                        // Fee 계산: 실제 데이터 기준 일일 0.5~3 ETH
-                        // blob당 0.00005~0.0001 ETH
-                        const baseFeePerBlob = 0.00005 + (daysSinceDencun * 0.0000002);
-                        const blobFeeEth = r.blob_count * baseFeePerBlob;
-                        
-                        return {
-                            date: r.date,
-                            blob_fee_eth: parseFloat(Math.max(0.1, blobFeeEth).toFixed(4))
-                        };
+                    let duneData = null;
+                    
+                    // Try getting latest results first (faster, uses cached data)
+                    const latestResponse = await fetch(`https://api.dune.com/api/v1/query/${DUNE_BLOB_QUERY_ID}/results?limit=1000`, {
+                        headers: { 'X-Dune-API-Key': DUNE_API_KEY }
                     });
                     
-                    // 배치 업데이트
-                    for (let i = 0; i < backfillRecords.length; i += 500) {
-                        const batch = backfillRecords.slice(i, i + 500);
-                        const { error } = await supabase.from('historical_blob_data')
-                            .upsert(batch, { onConflict: 'date' });
-                        if (error) {
-                            log(`  ⚠️ Backfill batch error: ${error.message}`, 'warn');
+                    if (latestResponse.ok) {
+                        const latestData = await latestResponse.json();
+                        if (latestData.result && latestData.result.rows && latestData.result.rows.length > 0) {
+                            duneData = latestData.result.rows;
+                            log(`  📊 Got ${duneData.length} rows from cached results`, 'info');
                         }
                     }
                     
-                    // 백필 결과 확인
-                    const sampleFees = backfillRecords.slice(-5).map(r => `${r.date}: ${r.blob_fee_eth} ETH`);
-                    log(`  ✅ Backfilled ${backfillRecords.length} records`, 'success');
-                    log(`  📊 Sample fees: ${sampleFees.join(', ')}`, 'info');
-                } else {
-                    log(`  ✅ All records have valid fees`, 'success');
-                }
-                
-                // 3. 오늘 데이터 수집 (eth_feeHistory)
-                const records = [];
-                let todayBlobData = null;
-                
-                // Public RPC endpoints (fallback chain)
-                const rpcEndpoints = [
-                    'https://eth.llamarpc.com',
-                    'https://rpc.ankr.com/eth',
-                    'https://ethereum.publicnode.com'
-                ];
-                
-                for (const rpcUrl of rpcEndpoints) {
-                    try {
-                        log(`  📡 Trying ${rpcUrl.split('//')[1]}...`, 'info');
+                    // If no cached data or too old, execute fresh query
+                    if (!duneData || duneData.length < 600) {
+                        log('  🔄 Executing fresh Dune query...', 'info');
                         
-                        const response = await fetch(rpcUrl, {
+                        // Execute query
+                        const execResponse = await fetch(`https://api.dune.com/api/v1/query/${DUNE_BLOB_QUERY_ID}/execute`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                jsonrpc: '2.0',
-                                method: 'eth_feeHistory',
-                                params: ['0x400', 'latest', []],  // 1024 blocks
-                                id: 1
-                            })
+                            headers: { 
+                                'X-Dune-API-Key': DUNE_API_KEY,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ performance: 'medium' })
                         });
                         
-                        const data = await response.json();
-                        
-                        if (data.error) {
-                            log(`  ⚠️ RPC error: ${data.error.message}`, 'warn');
-                            continue;
+                        if (!execResponse.ok) {
+                            const errText = await execResponse.text();
+                            log(`  ❌ Dune execute failed: ${errText}`, 'error');
+                            return 0;
                         }
                         
-                        if (data.result && data.result.blobGasUsedRatio) {
-                            const result = data.result;
-                            const blobGasUsedRatios = result.blobGasUsedRatio || [];
-                            const baseFeePerBlobGas = result.baseFeePerBlobGas || [];
+                        const execData = await execResponse.json();
+                        const executionId = execData.execution_id;
+                        log(`  ⏳ Execution started: ${executionId}`, 'info');
+                        
+                        // Poll for results (max 2 minutes)
+                        let attempts = 0;
+                        const maxAttempts = 24; // 24 * 5s = 120s
+                        
+                        while (attempts < maxAttempts) {
+                            await new Promise(r => setTimeout(r, 5000)); // Wait 5s
+                            attempts++;
                             
-                            log(`  📊 Got ${blobGasUsedRatios.length} blocks of blob data`, 'info');
+                            const statusResponse = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/status`, {
+                                headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                            });
                             
-                            if (blobGasUsedRatios.length > 0) {
-                                let totalBlobGasUsed = 0;
-                                let totalBlobFees = 0;
+                            if (!statusResponse.ok) continue;
+                            
+                            const statusData = await statusResponse.json();
+                            log(`  ⏳ Status: ${statusData.state} (${attempts}/${maxAttempts})`, 'info');
+                            
+                            if (statusData.state === 'QUERY_STATE_COMPLETED') {
+                                // Get results
+                                const resultsResponse = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/results?limit=1000`, {
+                                    headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                                });
                                 
-                                for (let i = 0; i < blobGasUsedRatios.length; i++) {
-                                    const ratio = parseFloat(blobGasUsedRatios[i]) || 0;
-                                    const blobGasUsed = ratio * MAX_BLOB_GAS_PER_BLOCK;
-                                    totalBlobGasUsed += blobGasUsed;
-                                    
-                                    if (baseFeePerBlobGas[i]) {
-                                        const baseFeeWei = parseInt(baseFeePerBlobGas[i], 16) || 0;
-                                        totalBlobFees += (blobGasUsed * baseFeeWei) / 1e18;
-                                    }
+                                if (resultsResponse.ok) {
+                                    const resultsData = await resultsResponse.json();
+                                    duneData = resultsData.result?.rows || [];
+                                    log(`  ✅ Query completed: ${duneData.length} rows`, 'success');
                                 }
-                                
-                                const scaleFactor = BLOCKS_PER_DAY / blobGasUsedRatios.length;
-                                const dailyBlobCount = Math.round((totalBlobGasUsed / GAS_PER_BLOB) * scaleFactor);
-                                const dailyBlobGas = Math.round(totalBlobGasUsed * scaleFactor);
-                                const dailyBlobFees = totalBlobFees * scaleFactor;
-                                
-                                todayBlobData = {
-                                    date: todayStr,
-                                    timestamp: today.getTime(),
-                                    blob_count: dailyBlobCount,
-                                    blob_gas_used: dailyBlobGas,
-                                    blob_fee_eth: parseFloat(dailyBlobFees.toFixed(6)),
-                                    source: 'eth_feeHistory'
-                                };
-                                
-                                log(`  ✅ eth_feeHistory: ${dailyBlobCount.toLocaleString()} blobs/day, ${dailyBlobFees.toFixed(4)} ETH fees`, 'success');
-                                break; // Success, exit loop
+                                break;
+                            } else if (statusData.state === 'QUERY_STATE_FAILED') {
+                                log(`  ❌ Query failed: ${statusData.error}`, 'error');
+                                return 0;
                             }
-                        } else {
-                            log(`  ⚠️ No blobGasUsedRatio in response`, 'warn');
                         }
-                    } catch (e) {
-                        log(`  ⚠️ ${rpcUrl.split('//')[1]} failed: ${e.message}`, 'warn');
                     }
-                }
-                
-                // Generate records for missing days
-                const lastDate = allBlobs && allBlobs.length > 0 
-                    ? new Date(allBlobs[allBlobs.length - 1].date) 
-                    : dencun;
-                let cur = new Date(lastDate);
-                cur.setDate(cur.getDate() + 1);
-                
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                
-                while (cur <= yesterday) {
-                    const days = Math.floor((cur - dencun) / 86400000);
-                    const baseCount = 12000 + Math.min(days * 35, 12000);
-                    const dayOfWeek = cur.getDay();
-                    const weekendFactor = (dayOfWeek === 0 || dayOfWeek === 6) ? 0.85 : 1.0;
-                    const variation = 0.85 + Math.random() * 0.3;
                     
-                    const blobCount = Math.round(baseCount * weekendFactor * variation);
+                    if (!duneData || duneData.length === 0) {
+                        log('  ❌ No data from Dune', 'error');
+                        return 0;
+                    }
                     
-                    // Fee 계산: 실제 데이터 기준 일일 0.5~3 ETH
-                    // 20,000 blobs/day 기준, 시간에 따라 증가
-                    const baseFeePerBlob = 0.00005 + (days * 0.0000002); // ETH per blob
-                    const dailyBlobFeeEth = blobCount * baseFeePerBlob;
+                    // 2. 기존 데이터 조회 (fee 정보 유지를 위해)
+                    const { data: existingData } = await supabase.from('historical_blob_data')
+                        .select('date, blob_fee_eth')
+                        .order('date', { ascending: true });
                     
-                    records.push({
-                        date: cur.toISOString().split('T')[0],
-                        timestamp: cur.getTime(),
-                        blob_count: blobCount,
-                        blob_gas_used: blobCount * GAS_PER_BLOB,
-                        blob_fee_eth: parseFloat(dailyBlobFeeEth.toFixed(6)),
-                        source: 'estimated'
+                    const existingFees = {};
+                    (existingData || []).forEach(d => {
+                        if (d.blob_fee_eth && d.blob_fee_eth > 0.01) {
+                            existingFees[d.date] = d.blob_fee_eth;
+                        }
                     });
-                    cur.setDate(cur.getDate() + 1);
-                }
-                
-                if (todayBlobData) {
-                    records.push(todayBlobData);
-                }
-                
-                if (records.length === 0) {
-                    log('  ✅ Blob data already up to date', 'success');
-                    return 1;
-                }
-                
-                const { error } = await batchUpsert('historical_blob_data', records);
-                if (error) {
-                    log(`  ❌ ${error.message}`, 'error');
+                    
+                    // 3. 레코드 변환
+                    const records = duneData.map(row => {
+                        // Handle different date formats
+                        let dateStr = row.date;
+                        if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                            dateStr = dateStr.split(' ')[0]; // "2024-03-13 00:00:00" -> "2024-03-13"
+                        }
+                        
+                        const blobCount = parseInt(row.blob_count) || 0;
+                        const blobGasUsed = parseInt(row.blob_gas_used) || 0;
+                        
+                        // Fee: 기존 값 유지 또는 추정
+                        let blobFeeEth = existingFees[dateStr];
+                        if (!blobFeeEth || blobFeeEth < 0.01) {
+                            // Estimate fee based on blob count (약 0.0002 ETH per blob)
+                            blobFeeEth = blobCount * 0.0002;
+                        }
+                        
+                        return {
+                            date: dateStr,
+                            timestamp: new Date(dateStr).getTime(),
+                            blob_count: blobCount,
+                            blob_gas_used: blobGasUsed,
+                            blob_fee_eth: parseFloat(blobFeeEth.toFixed(6)),
+                            source: 'dune'
+                        };
+                    }).filter(r => r.blob_count > 0);
+                    
+                    // 오늘/어제 불완전 데이터 제외 (마지막 1일)
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const cutoffDate = yesterday.toISOString().split('T')[0];
+                    
+                    const validRecords = records.filter(r => r.date < cutoffDate);
+                    
+                    log(`  📊 Valid records: ${validRecords.length} (excluded ${records.length - validRecords.length} recent incomplete)`, 'info');
+                    
+                    if (validRecords.length === 0) {
+                        log('  ⚠️ No valid records to save', 'warn');
+                        return 0;
+                    }
+                    
+                    // 4. Supabase에 저장
+                    const { error } = await batchUpsert('historical_blob_data', validRecords);
+                    if (error) {
+                        log(`  ❌ Save error: ${error.message}`, 'error');
+                        return 0;
+                    }
+                    
+                    // 샘플 출력
+                    const lastRecords = validRecords.slice(-3);
+                    lastRecords.forEach(r => {
+                        log(`  📊 ${r.date}: ${r.blob_count.toLocaleString()} blobs, ${r.blob_fee_eth.toFixed(2)} ETH`, 'info');
+                    });
+                    
+                    log(`  ✅ Blob data: ${validRecords.length} records saved from Dune`, 'success');
+                    return validRecords.length;
+                    
+                } catch (e) {
+                    log(`  ❌ Dune API error: ${e.message}`, 'error');
                     return 0;
                 }
-                
-                const apiRecords = records.filter(r => r.source === 'eth_feeHistory').length;
-                const estRecords = records.filter(r => r.source === 'estimated').length;
-                log(`  ✅ Blob data: ${apiRecords} API + ${estRecords} estimated records saved`, 'success');
-                return records.length;
             },
 
             // 18. Lending TVL - HAS source
