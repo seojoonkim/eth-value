@@ -3472,16 +3472,23 @@
             font-size: var(--font-h2);
             font-weight: 600;
             white-space: nowrap;
-            transition: all 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
         .modal-vote-status.login-required {
             background: #000;
             color: white;
             cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease; /* Only animate transform and shadow, not background */
         }
         
-        /* Dark mode - multiple selectors for specificity */
+        /* Dark mode - dedicated class applied via JS */
+        .modal-vote-status.login-required.dark-mode-btn {
+            background: #7c3aed !important;
+            color: #ffffff !important;
+        }
+        
+        /* Dark mode - multiple selectors for specificity (backup) */
         body.dark .modal-vote-status.login-required,
         html.dark .modal-vote-status.login-required,
         .dark .modal-vote-status.login-required {
@@ -11369,17 +11376,17 @@
                 <div class="simulator-summary-row">
                     <div class="sim-summary-item">
                         <span class="sim-summary-label" data-i18n="simulator.marketPrice">Market Price</span>
-                        <span class="sim-summary-value" id="sim-market-price">$3,900</span>
+                        <span class="sim-summary-value" id="sim-market-price">$--</span>
                     </div>
                     <div class="sim-summary-item">
                         <span class="sim-summary-label" data-i18n="simulator.currentFairValue">Current Fair Value</span>
-                        <span class="sim-summary-value" id="sim-current-value">$4,757</span>
-                        <span class="sim-summary-badge" id="sim-current-change">+0.0%</span>
+                        <span class="sim-summary-value" id="sim-current-value">$--</span>
+                        <span class="sim-summary-badge" id="sim-current-change">--%</span>
                     </div>
                     <div class="sim-summary-item highlight">
                         <span class="sim-summary-label" data-i18n="simulator.simulatedFairValue">Simulated Fair Value</span>
-                        <span class="sim-summary-value" id="sim-new-value">$4,757</span>
-                        <span class="sim-summary-badge" id="sim-change">+0.0%</span>
+                        <span class="sim-summary-value" id="sim-new-value">$--</span>
+                        <span class="sim-summary-badge" id="sim-change">--%</span>
                     </div>
                 </div>
                 
@@ -13233,7 +13240,7 @@
                             </div>
                             <div class="modal-header-right">
                                 ${!currentUser ? `
-                                    <div class="modal-vote-status login-required" onclick="loginWithTwitter()">
+                                    <div class="modal-vote-status login-required${document.body.classList.contains('dark') ? ' dark-mode-btn' : ''}" onclick="loginWithTwitter()" style="background: ${document.body.classList.contains('dark') ? '#7c3aed' : '#000'} !important; color: #fff !important;">
                                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                                         Login to rate
                                     </div>
@@ -13389,17 +13396,25 @@
             document.body.insertAdjacentHTML('beforeend', modalHtml);
             lockScroll();
             
-            // Apply dark mode style to login button if needed
-            const loginBtn = document.querySelector('.modal-vote-status.login-required');
-            if (loginBtn) {
-                if (document.body.classList.contains('dark')) {
-                    loginBtn.style.setProperty('background', '#7c3aed', 'important');
-                    loginBtn.style.setProperty('color', '#ffffff', 'important');
-                } else {
-                    loginBtn.style.setProperty('background', '#000', 'important');
-                    loginBtn.style.setProperty('color', '#ffffff', 'important');
+            // Apply dark mode style to login button with class and multiple delays
+            const applyLoginBtnStyle = () => {
+                const loginBtn = document.querySelector('.modal-vote-status.login-required');
+                if (loginBtn) {
+                    if (document.body.classList.contains('dark')) {
+                        loginBtn.classList.add('dark-mode-btn');
+                        loginBtn.style.cssText = 'background: #7c3aed !important; color: #ffffff !important;';
+                    } else {
+                        loginBtn.classList.remove('dark-mode-btn');
+                        loginBtn.style.cssText = 'background: #000 !important; color: #ffffff !important;';
+                    }
                 }
-            }
+            };
+            applyLoginBtnStyle();
+            setTimeout(applyLoginBtnStyle, 10);
+            setTimeout(applyLoginBtnStyle, 50);
+            setTimeout(applyLoginBtnStyle, 100);
+            setTimeout(applyLoginBtnStyle, 200);
+            setTimeout(applyLoginBtnStyle, 500);
             
             // 모달 내 차트 렌더링
             setTimeout(() => {
@@ -13678,6 +13693,14 @@
                 // 모달 헤더의 투표 상태 배지 업데이트
                 const voteStatusEl = document.querySelector('.modal-vote-status');
                 if (voteStatusEl) {
+                    const applyVoteStatusStyle = () => {
+                        const el = document.querySelector('.modal-vote-status.login-required');
+                        if (el && document.body.classList.contains('dark')) {
+                            el.classList.add('dark-mode-btn');
+                            el.style.cssText = 'background: #7c3aed !important; color: #ffffff !important;';
+                        }
+                    };
+                    
                     if (!currentUser) {
                         voteStatusEl.className = 'modal-vote-status login-required';
                         voteStatusEl.innerHTML = `
@@ -13685,22 +13708,25 @@
                             Login to rate
                         `;
                         voteStatusEl.onclick = loginWithTwitter;
-                        // Force purple color in dark mode using setProperty for !important
+                        // Apply dark mode styling
                         if (document.body.classList.contains('dark')) {
-                            voteStatusEl.style.setProperty('background', '#7c3aed', 'important');
-                            voteStatusEl.style.setProperty('color', '#ffffff', 'important');
+                            voteStatusEl.classList.add('dark-mode-btn');
+                            voteStatusEl.style.cssText = 'background: #7c3aed !important; color: #ffffff !important;';
                         } else {
-                            voteStatusEl.style.setProperty('background', '#000', 'important');
-                            voteStatusEl.style.setProperty('color', '#ffffff', 'important');
+                            voteStatusEl.classList.remove('dark-mode-btn');
+                            voteStatusEl.style.cssText = 'background: #000 !important; color: #ffffff !important;';
                         }
+                        setTimeout(applyVoteStatusStyle, 50);
+                        setTimeout(applyVoteStatusStyle, 200);
                     } else if (ratings.userRating) {
                         voteStatusEl.className = 'modal-vote-status voted';
+                        voteStatusEl.classList.remove('dark-mode-btn');
                         voteStatusEl.innerHTML = `<span>✓</span> You rated ${ratings.userRating}★`;
                         voteStatusEl.onclick = null;
-                        voteStatusEl.style.removeProperty('background');
-                        voteStatusEl.style.removeProperty('color');
+                        voteStatusEl.style.cssText = '';
                     } else {
                         voteStatusEl.className = 'modal-vote-status not-voted';
+                        voteStatusEl.classList.remove('dark-mode-btn');
                         voteStatusEl.innerHTML = `<span>⭐</span> Not rated yet`;
                         voteStatusEl.onclick = null;
                     }
@@ -15737,7 +15763,7 @@
                         // Interpolate instead of using spike value
                         const interpolated = prev;
                         result.push({ ...filtered[i], value: interpolated });
-                        console.warn(`Outlier filtered: ${curr.toFixed(2)} → ${interpolated.toFixed(2)} (${changePercent.toFixed(1)}% change)`);
+                        // Removed noisy console.warn - outlier filtering is working as expected
                     }
                 }
                 filtered = result;
@@ -16569,6 +16595,10 @@
                 document.getElementById('current-price').textContent = fmt.price(state.price);
                 document.getElementById('volume-24h').textContent = fmt.usd(state.volume24h);
                 
+                // 시뮬레이터 마켓 프라이스도 업데이트
+                const simMarketPriceEl = document.getElementById('sim-market-price');
+                if (simMarketPriceEl) simMarketPriceEl.textContent = fmt.price(state.price);
+                
                 // Executive Summary 가격도 즉시 업데이트
                 const summaryPriceEl = document.getElementById('summary-current-price');
                 if (summaryPriceEl) {
@@ -17334,6 +17364,10 @@
                 if (!state.price) {
                     state.price = md.current_price.usd;
                     document.getElementById('current-price').textContent = fmt.price(state.price);
+                    
+                    // 시뮬레이터 마켓 프라이스도 업데이트
+                    const simMarketPriceEl = document.getElementById('sim-market-price');
+                    if (simMarketPriceEl) simMarketPriceEl.textContent = fmt.price(state.price);
                     
                     const changeEl = document.getElementById('price-change');
                     const change24h = md.price_change_percentage_24h;
@@ -19445,26 +19479,45 @@
                 if (state.supabaseBlobHistory && state.supabaseBlobHistory.length > 10) {
                     log('   Using Supabase Blob data:', state.supabaseBlobHistory.length, 'points');
                     
-                    // 오늘과 어제 제외 (불완전 데이터)
+                    // 오늘부터 3일 전까지 제외 (불완전 데이터)
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
-                    const yesterday = new Date(today);
-                    yesterday.setDate(yesterday.getDate() - 1);
+                    const cutoff = new Date(today);
+                    cutoff.setDate(cutoff.getDate() - 3);
                     
                     const filteredHistory = state.supabaseBlobHistory.filter(d => {
                         const dDate = new Date(d.date);
                         dDate.setHours(0, 0, 0, 0);
-                        return dDate.getTime() < yesterday.getTime();
+                        return dDate.getTime() < cutoff.getTime();
                     });
                     
-                    state.blobFeesHistory = filteredHistory.map(d => ({
+                    // Remove trailing outliers (if last point is significantly lower than recent average)
+                    const removeTrailingOutliers = (data) => {
+                        if (data.length < 10) return data;
+                        const result = [...data];
+                        // Check last 3 points and remove if they're significantly lower than previous average
+                        for (let i = 0; i < 3 && result.length > 10; i++) {
+                            const lastIdx = result.length - 1;
+                            const lastValue = result[lastIdx].value;
+                            const recentAvg = result.slice(-15, -1).reduce((sum, d) => sum + d.value, 0) / Math.min(14, result.length - 1);
+                            // If last value is less than 50% of recent average, remove it
+                            if (recentAvg > 0 && lastValue < recentAvg * 0.5) {
+                                result.pop();
+                            } else {
+                                break;
+                            }
+                        }
+                        return result;
+                    };
+                    
+                    state.blobFeesHistory = removeTrailingOutliers(filteredHistory.map(d => ({
                         date: d.date,
                         value: d.fees
-                    }));
-                    state.blobCountHistory = filteredHistory.map(d => ({
+                    })));
+                    state.blobCountHistory = removeTrailingOutliers(filteredHistory.map(d => ({
                         date: d.date,
                         value: d.count
-                    }));
+                    })));
                     
                     // 주간 합계 계산 (최근 7일)
                     const last7Days = filteredHistory.slice(-7);
