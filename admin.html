@@ -2366,62 +2366,76 @@
                     try {
                         log('  📡 Fetching TX volume from Dune API...', 'info');
                         
-                        // Get latest results from Dune
-                        const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_TX_VOLUME_QUERY_ID}/results?limit=1100`, {
-                            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
-                        });
+                        // Paginate through all results
+                        let allRows = [];
+                        let offset = 0;
+                        const pageSize = 1000;
                         
-                        if (response.ok) {
+                        while (true) {
+                            const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_TX_VOLUME_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
+                                headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                            });
+                            
+                            if (!response.ok) break;
+                            
                             const data = await response.json();
                             const rows = data.result?.rows || [];
                             
-                            if (rows.length > 0) {
-                                log(`  📊 Got ${rows.length} TX volume records from Dune`, 'info');
-                                
-                                const records = [];
-                                for (const row of rows) {
-                                    let dateStr = row.date;
-                                    if (typeof dateStr === 'string' && dateStr.includes(' ')) {
-                                        dateStr = dateStr.split(' ')[0];
-                                    }
-                                    
-                                    const price = priceMap.get(dateStr);
-                                    if (!price) continue;
-                                    
-                                    const txVolumeEth = parseFloat(row.tx_volume_eth) || 0;
-                                    if (txVolumeEth <= 0) continue;
-                                    
-                                    const txVolumeUsd = txVolumeEth * price;
-                                    const mcap = price * baseSupply;
-                                    const nvt = mcap / txVolumeUsd;
-                                    
-                                    records.push({
-                                        date: dateStr,
-                                        timestamp: new Date(dateStr).getTime(),
-                                        nvt_ratio: parseFloat(nvt.toFixed(2)),
-                                        market_cap: parseFloat(mcap.toFixed(2)),
-                                        tx_volume_usd: parseFloat(txVolumeUsd.toFixed(2)),
-                                        tx_volume_eth: parseFloat(txVolumeEth.toFixed(2)),
-                                        source: 'dune'
-                                    });
+                            if (rows.length === 0) break;
+                            
+                            allRows = allRows.concat(rows);
+                            log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`, 'info');
+                            
+                            if (rows.length < pageSize) break; // Last page
+                            offset += pageSize;
+                        }
+                        
+                        if (allRows.length > 0) {
+                            log(`  📊 Got ${allRows.length} TX volume records from Dune`, 'info');
+                            
+                            const records = [];
+                            for (const row of allRows) {
+                                let dateStr = row.date;
+                                if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                                    dateStr = dateStr.split(' ')[0];
                                 }
                                 
-                                if (records.length > 0) {
-                                    // Show sample calculations
-                                    const samples = records.slice(-3);
-                                    samples.forEach(r => {
-                                        log(`  📊 ${r.date}: NVT=${r.nvt_ratio.toFixed(1)}, Vol=${(r.tx_volume_usd/1e9).toFixed(2)}B`, 'info');
-                                    });
-                                    
-                                    const { error } = await batchUpsert('historical_nvt', records);
-                                    if (error) {
-                                        log(`  ❌ Save error: ${error.message}`, 'error');
-                                        return 0;
-                                    }
-                                    
-                                    log(`  ✅ NVT: ${records.length} records saved from Dune`, 'success');
-                                    return records.length;
+                                const price = priceMap.get(dateStr);
+                                if (!price) continue;
+                                
+                                const txVolumeEth = parseFloat(row.tx_volume_eth) || 0;
+                                if (txVolumeEth <= 0) continue;
+                                
+                                const txVolumeUsd = txVolumeEth * price;
+                                const mcap = price * baseSupply;
+                                const nvt = mcap / txVolumeUsd;
+                                
+                                records.push({
+                                    date: dateStr,
+                                    timestamp: new Date(dateStr).getTime(),
+                                    nvt_ratio: parseFloat(nvt.toFixed(2)),
+                                    market_cap: parseFloat(mcap.toFixed(2)),
+                                    tx_volume_usd: parseFloat(txVolumeUsd.toFixed(2)),
+                                    tx_volume_eth: parseFloat(txVolumeEth.toFixed(2)),
+                                    source: 'dune'
+                                });
+                            }
+                            
+                            if (records.length > 0) {
+                                // Show sample calculations
+                                const samples = records.slice(-3);
+                                samples.forEach(r => {
+                                    log(`  📊 ${r.date}: NVT=${r.nvt_ratio.toFixed(1)}, Vol=${(r.tx_volume_usd/1e9).toFixed(2)}B`, 'info');
+                                });
+                                
+                                const { error } = await batchUpsert('historical_nvt', records);
+                                if (error) {
+                                    log(`  ❌ Save error: ${error.message}`, 'error');
+                                    return 0;
                                 }
+                                    
+                                log(`  ✅ NVT: ${records.length} records saved from Dune`, 'success');
+                                return records.length;
                             }
                         }
                         
