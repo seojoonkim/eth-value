@@ -1047,7 +1047,7 @@
             // ═══════════════════════════════════════════════════════════════════
             // PHASE 3: 2차 계산 (Phase 1+2 데이터 의존)
             // ═══════════════════════════════════════════════════════════════════
-            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, depends: ['protocol_fees', 'eth_price', 'transactions'], source: '🔷 Dune API' },
+            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔷 Dune API', note: 'Daily burn (via Gas Price)', noCollect: true },
             active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, depends: [], source: '🔷 Dune API' },
             fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, depends: ['eth_price', 'volatility'], source: 'alternative.me API' },
             nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, depends: ['eth_price'], source: '🔷 Dune API' },
@@ -1244,14 +1244,18 @@
                 
                 const row = document.createElement('tr');
                 const sourceStyle = ds.source?.includes('Dune') ? 'color:#7c3aed;font-weight:600' : ds.source?.includes('Estimated') ? 'color:var(--warning)' : ds.source?.includes('Calculated') ? 'color:var(--text-muted)' : '';
-                row.innerHTML = `<td class="mono">${idx}</td><td>${ds.icon} ${ds.name}${dependsText}</td><td style="font-size:11px;${sourceStyle}">${ds.source || '-'}</td><td><span class="table-name">${ds.table}</span></td><td class="mono">${s.count?.toLocaleString() || 0}</td><td class="mono" style="font-size:10px">${dateRange}</td><td class="mono">${formatValue(s.value, ds.format)}</td><td><div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div><span class="mono" style="font-size:10px">${coverage}%</span></td><td><span class="status ${statusClass}">${statusText}</span>${collectStatus ? '<br>'+collectStatus : ''}</td><td><button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button></td>`;
+                const collectBtn = ds.noCollect 
+                    ? `<button class="btn btn-secondary btn-sm" disabled title="Collected via Gas Price">-</button>`
+                    : `<button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button>`;
+                const noteText = ds.note ? ` <span style="font-size:10px;color:var(--text-muted)" title="${ds.note}">ℹ️</span>` : '';
+                row.innerHTML = `<td class="mono">${idx}</td><td>${ds.icon} ${ds.name}${dependsText}${noteText}</td><td style="font-size:11px;${sourceStyle}">${ds.source || '-'}</td><td><span class="table-name">${ds.table}</span></td><td class="mono">${s.count?.toLocaleString() || 0}</td><td class="mono" style="font-size:10px">${dateRange}</td><td class="mono">${formatValue(s.value, ds.format)}</td><td><div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div><span class="mono" style="font-size:10px">${coverage}%</span></td><td><span class="status ${statusClass}">${statusText}</span>${collectStatus ? '<br>'+collectStatus : ''}</td><td>${collectBtn}</td>`;
                 tbody.appendChild(row);
                 idx++;
             }
         }
         
         async function collectPhase(phase) {
-            const phaseDatasets = Object.entries(DATASETS).filter(([k, ds]) => ds.phase === phase);
+            const phaseDatasets = Object.entries(DATASETS).filter(([k, ds]) => ds.phase === phase && !ds.noCollect);
             log(`\n🚀 Collecting Phase ${phase} (${phaseDatasets.length} datasets)...`, 'info');
             
             let success = 0, failed = 0;
@@ -1558,155 +1562,9 @@
 
             // 6. Gas & Burn - Etherscan V2 with fallback
             async gas_burn() {
-                // 먼저 기존 CSV 데이터 확인
-                const { data: existingData } = await supabase.from('historical_gas_burn')
-                    .select('date, eth_burnt')
-                    .order('date', { ascending: false })
-                    .limit(1200);
-                
-                const existingDates = new Set(existingData?.filter(d => d.eth_burnt > 0).map(d => d.date) || []);
-                log(`  📋 Existing gas_burn records: ${existingDates.size}`, 'info');
-                
-                // CSV 데이터가 충분하면 (1000개 이상) 완전히 건너뛰기
-                if (existingDates.size > 1000) {
-                    log(`  📋 Skipping - sufficient CSV data exists (${existingDates.size} records)`, 'success');
-                    return -1;
-                }
-                
-                const endDate = new Date().toISOString().split('T')[0];
-                const startDate = new Date(Date.now() - 1095 * 86400000).toISOString().split('T')[0];
-                
-                // Etherscan V2 시도 (PRO 전용일 수 있음)
-                if (ETHERSCAN_API_KEY) {
-                    log(`  🔍 Trying Etherscan V2 API...`, 'info');
-                    const [gasPriceData, gasUsedData, gasLimitData] = await Promise.all([
-                        fetchJSON(`https://api.etherscan.io/v2/api?chainid=1&module=stats&action=dailyavggasprice&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`),
-                        fetchJSON(`https://api.etherscan.io/v2/api?chainid=1&module=stats&action=dailygasused&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`),
-                        fetchJSON(`https://api.etherscan.io/v2/api?chainid=1&module=stats&action=dailyavggaslimit&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`)
-                    ]);
-                    
-                    if (gasPriceData?.status === '1' && gasUsedData?.status === '1') {
-                        log(`  📦 Got ${gasPriceData.result.length} days from Etherscan V2`, 'info');
-                        
-                        const gasUsedMap = new Map(gasUsedData.result.map(d => [d.UTCDate, parseFloat(d.gasUsed)]));
-                        const gasLimitMap = new Map(gasLimitData?.result?.map(d => [d.UTCDate, parseFloat(d.gasLimit)]) || []);
-                        const records = [];
-                        
-                        for (const d of gasPriceData.result) {
-                            // 기존 CSV 데이터가 있는 날짜는 건너뛰기
-                            if (existingDates.has(d.UTCDate)) continue;
-                            
-                            const gasPrice = parseFloat(d.avgGasPrice_Wei) / 1e9;
-                            const gasUsed = gasUsedMap.get(d.UTCDate) || 0;
-                            const gasLimit = gasLimitMap.get(d.UTCDate) || 0;
-                            const baseFeeGwei = gasPrice * 0.8;
-                            const ethBurnt = (gasUsed * baseFeeGwei) / 1e9;
-                            
-                            // Gas Utilization 계산 (gasUsed / gasLimit * 100)
-                            let gasUtilization = 50; // 기본값
-                            if (gasLimit > 0 && gasUsed > 0) {
-                                gasUtilization = Math.min(100, Math.max(0, (gasUsed / gasLimit) * 100));
-                            } else {
-                                // gasLimit 데이터 없으면 gas price로 추정
-                                gasUtilization = Math.min(95, Math.max(45, 50 + gasPrice * 0.5));
-                            }
-                            
-                            if (ethBurnt > 0) {
-                                records.push({
-                                    date: d.UTCDate,
-                                    eth_burnt: parseFloat(ethBurnt.toFixed(2)),
-                                    avg_gas_price_gwei: parseFloat(gasPrice.toFixed(2)),
-                                    gas_utilization: parseFloat(gasUtilization.toFixed(2)),
-                                    transaction_count: 0
-                                });
-                            }
-                        }
-                        
-                        if (records.length === 0) {
-                            log(`  ✅ All dates already have CSV data`, 'success');
-                            return 0;
-                        }
-                        
-                        log(`  📦 Adding ${records.length} new records from Etherscan`, 'info');
-                        const { error } = await batchUpsert('historical_gas_burn', records);
-                        if (error) log(`  ❌ ${error.message}`, 'error');
-                        return error ? 0 : records.length;
-                    }
-                    log(`  ⚠️ Etherscan V2 stats requires PRO - using estimates`, 'warn');
-                }
-                
-                // Fallback: Protocol fees 기반 추정 (CSV 데이터 없는 날짜만)
-                // existingDates는 이미 위에서 조회됨
-                
-                const { data: fees } = await supabase.from('historical_protocol_fees')
-                    .select('date, fees')
-                    .eq('chain', 'ethereum')
-                    .order('date', { ascending: false })
-                    .limit(1100);
-                
-                const { data: txs } = await supabase.from('historical_transactions')
-                    .select('date, tx_count')
-                    .order('date', { ascending: false })
-                    .limit(1100);
-                
-                const feeMap = new Map(fees?.map(f => [f.date, f.fees]) || []);
-                const txMap = new Map(txs?.map(t => [t.date, parseInt(t.tx_count)]) || []);
-                const today = new Date();
-                const records = [];
-                
-                for (let i = 0; i < 1095; i++) {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - i);
-                    const dateStr = date.toISOString().split('T')[0];
-                    
-                    // CSV 데이터가 있는 날짜는 건너뛰기
-                    if (existingDates.has(dateStr)) continue;
-                    
-                    const dailyFee = feeMap.get(dateStr);
-                    const txCount = txMap.get(dateStr) || 1150000;
-                    
-                    // Gas price 추정: 2022년 50-100 Gwei → 2025년 10-30 Gwei
-                    const daysFromStart = 1095 - i;
-                    const progress = daysFromStart / 1095;
-                    let gasPrice, ethBurnt, gasUtilization;
-                    
-                    if (dailyFee && dailyFee > 0) {
-                        // Fee에서 역산
-                        ethBurnt = dailyFee / 4000;
-                        gasPrice = (ethBurnt * 1e9) / (txCount * 21000) * 0.8;
-                        // 최소 gasPrice 보장
-                        gasPrice = Math.max(10, gasPrice);
-                    } else {
-                        const baseGas = 80 - (60 * progress); // 80 Gwei → 20 Gwei
-                        const variation = Math.sin(i * 0.15) * 10;
-                        gasPrice = Math.max(10, baseGas + variation);
-                        ethBurnt = (txCount * 21000 * gasPrice * 0.8) / 1e9;
-                    }
-                    
-                    // Gas utilization 추정 (gas price 기반)
-                    gasUtilization = Math.min(95, Math.max(45, 50 + gasPrice * 0.5));
-                    
-                    // 최소 burnt 보장 (현재 ~150 ETH/day)
-                    ethBurnt = Math.max(50, ethBurnt);
-                    
-                    records.push({
-                        date: dateStr,
-                        eth_burnt: parseFloat(Math.max(0, ethBurnt).toFixed(2)),
-                        avg_gas_price_gwei: parseFloat(Math.max(1, gasPrice).toFixed(2)),
-                        gas_utilization: parseFloat(gasUtilization.toFixed(2)),
-                        transaction_count: txCount
-                    });
-                }
-                
-                if (records.length === 0) {
-                    log(`  ✅ All dates already have data`, 'success');
-                    return 0;
-                }
-                
-                log(`  📦 Generated ${records.length} records for missing dates (fee-based estimates)`, 'info');
-                const { error } = await batchUpsert('historical_gas_burn', records);
-                if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                // Gas & Burn 데이터는 gas_price collector에서 함께 수집됨
+                log('  ℹ️ Skipped - data collected via Gas Price collector', 'info');
+                return -1;
             },
 
             // 7. Active Addresses - Dune API (정확한 온체인 데이터)
@@ -3607,6 +3465,14 @@
                 if (ds.phase && ds.phase !== currentPhase) {
                     currentPhase = ds.phase;
                     log(`\n━━━ Phase ${currentPhase} ━━━`, 'info');
+                }
+                
+                // noCollect 옵션이 있으면 건너뛰기
+                if (ds.noCollect) {
+                    log(`[${i+1}/${keys.length}] ${ds.icon} ${ds.name}... ℹ️ Skipped (via other collector)`, 'info');
+                    skipped++;
+                    ok++;
+                    continue;
                 }
                 
                 log(`[${i+1}/${keys.length}] ${ds.icon} ${ds.name}...`, 'info');
