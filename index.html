@@ -10864,7 +10864,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-utilization-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Etherscan</span>
+                        <span>Dune</span>
                         <span class="change" id="gas-util-change">--</span>
                         <div class="metric-desc" data-i18n="desc.gasUtil">% of block gas limit used. High utilization = strong network demand.</div>
                     </div>
@@ -10886,7 +10886,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-burn-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Etherscan</span>
+                        <span>Dune</span>
                         <span class="change" id="burn-change">--</span>
                         <div class="metric-desc" data-i18n="desc.burn">ETH burned via EIP-1559. Higher burn = more network activity.</div>
                     </div>
@@ -10951,7 +10951,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-price-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Etherscan</span>
+                        <span>Dune</span>
                         <span class="change" id="gas-price-change">--</span>
                         <div class="metric-desc" data-i18n="desc.gasPrice">Average gas price in Gwei. Reflects network transaction costs.</div>
                     </div>
@@ -23694,8 +23694,8 @@
                     const sourceEl = document.getElementById('price-chart-source');
                     if (sourceEl) {
                         sourceEl.className = 'price-chart-source';
-                        if (source === 'supabase') {
-                            // Supabase = no badge (normal state)
+                        if (source === 'supabase' || source === 'dune' || source === 'beaconchain') {
+                            // Synced data = no badge (normal state)
                             sourceEl.textContent = '';
                             sourceEl.style.display = 'none';
                         } else if (source === 'api') {
@@ -23729,8 +23729,8 @@
                 const existing = sourceSpan.querySelector('.data-source-badge');
                 if (existing) existing.remove();
                 
-                // Supabase = no badge (normal state, most data)
-                if (source === 'supabase') {
+                // Synced sources = no badge (normal state, most data)
+                if (source === 'supabase' || source === 'dune' || source === 'beaconchain') {
                     return; // No badge needed
                 }
                 
@@ -23741,6 +23741,9 @@
                 if (source === 'api') {
                     badge.classList.add('live');
                     badge.textContent = apiName || 'Live';
+                } else if (source === 'estimate') {
+                    badge.classList.add('fallback');
+                    badge.textContent = 'Est.';
                 } else {
                     badge.classList.add('fallback');
                     badge.textContent = 'Est.';
