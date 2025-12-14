@@ -1084,6 +1084,7 @@ async function main() {
         console.log('⚠️ No Dune API Key - Dune collections will be skipped');
     }
     
+    const startTime = Date.now();
     const results = {};
     
     results.eth_price = await collect_eth_price(); await sleep(500);
@@ -1138,15 +1139,42 @@ async function main() {
     console.log('='.repeat(60));
     
     let success = 0, failed = 0;
+    const failedDatasets = [];
     Object.entries(results).forEach(([key, count]) => {
         const status = count > 0 ? '✅' : '❌';
         console.log(`${status} ${key.padEnd(20)} : ${count}`);
-        if (count > 0) success++; else failed++;
+        if (count > 0) success++; 
+        else {
+            failed++;
+            failedDatasets.push(key);
+        }
     });
     
     console.log('='.repeat(60));
     console.log(`✅ Success: ${success}/39  |  ❌ Failed: ${failed}/39`);
     console.log('='.repeat(60));
+    
+    // Save scheduler log to Supabase
+    const endTime = Date.now();
+    const duration = Math.round((endTime - startTime) / 1000);
+    const logStatus = failed === 0 ? 'success' : (success > failed ? 'partial' : 'failed');
+    
+    try {
+        const { error } = await supabase.from('scheduler_logs').upsert({
+            run_date: new Date().toISOString().split('T')[0],
+            status: logStatus,
+            success_count: success,
+            failed_count: failed,
+            failed_datasets: JSON.stringify(failedDatasets),
+            duration_seconds: duration,
+            total_datasets: 39
+        }, { onConflict: 'run_date' });
+        
+        if (error) console.error('Failed to save scheduler log:', error.message);
+        else console.log('📝 Scheduler log saved to Supabase');
+    } catch (e) {
+        console.error('Failed to save scheduler log:', e.message);
+    }
 }
 
 main().catch(e => { console.error('Fatal:', e); process.exit(1); });
