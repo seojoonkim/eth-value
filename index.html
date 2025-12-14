@@ -16789,35 +16789,53 @@
                 if (whaleTxData && whaleTxData.length > 0) {
                     log(`   ✓ Whale TX: ${whaleTxData.length} records`);
                     
+                    // Exclude today and yesterday (incomplete data)
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const twoDaysAgo = new Date(today);
+                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                    
                     state.whaleTxHistory = whaleTxData
                         .map(d => ({ 
                             date: new Date(d.date), 
                             value: parseInt(d.whale_tx_count) || 0,
                             volume: parseFloat(d.whale_volume_eth) || 0
                         }))
+                        .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
                         .reverse();
                     
-                    // Latest values
-                    const latest = whaleTxData[0];
-                    state.whaleTxCount = parseInt(latest.whale_tx_count) || 0;
-                    state.whaleTxVolume = parseFloat(latest.whale_volume_eth) || 0;
-                    log(`   ✓ Whale TX Today: ${state.whaleTxCount} txs, ${state.whaleTxVolume.toFixed(0)} ETH`);
+                    // Latest complete values (not today/yesterday)
+                    if (state.whaleTxHistory.length > 0) {
+                        const latest = state.whaleTxHistory[state.whaleTxHistory.length - 1];
+                        state.whaleTxCount = latest.value;
+                        state.whaleTxVolume = latest.volume;
+                        log(`   ✓ Whale TX (latest complete): ${state.whaleTxCount} txs, ${state.whaleTxVolume.toFixed(0)} ETH`);
+                    }
                 }
                 
                 // New Addresses (first nonce=0 transactions)
                 if (newAddrData && newAddrData.length > 0) {
                     log(`   ✓ New Addresses: ${newAddrData.length} records`);
                     
+                    // Exclude today and yesterday (incomplete data)
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const twoDaysAgo = new Date(today);
+                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                    
                     state.newAddressesHistory = newAddrData
                         .map(d => ({ 
                             date: new Date(d.date), 
                             value: parseInt(d.new_addresses) || 0
                         }))
+                        .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
                         .reverse();
                     
-                    // Latest value
-                    state.newAddresses = parseInt(newAddrData[0].new_addresses) || 0;
-                    log(`   ✓ New Addresses Today: ${state.newAddresses.toLocaleString()}`);
+                    // Latest complete value (not today/yesterday)
+                    if (state.newAddressesHistory.length > 0) {
+                        state.newAddresses = state.newAddressesHistory[state.newAddressesHistory.length - 1].value;
+                        log(`   ✓ New Addresses (latest complete): ${state.newAddresses.toLocaleString()}`);
+                    }
                 }
                 
                 if (issuanceData.length > 10) {
