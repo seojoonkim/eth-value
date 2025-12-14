@@ -18490,12 +18490,22 @@
 
                 document.getElementById('market-cap').textContent = fmt.usd(state.marketCap);
                 document.getElementById('volume-24h').textContent = fmt.usd(state.volume24h);
-                document.getElementById('circ-supply').textContent = fmt.num(state.circulatingSupply) + ' ETH';
-                document.getElementById('ath').textContent = fmt.price(md.ath.usd);
+                const circSupplyEl = document.getElementById('circ-supply');
+                if (circSupplyEl) circSupplyEl.textContent = fmt.num(state.circulatingSupply) + ' ETH';
                 
-                const fromAthEl = document.getElementById('from-ath');
-                fromAthEl.textContent = fmt.pct(md.ath_change_percentage.usd);
-                fromAthEl.className = 'price-stat-tag ' + (md.ath_change_percentage.usd >= 0 ? 'up' : 'down');
+                // ATH 데이터 처리 (null check with logging)
+                console.log('   ATH data:', md.ath, 'ATH change:', md.ath_change_percentage);
+                if (md.ath && md.ath.usd) {
+                    document.getElementById('ath').textContent = fmt.price(md.ath.usd);
+                    
+                    const fromAthEl = document.getElementById('from-ath');
+                    if (md.ath_change_percentage && md.ath_change_percentage.usd !== undefined) {
+                        fromAthEl.textContent = fmt.pct(md.ath_change_percentage.usd);
+                        fromAthEl.className = 'price-stat-tag ' + (md.ath_change_percentage.usd >= 0 ? 'up' : 'down');
+                    }
+                } else {
+                    console.warn('   ATH data missing from CoinGecko response');
+                }
 
                 // Binance 히스토리가 없으면 CoinGecko에서 가져오기
                 if (!state.priceHistory || state.priceHistory.length === 0) {
