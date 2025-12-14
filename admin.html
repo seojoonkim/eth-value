@@ -343,12 +343,9 @@
                     
                     // Get header to understand column structure
                     const headerLine = lines[0];
-                    console.log(`[${type}] Header:`, headerLine);
-                    console.log(`[${type}] First data lines:`, lines.slice(1, 3));
                     
                     // Parse header
                     const headers = parseCSVLine(headerLine);
-                    console.log(`[${type}] Parsed headers:`, headers);
                     
                     // Skip header, parse data
                     for (let i = 1; i < lines.length; i++) {
@@ -573,13 +570,11 @@
                     }
                     
                     const gasRecords = Array.from(mergedData.values());
-                    log(`📦 Gas/Burn: Merged ${gasRecords.length} records`, 'info');
                     
                     const { error: gasError } = await batchUpsert('historical_gas_burn', gasRecords);
                     if (gasError) throw new Error(`Gas/Burn: ${gasError.message}`);
                     
                     totalImported += gasRecords.length;
-                    log(`✅ Gas/Burn: Imported ${gasRecords.length} records`, 'success');
                 }
                 
                 // Import Transactions
@@ -596,7 +591,6 @@
                     if (txError) throw new Error(`Transactions: ${txError.message}`);
                     
                     totalImported += txRecords.length;
-                    log(`✅ Transactions: Imported ${txRecords.length} records`, 'success');
                     
                     // Also update gas_burn table with tx counts
                     if (csvData.burn || csvData.gas) {
@@ -618,7 +612,6 @@
                             
                             if (updates.length > 0) {
                                 await batchUpsert('historical_gas_burn', updates);
-                                log(`✅ Updated ${updates.length} gas_burn records with tx counts`, 'success');
                             }
                         }
                     }
@@ -628,25 +621,14 @@
                 if (csvData.supply) {
                     progressEl.textContent = 'Importing Supply data...';
                     
-                    // Sort by date ascending
                     const sorted = [...csvData.supply].sort((a, b) => new Date(a.date) - new Date(b.date));
-                    
-                    // Store Total Supply in eth_supply column
-                    // Note: Daily Issuance is calculated from staking APR in index.html, not from CSV
                     const supplyRecords = sorted.map(r => ({
                         date: r.date,
-                        eth_supply: r.value  // Total supply from CSV
-                        // eth2_staking is NOT set here - it will be calculated from APR
+                        eth_supply: r.value
                     }));
                     
-                    log(`📦 Supply: Importing ${supplyRecords.length} total supply records`, 'info');
-                    
                     const { error: supplyError } = await batchUpsert('historical_eth_supply', supplyRecords);
-                    if (supplyError) {
-                        log(`⚠️ Supply save error: ${supplyError.message}`, 'warn');
-                    } else {
-                        log(`✅ Supply: Imported ${supplyRecords.length} records`, 'success');
-                    }
+                    if (supplyError) log(`  ❌ Supply: ${supplyError.message}`, 'error');
                     
                     totalImported += supplyRecords.length;
                 }
@@ -656,7 +638,6 @@
                     progressEl.textContent = 'Importing Daily Issuance data...';
                     
                     const sorted = [...csvData.dailyIssuance].sort((a, b) => new Date(a.date) - new Date(b.date));
-                    
                     const issuanceRecords = sorted.map(r => ({
                         date: r.date,
                         daily_issuance: r.value,
@@ -664,14 +645,8 @@
                         source: 'csv'
                     }));
                     
-                    log(`📦 Daily Issuance: Importing ${issuanceRecords.length} records`, 'info');
-                    
                     const { error: issuanceError } = await batchUpsert('historical_daily_issuance', issuanceRecords);
-                    if (issuanceError) {
-                        log(`⚠️ Daily Issuance save error: ${issuanceError.message}`, 'warn');
-                    } else {
-                        log(`✅ Daily Issuance: Imported ${issuanceRecords.length} records`, 'success');
-                    }
+                    if (issuanceError) log(`  ❌ Daily Issuance: ${issuanceError.message}`, 'error');
                     
                     totalImported += issuanceRecords.length;
                 }
@@ -679,18 +654,10 @@
                 // Import Blob data (from Dune CSV)
                 if (csvData.blob) {
                     progressEl.textContent = 'Importing Blob data...';
-                    
-                    // blob records are already formatted correctly in processCSV
                     const blobRecords = csvData.blob;
                     
-                    log(`📦 Blob Data: Importing ${blobRecords.length} records from Dune`, 'info');
-                    
                     const { error: blobError } = await batchUpsert('historical_blob_data', blobRecords);
-                    if (blobError) {
-                        log(`⚠️ Blob Data save error: ${blobError.message}`, 'warn');
-                    } else {
-                        log(`✅ Blob Data: Imported ${blobRecords.length} records`, 'success');
-                    }
+                    if (blobError) log(`  ❌ Blob Data: ${blobError.message}`, 'error');
                     
                     totalImported += blobRecords.length;
                 }
@@ -698,11 +665,8 @@
                 // Import Gas Utilization data (from Etherscan CSV)
                 if (csvData.gasUtil) {
                     progressEl.textContent = 'Importing Gas Utilization data...';
-                    
                     const gasUtilRecords = csvData.gasUtil;
-                    log(`📦 Gas Utilization: Updating ${gasUtilRecords.length} records`, 'info');
                     
-                    // Update existing records in historical_gas_burn with gas_utilization
                     let updated = 0;
                     for (const record of gasUtilRecords) {
                         const { error } = await supabase.from('historical_gas_burn')
@@ -711,9 +675,7 @@
                         if (!error) updated++;
                     }
                     
-                    // For dates without existing gas_burn record, insert new record
-                    const { data: existingDates } = await supabase.from('historical_gas_burn')
-                        .select('date');
+                    const { data: existingDates } = await supabase.from('historical_gas_burn').select('date');
                     const existingSet = new Set(existingDates?.map(d => d.date) || []);
                     
                     const newRecords = gasUtilRecords
@@ -727,12 +689,9 @@
                     
                     if (newRecords.length > 0) {
                         const { error: insertError } = await batchUpsert('historical_gas_burn', newRecords);
-                        if (insertError) {
-                            log(`⚠️ Gas Utilization insert error: ${insertError.message}`, 'warn');
-                        }
+                        if (insertError) log(`  ❌ Gas Util insert: ${insertError.message}`, 'error');
                     }
                     
-                    log(`✅ Gas Utilization: Updated ${updated}, inserted ${newRecords.length} records`, 'success');
                     totalImported += gasUtilRecords.length;
                 }
                 
@@ -761,7 +720,6 @@
             log('🔄 Auto-fill: Starting...', 'info');
             
             try {
-                // 1. Get the latest date from gas_burn table
                 const { data: latestGas } = await supabase.from('historical_gas_burn')
                     .select('date')
                     .order('date', { ascending: false })
@@ -775,13 +733,9 @@
                 const lastGasDate = latestGas?.[0]?.date ? new Date(latestGas[0].date) : null;
                 const lastTxDate = latestTx?.[0]?.date ? new Date(latestTx[0].date) : null;
                 
-                log(`📅 Last Gas/Burn date: ${lastGasDate?.toISOString().split('T')[0] || 'None'}`, 'info');
-                log(`📅 Last Tx date: ${lastTxDate?.toISOString().split('T')[0] || 'None'}`, 'info');
-                
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 
-                // 2. Calculate missing dates
                 const missingDates = [];
                 if (lastGasDate) {
                     let d = new Date(lastGasDate);
@@ -793,13 +747,12 @@
                 }
                 
                 if (missingDates.length === 0) {
-                    log('✅ Auto-fill: Data is up to date!', 'success');
+                    log('✅ Auto-fill: Data is up to date', 'success');
                     return;
                 }
                 
-                log(`📊 Auto-fill: Need to fill ${missingDates.length} days`, 'info');
+                log(`  Filling ${missingDates.length} missing days...`, 'info');
                 
-                // 3. For each missing date, calculate from block data
                 const gasRecords = [];
                 const txRecords = [];
                 
@@ -807,24 +760,18 @@
                     const date = missingDates[i];
                     const dateStr = date.toISOString().split('T')[0];
                     
-                    log(`   Processing ${dateStr} (${i+1}/${missingDates.length})...`, 'info');
-                    
-                    // Get block range for this date
                     const startTime = Math.floor(date.getTime() / 1000);
                     const endTime = startTime + 86400 - 1;
                     
-                    // Get start block
                     const startBlockUrl = `https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=${startTime}&closest=after&apikey=${ETHERSCAN_API_KEY}`;
                     const startBlockRes = await fetch(startBlockUrl);
                     const startBlockData = await startBlockRes.json();
                     
-                    // Get end block  
                     const endBlockUrl = `https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=${endTime}&closest=before&apikey=${ETHERSCAN_API_KEY}`;
                     const endBlockRes = await fetch(endBlockUrl);
                     const endBlockData = await endBlockRes.json();
                     
                     if (startBlockData.status !== '1' || endBlockData.status !== '1') {
-                        log(`   ⚠️ Could not get blocks for ${dateStr}`, 'warn');
                         continue;
                     }
                     
@@ -832,7 +779,6 @@
                     const endBlock = parseInt(endBlockData.result);
                     const blockCount = endBlock - startBlock + 1;
                     
-                    // Sample a few blocks to estimate gas metrics
                     const sampleBlocks = [];
                     const sampleSize = Math.min(20, blockCount);
                     const step = Math.floor(blockCount / sampleSize);
@@ -875,9 +821,8 @@
                         const avgGasUsed = totalGasUsed / validSamples;
                         const avgTxPerBlock = totalTxCount / validSamples;
                         
-                        // Extrapolate to full day
                         const dailyGasUsed = avgGasUsed * blockCount;
-                        const dailyBurn = (avgBaseFeeWei * dailyGasUsed) / 1e18; // ETH
+                        const dailyBurn = (avgBaseFeeWei * dailyGasUsed) / 1e18;
                         const dailyTx = Math.round(avgTxPerBlock * blockCount);
                         const avgGasGwei = avgBaseFeeWei / 1e9;
                         
@@ -893,28 +838,22 @@
                             timestamp: date.getTime(),
                             tx_count: dailyTx
                         });
-                        
-                        log(`   ✓ ${dateStr}: ${dailyBurn.toFixed(1)} ETH burnt, ${avgGasGwei.toFixed(1)} Gwei, ${dailyTx.toLocaleString()} txs`, 'success');
                     }
                 }
                 
-                // 4. Save to Supabase
                 if (gasRecords.length > 0) {
                     const { error: gasError } = await batchUpsert('historical_gas_burn', gasRecords);
-                    if (gasError) log(`❌ Gas save error: ${gasError.message}`, 'error');
-                    else log(`✅ Saved ${gasRecords.length} gas/burn records`, 'success');
+                    if (gasError) log(`  ❌ Gas save: ${gasError.message}`, 'error');
                 }
                 
                 if (txRecords.length > 0) {
                     const { error: txError } = await batchUpsert('historical_transactions', txRecords);
-                    if (txError) log(`❌ Tx save error: ${txError.message}`, 'error');
-                    else log(`✅ Saved ${txRecords.length} transaction records`, 'success');
+                    if (txError) log(`  ❌ Tx save: ${txError.message}`, 'error');
                 }
                 
-                // 5. Auto-calculate issuance for missing dates
                 await autoFillIssuance(missingDates);
                 
-                log(`🎉 Auto-fill complete! Filled ${gasRecords.length} days`, 'success');
+                log(`✅ Auto-fill complete: ${gasRecords.length} days`, 'success');
                 await refreshData();
                 
             } catch (err) {
@@ -922,14 +861,11 @@
             }
         }
         
-        // Auto-fill missing supply data (eth_supply only, Daily Issuance is calculated from APR)
+        // Auto-fill missing supply data
         async function autoFillIssuance(dates) {
             if (!dates || dates.length === 0) return;
             
             try {
-                log('💎 Checking supply data...', 'info');
-                
-                // Check which dates already have data
                 const dateStrs = dates.map(d => d.toISOString().split('T')[0]);
                 const { data: existingData } = await supabase.from('historical_eth_supply')
                     .select('date, eth_supply')
@@ -938,14 +874,8 @@
                 const existingDates = new Set(existingData?.map(d => d.date) || []);
                 const missingDates = dates.filter(d => !existingDates.has(d.toISOString().split('T')[0]));
                 
-                if (missingDates.length === 0) {
-                    log('   ✅ Supply data up to date', 'success');
-                    return;
-                }
+                if (missingDates.length === 0) return;
                 
-                log(`   📊 Auto-filling ${missingDates.length} missing supply days...`, 'info');
-                
-                // Get latest known supply
                 const { data: latestSupply } = await supabase.from('historical_eth_supply')
                     .select('eth_supply')
                     .order('date', { ascending: false })
@@ -961,15 +891,11 @@
                 
                 if (supplyUpdates.length > 0) {
                     const { error } = await batchUpsert('historical_eth_supply', supplyUpdates);
-                    if (error) {
-                        log(`   ⚠️ Supply save error: ${error.message}`, 'warn');
-                    } else {
-                        log(`   ✅ Auto-filled ${supplyUpdates.length} supply records`, 'success');
-                    }
+                    if (error) log(`  ❌ Supply: ${error.message}`, 'error');
                 }
                 
             } catch (err) {
-                log(`   ⚠️ Supply auto-fill error: ${err.message}`, 'warn');
+                log(`  ❌ Supply auto-fill: ${err.message}`, 'error');
             }
         }
 
@@ -1047,7 +973,7 @@
             // ═══════════════════════════════════════════════════════════════════
             // PHASE 3: 2차 계산 (Phase 1+2 데이터 의존)
             // ═══════════════════════════════════════════════════════════════════
-            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, depends: ['protocol_fees', 'eth_price', 'transactions'], source: '🔷 Dune API' },
+            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔷 Dune API', note: 'Daily burn (via Gas Price)', noCollect: true },
             active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, depends: [], source: '🔷 Dune API' },
             fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, depends: ['eth_price', 'volatility'], source: 'alternative.me API' },
             nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, depends: ['eth_price'], source: '🔷 Dune API' },
@@ -1079,7 +1005,10 @@
             }
         }
 
-        function log(msg, type = '') {
+        const DEBUG = false; // true로 변경하면 상세 로그 표시
+        
+        function log(msg, type = '', debug = false) {
+            if (debug && !DEBUG) return; // DEBUG 모드가 아니면 debug 로그 무시
             const el = document.getElementById('log');
             el.innerHTML += `<span class="${type}">[${new Date().toLocaleTimeString()}] ${msg}</span>\n`;
             el.scrollTop = el.scrollHeight;
@@ -1089,23 +1018,22 @@
             for (let i = 0; i <= retries; i++) {
                 try {
                     const controller = new AbortController();
-                    const timeout = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+                    const timeout = setTimeout(() => controller.abort(), 30000);
                     
                     const res = await fetch(url, { signal: controller.signal });
                     clearTimeout(timeout);
                     
                     if (!res.ok) { 
-                        log(`  ⚠️ HTTP ${res.status}`, 'warn'); 
-                        return null; 
+                        if (i === retries) log(`  ❌ HTTP ${res.status}: ${url.split('?')[0]}`, 'error');
+                        continue;
                     }
                     return await res.json();
                 } catch (e) { 
                     if (i < retries) {
-                        log(`  ⚠️ Fetch retry ${i + 1}...`, 'warn');
                         await new Promise(r => setTimeout(r, 1000));
                         continue;
                     }
-                    log(`  ⚠️ ${e.message}`, 'warn'); 
+                    log(`  ❌ ${e.message}`, 'error'); 
                     return null; 
                 }
             }
@@ -1244,26 +1172,28 @@
                 
                 const row = document.createElement('tr');
                 const sourceStyle = ds.source?.includes('Dune') ? 'color:#7c3aed;font-weight:600' : ds.source?.includes('Estimated') ? 'color:var(--warning)' : ds.source?.includes('Calculated') ? 'color:var(--text-muted)' : '';
-                row.innerHTML = `<td class="mono">${idx}</td><td>${ds.icon} ${ds.name}${dependsText}</td><td style="font-size:11px;${sourceStyle}">${ds.source || '-'}</td><td><span class="table-name">${ds.table}</span></td><td class="mono">${s.count?.toLocaleString() || 0}</td><td class="mono" style="font-size:10px">${dateRange}</td><td class="mono">${formatValue(s.value, ds.format)}</td><td><div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div><span class="mono" style="font-size:10px">${coverage}%</span></td><td><span class="status ${statusClass}">${statusText}</span>${collectStatus ? '<br>'+collectStatus : ''}</td><td><button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button></td>`;
+                const collectBtn = ds.noCollect 
+                    ? `<button class="btn btn-secondary btn-sm" disabled title="Collected via Gas Price">-</button>`
+                    : `<button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button>`;
+                const noteText = ds.note ? ` <span style="font-size:10px;color:var(--text-muted)" title="${ds.note}">ℹ️</span>` : '';
+                row.innerHTML = `<td class="mono">${idx}</td><td>${ds.icon} ${ds.name}${dependsText}${noteText}</td><td style="font-size:11px;${sourceStyle}">${ds.source || '-'}</td><td><span class="table-name">${ds.table}</span></td><td class="mono">${s.count?.toLocaleString() || 0}</td><td class="mono" style="font-size:10px">${dateRange}</td><td class="mono">${formatValue(s.value, ds.format)}</td><td><div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div><span class="mono" style="font-size:10px">${coverage}%</span></td><td><span class="status ${statusClass}">${statusText}</span>${collectStatus ? '<br>'+collectStatus : ''}</td><td>${collectBtn}</td>`;
                 tbody.appendChild(row);
                 idx++;
             }
         }
         
         async function collectPhase(phase) {
-            const phaseDatasets = Object.entries(DATASETS).filter(([k, ds]) => ds.phase === phase);
-            log(`\n🚀 Collecting Phase ${phase} (${phaseDatasets.length} datasets)...`, 'info');
+            const phaseDatasets = Object.entries(DATASETS).filter(([k, ds]) => ds.phase === phase && !ds.noCollect);
+            log(`🚀 Phase ${phase} (${phaseDatasets.length} datasets)...`, 'info');
             
             let success = 0, failed = 0;
             for (const [key, ds] of phaseDatasets) {
-                if (!collectors[key]) {
-                    log(`  ⚠️ ${ds.name}: No collector`, 'warn');
-                    continue;
-                }
+                if (!collectors[key]) continue;
                 try {
-                    log(`  📥 ${ds.name}...`);
                     const count = await collectors[key]();
-                    log(`  ✅ ${ds.name}: ${count} records`, 'success');
+                    if (count > 0) {
+                        log(`  ✅ ${ds.name}: ${count}`, 'success');
+                    }
                     success++;
                 } catch (e) {
                     log(`  ❌ ${ds.name}: ${e.message}`, 'error');
@@ -1272,7 +1202,7 @@
                 await new Promise(r => setTimeout(r, 300));
             }
             
-            log(`\n📊 Phase ${phase} Complete: ${success} success, ${failed} failed`, success > 0 ? 'success' : 'error');
+            log(`📊 Phase ${phase}: ${success} success, ${failed} failed`, success > 0 ? 'success' : 'error');
             await loadDataStatus();
         }
 
@@ -1282,9 +1212,7 @@
         async function batchUpsert(table, records, conflictKey = 'date', batchSize = 1500) {
             if (!records || records.length === 0) return { error: null, count: 0 };
             
-            // 복합키(쉼표 포함)인 경우 배치 사이즈 줄임
             const actualBatchSize = conflictKey.includes(',') ? Math.min(batchSize, 500) : batchSize;
-            
             let totalInserted = 0;
             const batches = Math.ceil(records.length / actualBatchSize);
             
@@ -1293,7 +1221,6 @@
                 const end = Math.min(start + actualBatchSize, records.length);
                 const batch = records.slice(start, end);
                 
-                // 최대 3회 재시도
                 let lastError = null;
                 for (let retry = 0; retry < 3; retry++) {
                     try {
@@ -1307,30 +1234,15 @@
                     } catch (e) {
                         lastError = e;
                     }
-                    
-                    if (retry < 2) {
-                        log(`  ⚠️ Batch ${i + 1} retry ${retry + 1}...`, 'warn');
-                        await new Promise(r => setTimeout(r, 1000 * (retry + 1))); // 1초, 2초 대기
-                    }
+                    if (retry < 2) await new Promise(r => setTimeout(r, 1000 * (retry + 1)));
                 }
                 
                 if (lastError) {
-                    log(`  ⚠️ Batch ${i + 1}/${batches} failed after 3 retries`, 'warn');
+                    log(`  ❌ ${table}: batch ${i+1}/${batches} failed`, 'error');
                     return { error: lastError, count: totalInserted };
                 }
                 
-                // 진행상황 로그 (대용량일 때만, 마지막 배치는 항상)
-                const logInterval = records.length > 3000 ? 1500 : 999999;
-                if (totalInserted % logInterval === 0 || i === batches - 1) {
-                    if (records.length > 100) {
-                        log(`  📤 ${totalInserted}/${records.length} saved`, 'info');
-                    }
-                }
-                
-                // 배치 간 딜레이 (Supabase rate limit 회피)
-                if (i < batches - 1) {
-                    await new Promise(r => setTimeout(r, 200));
-                }
+                if (i < batches - 1) await new Promise(r => setTimeout(r, 200));
             }
             
             return { error: null, count: totalInserted };
@@ -1361,13 +1273,11 @@
                     }));
                     allRecords.push(...records);
                     
-                    // Move to next chunk
                     startTime = data[data.length - 1][0] + 86400000;
                     if (data.length < 1000) break;
                     await new Promise(r => setTimeout(r, 100));
                 }
                 
-                log(`  📦 Got ${allRecords.length} total candles`, 'info');
                 if (allRecords.length === 0) return 0;
                 
                 const { error, count } = await batchUpsert('historical_eth_price', allRecords);
@@ -1384,7 +1294,6 @@
                     date: new Date(d.date * 1000).toISOString().split('T')[0],
                     tvl: parseFloat(d.tvl.toFixed(2))
                 }));
-                log(`  📦 Got ${records.length} TVL records`, 'info');
                 const { error, count } = await batchUpsert('historical_ethereum_tvl', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : count;
@@ -1394,12 +1303,11 @@
             async l2_tvl() {
                 const chains = ['Arbitrum', 'Optimism', 'Base', 'zkSync Era', 'Linea', 'Scroll', 'Blast'];
                 const cutoff = Date.now() / 1000 - (1095 * 86400);
-                let total = 0;
-                log(`  🔍 Fetching TVL for ${chains.length} L2 chains...`, 'info');
+                let total = 0, failed = [];
                 for (const chain of chains) {
                     const data = await fetchJSON(`https://api.llama.fi/v2/historicalChainTvl/${encodeURIComponent(chain)}`);
                     if (!data) {
-                        log(`    ⚠️ ${chain}: No data`, 'warn');
+                        failed.push(chain);
                         continue;
                     }
                     const records = data.filter(d => d.date > cutoff && d.tvl > 0).map(d => ({
@@ -1409,13 +1317,11 @@
                     }));
                     if (records.length > 0) {
                         const { error } = await batchUpsert('historical_l2_tvl', records, 'date,chain');
-                        if (!error) {
-                            total += records.length;
-                            log(`    ✓ ${chain}: ${records.length} days`, 'info');
-                        }
+                        if (!error) total += records.length;
                     }
                     await new Promise(r => setTimeout(r, 200));
                 }
+                if (failed.length > 0) log(`  ⚠️ Failed chains: ${failed.join(', ')}`, 'warn');
                 return total;
             },
 
@@ -1434,22 +1340,15 @@
 
             // 5. Staking - DefiLlama yields API (Lido stETH pool)
             async staking_data() {
-                // DefiLlama yields chart - Lido stETH pool
-                // Pool ID: 747c1d2a-c668-4682-b9f9-296708a3dd90 (Lido stETH)
-                log('  🔍 Fetching staking data from DefiLlama...', 'info');
                 const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
                 
                 if (!yieldData?.data || yieldData.data.length === 0) {
-                    log('  ⚠️ DefiLlama yield API failed, trying Lido TVL...', 'warn');
-                    
                     // Fallback: Use Lido protocol TVL from DefiLlama
                     const lidoData = await fetchJSON('https://api.llama.fi/protocol/lido');
                     if (!lidoData?.tvl || lidoData.tvl.length === 0) {
-                        log('  ❌ Lido TVL API also failed', 'error');
+                        log('  ❌ DefiLlama & Lido APIs failed', 'error');
                         return 0;
                     }
-                    
-                    log(`  📦 Got ${lidoData.tvl.length} TVL records from Lido`, 'info');
                     
                     const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
                     const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
@@ -1467,7 +1366,6 @@
                         if (lidoTvlUsd <= 0) continue;
                         
                         const lidoStakedEth = lidoTvlUsd / price;
-                        // Lido ~28% market share
                         const totalStakedEth = lidoStakedEth / 0.28;
                         const totalValidators = Math.round(totalStakedEth / 32);
                         
@@ -1477,7 +1375,7 @@
                             total_staked_eth: Math.round(totalStakedEth),
                             staked_eth: Math.round(lidoStakedEth),
                             total_validators: totalValidators,
-                            avg_apr: 3.5, // Estimate
+                            avg_apr: 3.5,
                             source: 'defillama-lido'
                         });
                     }
@@ -1489,22 +1387,18 @@
                         return true;
                     });
                     
-                    log(`  📦 Filtered to ${uniqueRecords.length} records`, 'info');
                     const { error } = await batchUpsert('historical_staking', uniqueRecords);
                     if (error) log(`  ❌ ${error.message}`, 'error');
                     return error ? 0 : uniqueRecords.length;
                 }
                 
-                log(`  📦 Got ${yieldData.data.length} yield records from DefiLlama`, 'info');
-                
-                // Get ETH prices for TVL calculation (limit to 3 years)
+                // Get ETH prices for TVL calculation
                 const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
                 const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
                 
                 const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
                 const records = [];
                 
-                // Lido market share by year
                 const getMarketShare = (date) => {
                     const year = new Date(date).getFullYear();
                     if (year <= 2022) return 0.30;
@@ -1523,10 +1417,7 @@
                     
                     if (lidoTvlUsd <= 0) continue;
                     
-                    // Lido staked ETH
                     const lidoStakedEth = lidoTvlUsd / price;
-                    
-                    // Total network = Lido / market share
                     const marketShare = getMarketShare(date);
                     const totalStakedEth = lidoStakedEth / marketShare;
                     const totalValidators = Math.round(totalStakedEth / 32);
@@ -1542,7 +1433,6 @@
                     });
                 }
                 
-                // Deduplicate by date
                 const seen = new Set();
                 const uniqueRecords = records.filter(r => {
                     if (seen.has(r.date)) return false;
@@ -1550,7 +1440,6 @@
                     return true;
                 });
                 
-                log(`  📦 Filtered to ${uniqueRecords.length} records`, 'info');
                 const { error } = await batchUpsert('historical_staking', uniqueRecords);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : uniqueRecords.length;
@@ -1558,155 +1447,7 @@
 
             // 6. Gas & Burn - Etherscan V2 with fallback
             async gas_burn() {
-                // 먼저 기존 CSV 데이터 확인
-                const { data: existingData } = await supabase.from('historical_gas_burn')
-                    .select('date, eth_burnt')
-                    .order('date', { ascending: false })
-                    .limit(1200);
-                
-                const existingDates = new Set(existingData?.filter(d => d.eth_burnt > 0).map(d => d.date) || []);
-                log(`  📋 Existing gas_burn records: ${existingDates.size}`, 'info');
-                
-                // CSV 데이터가 충분하면 (1000개 이상) 완전히 건너뛰기
-                if (existingDates.size > 1000) {
-                    log(`  📋 Skipping - sufficient CSV data exists (${existingDates.size} records)`, 'success');
-                    return -1;
-                }
-                
-                const endDate = new Date().toISOString().split('T')[0];
-                const startDate = new Date(Date.now() - 1095 * 86400000).toISOString().split('T')[0];
-                
-                // Etherscan V2 시도 (PRO 전용일 수 있음)
-                if (ETHERSCAN_API_KEY) {
-                    log(`  🔍 Trying Etherscan V2 API...`, 'info');
-                    const [gasPriceData, gasUsedData, gasLimitData] = await Promise.all([
-                        fetchJSON(`https://api.etherscan.io/v2/api?chainid=1&module=stats&action=dailyavggasprice&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`),
-                        fetchJSON(`https://api.etherscan.io/v2/api?chainid=1&module=stats&action=dailygasused&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`),
-                        fetchJSON(`https://api.etherscan.io/v2/api?chainid=1&module=stats&action=dailyavggaslimit&startdate=${startDate}&enddate=${endDate}&sort=asc&apikey=${ETHERSCAN_API_KEY}`)
-                    ]);
-                    
-                    if (gasPriceData?.status === '1' && gasUsedData?.status === '1') {
-                        log(`  📦 Got ${gasPriceData.result.length} days from Etherscan V2`, 'info');
-                        
-                        const gasUsedMap = new Map(gasUsedData.result.map(d => [d.UTCDate, parseFloat(d.gasUsed)]));
-                        const gasLimitMap = new Map(gasLimitData?.result?.map(d => [d.UTCDate, parseFloat(d.gasLimit)]) || []);
-                        const records = [];
-                        
-                        for (const d of gasPriceData.result) {
-                            // 기존 CSV 데이터가 있는 날짜는 건너뛰기
-                            if (existingDates.has(d.UTCDate)) continue;
-                            
-                            const gasPrice = parseFloat(d.avgGasPrice_Wei) / 1e9;
-                            const gasUsed = gasUsedMap.get(d.UTCDate) || 0;
-                            const gasLimit = gasLimitMap.get(d.UTCDate) || 0;
-                            const baseFeeGwei = gasPrice * 0.8;
-                            const ethBurnt = (gasUsed * baseFeeGwei) / 1e9;
-                            
-                            // Gas Utilization 계산 (gasUsed / gasLimit * 100)
-                            let gasUtilization = 50; // 기본값
-                            if (gasLimit > 0 && gasUsed > 0) {
-                                gasUtilization = Math.min(100, Math.max(0, (gasUsed / gasLimit) * 100));
-                            } else {
-                                // gasLimit 데이터 없으면 gas price로 추정
-                                gasUtilization = Math.min(95, Math.max(45, 50 + gasPrice * 0.5));
-                            }
-                            
-                            if (ethBurnt > 0) {
-                                records.push({
-                                    date: d.UTCDate,
-                                    eth_burnt: parseFloat(ethBurnt.toFixed(2)),
-                                    avg_gas_price_gwei: parseFloat(gasPrice.toFixed(2)),
-                                    gas_utilization: parseFloat(gasUtilization.toFixed(2)),
-                                    transaction_count: 0
-                                });
-                            }
-                        }
-                        
-                        if (records.length === 0) {
-                            log(`  ✅ All dates already have CSV data`, 'success');
-                            return 0;
-                        }
-                        
-                        log(`  📦 Adding ${records.length} new records from Etherscan`, 'info');
-                        const { error } = await batchUpsert('historical_gas_burn', records);
-                        if (error) log(`  ❌ ${error.message}`, 'error');
-                        return error ? 0 : records.length;
-                    }
-                    log(`  ⚠️ Etherscan V2 stats requires PRO - using estimates`, 'warn');
-                }
-                
-                // Fallback: Protocol fees 기반 추정 (CSV 데이터 없는 날짜만)
-                // existingDates는 이미 위에서 조회됨
-                
-                const { data: fees } = await supabase.from('historical_protocol_fees')
-                    .select('date, fees')
-                    .eq('chain', 'ethereum')
-                    .order('date', { ascending: false })
-                    .limit(1100);
-                
-                const { data: txs } = await supabase.from('historical_transactions')
-                    .select('date, tx_count')
-                    .order('date', { ascending: false })
-                    .limit(1100);
-                
-                const feeMap = new Map(fees?.map(f => [f.date, f.fees]) || []);
-                const txMap = new Map(txs?.map(t => [t.date, parseInt(t.tx_count)]) || []);
-                const today = new Date();
-                const records = [];
-                
-                for (let i = 0; i < 1095; i++) {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - i);
-                    const dateStr = date.toISOString().split('T')[0];
-                    
-                    // CSV 데이터가 있는 날짜는 건너뛰기
-                    if (existingDates.has(dateStr)) continue;
-                    
-                    const dailyFee = feeMap.get(dateStr);
-                    const txCount = txMap.get(dateStr) || 1150000;
-                    
-                    // Gas price 추정: 2022년 50-100 Gwei → 2025년 10-30 Gwei
-                    const daysFromStart = 1095 - i;
-                    const progress = daysFromStart / 1095;
-                    let gasPrice, ethBurnt, gasUtilization;
-                    
-                    if (dailyFee && dailyFee > 0) {
-                        // Fee에서 역산
-                        ethBurnt = dailyFee / 4000;
-                        gasPrice = (ethBurnt * 1e9) / (txCount * 21000) * 0.8;
-                        // 최소 gasPrice 보장
-                        gasPrice = Math.max(10, gasPrice);
-                    } else {
-                        const baseGas = 80 - (60 * progress); // 80 Gwei → 20 Gwei
-                        const variation = Math.sin(i * 0.15) * 10;
-                        gasPrice = Math.max(10, baseGas + variation);
-                        ethBurnt = (txCount * 21000 * gasPrice * 0.8) / 1e9;
-                    }
-                    
-                    // Gas utilization 추정 (gas price 기반)
-                    gasUtilization = Math.min(95, Math.max(45, 50 + gasPrice * 0.5));
-                    
-                    // 최소 burnt 보장 (현재 ~150 ETH/day)
-                    ethBurnt = Math.max(50, ethBurnt);
-                    
-                    records.push({
-                        date: dateStr,
-                        eth_burnt: parseFloat(Math.max(0, ethBurnt).toFixed(2)),
-                        avg_gas_price_gwei: parseFloat(Math.max(1, gasPrice).toFixed(2)),
-                        gas_utilization: parseFloat(gasUtilization.toFixed(2)),
-                        transaction_count: txCount
-                    });
-                }
-                
-                if (records.length === 0) {
-                    log(`  ✅ All dates already have data`, 'success');
-                    return 0;
-                }
-                
-                log(`  📦 Generated ${records.length} records for missing dates (fee-based estimates)`, 'info');
-                const { error } = await batchUpsert('historical_gas_burn', records);
-                if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                return -1; // Data collected via Gas Price collector
             },
 
             // 7. Active Addresses - Dune API (정확한 온체인 데이터)
@@ -3302,17 +3043,12 @@
 
             // Stablecoin Volume - Dune API
             async stablecoin_volume() {
-                log('  🔍 Fetching Stablecoin Volume...', 'info');
-                
                 if (!DUNE_API_KEY) {
-                    log('  ⚠️ No Dune API key', 'warn');
+                    log('  ❌ No Dune API key', 'error');
                     return 0;
                 }
                 
                 try {
-                    log('  📡 Fetching from Dune API...', 'info');
-                    
-                    // Paginate through all results
                     let allRows = [];
                     let offset = 0;
                     const pageSize = 1000;
@@ -3330,15 +3066,11 @@
                         if (rows.length === 0) break;
                         
                         allRows = allRows.concat(rows);
-                        log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`, 'info');
-                        
                         if (rows.length < pageSize) break;
                         offset += pageSize;
                     }
                     
                     if (allRows.length > 0) {
-                        log(`  📊 Got ${allRows.length} Stablecoin Volume records from Dune`, 'info');
-                        
                         const records = allRows.map(row => {
                             let dateStr = row.block_date || row.day || row.date;
                             if (typeof dateStr === 'string' && dateStr.includes(' ')) {
@@ -3355,15 +3087,14 @@
                         
                         const { error } = await batchUpsert('historical_stablecoin_volume', records, 'date');
                         if (error) {
-                            log(`  ❌ Save error: ${error.message}`, 'error');
+                            log(`  ❌ ${error.message}`, 'error');
                             return 0;
                         }
                         
-                        log(`  ✅ Stablecoin Volume: ${records.length} records saved from Dune`, 'success');
                         return records.length;
                     }
                     
-                    log('  ⚠️ No data from Dune', 'warn');
+                    log('  ❌ No data from Dune', 'error');
                     return 0;
                 } catch (e) {
                     log(`  ❌ Dune API error: ${e.message}`, 'error');
@@ -3373,17 +3104,12 @@
 
             // New Addresses - Dune API (first transaction from address)
             async new_addresses() {
-                log('  🔍 Fetching New Addresses...', 'info');
-                
                 if (!DUNE_API_KEY) {
-                    log('  ⚠️ No Dune API key', 'warn');
+                    log('  ❌ No Dune API key', 'error');
                     return 0;
                 }
                 
                 try {
-                    log('  📡 Fetching from Dune API...', 'info');
-                    
-                    // Paginate through all results
                     let allRows = [];
                     let offset = 0;
                     const pageSize = 1000;
@@ -3401,15 +3127,11 @@
                         if (rows.length === 0) break;
                         
                         allRows = allRows.concat(rows);
-                        log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`, 'info');
-                        
                         if (rows.length < pageSize) break;
                         offset += pageSize;
                     }
                     
                     if (allRows.length > 0) {
-                        log(`  📊 Got ${allRows.length} New Address records from Dune`, 'info');
-                        
                         const records = allRows.map(row => {
                             let dateStr = row.date;
                             if (typeof dateStr === 'string' && dateStr.includes(' ')) {
@@ -3426,15 +3148,14 @@
                         
                         const { error } = await batchUpsert('historical_new_addresses', records, 'date');
                         if (error) {
-                            log(`  ❌ Save error: ${error.message}`, 'error');
+                            log(`  ❌ ${error.message}`, 'error');
                             return 0;
                         }
                         
-                        log(`  ✅ New Addresses: ${records.length} records saved from Dune`, 'success');
                         return records.length;
                     }
                     
-                    log('  ⚠️ No data from Dune', 'warn');
+                    log('  ❌ No data from Dune', 'error');
                     return 0;
                 } catch (e) {
                     log(`  ❌ Dune API error: ${e.message}`, 'error');
@@ -3443,16 +3164,12 @@
             },
             
             async gas_price() {
-                log('  ⛽ Fetching Gas Price from Dune...', 'info');
-                log(`  📡 Query ID: ${DUNE_GAS_PRICE_QUERY_ID}`, 'info');
-                
                 if (!DUNE_API_KEY) {
-                    log('  ⚠️ No Dune API key', 'warn');
+                    log('  ❌ No Dune API key', 'error');
                     return 0;
                 }
                 
                 try {
-                    // Paginate through all results
                     let allRows = [];
                     let offset = 0;
                     const pageSize = 1000;
@@ -3463,56 +3180,32 @@
                             headers: { 'X-Dune-API-Key': DUNE_API_KEY }
                         });
                         
-                        if (!response.ok) {
-                            log(`  ⚠️ Dune API error: ${response.status}`, 'warn');
-                            break;
-                        }
+                        if (!response.ok) break;
                         
                         const data = await response.json();
                         const rows = data.result?.rows || [];
-                        
-                        // Debug: show first row columns
-                        if (rows.length > 0 && offset === 0) {
-                            log(`  🔍 Sample row keys: ${Object.keys(rows[0]).join(', ')}`, 'info');
-                            log(`  🔍 Sample row: ${JSON.stringify(rows[0])}`, 'info');
-                        }
-                        
                         if (rows.length === 0) break;
                         
                         allRows = allRows.concat(rows);
-                        log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`, 'info');
-                        
                         if (rows.length < pageSize) break;
                         offset += pageSize;
                         await new Promise(r => setTimeout(r, 300));
                     }
                     
                     if (allRows.length === 0) {
-                        log('  ⚠️ No data from Dune', 'warn');
+                        log('  ❌ No data from Dune', 'error');
                         return 0;
                     }
                     
-                    log(`  📊 Got ${allRows.length} Gas Price records from Dune`, 'info');
-                    
-                    // Parse records - try multiple possible column names
                     const records = allRows.map(row => {
                         let dateStr = row.block_date || row.date || row.day || '';
                         if (typeof dateStr === 'string') {
-                            if (dateStr.includes(' ')) {
-                                dateStr = dateStr.split(' ')[0];
-                            } else if (dateStr.includes('T')) {
-                                dateStr = dateStr.split('T')[0];
-                            }
+                            if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+                            else if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
                         }
                         
-                        // Try multiple column name variations
                         const gasPrice = parseFloat(
-                            row.avg_gas_price_gwei || 
-                            row.gas_price_gwei || 
-                            row.avg_gas_price || 
-                            row.gas_price ||
-                            row.median_gas_price ||
-                            0
+                            row.avg_gas_price_gwei || row.gas_price_gwei || row.avg_gas_price || row.gas_price || row.median_gas_price || 0
                         );
                         
                         return {
@@ -3523,19 +3216,7 @@
                         };
                     }).filter(r => r.date && r.avg_gas_price_gwei > 0);
                     
-                    log(`  📦 Valid records: ${records.length}`, 'info');
-                    
-                    if (records.length > 0) {
-                        log(`  📅 Sample: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(4)} Gwei`, 'info');
-                    }
-                    
-                    // Upsert to historical_gas_burn table (update existing or insert new)
-                    log(`  💾 Upserting ${records.length} records...`, 'info');
-                    
                     const upsertRecords = records.map(r => {
-                        // Calculate eth_burnt from gas price and tx count
-                        // eth_burnt ≈ avg_gas_price_gwei * tx_count * avg_gas_per_tx / 1e9
-                        // avg_gas_per_tx ≈ 65000 gas
                         const avgGasPerTx = 65000;
                         const ethBurnt = r.transaction_count > 0 
                             ? (r.avg_gas_price_gwei * r.transaction_count * avgGasPerTx) / 1e9
@@ -3551,13 +3232,11 @@
                     });
                     
                     const { error } = await batchUpsert('historical_gas_burn', upsertRecords, 'date');
-                    
                     if (error) {
-                        log(`  ❌ Upsert error: ${error.message}`, 'error');
+                        log(`  ❌ ${error.message}`, 'error');
                         return 0;
                     }
                     
-                    log(`  ✅ Gas Price: ${records.length} records upserted from Dune`, 'success');
                     return records.length;
                     
                 } catch (e) {
@@ -3577,13 +3256,13 @@
                 lastCollectResult[key] = { count, expected, ratio, time: new Date() };
                 
                 if (count === -1) {
-                    log(`  ✅ Skipped (sufficient data exists)`, 'success');
+                    // skip은 로그 없이
                 } else if (count === 0) {
-                    log(`  ❌ 0 (FAILED)`, 'error');
+                    log(`  ❌ Failed`, 'error');
                 } else if (ratio < 0.1) {
-                    log(`  ⚠️ ${count} records (only ${(ratio*100).toFixed(1)}% of expected ${expected})`, 'warn');
+                    log(`  ⚠️ ${count} (${(ratio*100).toFixed(0)}%)`, 'warn');
                 } else {
-                    log(`  ✅ ${count} records`, 'success');
+                    log(`  ✅ ${count}`, 'success');
                 }
             } catch (e) { 
                 log(`  ❌ ${e.message}`, 'error'); 
@@ -3593,20 +3272,25 @@
         }
 
         async function collectAll() {
-            log('🚀 Collecting all datasets in phase order...', 'info');
+            log('🚀 Collecting all datasets...', 'info');
             const keys = Object.keys(DATASETS);
             let ok = 0, fail = 0, skipped = 0;
             let currentPhase = 0;
-            lastCollectResult = {}; // 초기화
+            lastCollectResult = {};
             
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];
                 const ds = DATASETS[key];
                 
-                // Phase 변경 시 구분선 출력
                 if (ds.phase && ds.phase !== currentPhase) {
                     currentPhase = ds.phase;
                     log(`\n━━━ Phase ${currentPhase} ━━━`, 'info');
+                }
+                
+                if (ds.noCollect) {
+                    skipped++;
+                    ok++;
+                    continue;
                 }
                 
                 log(`[${i+1}/${keys.length}] ${ds.icon} ${ds.name}...`, 'info');
@@ -3616,21 +3300,18 @@
                         new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 300000))
                     ]);
                     
-                    // 수집 결과 저장
                     const expected = ds.expectedDays || 1095;
                     const ratio = count / expected;
                     lastCollectResult[key] = { count, expected, ratio, time: new Date() };
                     
-                    // 결과에 따른 로그
                     if (count === -1) {
-                        log(`  ✅ Skipped (sufficient data)`, 'success');
                         skipped++;
                         ok++;
                     } else if (count === 0) {
-                        log(`  ❌ 0 (FAILED)`, 'error');
+                        log(`  ❌ Failed`, 'error');
                         fail++;
                     } else if (ratio < 0.1) {
-                        log(`  ⚠️ ${count} (only ${(ratio*100).toFixed(1)}% of expected ${expected})`, 'warn');
+                        log(`  ⚠️ ${count} (${(ratio*100).toFixed(0)}%)`, 'warn');
                         fail++;
                     } else {
                         log(`  ✅ ${count}`, 'success');
@@ -3643,12 +3324,9 @@
                 }
                 await new Promise(r => setTimeout(r, 300));
             }
-            log(`\n📊 Done: ${ok} success (${skipped} skipped), ${fail} failed`, ok > fail ? 'success' : 'warn');
+            log(`\n📊 Done: ${ok} success, ${fail} failed`, ok > fail ? 'success' : 'warn');
             
-            // Auto-fill missing data from block calculations
-            log('\n━━━ Auto-fill Missing Data ━━━', 'info');
             await autoFillNewData();
-            
             await loadDataStatus();
         }
 

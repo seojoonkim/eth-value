@@ -65,14 +65,14 @@
             --bg-secondary: #e2e8f0;
             --bg-elevated: #ffffff;
             
-            /* Border Colors */
-            --border: #e2e8f0;
-            --border-light: #f1f5f9;
+            /* Border Colors - 약간 더 선명하게 */
+            --border: #d1d5db;
+            --border-light: #e5e7eb;
             
-            /* Text Colors - 3단계로 단순화 */
-            --text: #0f172a;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
+            /* Text Colors - 3단계 (가독성 향상) */
+            --text: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #6b7280;
             
             /* Scrollbar Colors */
             --scrollbar-thumb: rgba(0, 0, 0, 0.15);
@@ -330,7 +330,7 @@
         }
         
         body.dark .conclusion-label {
-            color: var(--text-secondary);
+            color: var(--text);
         }
         
         body.dark .signal-grid {
@@ -2519,7 +2519,8 @@
 
         .conclusion-label {
             font-size: var(--font-h2);
-            color: var(--text-secondary);
+            font-weight: 600;
+            color: var(--text);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 12px;
@@ -2726,6 +2727,164 @@
             background: transparent;
         }
 
+        /* Appendix Section Styles */
+        /* Appendix Section - Clean Style */
+        .appendix-section {
+            margin-top: var(--space-xl);
+            padding: var(--space-lg);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+
+        .appendix-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: var(--space-sm);
+        }
+
+        .appendix-intro {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: var(--space-lg);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-xl);
+        }
+
+        @media (max-width: 900px) {
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .category-card {
+            padding: 0;
+        }
+
+        .category-card-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-xs);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .category-card-number {
+            color: var(--text);
+            margin-right: 4px;
+        }
+
+        .category-card-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: var(--space-md);
+        }
+
+        .model-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-left: 0;
+        }
+
+        .model-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 6px 8px 6px 12px;
+            background: var(--bg);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .model-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 100%;
+            border-radius: 2px;
+        }
+
+        .model-item-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .model-item-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Light mode - enhanced readability */
+        body:not(.dark) .appendix-intro {
+            color: var(--text-secondary);
+        }
+
+        body:not(.dark) .category-card-header {
+            color: var(--text);
+            border-bottom-color: var(--border);
+        }
+
+        body:not(.dark) .category-card-desc {
+            color: var(--text-secondary);
+        }
+
+        body:not(.dark) .model-item {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-light);
+        }
+
+        body:not(.dark) .model-item-desc {
+            color: var(--text-secondary);
+        }
+
+        /* Model name colors - match chart legend */
+        .model-item[data-model="dcf"] .model-item-name { color: #65a30d; }
+        .model-item[data-model="ps"] .model-item-name { color: #0d9488; }
+        .model-item[data-model="revenueYield"] .model-item-name { color: #0891b2; }
+        .model-item[data-model="validatorEcon"] .model-item-name { color: #7c3aed; }
+        .model-item[data-model="tvlMultiple"] .model-item-name { color: #dc2626; }
+        .model-item[data-model="mctvl"] .model-item-name { color: #d97706; }
+        .model-item[data-model="appCapital"] .model-item-name { color: #4f46e5; }
+        .model-item[data-model="metcalfe"] .model-item-name { color: #ca8a04; }
+        .model-item[data-model="settlementLayer"] .model-item-name { color: #9333ea; }
+        .model-item[data-model="l2Ecosystem"] .model-item-name { color: #16a34a; }
+        .model-item[data-model="stakingScarcity"] .model-item-name { color: #ea580c; }
+        .model-item[data-model="commitmentPremium"] .model-item-name { color: #0284c7; }
+        .model-item[data-model="monetarySink"] .model-item-name { color: #db2777; }
+
+        /* Model-specific bullet colors */
+        .model-item[data-model="dcf"]::before { background: #84cc16; }
+        .model-item[data-model="ps"]::before { background: #14b8a6; }
+        .model-item[data-model="revenueYield"]::before { background: #06b6d4; }
+        .model-item[data-model="validatorEcon"]::before { background: #8b5cf6; }
+        .model-item[data-model="tvlMultiple"]::before { background: #ef4444; }
+        .model-item[data-model="mctvl"]::before { background: #f59e0b; }
+        .model-item[data-model="appCapital"]::before { background: #6366f1; }
+        .model-item[data-model="metcalfe"]::before { background: #eab308; }
+        .model-item[data-model="settlementLayer"]::before { background: #a855f7; }
+        .model-item[data-model="l2Ecosystem"]::before { background: #22c55e; }
+        .model-item[data-model="stakingScarcity"]::before { background: #f97316; }
+        .model-item[data-model="commitmentPremium"]::before { background: #0ea5e9; }
+        .model-item[data-model="monetarySink"]::before { background: #f472b6; }
+
+        .model-entry-desc {
+            color: var(--text-muted);
+        }
+
         .methodology-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2783,9 +2942,9 @@
 
         .method-formula {
             font-family: var(--font-mono);
-            font-size: var(--font-caption);
+            font-size: 11px;
             background: #eef2f7;
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: var(--radius-sm);
             color: var(--primary);
             border: 1px solid #e2e8f0;
@@ -3211,9 +3370,9 @@
         
         .modal-model-info .method-formula {
             font-family: var(--font-mono);
-            font-size: var(--font-caption);
+            font-size: 11px;
             background: #eef2f7;
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: var(--radius-sm);
             border: 1px solid #e2e8f0;
             color: var(--primary);
@@ -6369,14 +6528,14 @@
         }
 
         .summary-text {
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.7;
-            color: var(--text);
+            color: var(--text-secondary);
         }
 
         .summary-text strong {
-            color: var(--text);
-            font-weight: 700;
+            color: var(--text-secondary);
+            font-weight: 600;
         }
 
         .community-stats-box {
@@ -6626,13 +6785,13 @@
 
         .contact-name {
             font-weight: 600;
-            color: var(--text);
-            font-size: 12px;
+            color: var(--text-secondary);
+            font-size: 13px;
             white-space: nowrap;
         }
 
         .contact-title {
-            font-size: 10px;
+            font-size: 13px;
             color: var(--text-muted);
             font-weight: 400;
             white-space: nowrap;
@@ -6642,7 +6801,8 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            color: var(--text-secondary) !important;
+            color: var(--text-muted) !important;
+            font-size: 13px;
             transition: color 0.15s ease;
         }
 
@@ -7211,8 +7371,8 @@
             }
             
             .method-formula {
-                font-size: var(--font-caption);
-                padding: 4px 6px;
+                font-size: 10px;
+                padding: 3px 6px;
             }
             
             .method-desc {
@@ -7682,8 +7842,8 @@
             }
             
             .method-formula {
-                font-size: var(--font-caption);
-                padding: 4px 6px;
+                font-size: 10px;
+                padding: 3px 6px;
             }
             
             .method-note {
@@ -7810,6 +7970,8 @@
             font-size: var(--font-h2);
             font-weight: 600;
             color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .historical-chart-header .historical-tabs {
@@ -8520,7 +8682,8 @@
         
         .simulator-box-title {
             font-size: var(--font-h2);
-            color: #586069;
+            font-weight: 600;
+            color: var(--text);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-align: center;
@@ -8792,7 +8955,7 @@
         }
         
         .sim-slider-info {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-secondary);
             line-height: 1.45;
             padding-left: 10px;
@@ -8907,7 +9070,7 @@
             }
             /* Smaller slider info text but keep 2-column */
             .sim-slider-info {
-                font-size: 9px;
+                font-size: 10px;
             }
             .sim-slider-content {
                 gap: 8px;
@@ -8923,7 +9086,7 @@
             }
             /* Even smaller but still 2-column */
             .sim-slider-info {
-                font-size: 8px;
+                font-size: 9px;
             }
         }
         
@@ -10474,12 +10637,7 @@
                 <!-- Description 영역 -->
                 <div class="summary-description">
                     <p class="summary-text" data-i18n="summary.desc1">
-                        This dashboard attempts to derive <strong>Ethereum's intrinsic value</strong> using 13 different valuation methodologies — 
-                        from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe's Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer, Monetary Sink).
-                    </p>
-                    <p class="summary-text" data-i18n="summary.desc2">
-                        We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. 
-                        While these models have limitations and assumptions, they provide a framework for thinking about value beyond pure price speculation.
+                        This dashboard derives <strong>Ethereum's intrinsic value</strong> using 13 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe's Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Lock-up Premium, Effective Float).
                     </p>
                     <p class="summary-text" data-i18n="summary.feedback">
                         Found a bug or have suggestions? Let me know anytime — feedback is always welcome!
@@ -11311,7 +11469,7 @@
                     </div>
                 </div>
 
-                <!-- Settlement Layer Volumes -->
+                <!-- Settlement Layer (MV=PQ) Volumes -->
                 <div class="metric-card" data-metric="l1Volume">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11568,7 +11726,7 @@
                         </div>
                         <div class="legend-btn active" data-model="mctvl">
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#f59e0b;"></span>
-                            <span class="legend-name" style="color:#f59e0b;">MC/TVL Fair Value</span>
+                            <span class="legend-name" style="color:#f59e0b;">MC/TVL Ratio</span>
                             <span class="legend-value" id="legend-val-mctvl">--</span>
                         </div>
                         <div class="legend-btn active" data-model="metcalfe">
@@ -11593,12 +11751,12 @@
                         </div>
                         <div class="legend-btn active" data-model="revenueYield">
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#06b6d4;"></span>
-                            <span class="legend-name" style="color:#06b6d4;">Revenue Yield</span>
+                            <span class="legend-name" style="color:#06b6d4;">Fee Yield</span>
                             <span class="legend-value" id="legend-val-revenueYield">--</span>
                         </div>
                         <div class="legend-btn active" data-model="commitmentPremium">
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#0ea5e9;"></span>
-                            <span class="legend-name" style="color:#0ea5e9;">Commitment Premium</span>
+                            <span class="legend-name" style="color:#0ea5e9;">Lock-up Premium</span>
                             <span class="legend-value" id="legend-val-commitmentPremium">--</span>
                         </div>
                         <div class="legend-btn active" data-model="appCapital">
@@ -11613,12 +11771,12 @@
                         </div>
                         <div class="legend-btn active" data-model="settlementLayer">
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#a855f7;"></span>
-                            <span class="legend-name" style="color:#a855f7;">Settlement Layer</span>
+                            <span class="legend-name" style="color:#a855f7;">Settlement Layer (MV=PQ)</span>
                             <span class="legend-value" id="legend-val-settlementLayer">--</span>
                         </div>
                         <div class="legend-btn active" data-model="monetarySink">
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#f472b6;"></span>
-                            <span class="legend-name" style="color:#f472b6;">Monetary Sink</span>
+                            <span class="legend-name" style="color:#f472b6;">Effective Float</span>
                             <span class="legend-value" id="legend-val-monetarySink">--</span>
                         </div>
                     </div>
@@ -11666,7 +11824,7 @@
                                     <input type="range" class="sim-range" id="sim-tvl" min="0" max="100" step="1" value="25">
                                     <div class="sim-range-labels quarter"><span>0.1x</span><span>1x</span><span>10x</span></div>
                                 </div>
-                                <div class="sim-slider-info" data-i18n="simulator.tvl.info">More capital locked in DeFi = greater network utility. <strong>Also drives Network Fees (+50% effect)</strong>. Impacts TVL-based valuations and Metcalfe effects.</div>
+                                <div class="sim-slider-info" data-i18n="simulator.tvl.info">More capital locked in DeFi = greater network utility. Also drives Network Fees (+50% effect). Impacts TVL-based valuations and Metcalfe effects.</div>
                             </div>
                         </div>
                         
@@ -11681,7 +11839,7 @@
                                     <input type="range" class="sim-range" id="sim-fees" min="0" max="100" step="1" value="25">
                                     <div class="sim-range-labels quarter"><span>0.1x</span><span>1x</span><span>10x</span></div>
                                 </div>
-                                <div class="sim-slider-info" data-i18n="simulator.fees.info">Higher fees = more economic activity. <em>Also affected by TVL changes.</em> Drives P/S ratio and yield valuations.</div>
+                                <div class="sim-slider-info" data-i18n="simulator.fees.info">Higher fees = more economic activity. Also affected by TVL changes. Drives P/S ratio and yield valuations.</div>
                             </div>
                         </div>
                         
@@ -11736,6 +11894,7 @@
                 <div class="method-card" data-model="tvlMultiple">
                     <div class="method-header">
                         <span class="method-name">TVL Multiple</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -11778,6 +11937,7 @@
                 <div class="method-card" data-model="stakingScarcity">
                     <div class="method-header">
                         <span class="method-name">Staking Scarcity</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -11820,7 +11980,8 @@
 
                 <div class="method-card" data-model="mctvl">
                     <div class="method-header">
-                        <span class="method-name">MC/TVL Fair Value</span>
+                        <span class="method-name">MC/TVL Ratio</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -11863,6 +12024,7 @@
                 <div class="method-card" data-model="metcalfe">
                     <div class="method-header">
                         <span class="method-name">Metcalfe's Law</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -11905,7 +12067,8 @@
 
                 <div class="method-card" data-model="dcf">
                     <div class="method-header">
-                        <span class="method-name">DCF (Staking Yield)</span>
+                        <span class="method-name">Staking DCF</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -11949,6 +12112,7 @@
                 <div class="method-card" data-model="l2Ecosystem">
                     <div class="method-header">
                         <span class="method-name">L2 Ecosystem</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -11992,6 +12156,7 @@
                 <div class="method-card" data-model="ps">
                     <div class="method-header">
                         <span class="method-name">P/S Ratio (25x)</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -12033,7 +12198,8 @@
 
                 <div class="method-card" data-model="revenueYield">
                     <div class="method-header">
-                        <span class="method-name">Revenue Yield</span>
+                        <span class="method-name">Fee Yield</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -12076,7 +12242,8 @@
 
                 <div class="method-card" data-model="commitmentPremium">
                     <div class="method-header">
-                        <span class="method-name">Commitment Premium</span>
+                        <span class="method-name">Lock-up Premium</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -12120,6 +12287,7 @@
                 <div class="method-card" data-model="appCapital">
                     <div class="method-header">
                         <span class="method-name">App Capital</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -12163,6 +12331,7 @@
                 <div class="method-card" data-model="validatorEcon">
                     <div class="method-header">
                         <span class="method-name">Validator Economics</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -12205,7 +12374,8 @@
 
                 <div class="method-card" data-model="settlementLayer">
                     <div class="method-header">
-                        <span class="method-name">Settlement Layer</span>
+                        <span class="method-name">Settlement Layer (MV=PQ)</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
@@ -12248,12 +12418,13 @@
 
                 <div class="method-card" data-model="monetarySink">
                     <div class="method-header">
-                        <span class="method-name">Monetary Sink</span>
+                        <span class="method-name">Effective Float</span>
+                        
                     </div>
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (Supply ÷ Effective Float)</div>
-                            <div class="method-desc" data-i18n="method.sink.desc">Float-adjusted valuation accounting for ETH locked in structural sinks: staking, DeFi collateral, L2 bridges, and lost/dormant coins. Similar to TradFi float-adjusted market cap excluding insider holdings. Current effective float: <strong id="effective-float-display">--</strong>%</div>
+                            <div class="method-desc" data-i18n="method.sink.desc">Inspired by Miller (1977): when tradeable supply is constrained, optimists set prices, creating a premium. Greenwood (Harvard) empirically confirmed float reduction correlates with price increases in equity markets. Our assumption: if market cap stays constant while effective float (excluding staked, DeFi-locked, and lost ETH) decreases, per-unit price rises proportionally. Current effective float: <strong id="effective-float-display">--</strong>%</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -12277,17 +12448,112 @@
                                 <div class="method-footer-row">
                                     <div class="method-meta">
                                     </div>
-                                    <div class="method-note" data-i18n="method.sink.note">Sink estimates vary; liquid staking partially offsets staking sink</div>
+                                    <div class="method-note" data-i18n="method.sink.note">Sink estimates vary; liquid staking (stETH) partially offsets staking sink as it remains tradeable</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://beaconcha.in" target="_blank" class="method-ref-link">Beaconcha.in: Staking Data</a>
-                        <a href="https://defillama.com" target="_blank" class="method-ref-link">DefiLlama: DeFi TVL</a>
-                        <a href="https://l2beat.com" target="_blank" class="method-ref-link">L2Beat: L2 TVL</a>
+                        <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.1977.tb03317.x" target="_blank" class="method-ref-link">Miller (1977): Risk, Uncertainty, and Divergence of Opinion</a>
+                        <a href="https://www.hbs.edu/ris/Publication%20Files/05-079.pdf" target="_blank" class="method-ref-link">Greenwood (Harvard): Float Manipulation and Stock Prices</a>
+                        <a href="https://www.nber.org/reporter/spring05/short-sale-constraints-and-overpricing" target="_blank" class="method-ref-link">NBER: Short Sale Constraints and Overpricing</a>
                     </div>
                     <div class="model-community" data-model="monetarySink"></div>
+                </div>
+            </div>
+
+            <!-- Appendix: Model Categories -->
+            <div class="appendix-section">
+                <div class="appendix-title" data-i18n="appendix.title">Appendix: Valuation Framework</div>
+                
+                <div class="appendix-intro" data-i18n="appendix.intro">
+                    This dashboard employs 13 valuation models organized into four methodological categories. Each category represents a distinct theoretical approach to estimating Ethereum's intrinsic value, ranging from traditional finance frameworks to crypto-native metrics.
+                </div>
+
+                <div class="category-grid">
+                    <!-- 1. TradFi -->
+                    <div class="category-card">
+                        <div class="category-card-header"><span class="category-card-number">1.</span> <span data-i18n="category.tradfi.full">Traditional Finance (TradFi)</span></div>
+                        <div class="category-card-desc" data-i18n="appendix.tradfi.desc">Traditional finance methodologies adapted for crypto. These models treat ETH as a yield-generating asset comparable to bonds or dividend stocks, applying established frameworks like DCF, P/S ratios, and required return analysis. Best suited for institutional investors seeking familiar valuation anchors.</div>
+                        <div class="model-list">
+                            <div class="model-item" data-model="dcf">
+                                <span class="model-item-name">Staking DCF</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.dcf">Forward-looking: Discounts future staking rewards to present value. Uses 9% discount rate and 3% perpetual growth.</span>
+                            </div>
+                            <div class="model-item" data-model="ps">
+                                <span class="model-item-name">P/S Ratio</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.ps">Revenue multiple: Applies 25x multiplier to annual fee revenue. Comparable to SaaS valuations (10-40x).</span>
+                            </div>
+                            <div class="model-item" data-model="revenueYield">
+                                <span class="model-item-name">Fee Yield</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.yield">Backward-looking: Reverse-engineers market cap from current staking APR. Treats ETH as a yield-bearing bond.</span>
+                            </div>
+                            <div class="model-item" data-model="validatorEcon">
+                                <span class="model-item-name">Validator Economics</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.validator">Required return: Compares current APR vs. 6% target yield. Focus on validator profitability threshold.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Asset Value -->
+                    <div class="category-card">
+                        <div class="category-card-header"><span class="category-card-number">2.</span> <span data-i18n="category.asset.full">On-chain Asset Value</span></div>
+                        <div class="category-card-desc" data-i18n="appendix.asset.desc">Values ETH based on assets locked, settled, or secured on the network. These models treat Ethereum as a settlement layer that must provide economic security proportional to the capital it backs. Premise: Network security (market cap) should scale with on-chain asset value.</div>
+                        <div class="model-list">
+                            <div class="model-item" data-model="tvlMultiple">
+                                <span class="model-item-name">TVL Multiple</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.tvl">DeFi-focused: Values ETH based on DeFi deposits only. Uses 7x multiple from historical MC/TVL ratios.</span>
+                            </div>
+                            <div class="model-item" data-model="mctvl">
+                                <span class="model-item-name">MC/TVL Ratio</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.mctvl">Mean-reversion: Assumes MC/TVL returns to 6x historical average. High ratio = overvalued.</span>
+                            </div>
+                            <div class="model-item" data-model="appCapital">
+                                <span class="model-item-name">App Capital</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.appCapital">Broadest scope: All on-chain assets (stablecoins, ERC-20s, NFTs, RWAs). Uses 28% stablecoin ratio as proxy.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Network Effects -->
+                    <div class="category-card">
+                        <div class="category-card-header"><span class="category-card-number">3.</span> <span data-i18n="category.network.full">Network Effects</span></div>
+                        <div class="category-card-desc" data-i18n="appendix.network.desc">Models that capture value from user adoption, transaction activity, and ecosystem growth. Based on network economics theory that value grows non-linearly with adoption. Particularly relevant for Ethereum's rollup-centric roadmap where L2 activity accrues value to L1.</div>
+                        <div class="model-list">
+                            <div class="model-item" data-model="metcalfe">
+                                <span class="model-item-name">Metcalfe's Law</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.metcalfe">User-driven: Network value ∝ n^1.5. Uses TVL as proxy. Academically validated for BTC/ETH.</span>
+                            </div>
+                            <div class="model-item" data-model="settlementLayer">
+                                <span class="model-item-name">Settlement Layer (MV=PQ)</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.settlement">Monetary economics: Applies MV=PQ equation. Velocity 6 reflects SoV characteristics.</span>
+                            </div>
+                            <div class="model-item" data-model="l2Ecosystem">
+                                <span class="model-item-name">L2 Ecosystem</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.l2">Rollup-inclusive: Weights L2 TVL at 2x because L2 settles on L1, burning ETH via EIP-1559.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Supply Scarcity -->
+                    <div class="category-card">
+                        <div class="category-card-header"><span class="category-card-number">4.</span> <span data-i18n="category.scarcity.full">Supply Scarcity</span></div>
+                        <div class="category-card-desc" data-i18n="appendix.scarcity.desc">Supply-side models that price ETH based on reduced effective circulating supply. These models recognize that significant portions of ETH are structurally locked (staking, DeFi, lost coins), creating scarcity dynamics similar to stock buybacks or float reduction.</div>
+                        <div class="model-list">
+                            <div class="model-item" data-model="stakingScarcity">
+                                <span class="model-item-name">Staking Scarcity</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.staking">Simple ratio: Values ETH based on non-staked supply only. Higher staking % = higher fair value.</span>
+                            </div>
+                            <div class="model-item" data-model="commitmentPremium">
+                                <span class="model-item-name">Lock-up Premium</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.commitment">Behavioral: 1.5x premium for ETH in staking + DeFi. Focus on holder conviction signals.</span>
+                            </div>
+                            <div class="model-item" data-model="monetarySink">
+                                <span class="model-item-name">Effective Float</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.sink">Miller (1977) theory: Reduced tradeable float from staking/DeFi/lost coins creates price premium. Most comprehensive approach.</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -13379,12 +13645,12 @@
                 'dcf': 'DCF Model',
                 'l2Ecosystem': 'L2 Ecosystem',
                 'ps': 'P/S Ratio',
-                'revenueYield': 'Revenue Yield',
-                'commitmentPremium': 'Commitment Premium',
+                'revenueYield': 'Fee Yield',
+                'commitmentPremium': 'Lock-up Premium',
                 'appCapital': 'App Capital Flow',
                 'validatorEcon': 'Validator Economics',
-                'settlementLayer': 'Settlement Layer',
-                'monetarySink': 'Monetary Sink'
+                'settlementLayer': 'Settlement Layer (MV=PQ)',
+                'monetarySink': 'Effective Float'
             };
             
             // 총 댓글 수 (대댓글 포함)
@@ -13529,13 +13795,13 @@
                 },
                 'monetarySink': {
                     formula: 'Price × (Supply ÷ Effective Float)',
-                    desc: t('method.sink.desc', 'Float-adjusted valuation accounting for ETH locked in structural sinks: staking, DeFi collateral, L2 bridges, and lost/dormant coins. Similar to TradFi float-adjusted market cap.'),
+                    desc: t('method.sink.desc', 'Inspired by Miller (1977): when tradeable supply is constrained, optimists set prices, creating a premium. Greenwood (Harvard) empirically confirmed float reduction correlates with price increases in equity markets. Our assumption: if market cap stays constant while effective float (excluding staked, DeFi-locked, and lost ETH) decreases, per-unit price rises proportionally.'),
                     reliability: 2,
-                    caveat: t('method.sink.note', 'Sink estimates vary; liquid staking partially offsets staking sink'),
+                    caveat: t('method.sink.note', 'Sink estimates vary; liquid staking (stETH) partially offsets staking sink as it remains tradeable'),
                     sources: [
-                        { name: 'Beaconcha.in: Staking Data', url: 'https://beaconcha.in' },
-                        { name: 'DefiLlama: DeFi TVL', url: 'https://defillama.com' },
-                        { name: 'L2Beat: L2 TVL', url: 'https://l2beat.com' }
+                        { name: 'Miller (1977): Risk, Uncertainty, and Divergence of Opinion', url: 'https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.1977.tb03317.x' },
+                        { name: 'Greenwood (Harvard): Float Manipulation and Stock Prices', url: 'https://www.hbs.edu/ris/Publication%20Files/05-079.pdf' },
+                        { name: 'NBER: Short Sale Constraints and Overpricing', url: 'https://www.nber.org/reporter/spring05/short-sale-constraints-and-overpricing' }
                     ]
                 }
             };
@@ -13787,14 +14053,14 @@
                                     x: {
                                         display: true,
                                         grid: { display: false },
-                                        ticks: { color: '#9ca3af', maxTicksLimit: 4, autoSkip: true, autoSkipPadding: 15, font: { size: 8 }, maxRotation: 0 }
+                                        ticks: { color: '#6b7280', maxTicksLimit: 4, autoSkip: true, autoSkipPadding: 15, font: { size: 8 }, maxRotation: 0 }
                                     },
                                     y: {
                                         display: true,
                                         position: 'right',
                                         grid: { display: false },
                                         ticks: {
-                                            color: '#8b949e',
+                                            color: '#6b7280',
                                             font: { size: 8 },
                                             maxTicksLimit: 3,
                                             callback: v => '$' + (v/1000).toFixed(1) + 'K'
@@ -13852,8 +14118,8 @@
                                         maintainAspectRatio: false,
                                         plugins: { legend: { display: false } },
                                         scales: {
-                                            x: { display: true, grid: { display: false }, ticks: { color: '#9ca3af', maxTicksLimit: 4, autoSkip: true, autoSkipPadding: 15, font: { size: 8 }, maxRotation: 0 } },
-                                            y: { display: true, position: 'right', grid: { display: false }, ticks: { color: '#8b949e', font: { size: 8 }, maxTicksLimit: 3, callback: v => '$' + (v/1000).toFixed(1) + 'K' } }
+                                            x: { display: true, grid: { display: false }, ticks: { color: '#6b7280', maxTicksLimit: 4, autoSkip: true, autoSkipPadding: 15, font: { size: 8 }, maxRotation: 0 } },
+                                            y: { display: true, position: 'right', grid: { display: false }, ticks: { color: '#6b7280', font: { size: 8 }, maxTicksLimit: 3, callback: v => '$' + (v/1000).toFixed(1) + 'K' } }
                                         }
                                     }
                                 });
@@ -14850,8 +15116,8 @@
                 'rankings.table.votes': 'Ratings',
                 'rankings.table.userVotes': 'Ratings',
                 'rankings.table.comments': 'Comments',
-                'simulator.tvl.info': 'More capital locked in DeFi = greater network utility. <strong>Also drives Network Fees (+50% effect)</strong>. Impacts TVL-based valuations and Metcalfe effects.',
-                'simulator.fees.info': 'Higher fees = more economic activity. <em>Also affected by TVL changes.</em> Drives P/S ratio and yield valuations.',
+                'simulator.tvl.info': 'More capital locked in DeFi = greater network utility. Also drives Network Fees (+50% effect). Impacts TVL-based valuations and Metcalfe effects.',
+                'simulator.fees.info': 'Higher fees = more economic activity. Also affected by TVL changes. Drives P/S ratio and yield valuations.',
                 'simulator.staking.info': 'More staked = reduced supply. Higher ratios create scarcity premium but lower yields.',
                 'simulator.stablecoins.info': 'Real-world capital on Ethereum. +30% TVL/fees effect, +50% settlement volume.',
                 'simulator.title': 'WHAT-IF SCENARIO SIMULATOR',
@@ -14867,10 +15133,15 @@
                 'summary.fairValue': 'Fair Value (12 Models)',
                 'summary.opportunity': 'Opportunity',
                 'summary.toggleHint': 'Toggle individual models on/off below to customize your valuation.',
-                'summary.desc1': 'This dashboard attempts to derive <strong>Ethereum\'s intrinsic value</strong> using 13 different valuation methodologies — from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer, Monetary Sink).',
-                'summary.desc2': 'We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. While these models have limitations and assumptions, they provide a framework for thinking about value beyond pure price speculation.',
+                'summary.desc1': 'This dashboard derives <strong>Ethereum\'s intrinsic value</strong> using 13 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Lock-up Premium, Effective Float).',
                 'summary.feedback': 'Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
                 'summary.community': '<strong>Join the Discussion!</strong> Rate each model\'s confidence level and share your thoughts. Your feedback helps improve the valuation framework.',
+                'appendix.intro': 'This dashboard employs 13 valuation models organized into four methodological categories. Each category represents a distinct theoretical approach to estimating Ethereum\'s intrinsic value, ranging from traditional finance frameworks to crypto-native metrics.',
+                'appendix.title': 'Appendix: Valuation Framework',
+                'category.tradfi.full': 'Traditional Finance (TradFi)',
+                'category.asset.full': 'On-chain Asset Value',
+                'category.network.full': 'Network Effects',
+                'category.scarcity.full': 'Supply Scarcity',
                 'summary.communityStats': 'Discussion',
                 'summary.participants': 'participants',
                 'summary.votes': 'ratings',
@@ -14919,8 +15190,8 @@
                 'criteria.labelM': 'Methodology',
                 'criteria.labelD': 'Data',
                 'criteria.labelA': 'Assumption',
-                'criteria.model.revenueYield': 'Revenue Yield',
-                'criteria.model.mctvl': 'MC/TVL Fair Value',
+                'criteria.model.revenueYield': 'Fee Yield',
+                'criteria.model.mctvl': 'MC/TVL Ratio',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
                 'criteria.model.dcf': 'DCF (Staking)',
                 'criteria.model.ps': 'P/S Ratio (25x)',
@@ -14928,7 +15199,7 @@
                 'criteria.model.tvl': 'TVL Multiple',
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
-                'criteria.model.commitment': 'Commitment Premium',
+                'criteria.model.commitment': 'Lock-up Premium',
                 'criteria.revenueYield.m': 'TradFi yield-based valuation widely used for bonds and dividend stocks',
                 'criteria.revenueYield.d': 'Real-time Lido APR + on-chain fee revenue from DefiLlama',
                 'criteria.revenueYield.a': 'No arbitrary multiples; directly uses market-derived yield',
@@ -14950,7 +15221,7 @@
                 'criteria.settlement.m': 'MV=PQ equation from monetary economics; Fisher\'s equation widely used',
                 'criteria.settlement.d': 'L1 data from bitinfocharts; bridge data from DefiLlama API',
                 'criteria.settlement.a': 'Velocity 6 assumes SoV behavior; could range 4-12x',
-                'criteria.model.settlement': 'Settlement Layer',
+                'criteria.model.settlement': 'Settlement Layer (MV=PQ)',
                 'criteria.validator.m': 'Standard TradFi approach: required return = risk-free + risk premium',
                 'criteria.validator.d': 'Real-time staking APR from Lido API',
                 'criteria.validator.a': 'Risk-free rate and risk premium assumptions vary (target 5-7%)',
@@ -14993,8 +15264,30 @@
                 'method.commitment.desc': 'Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. The multiplier (1.5x) reflects the value premium of committed vs. liquid assets. Inspired by the concept that L1 tokens should be valued as money (Store of Value) rather than stocks.',
                 'method.settlement.note': 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly',
                 'method.settlement.desc': 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.',
-                'method.sink.note': 'Sink estimates vary; liquid staking partially offsets staking sink',
-                'method.sink.desc': 'Float-adjusted valuation accounting for ETH locked in structural sinks: staking, DeFi collateral, L2 bridges, and lost/dormant coins. Similar to TradFi float-adjusted market cap excluding insider holdings.',
+                'method.sink.note': 'Sink estimates vary; liquid staking (stETH) partially offsets staking sink as it remains tradeable',
+                'method.sink.desc': 'Inspired by Miller (1977): when tradeable supply is constrained, optimists set prices, creating a premium. Greenwood (Harvard) empirically confirmed float reduction correlates with price increases in equity markets. Our assumption: if market cap stays constant while effective float (excluding staked, DeFi-locked, and lost ETH) decreases, per-unit price rises proportionally.',
+                'category.tradfi': 'TradFi',
+                'category.asset': 'Asset Value',
+                'category.network': 'Network Effects',
+                'category.scarcity': 'Supply Scarcity',
+                'appendix.title': 'Valuation Framework Categories',
+                'appendix.tradfi.desc': 'Traditional finance methodologies adapted for crypto. These models treat ETH as a yield-generating asset comparable to bonds or dividend stocks, applying established frameworks like DCF, P/S ratios, and required return analysis. Best suited for institutional investors seeking familiar valuation anchors.',
+                'appendix.asset.desc': 'Values ETH based on assets locked, settled, or secured on the network. These models treat Ethereum as a settlement layer that must provide economic security proportional to the capital it backs. Premise: Network security (market cap) should scale with on-chain asset value.',
+                'appendix.network.desc': 'Models that capture value from user adoption, transaction activity, and ecosystem growth. Based on network economics theory that value grows non-linearly with adoption. Particularly relevant for Ethereum\'s rollup-centric roadmap where L2 activity accrues value to L1.',
+                'appendix.scarcity.desc': 'Supply-side models that price ETH based on reduced effective circulating supply. These models recognize that significant portions of ETH are structurally locked (staking, DeFi, lost coins), creating scarcity dynamics similar to stock buybacks or float reduction.',
+                'appendix.model.dcf': 'Forward-looking: Discounts future staking rewards to present value. Uses 9% discount rate (risk-free + crypto premium) and 3% perpetual growth.',
+                'appendix.model.ps': 'Revenue multiple: Applies 25x multiplier to annual fee revenue. Comparable to growth tech stock valuations (SaaS companies trade at 10-40x).',
+                'appendix.model.yield': 'Backward-looking: Reverse-engineers market cap from current staking APR. Treats ETH as a bond where yield implies fair value.',
+                'appendix.model.validator': 'Required return: Compares current APR vs. target yield (6% = risk-free + staking premium). Focus on validator profitability threshold.',
+                'appendix.model.tvl': 'DeFi-focused: Values ETH based on DeFi deposits only. Uses 7x multiple derived from historical MC/TVL ratios (2020-2023).',
+                'appendix.model.mctvl': 'Mean-reversion: Assumes MC/TVL ratio returns to 6x historical average. When ratio is high, ETH is overvalued; when low, undervalued.',
+                'appendix.model.appCapital': 'Broadest scope: Includes all on-chain assets (stablecoins, ERC-20s, NFTs, RWAs). Uses 28% stablecoin ratio as proxy. Market cap floor concept.',
+                'appendix.model.metcalfe': 'User-driven: Network value ∝ n^1.5 (between linear and n²). Uses TVL as proxy for network activity. Academically validated for BTC/ETH.',
+                'appendix.model.settlement': 'Monetary economics: Applies MV=PQ equation treating ETH as money. Velocity 6 reflects SoV characteristics (staking, institutional holding).',
+                'appendix.model.l2': 'Rollup-inclusive: Weights L2 TVL at 2x because L2 activity settles on L1, consuming blockspace and burning ETH via EIP-1559.',
+                'appendix.model.staking': 'Simple ratio: Values ETH based on non-staked supply only. Higher staking % = smaller float = higher fair value. Most direct approach.',
+                'appendix.model.commitment': 'Behavioral: Applies 1.5x premium based on ETH committed to staking + DeFi. Focus on holder conviction and long-term lockup signals.',
+                'appendix.model.sink': 'Miller (1977) theory: Reduced tradeable float from staking/DeFi/lost coins creates price premium. Most comprehensive approach.',
                 'method.costBasis.note': 'MVRV 1.88x is the median of 1110 trading days (2022-2025); may vary by market cycle',
                 'method.costBasis.desc': 'Realized Price is calculated from Dune Analytics: volume-weighted average price of all ETH transfers since 2016. MVRV equilibrium (1.88x) is the statistical median of daily MVRV ratios over 3 years (1110 days) - meaning ETH traded above this level exactly 50% of the time and below 50% of the time. Fair Value = Realized Price × 1.88.',
                 'method.validator.note': 'Target 6% required yield is subjective; varies significantly by investor risk appetite',
@@ -15160,8 +15453,8 @@
                 'rankings.table.votes': '투표',
                 'rankings.table.userVotes': '투표',
                 'rankings.table.comments': '댓글',
-                'simulator.tvl.info': 'DeFi에 더 많은 자본이 잠김 = 더 큰 네트워크 유틸리티. <strong>네트워크 수수료에도 영향 (+50% 효과)</strong>. TVL 기반 밸류에이션과 메트칼프 효과에 반영.',
-                'simulator.fees.info': '높은 수수료 = 활발한 경제 활동. <em>TVL 변화에도 영향받음.</em> P/S 비율과 수익률 밸류에이션에 반영.',
+                'simulator.tvl.info': 'DeFi에 더 많은 자본이 잠김 = 더 큰 네트워크 유틸리티. 네트워크 수수료에도 영향 (+50% 효과). TVL 기반 밸류에이션과 메트칼프 효과에 반영.',
+                'simulator.fees.info': '높은 수수료 = 활발한 경제 활동. TVL 변화에도 영향받음. P/S 비율과 수익률 밸류에이션에 반영.',
                 'simulator.staking.info': '스테이킹 증가 = 유통량 감소. 높은 비율은 희소성 프리미엄을 만들지만 수익률은 낮아짐.',
                 'simulator.stablecoins.info': '이더리움 위의 실물 자본. TVL/수수료에 +30%, 정산량에 +50% 영향.',
                 'simulator.title': 'WHAT-IF 시나리오 시뮬레이터',
@@ -15177,10 +15470,15 @@
                 'summary.fairValue': '적정 가치 (13개 모델)',
                 'summary.opportunity': '투자 기회',
                 'summary.toggleHint': '아래에서 개별 모델을 켜고 끄며 나만의 밸류에이션을 계산해 보세요.',
-                'summary.desc1': '이 대시보드는 전통 금융 프레임워크(DCF, P/S Ratio, Revenue Yield, Validator Economics)부터 크립토 네이티브 지표(TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer, Monetary Sink)까지 13가지 밸류에이션 방법론을 활용하여 <strong>이더리움의 내재 가치</strong>를 도출하려는 시도입니다.',
-                'summary.desc2': '크립토 산업에는 더욱 엄밀한 펀더멘털 기반의 가치평가 접근법이 필요하다고 생각합니다. 이 모델들은 한계와 가정이 있지만, 단순한 가격 투기를 넘어 가치에 대해 생각하는 프레임워크를 제공합니다.',
+                'summary.desc1': '이 대시보드는 4가지 방법론 카테고리에 걸쳐 13개 밸류에이션 모델로 <strong>이더리움의 내재 가치</strong>를 도출합니다: <strong>전통금융</strong>(Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>온체인 자산가치</strong>(TVL Multiple, MC/TVL Ratio, App Capital), <strong>네트워크 효과</strong>(Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), <strong>공급 희소성</strong>(Staking Scarcity, Lock-up Premium, Effective Float).',
                 'summary.feedback': '버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
                 'summary.community': '<strong>방법론 & 토론에 참여하세요!</strong> 각 모델의 확신도를 평가하고 의견을 공유해주세요. 함께 더 정확한 신뢰도 가중치 시스템을 만들어갑니다.',
+                'appendix.intro': '이 대시보드는 4가지 방법론 카테고리로 구성된 13개 밸류에이션 모델을 사용합니다. 각 카테고리는 전통 금융 프레임워크부터 크립토 네이티브 지표까지 이더리움 내재 가치를 추정하는 고유한 이론적 접근방식을 나타냅니다.',
+                'appendix.title': '부록: 밸류에이션 프레임워크',
+                'category.tradfi.full': '전통금융 (TradFi)',
+                'category.asset.full': '온체인 자산가치',
+                'category.network.full': '네트워크 효과',
+                'category.scarcity.full': '공급 희소성',
                 'summary.communityStats': '방법론 & 토론',
                 'summary.participants': '명 참여',
                 'summary.votes': '개 투표',
@@ -15229,8 +15527,8 @@
                 'criteria.labelM': '방법론',
                 'criteria.labelD': '데이터',
                 'criteria.labelA': '가정',
-                'criteria.model.revenueYield': 'Revenue Yield',
-                'criteria.model.mctvl': 'MC/TVL Fair Value',
+                'criteria.model.revenueYield': 'Fee Yield',
+                'criteria.model.mctvl': 'MC/TVL Ratio',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
                 'criteria.model.dcf': 'DCF (Staking)',
                 'criteria.model.ps': 'P/S Ratio (25x)',
@@ -15238,7 +15536,7 @@
                 'criteria.model.tvl': 'TVL Multiple',
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
-                'criteria.model.commitment': 'Commitment Premium',
+                'criteria.model.commitment': 'Lock-up Premium',
                 'criteria.revenueYield.m': '채권, 배당주에 널리 사용되는 TradFi 수익률 기반 밸류에이션',
                 'criteria.revenueYield.d': '실시간 Lido APR + DefiLlama 온체인 수수료 수익',
                 'criteria.revenueYield.a': '임의 배수 없음; 시장 파생 수익률 직접 사용',
@@ -15260,7 +15558,7 @@
                 'criteria.settlement.m': '화폐경제학의 MV=PQ 방정식; 피셔 방정식 널리 사용',
                 'criteria.settlement.d': 'L1 데이터는 bitinfocharts; 브릿지 데이터는 DefiLlama API',
                 'criteria.settlement.a': 'Velocity 6은 SoV 가정; 4-12배 범위 가능',
-                'criteria.model.settlement': 'Settlement Layer',
+                'criteria.model.settlement': 'Settlement Layer (MV=PQ)',
                 'criteria.validator.m': '표준 TradFi 접근법: 요구수익률 = 무위험 + 리스크프리미엄',
                 'criteria.validator.d': 'Lido API의 실시간 스테이킹 APR',
                 'criteria.validator.a': '무위험수익률과 리스크프리미엄 가정 가변적 (목표 5-7%)',
@@ -15303,8 +15601,30 @@
                 'method.commitment.desc': '스테이킹과 DeFi 프로토콜에 예치된 ETH 비율에 따라 가격 프리미엄을 적용합니다. 높은 커밋먼트 비율은 더 강한 장기 보유 확신과 유동성 감소를 나타냅니다. 배수(1.5x)는 유동 자산 대비 커밋된 자산의 가치 프리미엄을 반영합니다. L1 토큰을 주식이 아닌 화폐(가치 저장)로 평가해야 한다는 개념에서 영감을 받았습니다.',
                 'method.settlement.note': 'Velocity 6배는 USD M1 벤치마크; 크립토의 화폐 속도는 상당히 다를 수 있음',
                 'method.settlement.desc': '교환방정식(MV=PQ)을 적용하여 ETH를 이더리움 정산 레이어의 화폐로 취급합니다. 일일 정산량은 L1 이체, L2 이체, 브릿지 거래량을 합산합니다. Velocity 6은 ETH의 가치저장(SoV) 특성을 반영합니다: 스테이킹은 ETH를 velocity 0으로 고정, ETF 이후 비트코인과 유사한 기관 보유 패턴, USD M1 velocity (~5.5x) 벤치마크. 낮은 velocity = 더 높은 내재 가치 (화폐가 지출되지 않고 오래 보유됨).',
-                'method.sink.note': 'Sink 추정치는 다양함; 유동성 스테이킹이 부분적으로 스테이킹 Sink를 상쇄',
-                'method.sink.desc': '구조적 Sink에 잠긴 ETH를 반영한 유동주식 조정 밸류에이션: 스테이킹, DeFi 담보, L2 브릿지, 분실/휴면 코인. 내부자 보유분을 제외한 전통금융의 유동주식 조정 시가총액과 유사합니다.',
+                'method.sink.note': 'Sink 추정치는 다양함; 유동성 스테이킹(stETH)은 거래 가능하므로 부분적으로 스테이킹 Sink를 상쇄',
+                'method.sink.desc': 'Miller(1977)에서 영감: 거래 가능 공급이 제한되면 낙관적 투자자가 가격을 결정하여 프리미엄이 형성됩니다. Greenwood(Harvard)가 주식시장에서 유동주식 감소와 가격 상승의 상관관계를 실증했습니다. 우리의 가정: 시가총액이 일정할 때 유효 유동주식(스테이킹, DeFi 락업, 분실 ETH 제외)이 감소하면 개당 가격이 비례적으로 상승합니다.',
+                'category.tradfi': '전통금융',
+                'category.asset': '자산 가치',
+                'category.network': '네트워크 효과',
+                'category.scarcity': '공급 희소성',
+                'appendix.title': '밸류에이션 프레임워크 카테고리',
+                'appendix.tradfi.desc': '크립토에 적용된 전통 금융 방법론. ETH를 채권이나 배당주와 비교 가능한 수익 창출 자산으로 취급하며, DCF, P/S 비율, 요구수익률 분석 등 검증된 프레임워크를 적용합니다. 익숙한 밸류에이션 기준을 찾는 기관 투자자에게 적합합니다.',
+                'appendix.asset.desc': '네트워크에 잠기거나, 정산되거나, 담보된 자산을 기반으로 ETH 가치를 평가합니다. 이더리움을 뒷받침하는 자본에 비례하여 경제적 보안을 제공해야 하는 정산 레이어로 취급합니다. 전제: 네트워크 보안(시가총액)은 온체인 자산 가치와 비례해야 합니다.',
+                'appendix.network.desc': '사용자 채택, 거래 활동, 생태계 성장에서 가치를 포착하는 모델. 채택이 증가하면 가치가 비선형적으로 성장한다는 네트워크 경제학 이론 기반. L2 활동이 L1에 가치를 축적하는 이더리움의 롤업 중심 로드맵에 특히 관련됩니다.',
+                'appendix.scarcity.desc': '유효 유통 공급량 감소를 기반으로 ETH 가격을 책정하는 공급 측면 모델. ETH의 상당 부분이 구조적으로 잠겨 있음(스테이킹, DeFi, 분실 코인)을 인식하여 자사주 매입이나 유동주식 감소와 유사한 희소성 역학을 만듭니다.',
+                'appendix.model.dcf': '미래지향적: 미래 스테이킹 보상을 현재가치로 할인. 9% 할인율(무위험 + 크립토 프리미엄)과 3% 영구 성장률 적용.',
+                'appendix.model.ps': '매출 멀티플: 연간 수수료 수익에 25배 적용. 성장 기술주 밸류에이션과 비교 가능(SaaS 기업 10-40배 거래).',
+                'appendix.model.yield': '후향적: 현재 스테이킹 APR에서 시가총액을 역산. ETH를 수익률이 적정가치를 암시하는 채권으로 취급.',
+                'appendix.model.validator': '요구수익률: 현재 APR vs 목표 수익률(6% = 무위험 + 스테이킹 프리미엄) 비교. 검증자 수익성 임계값에 초점.',
+                'appendix.model.tvl': 'DeFi 중심: DeFi 예치금만 기반으로 ETH 가치 평가. 역사적 MC/TVL 비율(2020-2023)에서 도출된 7배 멀티플 사용.',
+                'appendix.model.mctvl': '평균회귀: MC/TVL 비율이 6배 역사적 평균으로 회귀한다고 가정. 비율이 높으면 고평가, 낮으면 저평가.',
+                'appendix.model.appCapital': '가장 넓은 범위: 모든 온체인 자산(스테이블코인, ERC-20, NFT, RWA) 포함. 28% 스테이블코인 비율을 프록시로 사용. 시가총액 하한 개념.',
+                'appendix.model.metcalfe': '사용자 중심: 네트워크 가치 ∝ n^1.5 (선형과 n² 사이). TVL을 네트워크 활동 프록시로 사용. BTC/ETH에 대해 학술적으로 검증됨.',
+                'appendix.model.settlement': '화폐경제학: MV=PQ 방정식을 적용하여 ETH를 화폐로 취급. Velocity 6은 SoV 특성(스테이킹, 기관 보유) 반영.',
+                'appendix.model.l2': '롤업 포함: L2 활동이 L1에서 정산되어 블록스페이스를 소비하고 EIP-1559를 통해 ETH를 소각하므로 L2 TVL에 2배 가중치.',
+                'appendix.model.staking': '단순 비율: 비스테이킹 공급량만 기반으로 ETH 가치 평가. 높은 스테이킹 % = 작은 유동 = 높은 적정가치. 가장 직접적 접근법.',
+                'appendix.model.commitment': '행동적: 스테이킹 + DeFi에 커밋된 ETH 기반으로 1.5배 프리미엄 적용. 보유자 확신과 장기 락업 신호에 초점.',
+                'appendix.model.sink': 'Miller(1977) 이론: 스테이킹/DeFi/분실 코인으로 줄어든 유동주식이 가격 프리미엄 형성. 가장 포괄적인 접근법.',
                 'method.costBasis.note': 'MVRV 1.5는 역사적 평균; 실제 균형점은 시장 사이클에 따라 다를 수 있음',
                 'method.costBasis.desc': '실현 가격(유통 중인 모든 ETH의 평균 취득 비용)에 MVRV 균형 비율 1.5를 곱합니다. 실현 가격은 모든 보유자의 총 비용 기준을 나타냅니다. 역사적으로 MVRV 1.5는 시장이 과열(MVRV > 3)되지도 저평가(MVRV < 1)되지도 않은 적정 가치 영역을 나타냅니다. 시장 가격 < 실현 가격일 때 대부분의 보유자가 손실 상태입니다.',
                 'method.validator.note': '목표 6% 수익률은 주관적; 투자자 위험 성향에 따라 크게 다름',
@@ -15470,8 +15790,8 @@
                 'rankings.table.votes': '投票',
                 'rankings.table.userVotes': '投票',
                 'rankings.table.comments': '评论',
-                'simulator.tvl.info': 'DeFi锁定更多资本 = 更大网络效用。<strong>同时带动网络费用（+50%效果）</strong>。影响TVL相关估值和梅特卡夫效应。',
-                'simulator.fees.info': '更高费用 = 更活跃的经济活动。<em>也受TVL变化影响。</em>影响P/S比率和收益率估值。',
+                'simulator.tvl.info': 'DeFi锁定更多资本 = 更大网络效用。同时带动网络费用（+50%效果）。影响TVL相关估值和梅特卡夫效应。',
+                'simulator.fees.info': '更高费用 = 更活跃的经济活动。也受TVL变化影响。影响P/S比率和收益率估值。',
                 'simulator.staking.info': '更多质押 = 流通量减少。较高比率创造稀缺性溢价但降低收益率。',
                 'simulator.stablecoins.info': '以太坊上的真实资本。TVL/费用+30%效果，结算量+50%效果。',
                 'simulator.title': 'WHAT-IF 情景模拟器',
@@ -15487,10 +15807,15 @@
                 'summary.fairValue': '公允价值 (10个模型)',
                 'summary.opportunity': '投资机会',
                 'summary.toggleHint': '在下方开关各个模型，自定义您的估值计算。',
-                'summary.desc1': '本仪表板尝试使用13种不同的估值方法来推导<strong>以太坊的内在价值</strong>——从传统金融框架（DCF、P/S Ratio、Revenue Yield、Validator Economics）到加密原生指标（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital、Settlement Layer、Monetary Sink）。',
-                'summary.desc2': '我们认为加密行业需要更严格的、基于基本面的估值方法。虽然这些模型有其局限性和假设，但它们提供了一个超越纯粹价格投机的思考价值的框架。',
+                'summary.desc1': '本仪表板使用四种方法论类别的13个估值模型推导<strong>以太坊的内在价值</strong>：<strong>传统金融</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>链上资产价值</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>网络效应</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）和<strong>供应稀缺</strong>（Staking Scarcity、Lock-up Premium、Effective Float）。',
                 'summary.feedback': '发现bug或有建议？随时联系我——非常欢迎反馈！',
                 'summary.community': '<strong>参与讨论！</strong>对每个模型的信心度进行评分并分享您的想法。让我们一起构建更准确的社区驱动可靠性权重系统。',
+                'appendix.intro': '本仪表板采用四种方法论类别组织的13个估值模型。每个类别代表一种独特的理论方法来估算以太坊的内在价值，从传统金融框架到加密原生指标。',
+                'appendix.title': '附录：估值框架',
+                'category.tradfi.full': '传统金融 (TradFi)',
+                'category.asset.full': '链上资产价值',
+                'category.network.full': '网络效应',
+                'category.scarcity.full': '供应稀缺',
                 'summary.communityStats': '方法论 & 讨论',
                 'summary.participants': '位参与者',
                 'summary.votes': '次投票',
@@ -15539,8 +15864,8 @@
                 'criteria.labelM': '方法论',
                 'criteria.labelD': '数据',
                 'criteria.labelA': '假设',
-                'criteria.model.revenueYield': 'Revenue Yield',
-                'criteria.model.mctvl': 'MC/TVL Fair Value',
+                'criteria.model.revenueYield': 'Fee Yield',
+                'criteria.model.mctvl': 'MC/TVL Ratio',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
                 'criteria.model.dcf': 'DCF (Staking)',
                 'criteria.model.ps': 'P/S Ratio (25x)',
@@ -15548,7 +15873,7 @@
                 'criteria.model.tvl': 'TVL Multiple',
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
-                'criteria.model.commitment': 'Commitment Premium',
+                'criteria.model.commitment': 'Lock-up Premium',
                 'criteria.revenueYield.m': '广泛用于债券和股息股票的TradFi收益率估值',
                 'criteria.revenueYield.d': '实时Lido APR + DefiLlama链上手续费收入',
                 'criteria.revenueYield.a': '无任意倍数；直接使用市场衍生收益率',
@@ -15606,10 +15931,32 @@
                 'method.settlement.note': '流通速度6以USD M1为基准；加密货币流通行为可能有显著差异',
                 'method.settlement.desc': '应用交换方程(MV=PQ)，将ETH视为以太坊结算层的货币。每日结算量包括L1转账、L2转账和跨链交易量。Velocity 6反映了ETH的价值储存(SoV)特性：质押将ETH锁定在velocity 0，类似ETF后比特币的机构持有模式，以及USD M1 velocity (~5.5x)基准。更低的velocity = 更高的隐含价值（货币被更长时间持有而非消费）。',
                 'method.sink.note': 'Sink估算值各异；流动质押部分抵消质押Sink',
-                'method.sink.desc': '考虑锁定在结构性Sink中的ETH的流通股调整估值：质押、DeFi抵押品、L2桥接和丢失/休眠代币。类似于传统金融排除内部持股的流通股调整市值。',
+                'method.sink.desc': '受Miller(1977)启发：当可交易供应受限时，乐观投资者决定价格，产生溢价。Greenwood（哈佛）实证确认股票市场中流通股减少与价格上涨相关。我们的假设：当市值保持不变而有效流通股（排除质押、DeFi锁定和丢失的ETH）减少时，单位价格按比例上升。',
+                'category.tradfi': '传统金融',
+                'category.asset': '资产价值',
+                'category.network': '网络效应',
+                'category.scarcity': '供应稀缺',
+                'appendix.title': '估值框架分类',
+                'appendix.tradfi.desc': '适用于加密货币的传统金融方法论。这些模型将ETH视为可与债券或股息股票相比的收益生成资产，应用DCF、市销率和所需回报率分析等成熟框架。最适合寻求熟悉估值锚点的机构投资者。',
+                'appendix.asset.desc': '基于网络上锁定、结算或担保的资产对ETH进行估值。这些模型将以太坊视为必须提供与其支撑资本成比例的经济安全的结算层。前提：网络安全（市值）应与链上资产价值成比例。',
+                'appendix.network.desc': '从用户采用、交易活动和生态系统增长中捕获价值的模型。基于网络经济学理论，即价值随采用非线性增长。对于L2活动为L1积累价值的以太坊以Rollup为中心的路线图尤为相关。',
+                'appendix.scarcity.desc': '基于有效流通供应减少来定价ETH的供应端模型。这些模型认识到ETH的很大一部分被结构性锁定（质押、DeFi、丢失的代币），创造类似于股票回购或流通股减少的稀缺性动态。',
+                'appendix.model.dcf': '前瞻性：将未来质押奖励折现到现值。使用9%折现率（无风险+加密溢价）和3%永续增长率。',
+                'appendix.model.ps': '收入乘数：对年费收入应用25倍乘数。可与成长型科技股估值相比（SaaS公司10-40倍交易）。',
+                'appendix.model.yield': '后向性：从当前质押APR反推市值。将ETH视为收益率暗示公允价值的债券。',
+                'appendix.model.validator': '所需回报：比较当前APR与目标收益率（6% = 无风险 + 质押溢价）。关注验证者盈利阈值。',
+                'appendix.model.tvl': 'DeFi聚焦：仅基于DeFi存款对ETH估值。使用从历史MC/TVL比率（2020-2023）推导的7倍乘数。',
+                'appendix.model.mctvl': '均值回归：假设MC/TVL比率回归到6倍历史平均值。当比率高时，ETH被高估；当低时，被低估。',
+                'appendix.model.appCapital': '最广范围：包括所有链上资产（稳定币、ERC-20、NFT、RWA）。使用28%稳定币比率作为代理。市值下限概念。',
+                'appendix.model.metcalfe': '用户驱动：网络价值 ∝ n^1.5（介于线性和n²之间）。使用TVL作为网络活动代理。已对BTC/ETH进行学术验证。',
+                'appendix.model.settlement': '货币经济学：应用MV=PQ方程将ETH视为货币。Velocity 6反映SoV特性（质押、机构持有）。',
+                'appendix.model.l2': '包含Rollup：L2 TVL权重为2倍，因为L2活动在L1结算，消耗区块空间并通过EIP-1559燃烧ETH。',
+                'appendix.model.staking': '简单比率：仅基于非质押供应对ETH估值。更高的质押% = 更小的流通 = 更高的公允价值。最直接的方法。',
+                'appendix.model.commitment': '行为性：基于质押+DeFi中承诺的ETH应用1.5倍溢价。关注持有者信念和长期锁定信号。',
+                'appendix.model.sink': 'Miller(1977)理论：质押/DeFi/丢失代币减少的可交易流通股产生价格溢价。最全面的方法。',
                 'method.costBasis.note': 'MVRV 1.5是历史平均值；实际均衡点可能因市场周期而异',
                 'method.costBasis.desc': '将实现价格（流通中所有ETH的平均收购成本）乘以MVRV均衡比率1.5。实现价格代表所有持有者的总成本基础。历史上，MVRV 1.5代表公允价值区间，市场既不过热（MVRV > 3）也不被低估（MVRV < 1）。当市场价格 < 实现价格时，大多数持有者处于亏损状态。',
-                'criteria.model.settlement': 'Settlement Layer',
+                'criteria.model.settlement': 'Settlement Layer (MV=PQ)',
                 'criteria.model.validator': 'Validator Economics',
                 'criteria.settlement.m': '货币经济学的MV=PQ方程；费雪方程广泛使用',
                 'criteria.settlement.d': 'L1数据来自bitinfocharts；跨链数据来自DefiLlama API',
@@ -15780,8 +16127,8 @@
                 'rankings.table.votes': '投票',
                 'rankings.table.userVotes': '投票',
                 'rankings.table.comments': 'コメント',
-                'simulator.tvl.info': 'DeFiにロックされる資本が多い = ネットワーク効用が大きい。<strong>ネットワーク手数料にも影響（+50%効果）</strong>。TVLベースの評価とメトカーフ効果に反映。',
-                'simulator.fees.info': '手数料が高い = 経済活動が活発。<em>TVLの変化にも影響される。</em>P/S比率と利回り評価に反映。',
+                'simulator.tvl.info': 'DeFiにロックされる資本が多い = ネットワーク効用が大きい。ネットワーク手数料にも影響（+50%効果）。TVLベースの評価とメトカーフ効果に反映。',
+                'simulator.fees.info': '手数料が高い = 経済活動が活発。TVLの変化にも影響される。P/S比率と利回り評価に反映。',
                 'simulator.staking.info': 'ステーキング増加 = 供給減少。高い比率は希少性プレミアムを生むが利回りは低下。',
                 'simulator.stablecoins.info': 'イーサリアム上の実物資本。TVL/手数料に+30%、決済量に+50%の効果。',
                 'simulator.title': 'WHAT-IF シナリオシミュレーター',
@@ -15797,10 +16144,15 @@
                 'summary.fairValue': 'てきせいかかく (10モデル)',
                 'summary.opportunity': 'とうしきかい',
                 'summary.toggleHint': 'したのかくモデルをオン・オフして、どくじのバリュエーションをけいさんしてみましょう。',
-                'summary.desc1': 'このダッシュボードは、でんとうてきなきんゆうフレームワーク（DCF、P/S Ratio、Revenue Yield、Validator Economics）からクリプトネイティブしひょう（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital、Settlement Layer、Monetary Sink）まで、13しゅるいのことなるバリュエーションしゅほうをもちいて<strong>イーサリアムのほんしつてきかち</strong>をみちびきだすことをこころみています。',
-                'summary.desc2': 'クリプトさんぎょうには、よりげんみつなファンダメンタルズにもとづくバリュエーションアプローチがひつようだとかんがえています。これらのモデルにはげんかいとかていがありますが、じゅんすいなかかくとうきをこえてかちについてかんがえるためのフレームワークをていきょうします。',
+                'summary.desc1': 'このダッシュボードは4つのほうほうろんカテゴリにわたる13のバリュエーションモデルで<strong>イーサリアムのほんしつてきかち</strong>をどうしゅつします：<strong>でんとうきんゆう</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>オンチェーンしさんかち</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>ネットワークこうか</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）、<strong>きょうきゅうきしょうせい</strong>（Staking Scarcity、Lock-up Premium、Effective Float）。',
                 'summary.feedback': 'バグをはっけんされたり、ごていあんがありましたら、いつでもおしらせください — フィードバックはだいかんげいです！',
                 'summary.community': '<strong>ディスカッションにさんかしましょう！</strong>かくモデルのかくしんどをひょうかし、ごいけんをきょうゆうしてください。いっしょに、よりせいかくなコミュニティしゅどうのしんらいどかじゅうシステムをつくりましょう。',
+                'appendix.intro': 'このダッシュボードは4つのほうほうろんカテゴリでせいりされた13のバリュエーションモデルをさいようしています。かくカテゴリはでんとうきんゆうフレームワークからクリプトネイティブしひょうまで、イーサリアムのほんしつてきかちをすいていするどくじのりろんてきアプローチをだいひょうしています。',
+                'appendix.title': 'ふろく：バリュエーションフレームワーク',
+                'category.tradfi.full': 'でんとうきんゆう (TradFi)',
+                'category.asset.full': 'オンチェーンしさんかち',
+                'category.network.full': 'ネットワークこうか',
+                'category.scarcity.full': 'きょうきゅうきしょうせい',
                 'summary.communityStats': 'ディスカッション',
                 'summary.participants': '人がさんか',
                 'summary.votes': '票',
@@ -15849,8 +16201,8 @@
                 'criteria.labelM': 'ほうほうろん',
                 'criteria.labelD': 'データ',
                 'criteria.labelA': 'かてい',
-                'criteria.model.revenueYield': 'Revenue Yield',
-                'criteria.model.mctvl': 'MC/TVL Fair Value',
+                'criteria.model.revenueYield': 'Fee Yield',
+                'criteria.model.mctvl': 'MC/TVL Ratio',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
                 'criteria.model.dcf': 'DCF (Staking)',
                 'criteria.model.ps': 'P/S Ratio (25x)',
@@ -15858,7 +16210,7 @@
                 'criteria.model.tvl': 'TVL Multiple',
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
-                'criteria.model.commitment': 'Commitment Premium',
+                'criteria.model.commitment': 'Lock-up Premium',
                 'criteria.revenueYield.m': 'さいけん・はいとうかぶでひろくしようされるTradFiイールドベースのバリュエーション',
                 'criteria.revenueYield.d': 'リアルタイムLido APR + DefiLlamaオンチェーンてすうりょうしゅうえき',
                 'criteria.revenueYield.a': 'にんいのばいりつなし；マーケットはせいイールドをちょくせつしよう',
@@ -15916,10 +16268,32 @@
                 'method.settlement.note': 'Velocity 6はUSD M1をベンチマーク；クリプトの流通速度は大きく異なる可能性',
                 'method.settlement.desc': 'こうかんほうていしき(MV=PQ)をてきようし、ETHをイーサリアムけっさいレイヤーのかへいとしてあつかいます。にちじけっさいりょうはL1そうきん、L2そうきん、ブリッジとりひきりょうをごうさんします。Velocity 6はETHのかちちょぞう(SoV)とくせいをはんえいします：ステーキングはETHをvelocity 0でこてい、ETFいこうビットコインとるいじのきかんほゆうパターン、USD M1 velocity (~5.5x)ベンチマーク。ひくいvelocity = たかいないざいかち（かへいがしょうひされずながくほゆうされる）。',
                 'method.sink.note': 'Sinkすいていちはさまざま；りゅうどうせいステーキングがぶぶんてきにステーキングSinkをそうさい',
-                'method.sink.desc': 'こうぞうてきSinkにロックされたETHをこうりょしたりゅうつうかぶちょうせいバリュエーション：ステーキング、DeFiたんぽ、L2ブリッジ、ふんしつ/きゅうみんコイン。ないぶしゃほゆうをじょがいするでんとうてきファイナンスのりゅうつうかぶちょうせいじかそうがくとるいじ。',
+                'method.sink.desc': 'Miller(1977)に触発：取引可能な供給が制約されると、楽観的な投資家が価格を決定し、プレミアムが生まれます。Greenwood（ハーバード）が株式市場で流通株減少と価格上昇の相関を実証しました。私たちの仮定：時価総額が一定のまま有効流通株（ステーキング、DeFiロック、紛失ETHを除く）が減少すれば、単位価格は比例的に上昇します。',
+                'category.tradfi': '伝統金融',
+                'category.asset': '資産価値',
+                'category.network': 'ネットワーク効果',
+                'category.scarcity': '供給希少性',
+                'appendix.title': 'バリュエーションフレームワークカテゴリ',
+                'appendix.tradfi.desc': '暗号資産に適用された伝統的金融手法。これらのモデルはETHを債券や配当株に匹敵する利回り生成資産として扱い、DCF、P/S比率、要求収益率分析などの確立されたフレームワークを適用します。馴染みのあるバリュエーションアンカーを求める機関投資家に最適です。',
+                'appendix.asset.desc': 'ネットワーク上にロック、決済、または担保された資産に基づいてETHを評価。イーサリアムを支える資本に比例した経済的セキュリティを提供する必要がある決済レイヤーとして扱います。前提：ネットワークセキュリティ（時価総額）はオンチェーン資産価値に比例する必要があります。',
+                'appendix.network.desc': 'ユーザー採用、取引活動、エコシステム成長から価値を捕捉するモデル。採用が増加すると価値が非線形に成長するというネットワーク経済学理論に基づいています。L2活動がL1に価値を蓄積するイーサリアムのRollup中心のロードマップに特に関連します。',
+                'appendix.scarcity.desc': '有効流通供給の減少に基づいてETHの価格を設定する供給サイドモデル。ETHの相当部分が構造的にロックされている（ステーキング、DeFi、紛失コイン）ことを認識し、自社株買いや流通株減少に類似した希少性ダイナミクスを創出します。',
+                'appendix.model.dcf': '前向き：将来のステーキング報酬を現在価値に割引。9%割引率（リスクフリー+クリプトプレミアム）と3%永続成長率を使用。',
+                'appendix.model.ps': '収益マルチプル：年間手数料収入に25倍を適用。成長テック株バリュエーションに匹敵（SaaS企業は10-40倍で取引）。',
+                'appendix.model.yield': '後ろ向き：現在のステーキングAPRから時価総額を逆算。ETHを利回りが適正価値を示す債券として扱う。',
+                'appendix.model.validator': '要求収益：現在APR vs 目標利回り（6% = リスクフリー + ステーキングプレミアム）を比較。バリデーター収益性閾値に焦点。',
+                'appendix.model.tvl': 'DeFi中心：DeFi預金のみに基づいてETHを評価。過去のMC/TVL比率（2020-2023）から導出された7倍マルチプルを使用。',
+                'appendix.model.mctvl': '平均回帰：MC/TVL比率が6倍の過去平均に回帰すると仮定。比率が高ければ過大評価、低ければ過小評価。',
+                'appendix.model.appCapital': '最広範囲：全てのオンチェーン資産（ステーブルコイン、ERC-20、NFT、RWA）を含む。28%ステーブルコイン比率をプロキシとして使用。時価総額フロア概念。',
+                'appendix.model.metcalfe': 'ユーザー駆動：ネットワーク価値 ∝ n^1.5（線形とn²の間）。TVLをネットワーク活動のプロキシとして使用。BTC/ETHで学術的に検証済み。',
+                'appendix.model.settlement': '貨幣経済学：MV=PQ方程式を適用しETHを貨幣として扱う。Velocity 6はSoV特性（ステーキング、機関保有）を反映。',
+                'appendix.model.l2': 'Rollup含む：L2活動がL1で決済されブロックスペースを消費しEIP-1559でETHを焼却するため、L2 TVLに2倍の重み。',
+                'appendix.model.staking': '単純比率：非ステーキング供給のみに基づいてETHを評価。高いステーキング% = 小さい流通 = 高い適正価値。最も直接的アプローチ。',
+                'appendix.model.commitment': '行動的：ステーキング+DeFiにコミットされたETHに基づき1.5倍プレミアム適用。保有者の確信と長期ロックアップシグナルに焦点。',
+                'appendix.model.sink': 'Miller(1977)理論：ステーキング/DeFi/紛失コインによる取引可能流通株の減少が価格プレミアムを形成。最も包括的なアプローチ。',
                 'method.costBasis.note': 'MVRV 1.5はれきしてきへいきん；じっさいのきんこうてんはしじょうサイクルによりことなるばあいあり',
                 'method.costBasis.desc': 'じつげんかかく（りゅうつうちゅうのすべてのETHのへいきんしゅとくコスト）にMVRVきんこうひりつ1.5をかけます。じつげんかかくはすべてのほゆうしゃのそうコストきじゅんをあらわします。れきしてきに、MVRV 1.5はしじょうがかねつ（MVRV > 3）でもていひょうか（MVRV < 1）でもないてきせいかちいきをしめします。しじょうかかく < じつげんかかくのとき、おおくのほゆうしゃがそんしつじょうたいです。',
-                'criteria.model.settlement': 'Settlement Layer',
+                'criteria.model.settlement': 'Settlement Layer (MV=PQ)',
                 'criteria.model.validator': 'Validator Economics',
                 'criteria.settlement.m': 'かへいけいざいがくのMV=PQほうていしき；フィッシャーほうていしきひろくしよう',
                 'criteria.settlement.d': 'L1データはbitinfocharts；ブリッジデータはDefiLlama API',
@@ -16303,7 +16677,7 @@
         function getChartColors() {
             const isDark = document.body.classList.contains('dark');
             return {
-                tick: isDark ? '#8b949e' : '#9ca3af',
+                tick: isDark ? '#8b949e' : '#6b7280',
                 grid: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
                 gridLight: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
             };
@@ -16335,7 +16709,7 @@
             nvtHistory: [],
             activeAddresses: 0,
             activeAddrHistory: [],
-            // Commitment Premium metrics
+            // Lock-up Premium metrics
             ethInDefi: 0,
             ethInDefiHistory: [],
             commitmentRatio: 0,
@@ -16343,7 +16717,7 @@
             // App Capital (Stablecoins proxy)
             appCapital: 0,
             appCapitalHistory: [],
-            // Settlement Layer (L1 + L2 + Bridge TX Volume)
+            // Settlement Layer (MV=PQ) (L1 + L2 + Bridge TX Volume)
             l1DailyVolume: 0,
             l2DailyVolume: 0,
             bridgeDailyVolume: 0,
@@ -16473,6 +16847,11 @@
                 const month = date.toLocaleDateString('en-US', { month: 'short' });
                 const year = date.getFullYear().toString().slice(-2);
                 return month + " '" + year;
+            },
+            // 툴팁용 전체 날짜: "Dec 15, 2025"
+            tooltipDate: (d) => {
+                const date = d instanceof Date ? d : new Date(d);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
             }
         };
         
@@ -16579,7 +16958,7 @@
                         display: true,
                         grid: { display: false },
                         ticks: { 
-                            color: '#9ca3af', 
+                            color: '#6b7280', 
                             maxTicksLimit: 5, 
                             autoSkip: true,
                             autoSkipPadding: 20,
@@ -16594,7 +16973,7 @@
                         position: 'right',
                         grid: { display: false },
                         ticks: { 
-                            color: '#9ca3af', 
+                            color: '#6b7280', 
                             font: { size: 8 },
                             maxTicksLimit: 4,
                             padding: 2,
@@ -17012,7 +17391,7 @@
                     }
                 }
                 
-                // L2 TX Volume (aggregate by date) for Settlement Layer
+                // L2 TX Volume (aggregate by date) for Settlement Layer (MV=PQ)
                 if (l2TxVolumeData && l2TxVolumeData.length > 0) {
                     const l2VolByDate = {};
                     l2TxVolumeData.forEach(d => {
@@ -17037,7 +17416,7 @@
                     }
                 }
                 
-                // Bridge Volume (aggregate by date) for Settlement Layer
+                // Bridge Volume (aggregate by date) for Settlement Layer (MV=PQ)
                 if (bridgeVolumeData && bridgeVolumeData.length > 0) {
                     const bridgeByDate = {};
                     bridgeVolumeData.forEach(d => {
@@ -17588,7 +17967,7 @@
                         x: {
                             display: true,
                             grid: { display: false },
-                            ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
+                            ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
                         },
                         y: {
                             display: true,
@@ -17596,7 +17975,7 @@
                             grid: { display: false },
                             ticks: {
                                 font: { size: 8 },
-                                color: '#9ca3af',
+                                color: '#6b7280',
                                 maxTicksLimit: 4,
                                 callback: (v) => (v >= 0 ? '+' : '') + v.toFixed(2) + '%'
                             }
@@ -17754,7 +18133,7 @@
                         x: {
                             display: true,
                             grid: { display: false },
-                            ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
+                            ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
                         },
                         y: {
                             display: true,
@@ -17762,7 +18141,7 @@
                             grid: { display: false },
                             ticks: {
                                 font: { size: 8 },
-                                color: '#9ca3af',
+                                color: '#6b7280',
                                 maxTicksLimit: 4,
                                 callback: (v) => v.toFixed(0) + '%'
                             }
@@ -17883,7 +18262,7 @@
                         x: {
                             display: true,
                             grid: { display: false },
-                            ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
+                            ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
                         },
                         y: {
                             display: true,
@@ -17891,7 +18270,7 @@
                             grid: { display: false },
                             ticks: {
                                 font: { size: 8 },
-                                color: '#9ca3af',
+                                color: '#6b7280',
                                 maxTicksLimit: 4,
                                 callback: (v) => '$' + v.toFixed(0) + 'B'
                             }
@@ -18053,7 +18432,7 @@
                         x: {
                             display: true,
                             grid: { display: false },
-                            ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
+                            ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
                         },
                         y: {
                             display: true,
@@ -18063,7 +18442,7 @@
                             grid: { display: false },
                             ticks: {
                                 font: { size: 8 },
-                                color: '#9ca3af',
+                                color: '#6b7280',
                                 maxTicksLimit: 3
                             }
                         }
@@ -19880,7 +20259,7 @@
             
             state.supplyDistribution = { float: floatPct, staking: stakedPct, defi: defiPct, others: othersPct };
             
-            // Update effective float display for Monetary Sink model
+            // Update effective float display for Effective Float model
             const floatDisplay = document.getElementById('effective-float-display');
             if (floatDisplay) floatDisplay.textContent = floatPct.toFixed(1);
             
@@ -20094,7 +20473,7 @@
                                 grid: { display: false },
                                 ticks: {
                                     font: { size: 8 },
-                                    color: '#9ca3af',
+                                    color: '#6b7280',
                                     maxTicksLimit: 5,
                                     autoSkip: true,
                                     autoSkipPadding: 15,
@@ -20110,7 +20489,7 @@
                                 grid: { display: false },
                                 ticks: {
                                     font: { size: 8 },
-                                    color: '#9ca3af',
+                                    color: '#6b7280',
                                     maxTicksLimit: 3,
                                     callback: (v) => v + '%'
                                 }
@@ -20286,7 +20665,7 @@
                         x: {
                             display: true,
                             grid: { display: false },
-                            ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
+                            ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 }
                         },
                         y: {
                             display: true,
@@ -20294,7 +20673,7 @@
                             grid: { display: false },
                             ticks: {
                                 font: { size: 8 },
-                                color: '#9ca3af',
+                                color: '#6b7280',
                                 maxTicksLimit: 4,
                                 callback: (v) => '$' + v.toFixed(0) + 'B'
                             }
@@ -20466,6 +20845,7 @@
             
             const labels = sampled.map(d => fmt.chartLabel(d.date));
             const values = sampled.map(d => d.value);
+            const dates = sampled.map(d => d.date);
             
             gasPriceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -20486,11 +20866,14 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(1) + ' Gwei' } }
+                        tooltip: { callbacks: { 
+                            title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
+                            label: (ctx) => ctx.raw.toFixed(1) + ' Gwei' 
+                        } }
                     },
                     scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
                     }
                 }
             });
@@ -20773,6 +21156,7 @@
             
             const labels = sampled.map(d => fmt.chartLabel(d.date));
             const values = sampled.map(d => d.value);
+            const dates = sampled.map(d => d.date);
             
             blobFeesChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -20793,11 +21177,14 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(1) + ' ETH' } }
+                        tooltip: { callbacks: { 
+                            title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
+                            label: (ctx) => ctx.raw.toFixed(1) + ' ETH' 
+                        } }
                     },
                     scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
                     }
                 }
             });
@@ -20871,6 +21258,7 @@
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
             const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            const dates = sampled.map(d => d.date);
             
             gasPriceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -20891,11 +21279,14 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(1) + ' Gwei' } }
+                        tooltip: { callbacks: { 
+                            title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
+                            label: (ctx) => ctx.raw.toFixed(1) + ' Gwei' 
+                        } }
                     },
                     scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
                     }
                 }
             });
@@ -21001,6 +21392,7 @@
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
             const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            const dates = sampled.map(d => d.date);
             
             blobCountChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -21021,11 +21413,14 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => fmt.num(ctx.raw) + ' blobs' } }
+                        tooltip: { callbacks: { 
+                            title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
+                            label: (ctx) => fmt.num(ctx.raw) + ' blobs' 
+                        } }
                     },
                     scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => fmt.num(v) } }
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => fmt.num(v) } }
                     }
                 }
             });
@@ -21213,6 +21608,7 @@
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
             const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            const dates = sampled.map(d => d.date);
             
             gasUtilizationChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -21231,10 +21627,13 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(1) + '%' } } },
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { 
+                        title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
+                        label: (ctx) => ctx.raw.toFixed(1) + '%' 
+                    } } },
                     scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => v.toFixed(0) + '%' } }
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(0) + '%' } }
                     }
                 }
             });
@@ -21265,6 +21664,7 @@
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
             const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            const dates = sampled.map(d => d.date);
             
             dailyBurnChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -21293,14 +21693,14 @@
                         legend: { display: false }, 
                         tooltip: { 
                             callbacks: { 
-                                title: (items) => items[0]?.label || '',
+                                title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
                                 label: (ctx) => 'Daily Burn: ' + fmt.num(ctx.raw) + ' ETH'
                             }
                         }
                     },
                     scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => fmt.num(v) } }
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => fmt.num(v) } }
                     }
                 }
             });
@@ -21331,6 +21731,7 @@
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
             const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            const dates = sampled.map(d => d.date);
             
             dailyIssuanceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -21349,10 +21750,13 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmt.num(ctx.raw) + ' ETH' } } },
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { 
+                        title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
+                        label: (ctx) => fmt.num(ctx.raw) + ' ETH' 
+                    } } },
                     scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => fmt.num(v) } }
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => fmt.num(v) } }
                     }
                 }
             });
@@ -21379,6 +21783,7 @@
             
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
             const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            const dates = sampled.map(d => d.date);
             
             netSupplyChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -21397,10 +21802,13 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + '%/yr' } } },
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { 
+                        title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
+                        label: (ctx) => ctx.raw.toFixed(2) + '%/yr' 
+                    } } },
                     scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af', maxTicksLimit: 4, callback: (v) => v.toFixed(1) + '%' } }
+                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(1) + '%' } }
                     }
                 }
             });
@@ -21813,7 +22221,7 @@
                 const currentRatio = (marketCap / tvl).toFixed(1);
                 models.push({ 
                     id: 'mctvl',
-                    name: 'MC/TVL Fair Value', 
+                    name: 'MC/TVL Ratio', 
                     formula: 'Price × (Target ÷ Ratio)', 
                     price: state.price * (6 / (marketCap / tvl)),
                     reliability: 2,
@@ -21867,7 +22275,7 @@
                 });
             }
             
-            // Revenue Yield (수익률 기반 역산)
+            // Fee Yield (수익률 기반 역산)
             // 실제 스테이킹 수익률에서 역산한 가치
             if (fees > 0 && cs > 0 && state.stakingApr > 0) {
                 const annualRevenue = fees * 365;
@@ -21875,7 +22283,7 @@
                 const displayYield = state.stakingApr.toFixed(2);
                 models.push({ 
                     id: 'revenueYield',
-                    name: 'Revenue Yield', 
+                    name: 'Fee Yield', 
                     formula: 'AnnualFees ÷ APR ÷ Supply', 
                     price: (annualRevenue / targetYield) / cs,
                     reliability: 3,
@@ -21883,7 +22291,7 @@
                 });
             }
             
-            // Commitment Premium
+            // Lock-up Premium
             // Staked + DeFi ETH의 비율에 따른 가치 프리미엄
             const ethInDefi = state.ethInDefi || (state.price > 0 ? tvl / state.price : 0);
             if (stakedEth > 0 && ethInDefi > 0 && cs > 0 && state.price > 0) {
@@ -21894,7 +22302,7 @@
                 const commitPct = (commitmentRatio * 100).toFixed(0);
                 models.push({
                     id: 'commitmentPremium',
-                    name: 'Commitment Premium',
+                    name: 'Lock-up Premium',
                     formula: 'Price × (1 + Commit% × Multiplier)',
                     price: state.price * (1 + (commitmentRatio * committedValueMultiplier)),
                     reliability: 1,
@@ -21945,7 +22353,7 @@
                 const fairMarketCap = annualVolume / velocity;
                 models.push({ 
                     id: 'settlementLayer',
-                    name: 'Settlement Layer', 
+                    name: 'Settlement Layer (MV=PQ)', 
                     formula: '(L1 Vol × 365 ÷ Velocity) ÷ Supply', 
                     price: fairMarketCap / cs,
                     reliability: 2,
@@ -21953,7 +22361,7 @@
                 });
             }
             
-            // Monetary Sink (Float-Adjusted Valuation)
+            // Effective Float (Effective Float Valuation)
             // Effective Float = Supply - Structural Sinks
             // Sinks: staking + DeFi TVL (in ETH) + L2 bridged + lost/dormant (est. 3%)
             // Fair Value = Price × (Supply / Effective Float)
@@ -21974,7 +22382,7 @@
                     const sinkFairValue = state.price * (cs / effectiveFloat);
                     models.push({ 
                         id: 'monetarySink',
-                        name: 'Monetary Sink', 
+                        name: 'Effective Float', 
                         formula: 'Price × (Supply ÷ Float)', 
                         price: sinkFairValue,
                         reliability: 2,
@@ -24306,17 +24714,17 @@ Check out ETHval 👇`;
         const MODEL_NAMES = {
             tvlMultiple: 'TVL Multiple',
             stakingScarcity: 'Staking Scarcity',
-            mctvl: 'MC/TVL Fair Value',
+            mctvl: 'MC/TVL Ratio',
             metcalfe: "Metcalfe's Law",
-            dcf: 'DCF (Staking Yield)',
+            dcf: 'Staking DCF',
             l2Ecosystem: 'L2 Ecosystem',
             ps: 'P/S Ratio (25x)',
-            revenueYield: 'Revenue Yield',
-            commitmentPremium: 'Commitment Premium',
+            revenueYield: 'Fee Yield',
+            commitmentPremium: 'Lock-up Premium',
             appCapital: 'App Capital',
             validatorEcon: 'Validator Economics',
-            settlementLayer: 'Settlement Layer',
-            monetarySink: 'Monetary Sink',
+            settlementLayer: 'Settlement Layer (MV=PQ)',
+            monetarySink: 'Effective Float',
             composite: 'Composite'
         };
         
@@ -24442,7 +24850,7 @@ Check out ETHval 👇`;
                     results.stakingScarcity.push({ date, value: stakingValue });
                 }
                 
-                // 3. MC/TVL Fair Value (matches: Price × (Target ÷ Ratio))
+                // 3. MC/TVL Ratio (matches: Price × (Target ÷ Ratio))
                 if (tvl > 0 && price > 0) {
                     const currentMcTvl = (price * supply) / tvl;
                     const targetMcTvl = 6;
@@ -24457,7 +24865,7 @@ Check out ETHval 👇`;
                     results.metcalfe.push({ date, value: metcalfeValue });
                 }
                 
-                // 5. DCF (Staking Yield) - matches: Price × (1+APR) ÷ (Discount - Growth)
+                // 5. Staking DCF - matches: Price × (1+APR) ÷ (Discount - Growth)
                 if (price > 0 && stakingApr > 0) {
                     const stakingYield = stakingApr / 100;
                     const yieldMultiplier = 1 + stakingYield;
@@ -24481,7 +24889,7 @@ Check out ETHval 👇`;
                     results.ps.push({ date, value: psValue });
                 }
                 
-                // 8. Revenue Yield (matches: AnnualFees ÷ APR ÷ Supply)
+                // 8. Fee Yield (matches: AnnualFees ÷ APR ÷ Supply)
                 // feesHistoryDaily는 일일 값
                 if (fees > 0 && stakingApr > 0) {
                     const dailyFees = fees; // 이미 일일 값
@@ -24491,7 +24899,7 @@ Check out ETHval 👇`;
                     results.revenueYield.push({ date, value: revYieldValue });
                 }
                 
-                // 9. Commitment Premium (matches: Price × (1 + Commit% × Multiplier))
+                // 9. Lock-up Premium (matches: Price × (1 + Commit% × Multiplier))
                 const ethInDefi = price > 0 ? tvl / price : 0;
                 if (stakedEth > 0 && ethInDefi > 0 && price > 0) {
                     const committed = stakedEth + ethInDefi;
@@ -24540,7 +24948,7 @@ Check out ETHval 👇`;
                     }
                 }
                 
-                // 13. Monetary Sink (Float-Adjusted Valuation)
+                // 13. Effective Float (Effective Float Valuation)
                 // Fair Value = Price × (Supply / Effective Float)
                 if (price > 0 && stakedEth > 0) {
                     const ethInDefi = tvl / price;
@@ -24624,10 +25032,10 @@ Check out ETHval 👇`;
             // 7. P/S: DailyFees × 365 × PSRatio ÷ Supply
             valuation.ps = (state.fees * 365 * 25) / csVal;
             
-            // 8. Revenue Yield: AnnualFees ÷ APR ÷ Supply
+            // 8. Fee Yield: AnnualFees ÷ APR ÷ Supply
             valuation.revenueYield = (state.fees * 365 / (state.stakingApr / 100)) / csVal;
             
-            // 9. Commitment Premium: Price × (1 + Commit% × Multiplier)
+            // 9. Lock-up Premium: Price × (1 + Commit% × Multiplier)
             const ethInDefi = state.tvl / state.price;
             const commitRatio = (state.stakedEth + ethInDefi) / csVal;
             valuation.commitmentPremium = state.price * (1 + commitRatio * 1.5);
@@ -24641,7 +25049,7 @@ Check out ETHval 👇`;
             const targetYield = riskFreeRate + riskPremium; // 6%
             valuation.validatorEcon = state.price * (targetYield / state.stakingApr);
             
-            // 12. Settlement Layer: (L1 Vol × 365 / Velocity) / Supply
+            // 12. Settlement Layer (MV=PQ): (L1 Vol × 365 / Velocity) / Supply
             const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
             valuation.settlementLayer = (dailySettlement * 365 / 6) / csVal;
             
@@ -25128,14 +25536,14 @@ Check out ETHval 👇`;
                         x: {
                             display: true,
                             grid: { display: false },
-                            ticks: { color: '#8b949e', maxTicksLimit: 3, font: { size: 8 } }
+                            ticks: { color: '#6b7280', maxTicksLimit: 3, font: { size: 8 } }
                         },
                         y: {
                             display: true,
                             position: 'right',
                             grid: { display: false },
                             ticks: {
-                                color: '#8b949e',
+                                color: '#6b7280',
                                 font: { size: 8 },
                                 maxTicksLimit: 3,
                                 callback: v => '$' + (v/1000).toFixed(1) + 'K'
@@ -25291,7 +25699,7 @@ Check out ETHval 👇`;
                     calc: function(p) { return p.price * Math.pow(p.supply / (p.supply - p.stakedEth), 0.5); }
                 },
                 mctvl: {
-                    name: 'MC/TVL Fair Value',
+                    name: 'MC/TVL Ratio',
                     color: '#f59e0b',
                     calc: function(p) { return p.price * (6 / ((p.price * p.supply) / p.tvl)); }
                 },
@@ -25316,12 +25724,12 @@ Check out ETHval 👇`;
                     calc: function(p) { return (p.fees * 365 * 25) / p.supply; }
                 },
                 revenueYield: {
-                    name: 'Revenue Yield',
+                    name: 'Fee Yield',
                     color: '#06b6d4',
                     calc: function(p) { return ((p.fees * 365) / 0.032) / p.supply; }
                 },
                 commitmentPremium: {
-                    name: 'Commitment Premium',
+                    name: 'Lock-up Premium',
                     color: '#0ea5e9',
                     calc: function(p) { return p.price * (1 + ((p.stakedEth + p.tvl / p.price) / p.supply) * 1.5); }
                 },
@@ -25336,12 +25744,12 @@ Check out ETHval 👇`;
                     calc: function(p) { return p.price * (6 / p.stakingApr); }
                 },
                 settlementLayer: {
-                    name: 'Settlement Layer',
+                    name: 'Settlement Layer (MV=PQ)',
                     color: '#a855f7',
                     calc: function(p) { return ((p.dailySettlement * 365 / 6)) / p.supply; }
                 },
                 monetarySink: {
-                    name: 'Monetary Sink',
+                    name: 'Effective Float',
                     color: '#f472b6',
                     calc: function(p) {
                         var defiEth = p.tvl / p.price;
@@ -25475,6 +25883,13 @@ Check out ETHval 👇`;
             }
             
             function updateSimulation() {
+                // Sync Market Price with main chart (ensure consistency)
+                if (typeof state !== 'undefined' && state.price > 0) {
+                    var simMarketEl = document.getElementById('sim-market-price');
+                    if (simMarketEl) simMarketEl.textContent = formatPrice(state.price);
+                    baseParams.price = state.price; // Keep baseParams in sync
+                }
+                
                 // Get slider values and convert to actual multipliers
                 var tvlSlider = parseFloat(document.getElementById('sim-tvl').value);
                 var feesSlider = parseFloat(document.getElementById('sim-fees').value);
@@ -25642,17 +26057,17 @@ Check out ETHval 👇`;
             const MODEL_NAMES = {
                 dcf: 'DCF (Fee Cash Flow)',
                 ps: 'Price-to-Sales',
-                revenueYield: 'Revenue Yield',
+                revenueYield: 'Fee Yield',
                 validatorEcon: 'Validator Economics',
                 tvlMultiple: 'TVL Multiple',
                 mctvl: 'MC/TVL Ratio',
                 metcalfe: "Metcalfe's Law",
                 stakingScarcity: 'Staking Scarcity',
                 l2Ecosystem: 'L2 Ecosystem',
-                commitmentPremium: 'Commitment Premium',
+                commitmentPremium: 'Lock-up Premium',
                 appCapital: 'App Capital Value',
-                settlementLayer: 'Settlement Layer',
-                monetarySink: 'Monetary Sink'
+                settlementLayer: 'Settlement Layer (MV=PQ)',
+                monetarySink: 'Effective Float'
             };
             
             const MODEL_COLORS = {
