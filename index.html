@@ -10707,6 +10707,27 @@
                         <div class="metric-desc" data-i18n="desc.feargreed">Market sentiment index (0-100). Extreme fear often = buying opportunity.</div>
                     </div>
                 </div>
+
+                <!-- Whale Transactions -->
+                <div class="metric-card" data-metric="whaleTx">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Whale Transactions</h4>
+                            <div class="metric-value-large" id="whale-tx-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="whale-tx-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>🔷 Dune</span>
+                        <span class="change" id="whale-tx-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.whaleTx">Daily 1000+ ETH transactions. Large player activity indicator.</div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -10875,7 +10896,7 @@
                 <div class="metric-card" data-metric="newAddresses">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="metric.newAddresses">New Addresses (Daily)</h4>
+                            <h4>New Addresses (Daily)</h4>
                             <div class="metric-value-large" id="new-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11075,7 +11096,7 @@
                 <div class="metric-card" data-metric="l1Volume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="metric.l1Volume">L1 TX Volume (Daily)</h4>
+                            <h4>L1 TX Volume (Daily)</h4>
                             <div class="metric-value-large" id="l1-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11095,7 +11116,7 @@
                 <div class="metric-card" data-metric="l2Volume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="metric.l2Volume">L2 TX Volume (Daily)</h4>
+                            <h4>L2 TX Volume (Daily)</h4>
                             <div class="metric-value-large" id="l2-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11115,7 +11136,7 @@
                 <div class="metric-card" data-metric="bridgeVolume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="metric.bridgeVolume">Bridge Volume (Daily)</h4>
+                            <h4>Bridge Volume (Daily)</h4>
                             <div class="metric-value-large" id="bridge-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11129,26 +11150,6 @@
                         <span>🔷 Dune</span>
                         <span class="change" id="bridge-volume-change">--</span>
                         <div class="metric-desc" data-i18n="desc.bridgeVolume">Daily ETH bridged to L2s. Cross-chain capital flow indicator.</div>
-                    </div>
-                </div>
-
-                <div class="metric-card" data-metric="whaleTx">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4 data-i18n="metric.whaleTx">Whale Transactions</h4>
-                            <div class="metric-value-large" id="whale-tx-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="whale-tx-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>🔷 Dune</span>
-                        <span class="change" id="whale-tx-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.whaleTx">Daily 1000+ ETH transactions. Large player activity indicator.</div>
                     </div>
                 </div>
 
