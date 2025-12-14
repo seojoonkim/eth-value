@@ -168,8 +168,8 @@
             --border-light: #21262d;
             
             --text: #f5f7fa;
-            --text-secondary: #b8c4d0;
-            --text-muted: #9ca8b8;
+            --text-secondary: #c8d4e0;
+            --text-muted: #b0bcc8;
             
             --scrollbar-thumb: rgba(255, 255, 255, 0.3);
             --scrollbar-thumb-hover: rgba(255, 255, 255, 0.5);
@@ -201,7 +201,7 @@
         body.dark .model-formula {
             background: #21262d;
             border-color: #30363d;
-            color: #8b949e;
+            color: #a8b4c0;
         }
         
         body.dark .model-toggle .slider {
@@ -217,7 +217,7 @@
         }
         
         body.dark .model-signal {
-            color: #8b949e;
+            color: #a8b4c0;
         }
         
         body.dark .model-signal.undervalued {
@@ -247,14 +247,14 @@
         /* Dark mode specific overrides */
         body.dark .version-badge {
             background: #30363d;
-            color: #8b949e;
+            color: #a8b4c0;
             border-color: #484f58;
         }
         
         body.dark .method-formula {
             background: #21262d;
             border-color: #30363d;
-            color: #8b949e;
+            color: #a8b4c0;
         }
         
         body.dark .method-note {
@@ -330,7 +330,7 @@
         }
         
         body.dark .conclusion-label {
-            color: #8b949e;
+            color: var(--text-secondary);
         }
         
         body.dark .signal-grid {
@@ -346,7 +346,7 @@
         }
         
         body.dark .current-vs-model-row .label {
-            color: #8b949e;
+            color: #a8b4c0;
         }
         
         body.dark .historical-legend-container {
@@ -413,7 +413,7 @@
         
         body.dark .criteria-table th {
             border-color: #30363d;
-            color: #8b949e;
+            color: #a8b4c0;
         }
         
         body.dark .criteria-table td {
@@ -534,15 +534,15 @@
         body.dark .method-chart-tab,
         body.dark .historical-tab {
             background: #21262d;
-            color: #8b949e;
+            color: #a8b4c0;
         }
         
         body.dark .mini-tab.active,
         body.dark .metric-tab.active,
         body.dark .method-chart-tab.active,
         body.dark .historical-tab.active {
-            background: #30363d;
-            color: var(--accent);
+            background: rgba(124, 58, 237, 0.3);
+            color: #c4b5fd;
         }
         
         body.dark .nav-bar {
@@ -551,7 +551,8 @@
         }
         
         body.dark .nav-item.active {
-            background: rgba(124, 58, 237, 0.15);
+            background: rgba(124, 58, 237, 0.25);
+            color: #c4b5fd;
         }
         
         body.dark .header-wrapper {
@@ -564,12 +565,12 @@
         }
         
         body.dark .lang-btn {
-            color: #8b949e;
+            color: #a8b4c0;
         }
         
         body.dark .lang-btn.active {
-            background: #30363d;
-            color: var(--accent);
+            background: rgba(124, 58, 237, 0.3);
+            color: #c4b5fd;
         }
         
         body.dark .theme-toggle {
@@ -1902,7 +1903,7 @@
         }
         
         body.dark .chart-loader .loading-text {
-            color: #8b949e;
+            color: #a8b4c0;
         }
         
         /* Hide loader when chart is loaded */
@@ -2509,7 +2510,7 @@
 
         .conclusion-label {
             font-size: var(--font-h2);
-            color: #586069;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 12px;
@@ -6290,7 +6291,7 @@
 
         .summary-label {
             font-size: var(--font-h2);
-            color: #586069;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -6865,7 +6866,7 @@
 
         .share-card-stat-label {
             font-size: 11px;
-            color: #8b949e;
+            color: #a8b4c0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -7247,7 +7248,7 @@
                 align-items: center;
                 justify-content: space-between;
                 gap: 6px;
-                padding: 6px 10px;
+                padding: 6px 10px 6px 6px;
             }
 
             .logo {
@@ -7258,17 +7259,17 @@
             }
 
             .logo-icon {
-                width: 20px;
-                height: 20px;
+                width: 22px;
+                height: 22px;
             }
 
             .logo-icon svg {
-                width: 11px;
-                height: 11px;
+                width: 12px;
+                height: 12px;
             }
 
             .logo-text {
-                font-size: var(--font-h1);
+                font-size: 17px;
             }
 
             .logo-subtitle {
@@ -7290,8 +7291,8 @@
 
             /* 로고 옆 version-badge 모바일 스타일 */
             .logo .version-badge {
-                font-size: var(--font-caption);
-                padding: 1px 4px;
+                font-size: 10px;
+                padding: 2px 5px;
                 border: none;
             }
 
@@ -7316,13 +7317,13 @@
             }
 
             .lang-selector {
-                gap: 1px;
-                padding: 1px;
+                gap: 2px;
+                padding: 2px;
             }
 
             .lang-btn {
-                padding: 2px 4px;
-                font-size: 10px;
+                padding: 4px 6px;
+                font-size: 11px;
             }
 
             .nav-bar {
@@ -9476,6 +9477,14 @@
             content: '↓';
         }
         
+        body.dark .sortable-th.sorted {
+            color: #a78bfa;
+        }
+        
+        body.dark .sortable-th.sorted::after {
+            color: #a78bfa;
+        }
+        
         /* Hide the old span-based sort icons */
         .sort-icon {
             display: none;
@@ -10354,7 +10363,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.5.1</span>
+                <span class="version-badge">v0.5.2</span>
             </div>
             <div class="header-right">
                 <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
@@ -10409,15 +10418,15 @@
                     <div class="summary-valuation-row">
                         <span class="summary-label">
                             <span data-i18n="valuation.compositeFairValue">Composite Fair Value</span>
-                            <span class="model-count-light model-count-break">(<span id="active-model-count">12</span> / 12 models)</span>
+                            <span class="model-count-light model-count-break">(<span id="active-model-count">13</span> / 13 models)</span>
                         </span>
-                        <span class="summary-value" id="summary-fair-value" style="font-size: var(--font-h2); color: #8b949e;"><span class="calculating-dots">Calculating</span></span>
+                        <span class="summary-value" id="summary-fair-value" style="font-size: var(--font-h2); color: #a8b4c0;"><span class="calculating-dots">Calculating</span></span>
                     </div>
                     <div class="summary-valuation-row">
                         <span class="summary-label" data-i18n="summary.opportunity">Opportunity</span>
                         <span class="summary-opportunity-wrapper">
-                            <span id="summary-signal" style="font-size: 12px; font-weight: 600; margin-right: 8px; color: #8b949e;">--</span>
-                            <span class="summary-opportunity" id="summary-opportunity" style="background: #f1f3f4; color: #8b949e;">-- %</span>
+                            <span id="summary-signal" style="font-size: 12px; font-weight: 600; margin-right: 8px; color: #a8b4c0;">--</span>
+                            <span class="summary-opportunity" id="summary-opportunity" style="background: #f1f3f4; color: #a8b4c0;">-- %</span>
                         </span>
                     </div>
                     <div class="summary-toggle-hint" data-i18n="summary.toggleHint">
@@ -10427,8 +10436,8 @@
                 <!-- Description 영역 -->
                 <div class="summary-description">
                     <p class="summary-text" data-i18n="summary.desc1">
-                        This dashboard attempts to derive <strong>Ethereum's intrinsic value</strong> using 12 different valuation methodologies — 
-                        from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe's Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer).
+                        This dashboard attempts to derive <strong>Ethereum's intrinsic value</strong> using 13 different valuation methodologies — 
+                        from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe's Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer, Monetary Sink).
                     </p>
                     <p class="summary-text" data-i18n="summary.desc2">
                         We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. 
@@ -10554,7 +10563,49 @@
 
             <!-- Three Column Charts -->
             <div class="triple-chart-grid">
-                <!-- 1. ETH Dominance -->
+                <!-- 1. Realized ETH Price -->
+                <div class="metric-card" data-metric="realizedPrice">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.realizedPrice">Realized Price</h4>
+                            <div class="metric-value-large" id="realized-price-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="realized-price-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="realized-price-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.realizedPrice">Volume-weighted average price of all ETH transfers since 2016. Represents aggregate cost basis of all holders.</div>
+                    </div>
+                </div>
+
+                <!-- 2. MVRV Ratio -->
+                <div class="metric-card" data-metric="mvrvRatio">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.mvrvRatio">MVRV Ratio</h4>
+                            <div class="metric-value-large" id="mvrv-ratio-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="mvrv-ratio-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="mvrv-ratio-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.mvrvRatio">Market Value to Realized Value ratio. >3x historically indicates overheating, <1x indicates undervaluation.</div>
+                    </div>
+                </div>
+
+                <!-- 3. ETH Dominance -->
                 <div class="metric-card" data-metric="dominance">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -10730,8 +10781,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- SECTION 2: ON-CHAIN METRICS -->
         <section class="section" id="section-onchain">
             <div class="section-header">
                 <div class="section-title"><span data-i18n="section.onchainTitle">On-Chain Metrics & Trends</span></div>
@@ -10739,7 +10788,29 @@
 
             <div class="metrics-grid">
                 <!-- Supply Dynamics Cards -->
-                <!-- 1. Gas Utilization -->
+                <!-- 1. Staking Yield -->
+                <div class="metric-card" data-metric="stakingApr">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Staking Yield (APR)</h4>
+                            <div class="metric-value-large" id="staking-yield-value">--%</div>
+                        </div>
+                        <div class="metric-tabs">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="staking-yield-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Lido</span>
+                        <span class="change" id="staking-yield-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.stakingYield">Annual staking return. Benchmark yield for ETH investment.</div>
+                    </div>
+                </div>
+
+                <!-- 2. Gas Utilization -->
                 <div class="metric-card" data-metric="gas-utilization">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11090,7 +11161,50 @@
                     </div>
                 </div>
 
-                <!-- 7. DEX Volume -->
+                <!-- 7. App Capital -->
+                <div class="metric-card" data-metric="appCapital">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>App Capital</h4>
+                            <div class="metric-value-large" id="app-capital-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="app-capital-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Calculated</span>
+                        <span class="change" id="app-capital-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.appCapital">Capital deployed in Ethereum apps (DeFi, stables, etc.).</div>
+                    </div>
+                </div>
+
+                <!-- 8. Stablecoin Daily Volume -->
+                <div class="metric-card" data-metric="stablecoinVol">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.stablecoinVol">Stablecoin Volume</h4>
+                            <div class="metric-value-large" id="stablecoin-vol-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-vol-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="stablecoin-vol-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.stablecoinVol">Daily stablecoin transfer volume on Ethereum (USDT, USDC, DAI, USDe, FDUSD).</div>
+                    </div>
+                </div>
+
+                <!-- 8. DEX Volume -->
                 <div class="metric-card" data-metric="dex">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11282,50 +11396,6 @@
                         <div class="metric-desc" data-i18n="desc.commitment">Staked + DeFi ETH ÷ supply. Higher ratio = more committed holders.</div>
                     </div>
                 </div>
-
-                <!-- 17. App Capital -->
-                <div class="metric-card" data-metric="appCapital">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>App Capital</h4>
-                            <div class="metric-value-large" id="app-capital-value">$--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="app-capital-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Calculated</span>
-                        <span class="change" id="app-capital-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.appCapital">Capital deployed in Ethereum apps (DeFi, stables, etc.).</div>
-                    </div>
-                </div>
-
-                <!-- 18. Staking Yield -->
-                <div class="metric-card" data-metric="stakingApr">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Staking Yield (APR)</h4>
-                            <div class="metric-value-large" id="staking-yield-value">--%</div>
-                        </div>
-                        <div class="metric-tabs">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="staking-yield-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Lido</span>
-                        <span class="change" id="staking-yield-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.stakingYield">Annual staking return. Benchmark yield for ETH investment.</div>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -11353,7 +11423,7 @@
                 </div>
 
                 <div class="conclusion-panel">
-                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="model-count-light">(<span id="conclusion-model-count">12</span> / 12 models)</span></div>
+                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="model-count-light">(<span id="conclusion-model-count">13</span> / 13 models)</span></div>
                     <div class="conclusion-price" id="composite-price">$--</div>
                     <div class="conclusion-diff up" id="composite-diff">-- vs Current</div>
                     <div class="conclusion-verdict bullish" id="verdict">--</div>
@@ -11393,7 +11463,7 @@
                     </div>
                     
                     <div class="conclusion-note" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: var(--font-caption); color: var(--text-muted); line-height: 1.4;">
-                        <span data-i18n="conclusion.notePrefix">Simple average of</span> <span id="active-model-count">12</span> <span data-i18n="conclusion.noteSuffix">active models. Toggle off any model below to exclude it from the calculation.</span>
+                        <span data-i18n="conclusion.notePrefix">Simple average of</span> <span id="active-model-count">13</span> <span data-i18n="conclusion.noteSuffix">active models. Toggle off any model below to exclude it from the calculation.</span>
                     </div>
 
                 </div>
@@ -11402,7 +11472,7 @@
             <!-- Historical Chart (integrated) -->
             <div class="historical-main-chart" style="margin-top: 24px;">
                 <div class="historical-chart-header">
-                    <div class="conclusion-label"><span data-i18n="chart.historicalTitle">FAIR VALUE TREND</span> <span class="model-count-light">(<span id="chart-model-count">12</span> / 12 models)</span></div>
+                    <div class="conclusion-label"><span data-i18n="chart.historicalTitle">FAIR VALUE TREND</span> <span class="model-count-light">(<span id="chart-model-count">13</span> / 13 models)</span></div>
                 </div>
                 
                 <!-- Price Display Row -->
@@ -11440,7 +11510,7 @@
                         <div class="legend-item-fixed">
                             <span class="legend-color legend-color-composite"></span>
                             <span class="legend-name" data-i18n="chart.compositeFairValue">Composite Fair Value</span>
-                            <span class="model-count-badge" id="legend-model-count">12 / 12</span>
+                            <span class="model-count-badge" id="legend-model-count">13 / 13</span>
                         </div>
                     </div>
                     <div class="legend-hint"><span class="legend-hint-icon">👇</span>Click model buttons below to toggle visibility</div>
@@ -11504,6 +11574,11 @@
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#a855f7;"></span>
                             <span class="legend-name" style="color:#a855f7;">Settlement Layer</span>
                             <span class="legend-value" id="legend-val-settlementLayer">--</span>
+                        </div>
+                        <div class="legend-btn active" data-model="monetarySink">
+                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#f472b6;"></span>
+                            <span class="legend-name" style="color:#f472b6;">Monetary Sink</span>
+                            <span class="legend-value" id="legend-val-monetarySink">--</span>
                         </div>
                     </div>
                 </div>
@@ -12129,6 +12204,50 @@
                     </div>
                     <div class="model-community" data-model="settlementLayer"></div>
                 </div>
+
+                <div class="method-card" data-model="monetarySink">
+                    <div class="method-header">
+                        <span class="method-name">Monetary Sink</span>
+                    </div>
+                    <div class="method-content">
+                        <div class="method-left">
+                            <div class="method-formula">Price × (Supply ÷ Effective Float)</div>
+                            <div class="method-desc" data-i18n="method.sink.desc">Float-adjusted valuation accounting for ETH locked in structural sinks: staking (~28%), DeFi collateral (~12%), L2 bridges (~4%), and lost/dormant coins (~3%). Similar to TradFi float-adjusted market cap excluding insider holdings. With ~47% of supply in sinks, effective float of ~53% creates significant scarcity premium.</div>
+                        </div>
+                        <div class="method-right">
+                            <div class="method-chart-inline">
+                                <div class="method-chart-header">
+                                    <div>
+                                        <span class="method-chart-value" id="method-value-monetarySink" >--</span>
+                                        <span class="method-chart-diff" id="method-diff-monetarySink">--</span>
+                                    </div>
+                                    <div class="method-chart-tabs" data-model="monetarySink">
+                                        
+                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab" data-period="365">1Y</button>
+                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                    </div>
+                                </div>
+                                <div class="method-chart-area">
+                                    <canvas id="method-chart-monetarySink"></canvas>
+                                </div>
+                            </div>
+                            <div class="method-footer">
+                                <div class="method-footer-row">
+                                    <div class="method-meta">
+                                    </div>
+                                    <div class="method-note" data-i18n="method.sink.note">Sink estimates vary; liquid staking partially offsets staking sink</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="method-references">
+                        <a href="https://beaconcha.in" target="_blank" class="method-ref-link">Beaconcha.in: Staking Data</a>
+                        <a href="https://defillama.com" target="_blank" class="method-ref-link">DefiLlama: DeFi TVL</a>
+                        <a href="https://l2beat.com" target="_blank" class="method-ref-link">L2Beat: L2 TVL</a>
+                    </div>
+                    <div class="model-community" data-model="monetarySink"></div>
+                </div>
             </div>
 
         </section>
@@ -12240,7 +12359,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v0.5.1</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: 11px;">🔧 Admin</a>
+                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v0.5.2</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: 11px;">🔧 Admin</a>
             </div>
         </footer>
     </div>
@@ -13223,7 +13342,8 @@
                 'commitmentPremium': 'Commitment Premium',
                 'appCapital': 'App Capital Flow',
                 'validatorEcon': 'Validator Economics',
-                'settlementLayer': 'Settlement Layer'
+                'settlementLayer': 'Settlement Layer',
+                'monetarySink': 'Monetary Sink'
             };
             
             // 총 댓글 수 (대댓글 포함)
@@ -13364,6 +13484,17 @@
                     caveat: t('method.settlement.note', 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly'),
                     sources: [
                         { name: 'Artemis: On-chain Settlement Data', url: 'https://www.artemis.xyz' }
+                    ]
+                },
+                'monetarySink': {
+                    formula: 'Price × (Supply ÷ Effective Float)',
+                    desc: t('method.sink.desc', 'Float-adjusted valuation accounting for ETH locked in structural sinks: staking (~28%), DeFi collateral (~12%), L2 bridges (~4%), and lost/dormant coins (~3%). Similar to TradFi float-adjusted market cap. With ~47% of supply in sinks, effective float creates significant scarcity premium.'),
+                    reliability: 2,
+                    caveat: t('method.sink.note', 'Sink estimates vary; liquid staking partially offsets staking sink'),
+                    sources: [
+                        { name: 'Beaconcha.in: Staking Data', url: 'https://beaconcha.in' },
+                        { name: 'DefiLlama: DeFi TVL', url: 'https://defillama.com' },
+                        { name: 'L2Beat: L2 TVL', url: 'https://l2beat.com' }
                     ]
                 }
             };
@@ -14489,7 +14620,7 @@
         
         // Initialize community sections when DOM is ready
         function initCommunity() {
-            const models = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
+            const models = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'];
             models.forEach(modelId => {
                 renderCommunitySection(modelId);
             });
@@ -14629,7 +14760,7 @@
                 'nav.overview': 'Overview',
                 'nav.price': 'Price & Market',
                 'nav.onchain': 'On-Chain Metrics',
-                'nav.valuation': 'Valuation & Simulator',
+                'nav.valuation': 'Valuation',
                 'nav.historical': 'Historical',
                 'nav.methodology': 'Discussion',
                 'nav.rankings': 'Leaderboard',
@@ -14695,7 +14826,7 @@
                 'summary.fairValue': 'Fair Value (12 Models)',
                 'summary.opportunity': 'Opportunity',
                 'summary.toggleHint': 'Toggle individual models on/off below to customize your valuation.',
-                'summary.desc1': 'This dashboard attempts to derive <strong>Ethereum\'s intrinsic value</strong> using 12 different valuation methodologies — from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer).',
+                'summary.desc1': 'This dashboard attempts to derive <strong>Ethereum\'s intrinsic value</strong> using 13 different valuation methodologies — from traditional finance frameworks (DCF, P/S Ratio, Revenue Yield, Validator Economics) to crypto-native metrics (TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer, Monetary Sink).',
                 'summary.desc2': 'We believe the crypto industry needs more rigorous, fundamentals-based valuation approaches. While these models have limitations and assumptions, they provide a framework for thinking about value beyond pure price speculation.',
                 'summary.feedback': 'Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
                 'summary.community': '<strong>Join the Discussion!</strong> Rate each model\'s confidence level and share your thoughts. Your feedback helps improve the valuation framework.',
@@ -14821,6 +14952,10 @@
                 'method.commitment.desc': 'Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. The multiplier (1.5x) reflects the value premium of committed vs. liquid assets. Inspired by the concept that L1 tokens should be valued as money (Store of Value) rather than stocks.',
                 'method.settlement.note': 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly',
                 'method.settlement.desc': 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.',
+                'method.sink.note': 'Sink estimates vary; liquid staking partially offsets staking sink',
+                'method.sink.desc': 'Float-adjusted valuation accounting for ETH locked in structural sinks: staking (~28%), DeFi collateral (~12%), L2 bridges (~4%), and lost/dormant coins (~3%). Similar to TradFi float-adjusted market cap excluding insider holdings. With ~47% of supply in sinks, effective float of ~53% creates significant scarcity premium.',
+                'method.costBasis.note': 'MVRV 1.88x is the median of 1110 trading days (2022-2025); may vary by market cycle',
+                'method.costBasis.desc': 'Realized Price is calculated from Dune Analytics: volume-weighted average price of all ETH transfers since 2016. MVRV equilibrium (1.88x) is the statistical median of daily MVRV ratios over 3 years (1110 days) - meaning ETH traded above this level exactly 50% of the time and below 50% of the time. Fair Value = Realized Price × 1.88.',
                 'method.validator.note': 'Target 6% required yield is subjective; varies significantly by investor risk appetite',
                 'method.validator.desc': 'Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Staking risk premium (~1.5%). The lower premium (vs. 4.5% in DCF) reflects staking\'s reduced risk profile: predictable validator rewards, no impermanent loss, and protocol-level security. If current APR is below target, ETH is undervalued.',
                 'onchain.ethInDefi': 'ETH in DeFi',
@@ -14914,6 +15049,7 @@
                 'desc.l2Volume': "Daily ETH value transferred on L2s. Ecosystem activity metric.",
                 'desc.bridgeVolume': "Daily ETH bridged to L2s. Cross-chain capital flow indicator.",
                 'desc.whaleTx': "Daily 1000+ ETH transactions. Large player activity indicator.",
+                'desc.stablecoinVol': "Daily stablecoin transfer volume on Ethereum (USDT, USDC, DAI, USDe, FDUSD).",
                 'desc.newAddresses': "Daily first-time transacting addresses. Network growth indicator.",
                 'desc.l1ActiveAddr': "Daily unique addresses on Ethereum mainnet.",
                 'desc.l2ActiveAddr': "Daily unique addresses on L2s (Arbitrum, Optimism, Base, etc).",
@@ -14921,6 +15057,11 @@
                 'metric.l2Volume': "L2 TX Volume (Daily)",
                 'metric.bridgeVolume': "Bridge Volume (Daily)",
                 'metric.whaleTx': "Whale Transactions",
+                'metric.stablecoinVol': "Stablecoin Volume",
+                'metric.realizedPrice': "Realized Price",
+                'desc.realizedPrice': "Volume-weighted average price of all ETH transfers since 2016. Represents aggregate cost basis of all holders.",
+                'metric.mvrvRatio': "MVRV Ratio",
+                'desc.mvrvRatio': "Market Value to Realized Value. Realized Price from Dune Analytics (VWAP of all ETH transfers since 2016). >3x = overheated, <1x = undervalued.",
                 'metric.newAddresses': "New Addresses (Daily)"
             },
             ko: {
@@ -14929,7 +15070,7 @@
                 'nav.overview': '개요',
                 'nav.price': '시세 & 시장',
                 'nav.onchain': '온체인 지표',
-                'nav.valuation': '밸류에이션 & 시뮬레이터',
+                'nav.valuation': '밸류에이션',
                 'nav.historical': '히스토리',
                 'nav.methodology': '방법론 & 토론',
                 'nav.rankings': '리더보드',
@@ -14992,10 +15133,10 @@
                 'section.historicalTitle': '시계열 적정가치 분석',
                 'summary.title': '개요',
                 'summary.currentPrice': '현재 가격',
-                'summary.fairValue': '적정 가치 (12개 모델)',
+                'summary.fairValue': '적정 가치 (13개 모델)',
                 'summary.opportunity': '투자 기회',
                 'summary.toggleHint': '아래에서 개별 모델을 켜고 끄며 나만의 밸류에이션을 계산해 보세요.',
-                'summary.desc1': '이 대시보드는 전통 금융 프레임워크(DCF, P/S Ratio, Revenue Yield, Validator Economics)부터 크립토 네이티브 지표(TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer)까지 12가지 밸류에이션 방법론을 활용하여 <strong>이더리움의 내재 가치</strong>를 도출하려는 시도입니다.',
+                'summary.desc1': '이 대시보드는 전통 금융 프레임워크(DCF, P/S Ratio, Revenue Yield, Validator Economics)부터 크립토 네이티브 지표(TVL Multiple, MC/TVL, Metcalfe\'s Law, Staking Scarcity, L2 Ecosystem, Commitment Premium, App Capital, Settlement Layer, Monetary Sink)까지 13가지 밸류에이션 방법론을 활용하여 <strong>이더리움의 내재 가치</strong>를 도출하려는 시도입니다.',
                 'summary.desc2': '크립토 산업에는 더욱 엄밀한 펀더멘털 기반의 가치평가 접근법이 필요하다고 생각합니다. 이 모델들은 한계와 가정이 있지만, 단순한 가격 투기를 넘어 가치에 대해 생각하는 프레임워크를 제공합니다.',
                 'summary.feedback': '버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
                 'summary.community': '<strong>방법론 & 토론에 참여하세요!</strong> 각 모델의 확신도를 평가하고 의견을 공유해주세요. 함께 더 정확한 신뢰도 가중치 시스템을 만들어갑니다.',
@@ -15013,7 +15154,7 @@
                 'section.valuationTitle': '밸류에이션 분석 & 시나리오 시뮬레이터',
                 'section.methodologyTitle': '밸류에이션 방법론 & 토론',
                 'section.weeklyData': '주간 데이터',
-                'section.models': '12개 모델',
+                'section.models': '13개 모델',
                 'section.reference': '참고 자료',
                 'valuation.compositeFairValue': '종합 적정 가치',
                 'chart.historicalTitle': '종합 적정 가치의 변화',
@@ -15121,6 +15262,10 @@
                 'method.commitment.desc': '스테이킹과 DeFi 프로토콜에 예치된 ETH 비율에 따라 가격 프리미엄을 적용합니다. 높은 커밋먼트 비율은 더 강한 장기 보유 확신과 유동성 감소를 나타냅니다. 배수(1.5x)는 유동 자산 대비 커밋된 자산의 가치 프리미엄을 반영합니다. L1 토큰을 주식이 아닌 화폐(가치 저장)로 평가해야 한다는 개념에서 영감을 받았습니다.',
                 'method.settlement.note': 'Velocity 6배는 USD M1 벤치마크; 크립토의 화폐 속도는 상당히 다를 수 있음',
                 'method.settlement.desc': '교환방정식(MV=PQ)을 적용하여 ETH를 이더리움 정산 레이어의 화폐로 취급합니다. 일일 정산량은 L1 이체, L2 이체, 브릿지 거래량을 합산합니다. Velocity 6은 ETH의 가치저장(SoV) 특성을 반영합니다: 스테이킹은 ETH를 velocity 0으로 고정, ETF 이후 비트코인과 유사한 기관 보유 패턴, USD M1 velocity (~5.5x) 벤치마크. 낮은 velocity = 더 높은 내재 가치 (화폐가 지출되지 않고 오래 보유됨).',
+                'method.sink.note': 'Sink 추정치는 다양함; 유동성 스테이킹이 부분적으로 스테이킹 Sink를 상쇄',
+                'method.sink.desc': '구조적 Sink에 잠긴 ETH를 반영한 유동주식 조정 밸류에이션: 스테이킹(~28%), DeFi 담보(~12%), L2 브릿지(~4%), 분실/휴면 코인(~3%). 내부자 보유분을 제외한 전통금융의 유동주식 조정 시가총액과 유사합니다. 공급량의 ~47%가 Sink에 있어 ~53%의 유효 유통량이 상당한 희소성 프리미엄을 만듭니다.',
+                'method.costBasis.note': 'MVRV 1.5는 역사적 평균; 실제 균형점은 시장 사이클에 따라 다를 수 있음',
+                'method.costBasis.desc': '실현 가격(유통 중인 모든 ETH의 평균 취득 비용)에 MVRV 균형 비율 1.5를 곱합니다. 실현 가격은 모든 보유자의 총 비용 기준을 나타냅니다. 역사적으로 MVRV 1.5는 시장이 과열(MVRV > 3)되지도 저평가(MVRV < 1)되지도 않은 적정 가치 영역을 나타냅니다. 시장 가격 < 실현 가격일 때 대부분의 보유자가 손실 상태입니다.',
                 'method.validator.note': '목표 6% 수익률은 주관적; 투자자 위험 성향에 따라 크게 다름',
                 'method.validator.desc': '목표 스테이킹 수익률 대비 현재 APR 비율로 적정가치를 계산합니다. 목표 수익률(6%) = 미국 10년물 국채(~4.5%) + 스테이킹 리스크 프리미엄(~1.5%). 낮은 프리미엄(DCF의 4.5% 대비)은 스테이킹의 낮은 리스크를 반영합니다: 예측 가능한 검증자 보상, 비영구적 손실 없음, 프로토콜 수준 보안. 현재 APR이 목표보다 낮으면 ETH가 저평가된 것입니다.',
                 'onchain.ethInDefi': 'DeFi 내 ETH',
@@ -15214,6 +15359,7 @@
                 'desc.l2Volume': "L2 일일 ETH 전송량. 생태계 활동 지표.",
                 'desc.bridgeVolume': "L2로 브릿지된 일일 ETH. 크로스체인 자금 흐름.",
                 'desc.whaleTx': "1000 ETH 이상 대형 거래 수. 고래 활동 지표.",
+                'desc.stablecoinVol': "이더리움 일일 스테이블코인 전송량 (USDT, USDC, DAI, USDe, FDUSD).",
                 'desc.newAddresses': "일일 신규 지갑 주소 수. 네트워크 성장 지표.",
                 'desc.l1ActiveAddr': "이더리움 메인넷 일일 활성 주소 수.",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base 등) 일일 활성 주소 수.",
@@ -15221,6 +15367,11 @@
                 'metric.l2Volume': "L2 TX 볼륨 (일일)",
                 'metric.bridgeVolume': "브릿지 볼륨 (일일)",
                 'metric.whaleTx': "고래 거래",
+                'metric.stablecoinVol': "스테이블코인 볼륨",
+                'metric.realizedPrice': "실현 가격",
+                'desc.realizedPrice': "2016년 이후 모든 ETH 이동의 거래량 가중 평균 가격. 전체 보유자의 평균 취득 비용을 나타냅니다.",
+                'metric.mvrvRatio': "MVRV 비율",
+                'desc.mvrvRatio': "시장가치 대비 실현가치. 실현가격은 Dune Analytics에서 산출(2016년 이후 모든 ETH 이동의 거래량 가중 평균). >3x = 과열, <1x = 저평가.",
                 'metric.newAddresses': "신규 주소 (일일)"
             },
             zh: {
@@ -15229,7 +15380,7 @@
                 'nav.overview': '概览',
                 'nav.price': '价格与市场',
                 'nav.onchain': '链上指标',
-                'nav.valuation': '估值 & 模拟器',
+                'nav.valuation': '估值',
                 'nav.historical': '历史分析',
                 'nav.methodology': '方法论 & 讨论',
                 'nav.rankings': '排行榜',
@@ -15295,7 +15446,7 @@
                 'summary.fairValue': '公允价值 (10个模型)',
                 'summary.opportunity': '投资机会',
                 'summary.toggleHint': '在下方开关各个模型，自定义您的估值计算。',
-                'summary.desc1': '本仪表板尝试使用10种不同的估值方法来推导<strong>以太坊的内在价值</strong>——从传统金融框架（DCF、P/S Ratio、Revenue Yield）到加密原生指标（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）。',
+                'summary.desc1': '本仪表板尝试使用13种不同的估值方法来推导<strong>以太坊的内在价值</strong>——从传统金融框架（DCF、P/S Ratio、Revenue Yield、Validator Economics）到加密原生指标（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital、Settlement Layer、Monetary Sink）。',
                 'summary.desc2': '我们认为加密行业需要更严格的、基于基本面的估值方法。虽然这些模型有其局限性和假设，但它们提供了一个超越纯粹价格投机的思考价值的框架。',
                 'summary.feedback': '发现bug或有建议？随时联系我——非常欢迎反馈！',
                 'summary.community': '<strong>参与讨论！</strong>对每个模型的信心度进行评分并分享您的想法。让我们一起构建更准确的社区驱动可靠性权重系统。',
@@ -15413,6 +15564,10 @@
                 'method.validator.desc': '基于目标质押收益率与当前APR的比率计算公允价值。目标收益率(6%) = 美国10年期国债(~4.5%) + 质押风险溢价(~1.5%)。较低的溢价（相比DCF的4.5%）反映了质押较低的风险特征：可预测的验证者奖励、无无常损失、协议级安全性。如果当前APR低于目标，ETH被低估。',
                 'method.settlement.note': '流通速度6以USD M1为基准；加密货币流通行为可能有显著差异',
                 'method.settlement.desc': '应用交换方程(MV=PQ)，将ETH视为以太坊结算层的货币。每日结算量包括L1转账、L2转账和跨链交易量。Velocity 6反映了ETH的价值储存(SoV)特性：质押将ETH锁定在velocity 0，类似ETF后比特币的机构持有模式，以及USD M1 velocity (~5.5x)基准。更低的velocity = 更高的隐含价值（货币被更长时间持有而非消费）。',
+                'method.sink.note': 'Sink估算值各异；流动质押部分抵消质押Sink',
+                'method.sink.desc': '考虑锁定在结构性Sink中的ETH的流通股调整估值：质押（~28%）、DeFi抵押品（~12%）、L2桥接（~4%）和丢失/休眠代币（~3%）。类似于传统金融排除内部持股的流通股调整市值。约47%的供应量处于Sink中，~53%的有效流通量创造了显著的稀缺性溢价。',
+                'method.costBasis.note': 'MVRV 1.5是历史平均值；实际均衡点可能因市场周期而异',
+                'method.costBasis.desc': '将实现价格（流通中所有ETH的平均收购成本）乘以MVRV均衡比率1.5。实现价格代表所有持有者的总成本基础。历史上，MVRV 1.5代表公允价值区间，市场既不过热（MVRV > 3）也不被低估（MVRV < 1）。当市场价格 < 实现价格时，大多数持有者处于亏损状态。',
                 'criteria.model.settlement': 'Settlement Layer',
                 'criteria.model.validator': 'Validator Economics',
                 'criteria.settlement.m': '货币经济学的MV=PQ方程；费雪方程广泛使用',
@@ -15514,6 +15669,7 @@
                 'desc.l2Volume': "L2每日ETH转账量。生态活动指标。",
                 'desc.bridgeVolume': "每日桥接至L2的ETH。跨链资金流动指标。",
                 'desc.whaleTx': "1000+ ETH大额交易数。巨鲸活动指标。",
+                'desc.stablecoinVol': "以太坊每日稳定币转账量 (USDT, USDC, DAI, USDe, FDUSD)。",
                 'desc.newAddresses': "每日新增钱包地址数。网络增长指标。",
                 'desc.l1ActiveAddr': "以太坊主网每日活跃地址数。",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base等) 每日活跃地址数。",
@@ -15521,6 +15677,11 @@
                 'metric.l2Volume': "L2交易量 (日)",
                 'metric.bridgeVolume': "桥接量 (日)",
                 'metric.whaleTx': "巨鲸交易",
+                'metric.stablecoinVol': "稳定币交易量",
+                'metric.realizedPrice': "实现价格",
+                'desc.realizedPrice': "2016年以来所有ETH转账的成交量加权平均价格。代表所有持有者的总成本基础。",
+                'metric.mvrvRatio': "MVRV比率",
+                'desc.mvrvRatio': "市值与实现价值之比。实现价格来自Dune Analytics(2016年以来所有ETH转账的成交量加权平均)。>3x = 过热，<1x = 低估。",
                 'metric.newAddresses': "新增地址 (日)"
             },
             ja: {
@@ -15529,7 +15690,7 @@
                 'nav.overview': 'がいよう',
                 'nav.price': 'かかく・マーケット',
                 'nav.onchain': 'オンチェーンしひょう',
-                'nav.valuation': 'バリュエーション & シミュレーター',
+                'nav.valuation': 'バリュエーション',
                 'nav.historical': 'りれきぶんせき',
                 'nav.methodology': 'ディスカッション',
                 'nav.rankings': 'リーダーボード',
@@ -15595,7 +15756,7 @@
                 'summary.fairValue': 'てきせいかかく (10モデル)',
                 'summary.opportunity': 'とうしきかい',
                 'summary.toggleHint': 'したのかくモデルをオン・オフして、どくじのバリュエーションをけいさんしてみましょう。',
-                'summary.desc1': 'このダッシュボードは、でんとうてきなきんゆうフレームワーク（DCF、P/S Ratio、Revenue Yield）からクリプトネイティブしひょう（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital）まで、10しゅるいのことなるバリュエーションしゅほうをもちいて<strong>イーサリアムのほんしつてきかち</strong>をみちびきだすことをこころみています。',
+                'summary.desc1': 'このダッシュボードは、でんとうてきなきんゆうフレームワーク（DCF、P/S Ratio、Revenue Yield、Validator Economics）からクリプトネイティブしひょう（TVL Multiple、MC/TVL、Metcalfe\'s Law、Staking Scarcity、L2 Ecosystem、Commitment Premium、App Capital、Settlement Layer、Monetary Sink）まで、13しゅるいのことなるバリュエーションしゅほうをもちいて<strong>イーサリアムのほんしつてきかち</strong>をみちびきだすことをこころみています。',
                 'summary.desc2': 'クリプトさんぎょうには、よりげんみつなファンダメンタルズにもとづくバリュエーションアプローチがひつようだとかんがえています。これらのモデルにはげんかいとかていがありますが、じゅんすいなかかくとうきをこえてかちについてかんがえるためのフレームワークをていきょうします。',
                 'summary.feedback': 'バグをはっけんされたり、ごていあんがありましたら、いつでもおしらせください — フィードバックはだいかんげいです！',
                 'summary.community': '<strong>ディスカッションにさんかしましょう！</strong>かくモデルのかくしんどをひょうかし、ごいけんをきょうゆうしてください。いっしょに、よりせいかくなコミュニティしゅどうのしんらいどかじゅうシステムをつくりましょう。',
@@ -15713,6 +15874,10 @@
                 'method.validator.desc': 'もくひょうステーキングイールドたいげんざいAPRのひりつでてきせいかちをけいさん。もくひょうイールド(6%) = アメリカ10ねんものこくさい(~4.5%) + ステーキングリスクプレミアム(~1.5%)。ひくいプレミアム（DCFの4.5%たいひ）は、ステーキングのていリスクとくせいをはんえい：よそくかのうなバリデーターほうしゅう、インパーマネントロスなし、プロトコルレベルセキュリティ。げんざいAPRがもくひょうよりひくければETHはかしょうひょうか。',
                 'method.settlement.note': 'Velocity 6はUSD M1をベンチマーク；クリプトの流通速度は大きく異なる可能性',
                 'method.settlement.desc': 'こうかんほうていしき(MV=PQ)をてきようし、ETHをイーサリアムけっさいレイヤーのかへいとしてあつかいます。にちじけっさいりょうはL1そうきん、L2そうきん、ブリッジとりひきりょうをごうさんします。Velocity 6はETHのかちちょぞう(SoV)とくせいをはんえいします：ステーキングはETHをvelocity 0でこてい、ETFいこうビットコインとるいじのきかんほゆうパターン、USD M1 velocity (~5.5x)ベンチマーク。ひくいvelocity = たかいないざいかち（かへいがしょうひされずながくほゆうされる）。',
+                'method.sink.note': 'Sinkすいていちはさまざま；りゅうどうせいステーキングがぶぶんてきにステーキングSinkをそうさい',
+                'method.sink.desc': 'こうぞうてきSinkにロックされたETHをこうりょしたりゅうつうかぶちょうせいバリュエーション：ステーキング（~28%）、DeFiたんぽ（~12%）、L2ブリッジ（~4%）、ふんしつ/きゅうみんコイン（~3%）。ないぶしゃほゆうをじょがいするでんとうてきファイナンスのりゅうつうかぶちょうせいじかそうがくとるいじ。きょうきゅうりょうの~47%がSinkにあり、~53%のゆうこうりゅうつうりょうがけんちょなきしょうせいプレミアムをつくります。',
+                'method.costBasis.note': 'MVRV 1.5はれきしてきへいきん；じっさいのきんこうてんはしじょうサイクルによりことなるばあいあり',
+                'method.costBasis.desc': 'じつげんかかく（りゅうつうちゅうのすべてのETHのへいきんしゅとくコスト）にMVRVきんこうひりつ1.5をかけます。じつげんかかくはすべてのほゆうしゃのそうコストきじゅんをあらわします。れきしてきに、MVRV 1.5はしじょうがかねつ（MVRV > 3）でもていひょうか（MVRV < 1）でもないてきせいかちいきをしめします。しじょうかかく < じつげんかかくのとき、おおくのほゆうしゃがそんしつじょうたいです。',
                 'criteria.model.settlement': 'Settlement Layer',
                 'criteria.model.validator': 'Validator Economics',
                 'criteria.settlement.m': 'かへいけいざいがくのMV=PQほうていしき；フィッシャーほうていしきひろくしよう',
@@ -15814,6 +15979,7 @@
                 'desc.l2Volume': "L2日次ETH送金量。エコシステム活動指標。",
                 'desc.bridgeVolume': "L2へのETHブリッジ量。クロスチェーン資金フロー。",
                 'desc.whaleTx': "1000+ ETH大口取引数。クジラ活動指標。",
+                'desc.stablecoinVol': "イーサリアム日次ステーブルコイン送金量 (USDT, USDC, DAI, USDe, FDUSD)。",
                 'desc.newAddresses': "日次新規ウォレット数。ネットワーク成長指標。",
                 'desc.l1ActiveAddr': "イーサリアムメインネット日次アクティブアドレス数。",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base等) 日次アクティブアドレス数。",
@@ -15821,6 +15987,11 @@
                 'metric.l2Volume': "L2取引量 (日次)",
                 'metric.bridgeVolume': "ブリッジ量 (日次)",
                 'metric.whaleTx': "クジラ取引",
+                'metric.stablecoinVol': "ステーブルコイン取引量",
+                'metric.realizedPrice': "実現価格",
+                'desc.realizedPrice': "2016年以降の全ETH移動の出来高加重平均価格。全保有者の総コスト基準を表します。",
+                'metric.mvrvRatio': "MVRV比率",
+                'desc.mvrvRatio': "時価総額と実現価値の比率。実現価格はDune Analytics算出(2016年以降の全ETH移動の出来高加重平均)。>3x = 過熱、<1x = 割安。",
                 'metric.newAddresses': "新規アドレス (日次)"
             }
         };
@@ -15873,7 +16044,7 @@
             
             // Re-render community sections with translated labels
             if (typeof renderCommunitySection === 'function') {
-                const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
+                const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'];
                 MODEL_ORDER.forEach(modelId => {
                     renderCommunitySection(modelId);
                 });
@@ -15884,7 +16055,7 @@
         function updateMethodologyDiffLabels() {
             if (!state.historicalFairValues || state.price <= 0) return;
             
-            const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
+            const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'];
             
             MODEL_ORDER.forEach(model => {
                 const data = state.historicalFairValues[model];
@@ -16080,6 +16251,9 @@
         let l2VolumeChart = null;
         let bridgeVolumeChart = null;
         let whaleTxChart = null;
+        let stablecoinVolChart = null;
+        let realizedPriceChart = null;
+        let mvrvRatioChart = null;
         let newAddrChart = null;
         let l1ActiveAddrChart = null;
         let l2ActiveAddrChart = null;
@@ -16170,6 +16344,14 @@
             ethSupply: 0,
             eth2Staking: 0,
             burntFees: 0,
+            // Cost Basis Model (Realized Price & MVRV)
+            realizedPrice: 0,
+            realizedPriceHistory: [],
+            mvrvRatio: 0,
+            mvrvHistory: [],
+            // Stablecoin Daily Volume (for chart)
+            stablecoinDailyVolume: 0,
+            stablecoinVolumeHistory: [],
             // Historical Fair Value Analysis
             historicalFairValues: {
                 dcf: [],
@@ -16184,6 +16366,7 @@
                 commitmentPremium: [],
                 appCapital: [],
                 settlementLayer: [],
+                monetarySink: [],
                 composite: []
             },
             historicalDataLoaded: false
@@ -16381,14 +16564,14 @@
                                 if (yAxisFormat === 'ratio') return value.toFixed(3);
                                 if (yAxisFormat === 'eth') {
                                     if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
-                                    if (value >= 1e3) return (value / 1e3).toFixed(0) + 'K';
+                                    if (value >= 1e3) return (value / 1e3).toFixed(1) + 'K';
                                     return value.toFixed(0);
                                 }
-                                if (value >= 1e12) return (value / 1e12).toFixed(1) + 'T';
-                                if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';
-                                if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
-                                if (value >= 1e3) return (value / 1e3).toFixed(0) + 'K';
-                                return value.toFixed(1);
+                                if (value >= 1e12) return '$' + (value / 1e12).toFixed(1) + 'T';
+                                if (value >= 1e9) return '$' + (value / 1e9).toFixed(1) + 'B';
+                                if (value >= 1e6) return '$' + (value / 1e6).toFixed(1) + 'M';
+                                if (value >= 1e3) return '$' + (value / 1e3).toFixed(1) + 'K';
+                                return '$' + value.toFixed(0);
                             }
                         }
                     }
@@ -16529,7 +16712,7 @@
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData, whaleTxData, newAddrData, l2AddrData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -16556,6 +16739,8 @@
                     safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_eth&order=date.desc&limit=${limit * 10}`),
                     safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 10}`),
                     safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_mvrv?select=date,spot_price,realized_price,mvrv_ratio,mvrv_pct&order=date.desc&limit=3000`),
+                    safeFetchSupabase(`${baseUrl}/historical_stablecoin_volume?select=date,daily_volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_new_addresses?select=date,new_addresses&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_addresses?select=date,chain,active_addresses&order=date.desc&limit=${limit * 10}`)
                 ]);
@@ -16869,6 +17054,48 @@
                         state.whaleTxCount = latest.value;
                         state.whaleTxVolume = latest.volume;
                         log(`   ✓ Whale TX (latest complete): ${state.whaleTxCount} txs, ${state.whaleTxVolume.toFixed(0)} ETH`);
+                    }
+                }
+                
+                // MVRV Ratio (Market Value to Realized Value)
+                if (mvrvData && mvrvData.length > 0) {
+                    log(`   ✓ MVRV: ${mvrvData.length} records`);
+                    
+                    state.mvrvHistory = mvrvData
+                        .map(d => ({ 
+                            date: new Date(d.date), 
+                            value: parseFloat(d.mvrv_ratio) || 0,
+                            spotPrice: parseFloat(d.spot_price) || 0,
+                            realizedPrice: parseFloat(d.realized_price) || 0,
+                            mvrvPct: parseFloat(d.mvrv_pct) || 0
+                        }))
+                        .filter(d => d.value > 0)
+                        .reverse();
+                    
+                    if (state.mvrvHistory.length > 0) {
+                        const latest = state.mvrvHistory[state.mvrvHistory.length - 1];
+                        state.mvrvRatio = latest.value;
+                        state.realizedPrice = latest.realizedPrice;
+                        log(`   ✓ MVRV (latest): ${state.mvrvRatio.toFixed(2)}x, RP=$${state.realizedPrice.toFixed(0)}`);
+                    }
+                }
+                
+                // Stablecoin Volume (Daily transfer volume)
+                if (stablecoinVolData && stablecoinVolData.length > 0) {
+                    log(`   ✓ Stablecoin Volume: ${stablecoinVolData.length} records`);
+                    
+                    state.stablecoinVolumeHistory = stablecoinVolData
+                        .map(d => ({ 
+                            date: new Date(d.date), 
+                            value: parseFloat(d.daily_volume) || 0
+                        }))
+                        .filter(d => d.value > 0)
+                        .reverse();
+                    
+                    if (state.stablecoinVolumeHistory.length > 0) {
+                        const latest = state.stablecoinVolumeHistory[state.stablecoinVolumeHistory.length - 1];
+                        state.stablecoinDailyVolume = latest.value;
+                        log(`   ✓ Stablecoin Vol (latest): $${(state.stablecoinDailyVolume / 1e9).toFixed(2)}B`);
                     }
                 }
                 
@@ -19142,6 +19369,17 @@
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
+            // Stablecoin Volume
+            if (state.stablecoinVolumeHistory && state.stablecoinVolumeHistory.length > 0) {
+                updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, state.stablecoinVolumeHistory, '#eab308', 'stablecoinVol');
+                document.getElementById('stablecoin-vol-value').textContent = '$' + (state.stablecoinDailyVolume / 1e9).toFixed(2) + 'B';
+                if (state.stablecoinVolumeHistory.length > 1) {
+                    const first = state.stablecoinVolumeHistory[0].value, last = state.stablecoinVolumeHistory[state.stablecoinVolumeHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('stablecoin-vol-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
             // Whale Transactions
             if (state.whaleTxHistory && state.whaleTxHistory.length > 0) {
                 updateMetricChart('whale-tx-chart', whaleTxChart, state.whaleTxHistory, '#f59e0b', 'whaleTx');
@@ -19151,6 +19389,45 @@
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('whale-tx-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            // Realized Price
+            if (state.mvrvHistory && state.mvrvHistory.length > 0) {
+                // Extract realized price history from MVRV data (max 3 years)
+                const threeYearsAgo = new Date();
+                threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
+                const realizedPriceHistory = state.mvrvHistory
+                    .filter(d => d.realizedPrice > 0 && d.date >= threeYearsAgo)
+                    .map(d => ({ date: d.date, value: d.realizedPrice }));
+                
+                if (realizedPriceHistory.length > 0) {
+                    updateMetricChart('realized-price-chart', realizedPriceChart, realizedPriceHistory, '#10b981', 'realizedPrice');
+                    const latest = realizedPriceHistory[realizedPriceHistory.length - 1];
+                    document.getElementById('realized-price-value').textContent = '$' + fmt.num(latest.value);
+                    if (realizedPriceHistory.length > 1) {
+                        const first = realizedPriceHistory[0].value, last = latest.value;
+                        const change = ((last - first) / first) * 100;
+                        const el = document.getElementById('realized-price-change');
+                        if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    }
+                }
+            }
+            // MVRV Ratio
+            if (state.mvrvHistory && state.mvrvHistory.length > 0) {
+                renderMvrvChart('mvrv-ratio-chart', state.mvrvHistory, 1095);
+                const latest = state.mvrvHistory[state.mvrvHistory.length - 1];
+                document.getElementById('mvrv-ratio-value').textContent = latest.value.toFixed(2) + 'x';
+                // MVRV change: compare to beginning of period
+                const first = state.mvrvHistory[0].value, last = latest.value;
+                const change = ((last - first) / first) * 100;
+                const el = document.getElementById('mvrv-ratio-change');
+                if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+            } else {
+                // Default MVRV if no history loaded
+                const mvrvEl = document.getElementById('mvrv-ratio-value');
+                if (mvrvEl && state.realizedPrice > 0 && state.price > 0) {
+                    const currentMvrv = state.price / state.realizedPrice;
+                    mvrvEl.textContent = currentMvrv.toFixed(2) + 'x';
                 }
             }
             // New Addresses
@@ -21201,6 +21478,8 @@
             if (key === 'l2Volume' && l2VolumeChart) l2VolumeChart.destroy();
             if (key === 'bridgeVolume' && bridgeVolumeChart) bridgeVolumeChart.destroy();
             if (key === 'whaleTx' && whaleTxChart) whaleTxChart.destroy();
+            if (key === 'stablecoinVol' && stablecoinVolChart) stablecoinVolChart.destroy();
+            if (key === 'realizedPrice' && realizedPriceChart) realizedPriceChart.destroy();
             if (key === 'newAddresses' && newAddrChart) newAddrChart.destroy();
             if (key === 'l1ActiveAddr' && l1ActiveAddrChart) l1ActiveAddrChart.destroy();
             if (key === 'l2ActiveAddr' && l2ActiveAddrChart) l2ActiveAddrChart.destroy();
@@ -21248,11 +21527,125 @@
             if (key === 'l2Volume') l2VolumeChart = chart;
             if (key === 'bridgeVolume') bridgeVolumeChart = chart;
             if (key === 'whaleTx') whaleTxChart = chart;
+            if (key === 'stablecoinVol') stablecoinVolChart = chart;
+            if (key === 'realizedPrice') realizedPriceChart = chart;
             if (key === 'newAddresses') newAddrChart = chart;
             if (key === 'l1ActiveAddr') l1ActiveAddrChart = chart;
             if (key === 'l2ActiveAddr') l2ActiveAddrChart = chart;
             
             // Remove loading spinner after chart is rendered
+            setChartLoading(canvasId, false);
+        }
+
+        // MVRV Ratio Chart with zone lines
+        function renderMvrvChart(canvasId, history, days = 1095) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            
+            // Destroy existing chart
+            if (mvrvRatioChart) mvrvRatioChart.destroy();
+            
+            // Filter by period
+            const cutoffDate = Date.now() - days * 24 * 60 * 60 * 1000;
+            const filteredHistory = history.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filteredHistory.length < 2) return;
+            
+            const colors = getChartColors();
+            const values = filteredHistory.map(d => d.value);
+            const labels = filteredHistory.map(d => fmt.chartLabel(d.date));
+            
+            // Create gradient based on MVRV zones
+            const gradientCtx = ctx.getContext('2d');
+            const gradient = gradientCtx.createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.3)');  // Red zone (>3x)
+            gradient.addColorStop(0.5, 'rgba(245, 158, 11, 0.3)'); // Yellow zone (1-3x)
+            gradient.addColorStop(1, 'rgba(34, 197, 94, 0.3)');  // Green zone (<1x)
+            
+            mvrvRatioChart = new Chart(gradientCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const v = ctx.parsed.y;
+                                    const zone = v >= 3 ? '🔴 Overheated' : v >= 1 ? '🟡 Normal' : '🟢 Undervalued';
+                                    return `MVRV: ${v.toFixed(2)}x ${zone}`;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: 1,
+                                    yMax: 1,
+                                    borderColor: 'rgba(34, 197, 94, 0.7)',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        display: true,
+                                        content: '1.0x (Break-even)',
+                                        position: 'start'
+                                    }
+                                },
+                                line3: {
+                                    type: 'line',
+                                    yMin: 3,
+                                    yMax: 3,
+                                    borderColor: 'rgba(239, 68, 68, 0.7)',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        display: true,
+                                        content: '3.0x (Overheated)',
+                                        position: 'start'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: { 
+                                color: colors.tick, 
+                                maxTicksLimit: 6,
+                                font: { size: 10 }
+                            }
+                        },
+                        y: {
+                            display: true,
+                            grid: { color: colors.grid },
+                            ticks: { 
+                                color: colors.tick,
+                                callback: v => v.toFixed(1) + 'x',
+                                font: { size: 10 }
+                            },
+                            min: 0
+                        }
+                    }
+                }
+            });
+            
             setChartLoading(canvasId, false);
         }
 
@@ -21435,6 +21828,31 @@
                     reliability: 2,
                     source: `Velocity=${velocity} (SoV-heavy)`
                 });
+            }
+            
+            // Monetary Sink (Float-Adjusted Valuation)
+            // Effective Float = Supply - Structural Sinks
+            // Sinks: staking + DeFi TVL (in ETH) + L2 bridged + lost/dormant (est. 3%)
+            // Fair Value = Price × (Supply / Effective Float)
+            if (state.price > 0 && cs > 0) {
+                const defiEth = (state.tvl || 70000000000) / state.price;
+                const l2Eth = (state.l2Tvl || 15000000000) / state.price;
+                const lostEth = cs * 0.03; // ~3% lost/dormant estimate
+                const totalSink = stakedEth + defiEth + l2Eth + lostEth;
+                const effectiveFloat = cs - totalSink;
+                const sinkRatio = ((totalSink / cs) * 100).toFixed(0);
+                
+                if (effectiveFloat > 0) {
+                    const sinkFairValue = state.price * (cs / effectiveFloat);
+                    models.push({ 
+                        id: 'monetarySink',
+                        name: 'Monetary Sink', 
+                        formula: 'Price × (Supply ÷ Float)', 
+                        price: sinkFairValue,
+                        reliability: 2,
+                        source: `Sink=${sinkRatio}%, Float=${100-parseInt(sinkRatio)}%`
+                    });
+                }
             }
             
             return models;
@@ -22105,10 +22523,25 @@
                     history = state.bridgeVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('bridge-volume-chart', bridgeVolumeChart, history, '#06b6d4', 'bridgeVolume');
                     changeElId = 'bridge-volume-change';
+                } else if (metric === 'stablecoinVol') {
+                    history = state.stablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, history, '#eab308', 'stablecoinVol');
+                    changeElId = 'stablecoin-vol-change';
                 } else if (metric === 'whaleTx') {
                     history = state.whaleTxHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('whale-tx-chart', whaleTxChart, history, '#f59e0b', 'whaleTx');
                     changeElId = 'whale-tx-change';
+                } else if (metric === 'realizedPrice') {
+                    const realizedPriceHistory = state.mvrvHistory
+                        .filter(d => d.realizedPrice > 0 && d.date.getTime() > cutoffDate)
+                        .map(d => ({ date: d.date, value: d.realizedPrice }));
+                    history = realizedPriceHistory;
+                    updateMetricChart('realized-price-chart', realizedPriceChart, history, '#10b981', 'realizedPrice');
+                    changeElId = 'realized-price-change';
+                } else if (metric === 'mvrvRatio') {
+                    history = state.mvrvHistory.filter(d => d.date.getTime() > cutoffDate);
+                    renderMvrvChart('mvrv-ratio-chart', history, period);
+                    changeElId = 'mvrv-ratio-change';
                 } else if (metric === 'newAddresses') {
                     history = state.newAddressesHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('new-addr-chart', newAddrChart, history, '#22c55e', 'newAddresses');
@@ -23625,7 +24058,7 @@
             document.getElementById('share-buy-count').textContent = buyCount;
             document.getElementById('share-hold-count').textContent = holdCount;
             document.getElementById('share-sell-count').textContent = sellCount;
-            document.getElementById('share-model-count').textContent = modelCount + ' / 12 models analyzed';
+            document.getElementById('share-model-count').textContent = modelCount + ' / 13 models analyzed';
             
             // Update verdict class and diff color
             verdictEl.className = 'share-card-verdict';
@@ -23663,7 +24096,7 @@ Current: ${currentPrice}
 Fair Value: ${fairValue}
 Potential: ${upside}
 
-Based on ${modelCount}/12 valuation models.
+Based on ${modelCount}/13 valuation models.
 
 Check out ETHval 👇`;
             
@@ -23708,7 +24141,7 @@ Check out ETHval 👇`;
             return {
                 price: isDark ? '#ffffff' : '#64748b',      // White in dark, gray in light
                 composite: isDark ? '#e6edf3' : '#24292e',  // Light gray in dark, black in light
-                // Rainbow spectrum order (12 models)
+                // Rainbow spectrum order (13 models)
                 tvlMultiple: '#ef4444',      // 1. Red
                 stakingScarcity: '#f97316',  // 2. Orange
                 mctvl: '#f59e0b',            // 3. Amber
@@ -23728,7 +24161,7 @@ Check out ETHval 👇`;
         const MODEL_COLORS = {
             price: '#8b949e',      // Gray for market price
             composite: '#24292e',  // Black for composite
-            // Rainbow spectrum order (12 models)
+            // Rainbow spectrum order (13 models)
             tvlMultiple: '#ef4444',      // 1. Red
             stakingScarcity: '#f97316',  // 2. Orange
             mctvl: '#f59e0b',            // 3. Amber
@@ -23740,7 +24173,8 @@ Check out ETHval 👇`;
             commitmentPremium: '#0ea5e9', // 9. Sky
             appCapital: '#6366f1',       // 10. Indigo
             validatorEcon: '#8b5cf6',    // 11. Violet
-            settlementLayer: '#a855f7'   // 12. Purple
+            settlementLayer: '#a855f7',  // 12. Purple
+            monetarySink: '#f472b6'      // 13. Pink
         };
 
         const MODEL_NAMES = {
@@ -23756,14 +24190,15 @@ Check out ETHval 👇`;
             appCapital: 'App Capital',
             validatorEcon: 'Validator Economics',
             settlementLayer: 'Settlement Layer',
+            monetarySink: 'Monetary Sink',
             composite: 'Composite'
         };
         
         // Model order matching methodology section
         const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 
-                            'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
+                            'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'];
 
-        // Calculate historical fair values for all 12 models
+        // Calculate historical fair values for all 13 models
         async function calculateHistoricalFairValues() {
             log('📊 Calculating historical fair values...');
             
@@ -23792,6 +24227,7 @@ Check out ETHval 👇`;
                 commitmentPremium: [],
                 appCapital: [],
                 settlementLayer: [],
+                monetarySink: [],
                 composite: []
             };
             
@@ -23977,6 +24413,21 @@ Check out ETHval 👇`;
                         results.settlementLayer.push({ date, value: settlementValue });
                     }
                 }
+                
+                // 13. Monetary Sink (Float-Adjusted Valuation)
+                // Fair Value = Price × (Supply / Effective Float)
+                if (price > 0 && stakedEth > 0) {
+                    const ethInDefi = tvl / price;
+                    const l2Eth = l2Tvl / price;
+                    const lostEth = supply * 0.03; // ~3% lost/dormant estimate
+                    const totalSink = stakedEth + ethInDefi + l2Eth + lostEth;
+                    const effectiveFloat = supply - totalSink;
+                    
+                    if (effectiveFloat > 0) {
+                        const sinkValue = price * (supply / effectiveFloat);
+                        results.monetarySink.push({ date, value: sinkValue });
+                    }
+                }
             }
             
             // Calculate Composite (simple average)
@@ -24122,7 +24573,7 @@ Check out ETHval 👇`;
             
             const labels = sampledPrice.map(d => fmt.chartLabel(d.date));
             
-            // All 12 models
+            // All 13 models
             // Use MODEL_ORDER for consistent ordering
             const allModels = MODEL_ORDER;
             
@@ -24698,7 +25149,7 @@ Check out ETHval 👇`;
             const MODEL_ORDER = [
                 'tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe',
                 'dcf', 'l2Ecosystem', 'ps', 'revenueYield',
-                'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'
+                'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'
             ];
             
             // Model calculations with full names and matching colors (same as historical chart legend)
@@ -24762,6 +25213,18 @@ Check out ETHval 👇`;
                     name: 'Settlement Layer',
                     color: '#a855f7',
                     calc: function(p) { return ((p.dailySettlement * 365 / 6)) / p.supply; }
+                },
+                monetarySink: {
+                    name: 'Monetary Sink',
+                    color: '#f472b6',
+                    calc: function(p) {
+                        var defiEth = p.tvl / p.price;
+                        var l2Eth = p.l2Tvl / p.price;
+                        var lostEth = p.supply * 0.03;
+                        var totalSink = p.stakedEth + defiEth + l2Eth + lostEth;
+                        var effectiveFloat = p.supply - totalSink;
+                        return effectiveFloat > 0 ? p.price * (p.supply / effectiveFloat) : p.price;
+                    }
                 }
             };
             
@@ -25062,7 +25525,8 @@ Check out ETHval 👇`;
                 l2Ecosystem: 'L2 Ecosystem',
                 commitmentPremium: 'Commitment Premium',
                 appCapital: 'App Capital Value',
-                settlementLayer: 'Settlement Layer'
+                settlementLayer: 'Settlement Layer',
+                monetarySink: 'Monetary Sink'
             };
             
             const MODEL_COLORS = {
@@ -25077,13 +25541,14 @@ Check out ETHval 👇`;
                 l2Ecosystem: '#f97316',
                 commitmentPremium: '#6366f1',
                 appCapital: '#14b8a6',
-                settlementLayer: '#a855f7'
+                settlementLayer: '#a855f7',
+                monetarySink: '#f472b6'
             };
             
             const MODEL_WEIGHTS = {
                 dcf: 3, ps: 2, revenueYield: 3, validatorEcon: 2,
                 tvlMultiple: 1, mctvl: 2, metcalfe: 2, stakingScarcity: 1,
-                l2Ecosystem: 1, commitmentPremium: 1, appCapital: 2, settlementLayer: 2
+                l2Ecosystem: 1, commitmentPremium: 1, appCapital: 2, settlementLayer: 2, monetarySink: 2
             };
             
             let modelRankingChart = null;
