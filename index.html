@@ -10892,6 +10892,48 @@
                     </div>
                 </div>
 
+                <!-- L1 Active Addresses -->
+                <div class="metric-card" data-metric="l1ActiveAddr">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>L1 Active Addresses</h4>
+                            <div class="metric-value-large" id="l1-active-addr-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-active-addr-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l1-active-addr-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l1ActiveAddr">Daily unique addresses on Ethereum mainnet.</div>
+                    </div>
+                </div>
+
+                <!-- L2 Active Addresses -->
+                <div class="metric-card" data-metric="l2ActiveAddr">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>L2 Active Addresses</h4>
+                            <div class="metric-value-large" id="l2-active-addr-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-active-addr-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l2-active-addr-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l2ActiveAddr">Daily unique addresses on L2s (Arbitrum, Optimism, Base, etc).</div>
+                    </div>
+                </div>
+
                 <!-- New Addresses -->
                 <div class="metric-card" data-metric="newAddresses">
                     <div class="metric-header">
@@ -14873,6 +14915,8 @@
                 'desc.bridgeVolume': "Daily ETH bridged to L2s. Cross-chain capital flow indicator.",
                 'desc.whaleTx': "Daily 1000+ ETH transactions. Large player activity indicator.",
                 'desc.newAddresses': "Daily first-time transacting addresses. Network growth indicator.",
+                'desc.l1ActiveAddr': "Daily unique addresses on Ethereum mainnet.",
+                'desc.l2ActiveAddr': "Daily unique addresses on L2s (Arbitrum, Optimism, Base, etc).",
                 'metric.l1Volume': "L1 TX Volume (Daily)",
                 'metric.l2Volume': "L2 TX Volume (Daily)",
                 'metric.bridgeVolume': "Bridge Volume (Daily)",
@@ -15171,6 +15215,8 @@
                 'desc.bridgeVolume': "L2로 브릿지된 일일 ETH. 크로스체인 자금 흐름.",
                 'desc.whaleTx': "1000 ETH 이상 대형 거래 수. 고래 활동 지표.",
                 'desc.newAddresses': "일일 신규 지갑 주소 수. 네트워크 성장 지표.",
+                'desc.l1ActiveAddr': "이더리움 메인넷 일일 활성 주소 수.",
+                'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base 등) 일일 활성 주소 수.",
                 'metric.l1Volume': "L1 TX 볼륨 (일일)",
                 'metric.l2Volume': "L2 TX 볼륨 (일일)",
                 'metric.bridgeVolume': "브릿지 볼륨 (일일)",
@@ -15469,6 +15515,8 @@
                 'desc.bridgeVolume': "每日桥接至L2的ETH。跨链资金流动指标。",
                 'desc.whaleTx': "1000+ ETH大额交易数。巨鲸活动指标。",
                 'desc.newAddresses': "每日新增钱包地址数。网络增长指标。",
+                'desc.l1ActiveAddr': "以太坊主网每日活跃地址数。",
+                'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base等) 每日活跃地址数。",
                 'metric.l1Volume': "L1交易量 (日)",
                 'metric.l2Volume': "L2交易量 (日)",
                 'metric.bridgeVolume': "桥接量 (日)",
@@ -15767,6 +15815,8 @@
                 'desc.bridgeVolume': "L2へのETHブリッジ量。クロスチェーン資金フロー。",
                 'desc.whaleTx': "1000+ ETH大口取引数。クジラ活動指標。",
                 'desc.newAddresses': "日次新規ウォレット数。ネットワーク成長指標。",
+                'desc.l1ActiveAddr': "イーサリアムメインネット日次アクティブアドレス数。",
+                'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base等) 日次アクティブアドレス数。",
                 'metric.l1Volume': "L1取引量 (日次)",
                 'metric.l2Volume': "L2取引量 (日次)",
                 'metric.bridgeVolume': "ブリッジ量 (日次)",
@@ -16031,6 +16081,8 @@
         let bridgeVolumeChart = null;
         let whaleTxChart = null;
         let newAddrChart = null;
+        let l1ActiveAddrChart = null;
+        let l2ActiveAddrChart = null;
         let historicalMainChart = null;
         
         // Chart colors helper - returns appropriate colors for dark/light mode
@@ -16094,6 +16146,12 @@
             // New Addresses
             newAddresses: 0,
             newAddressesHistory: [],
+            
+            // L1/L2 Active Addresses
+            l1ActiveAddresses: 0,
+            l2ActiveAddresses: 0,
+            l1ActiveAddrHistory: [],
+            l2ActiveAddrHistory: [],
             // Staking Yield (from Lido API)
             stakingApr: 0,
             stakingAprSma: 0,
@@ -16471,7 +16529,7 @@
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData, whaleTxData, newAddrData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData, whaleTxData, newAddrData, l2AddrData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -16498,7 +16556,8 @@
                     safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_eth&order=date.desc&limit=${limit * 10}`),
                     safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 10}`),
                     safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_new_addresses?select=date,new_addresses&order=date.desc&limit=${limit}`)
+                    safeFetchSupabase(`${baseUrl}/historical_new_addresses?select=date,new_addresses&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l2_addresses?select=date,chain,active_addresses&order=date.desc&limit=${limit * 10}`)
                 ]);
                 
                 // 데이터 저장 (10개 이상일 때만)
@@ -16835,6 +16894,59 @@
                     if (state.newAddressesHistory.length > 0) {
                         state.newAddresses = state.newAddressesHistory[state.newAddressesHistory.length - 1].value;
                         log(`   ✓ New Addresses (latest complete): ${state.newAddresses.toLocaleString()}`);
+                    }
+                }
+                
+                // L1 Active Addresses (from historical_active_addresses)
+                if (activeData && activeData.length > 0) {
+                    log(`   ✓ L1 Active Addresses: ${activeData.length} records`);
+                    
+                    // Exclude today and yesterday (incomplete data)
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const twoDaysAgo = new Date(today);
+                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                    
+                    state.l1ActiveAddrHistory = activeData
+                        .map(d => ({ 
+                            date: new Date(d.date), 
+                            value: parseInt(d.active_addresses) || 0
+                        }))
+                        .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
+                        .reverse();
+                    
+                    if (state.l1ActiveAddrHistory.length > 0) {
+                        state.l1ActiveAddresses = state.l1ActiveAddrHistory[state.l1ActiveAddrHistory.length - 1].value;
+                        log(`   ✓ L1 Active Addresses (latest): ${state.l1ActiveAddresses.toLocaleString()}`);
+                    }
+                }
+                
+                // L2 Active Addresses (from historical_l2_addresses, aggregate by date)
+                if (l2AddrData && l2AddrData.length > 0) {
+                    log(`   ✓ L2 Active Addresses: ${l2AddrData.length} records`);
+                    
+                    // Aggregate by date across all chains
+                    const l2AddrByDate = {};
+                    l2AddrData.forEach(d => {
+                        const dateStr = d.date.split('T')[0];
+                        if (!l2AddrByDate[dateStr]) l2AddrByDate[dateStr] = 0;
+                        l2AddrByDate[dateStr] += parseInt(d.active_addresses) || 0;
+                    });
+                    
+                    // Exclude today and yesterday
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const twoDaysAgo = new Date(today);
+                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                    
+                    state.l2ActiveAddrHistory = Object.entries(l2AddrByDate)
+                        .map(([date, value]) => ({ date: new Date(date), value }))
+                        .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
+                        .sort((a, b) => a.date - b.date);
+                    
+                    if (state.l2ActiveAddrHistory.length > 0) {
+                        state.l2ActiveAddresses = state.l2ActiveAddrHistory[state.l2ActiveAddrHistory.length - 1].value;
+                        log(`   ✓ L2 Active Addresses (latest): ${state.l2ActiveAddresses.toLocaleString()}`);
                     }
                 }
                 
@@ -19052,6 +19164,28 @@
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
+            // L1 Active Addresses
+            if (state.l1ActiveAddrHistory && state.l1ActiveAddrHistory.length > 0) {
+                updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, state.l1ActiveAddrHistory, '#a855f7', 'l1ActiveAddr');
+                document.getElementById('l1-active-addr-value').textContent = fmt.num(state.l1ActiveAddresses);
+                if (state.l1ActiveAddrHistory.length > 1) {
+                    const first = state.l1ActiveAddrHistory[0].value, last = state.l1ActiveAddrHistory[state.l1ActiveAddrHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l1-active-addr-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            // L2 Active Addresses
+            if (state.l2ActiveAddrHistory && state.l2ActiveAddrHistory.length > 0) {
+                updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, state.l2ActiveAddrHistory, '#ec4899', 'l2ActiveAddr');
+                document.getElementById('l2-active-addr-value').textContent = fmt.num(state.l2ActiveAddresses);
+                if (state.l2ActiveAddrHistory.length > 1) {
+                    const first = state.l2ActiveAddrHistory[0].value, last = state.l2ActiveAddrHistory[state.l2ActiveAddrHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l2-active-addr-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
         }
 
         // NVT Ratio 계산 및 차트 업데이트
@@ -21068,6 +21202,8 @@
             if (key === 'bridgeVolume' && bridgeVolumeChart) bridgeVolumeChart.destroy();
             if (key === 'whaleTx' && whaleTxChart) whaleTxChart.destroy();
             if (key === 'newAddresses' && newAddrChart) newAddrChart.destroy();
+            if (key === 'l1ActiveAddr' && l1ActiveAddrChart) l1ActiveAddrChart.destroy();
+            if (key === 'l2ActiveAddr' && l2ActiveAddrChart) l2ActiveAddrChart.destroy();
 
             const formatFn = (key === 'staking' || key === 'ethInDefi') 
                 ? (v) => fmt.num(v) + ' ETH'
@@ -21113,6 +21249,8 @@
             if (key === 'bridgeVolume') bridgeVolumeChart = chart;
             if (key === 'whaleTx') whaleTxChart = chart;
             if (key === 'newAddresses') newAddrChart = chart;
+            if (key === 'l1ActiveAddr') l1ActiveAddrChart = chart;
+            if (key === 'l2ActiveAddr') l2ActiveAddrChart = chart;
             
             // Remove loading spinner after chart is rendered
             setChartLoading(canvasId, false);
@@ -21975,6 +22113,14 @@
                     history = state.newAddressesHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('new-addr-chart', newAddrChart, history, '#22c55e', 'newAddresses');
                     changeElId = 'new-addr-change';
+                } else if (metric === 'l1ActiveAddr') {
+                    history = state.l1ActiveAddrHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, history, '#a855f7', 'l1ActiveAddr');
+                    changeElId = 'l1-active-addr-change';
+                } else if (metric === 'l2ActiveAddr') {
+                    history = state.l2ActiveAddrHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, history, '#ec4899', 'l2ActiveAddr');
+                    changeElId = 'l2-active-addr-change';
                 }
                 
                 // Update change percentage based on selected period
