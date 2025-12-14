@@ -357,14 +357,17 @@
         body.dark .legend-btn {
             background: #21262d;
             border-color: #30363d;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         
         body.dark .legend-btn:hover {
             background: #30363d;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         
         body.dark .legend-btn.active {
             border-color: #484f58;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
         }
         
         body.dark .rankings-table th {
@@ -2268,6 +2271,12 @@
 
         .model-toggle input:checked + .slider {
             background: #D1D5DB;
+            animation: toggleGlow 2.5s ease-in-out infinite;
+        }
+        
+        @keyframes toggleGlow {
+            0%, 100% { box-shadow: none; }
+            50% { box-shadow: 0 0 6px rgba(139, 92, 246, 0.3); }
         }
 
         .model-toggle input:checked + .slider::before {
@@ -8065,23 +8074,29 @@
         .legend-btn {
             border: 1px solid var(--border);
             cursor: pointer;
-            transition: border-color var(--transition-fast);
+            transition: all var(--transition-fast);
             user-select: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .legend-btn:hover {
             background: var(--bg);
             border-color: var(--text-muted);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .legend-btn:active {
             background: var(--bg-secondary);
+            transform: translateY(0);
+            box-shadow: 0 0 2px rgba(0,0,0,0.1);
         }
 
         .legend-btn.active {
             background: var(--bg);
             color: var(--text);
             border-color: var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
 
         .legend-btn:not(.active) {
@@ -8609,6 +8624,22 @@
             font-size: 13px;
             font-weight: 600;
             color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sim-hint {
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--text-muted);
+            opacity: 0.7;
+            animation: fadeInOut 3s ease-in-out infinite;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
         }
         
         .sim-slider-item {
@@ -8712,6 +8743,12 @@
             border-radius: 50%;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            animation: thumbPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes thumbPulse {
+            0%, 100% { box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+            50% { box-shadow: 0 2px 8px rgba(139, 92, 246, 0.5); }
         }
         
         .sim-range::-moz-range-thumb {
@@ -8721,6 +8758,7 @@
             border-radius: 50%;
             cursor: pointer;
             border: none;
+            animation: thumbPulse 2s ease-in-out infinite;
         }
         
         .sim-range-labels {
@@ -10897,25 +10935,25 @@
                     </div>
                 </div>
 
-                <!-- 5. Base Fee -->
-                <div class="metric-card" data-metric="baseFee">
+                <!-- 5. Gas Price -->
+                <div class="metric-card" data-metric="gasPrice">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Base Fee</h4>
-                            <div class="metric-value-large" id="base-fee-value">-- Gwei</div>
+                            <h4>Gas Price</h4>
+                            <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
                         </div>
-                        <div class="metric-tabs" data-chart="baseFee">
+                        <div class="metric-tabs" data-chart="gasPrice">
                             
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="base-fee-chart"></canvas></div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-price-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Etherscan</span>
-                        <span class="change" id="base-fee-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.baseFee">Minimum gas price in Gwei. Reflects network congestion level.</div>
+                        <span class="change" id="gas-price-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.gasPrice">Average gas price in Gwei. Reflects network transaction costs.</div>
                     </div>
                 </div>
 
@@ -11070,12 +11108,12 @@
                     </div>
                 </div>
 
-                <!-- 10. Supply Distribution -->
+                <!-- 10. Effective Float -->
                 <div class="metric-card" data-metric="supply">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Supply Distribution</h4>
-                            <div class="metric-value-large" id="circ-supply">--</div>
+                            <h4>Effective Float</h4>
+                            <div class="metric-value-large" id="float-pct">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="supply">
                             
@@ -11086,12 +11124,15 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="supply-chart"></canvas></div>
                     <div class="metric-footer">
-                        <div class="chart-card-legend">
-                            <span class="legend-item"><span class="legend-dot liquid"></span>Liquid</span>
-                            <span class="legend-item"><span class="legend-dot defi"></span>DeFi</span>
-                            <span class="legend-item"><span class="legend-dot staking"></span>Staking</span>
+                        <span>DefiLlama</span>
+                        <span class="change" id="float-change">--</span>
+                        <div class="chart-card-legend" id="supply-legend">
+                            <span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span>Float</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6;"></span>Staking</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#00bcd4;"></span>DeFi</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#6b7280;"></span>Others</span>
                         </div>
-                        <div class="metric-desc" data-i18n="desc.supply">ETH distribution across liquid supply, DeFi locked, and staking.</div>
+                        <div class="metric-desc" data-i18n="desc.supply">Liquid ETH available for trading. Others = L2 bridges, lost coins.</div>
                     </div>
                 </div>
 
@@ -11613,7 +11654,7 @@
                 <div class="simulator-box-content">
                     <!-- Left: Sliders - Compact 2-column layout -->
                     <div class="simulator-sliders">
-                        <div class="sim-section-title" data-i18n="simulator.scenarioVariables">Scenario Variables</div>
+                        <div class="sim-section-title" data-i18n="simulator.scenarioVariables">Scenario Variables <span class="sim-hint">← Drag handles to adjust</span></div>
                         <div class="sim-slider-item" data-param="tvl">
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Total Value Locked (TVL)</span>
@@ -12212,7 +12253,7 @@
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (Supply ÷ Effective Float)</div>
-                            <div class="method-desc" data-i18n="method.sink.desc">Float-adjusted valuation accounting for ETH locked in structural sinks: staking (~28%), DeFi collateral (~12%), L2 bridges (~4%), and lost/dormant coins (~3%). Similar to TradFi float-adjusted market cap excluding insider holdings. With ~47% of supply in sinks, effective float of ~53% creates significant scarcity premium.</div>
+                            <div class="method-desc" data-i18n="method.sink.desc">Float-adjusted valuation accounting for ETH locked in structural sinks: staking, DeFi collateral, L2 bridges, and lost/dormant coins. Similar to TradFi float-adjusted market cap excluding insider holdings. Current effective float: <strong id="effective-float-display">--</strong>%</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -13488,7 +13529,7 @@
                 },
                 'monetarySink': {
                     formula: 'Price × (Supply ÷ Effective Float)',
-                    desc: t('method.sink.desc', 'Float-adjusted valuation accounting for ETH locked in structural sinks: staking (~28%), DeFi collateral (~12%), L2 bridges (~4%), and lost/dormant coins (~3%). Similar to TradFi float-adjusted market cap. With ~47% of supply in sinks, effective float creates significant scarcity premium.'),
+                    desc: t('method.sink.desc', 'Float-adjusted valuation accounting for ETH locked in structural sinks: staking, DeFi collateral, L2 bridges, and lost/dormant coins. Similar to TradFi float-adjusted market cap.'),
                     reliability: 2,
                     caveat: t('method.sink.note', 'Sink estimates vary; liquid staking partially offsets staking sink'),
                     sources: [
@@ -14953,7 +14994,7 @@
                 'method.settlement.note': 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly',
                 'method.settlement.desc': 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.',
                 'method.sink.note': 'Sink estimates vary; liquid staking partially offsets staking sink',
-                'method.sink.desc': 'Float-adjusted valuation accounting for ETH locked in structural sinks: staking (~28%), DeFi collateral (~12%), L2 bridges (~4%), and lost/dormant coins (~3%). Similar to TradFi float-adjusted market cap excluding insider holdings. With ~47% of supply in sinks, effective float of ~53% creates significant scarcity premium.',
+                'method.sink.desc': 'Float-adjusted valuation accounting for ETH locked in structural sinks: staking, DeFi collateral, L2 bridges, and lost/dormant coins. Similar to TradFi float-adjusted market cap excluding insider holdings.',
                 'method.costBasis.note': 'MVRV 1.88x is the median of 1110 trading days (2022-2025); may vary by market cycle',
                 'method.costBasis.desc': 'Realized Price is calculated from Dune Analytics: volume-weighted average price of all ETH transfers since 2016. MVRV equilibrium (1.88x) is the statistical median of daily MVRV ratios over 3 years (1110 days) - meaning ETH traded above this level exactly 50% of the time and below 50% of the time. Fair Value = Realized Price × 1.88.',
                 'method.validator.note': 'Target 6% required yield is subjective; varies significantly by investor risk appetite',
@@ -15028,12 +15069,12 @@
                 'desc.burn': "ETH burned via EIP-1559. Higher burn = more network activity.",
                 'desc.issuance': "New ETH issued to validators. ~930 ETH/day post-merge.",
                 'desc.netSupply': "Burn minus issuance. Negative = deflationary, bullish for ETH value.",
-                'desc.baseFee': "Minimum gas price in Gwei. Reflects network congestion level.",
+                'desc.gasPrice': "Average gas price in Gwei. Reflects network transaction costs.",
                 'desc.blobFees': "L2 data fees via EIP-4844. Lower fees enable cheaper L2 transactions.",
                 'desc.blobCount': "Data blobs posted by L2s. More blobs = growing L2 adoption.",
                 'desc.tvl': "USD value locked in Ethereum DeFi protocols. Key utility metric.",
                 'desc.l2Tvl': "USD value locked in L2 rollups. Growing TVL = L2 ecosystem adoption.",
-                'desc.supply': "ETH distribution across liquid supply, DeFi locked, and staking.",
+                'desc.supply': "Liquid ETH available for trading. Others = L2 bridges, lost coins.",
                 'desc.staking': "ETH locked in beacon chain staking. Higher = more network security.",
                 'desc.lending': "Assets in DeFi lending protocols. Indicates DeFi capital deployment.",
                 'desc.stables': "Stablecoin value on Ethereum. Shows ETH dominance as settlement layer.",
@@ -15263,7 +15304,7 @@
                 'method.settlement.note': 'Velocity 6배는 USD M1 벤치마크; 크립토의 화폐 속도는 상당히 다를 수 있음',
                 'method.settlement.desc': '교환방정식(MV=PQ)을 적용하여 ETH를 이더리움 정산 레이어의 화폐로 취급합니다. 일일 정산량은 L1 이체, L2 이체, 브릿지 거래량을 합산합니다. Velocity 6은 ETH의 가치저장(SoV) 특성을 반영합니다: 스테이킹은 ETH를 velocity 0으로 고정, ETF 이후 비트코인과 유사한 기관 보유 패턴, USD M1 velocity (~5.5x) 벤치마크. 낮은 velocity = 더 높은 내재 가치 (화폐가 지출되지 않고 오래 보유됨).',
                 'method.sink.note': 'Sink 추정치는 다양함; 유동성 스테이킹이 부분적으로 스테이킹 Sink를 상쇄',
-                'method.sink.desc': '구조적 Sink에 잠긴 ETH를 반영한 유동주식 조정 밸류에이션: 스테이킹(~28%), DeFi 담보(~12%), L2 브릿지(~4%), 분실/휴면 코인(~3%). 내부자 보유분을 제외한 전통금융의 유동주식 조정 시가총액과 유사합니다. 공급량의 ~47%가 Sink에 있어 ~53%의 유효 유통량이 상당한 희소성 프리미엄을 만듭니다.',
+                'method.sink.desc': '구조적 Sink에 잠긴 ETH를 반영한 유동주식 조정 밸류에이션: 스테이킹, DeFi 담보, L2 브릿지, 분실/휴면 코인. 내부자 보유분을 제외한 전통금융의 유동주식 조정 시가총액과 유사합니다.',
                 'method.costBasis.note': 'MVRV 1.5는 역사적 평균; 실제 균형점은 시장 사이클에 따라 다를 수 있음',
                 'method.costBasis.desc': '실현 가격(유통 중인 모든 ETH의 평균 취득 비용)에 MVRV 균형 비율 1.5를 곱합니다. 실현 가격은 모든 보유자의 총 비용 기준을 나타냅니다. 역사적으로 MVRV 1.5는 시장이 과열(MVRV > 3)되지도 저평가(MVRV < 1)되지도 않은 적정 가치 영역을 나타냅니다. 시장 가격 < 실현 가격일 때 대부분의 보유자가 손실 상태입니다.',
                 'method.validator.note': '목표 6% 수익률은 주관적; 투자자 위험 성향에 따라 크게 다름',
@@ -15338,12 +15379,12 @@
                 'desc.burn': "EIP-1559로 소각된 ETH. 높을수록 네트워크 활동 활발.",
                 'desc.issuance': "검증자에게 발행된 신규 ETH. 머지 후 일 ~930 ETH.",
                 'desc.netSupply': "소각 - 발행. 음수 = 디플레이션, ETH 가치 상승 요인.",
-                'desc.baseFee': "최소 가스 가격 (Gwei). 네트워크 혼잡도 반영.",
+                'desc.gasPrice': "평균 가스 가격 (Gwei). 네트워크 트랜잭션 비용 반영.",
                 'desc.blobFees': "EIP-4844 L2 데이터 수수료. 낮으면 L2 저렴.",
                 'desc.blobCount': "L2가 게시한 데이터 블롭. 많을수록 L2 채택 증가.",
                 'desc.tvl': "이더리움 DeFi 프로토콜 예치 금액. 핵심 유틸리티 지표.",
                 'desc.l2Tvl': "L2 롤업 예치 금액. TVL 증가 = L2 생태계 성장.",
-                'desc.supply': "유동 공급, DeFi 예치, 스테이킹 간 ETH 분포.",
+                'desc.supply': "거래 가능한 유동 ETH. Others = L2 브릿지, 분실 코인.",
                 'desc.staking': "비콘 체인 스테이킹 ETH. 높을수록 네트워크 보안 강화.",
                 'desc.lending': "DeFi 대출 프로토콜 자산. DeFi 자본 배치 지표.",
                 'desc.stables': "이더리움 내 스테이블코인. ETH의 결제 레이어 지배력.",
@@ -15565,7 +15606,7 @@
                 'method.settlement.note': '流通速度6以USD M1为基准；加密货币流通行为可能有显著差异',
                 'method.settlement.desc': '应用交换方程(MV=PQ)，将ETH视为以太坊结算层的货币。每日结算量包括L1转账、L2转账和跨链交易量。Velocity 6反映了ETH的价值储存(SoV)特性：质押将ETH锁定在velocity 0，类似ETF后比特币的机构持有模式，以及USD M1 velocity (~5.5x)基准。更低的velocity = 更高的隐含价值（货币被更长时间持有而非消费）。',
                 'method.sink.note': 'Sink估算值各异；流动质押部分抵消质押Sink',
-                'method.sink.desc': '考虑锁定在结构性Sink中的ETH的流通股调整估值：质押（~28%）、DeFi抵押品（~12%）、L2桥接（~4%）和丢失/休眠代币（~3%）。类似于传统金融排除内部持股的流通股调整市值。约47%的供应量处于Sink中，~53%的有效流通量创造了显著的稀缺性溢价。',
+                'method.sink.desc': '考虑锁定在结构性Sink中的ETH的流通股调整估值：质押、DeFi抵押品、L2桥接和丢失/休眠代币。类似于传统金融排除内部持股的流通股调整市值。',
                 'method.costBasis.note': 'MVRV 1.5是历史平均值；实际均衡点可能因市场周期而异',
                 'method.costBasis.desc': '将实现价格（流通中所有ETH的平均收购成本）乘以MVRV均衡比率1.5。实现价格代表所有持有者的总成本基础。历史上，MVRV 1.5代表公允价值区间，市场既不过热（MVRV > 3）也不被低估（MVRV < 1）。当市场价格 < 实现价格时，大多数持有者处于亏损状态。',
                 'criteria.model.settlement': 'Settlement Layer',
@@ -15648,12 +15689,12 @@
                 'desc.burn': "EIP-1559销毁ETH。越高=网络活动越多。",
                 'desc.issuance': "验证者新发行ETH。合并后约930 ETH/天。",
                 'desc.netSupply': "销毁-发行。负数=通缩，利好ETH价值。",
-                'desc.baseFee': "最低Gas价格(Gwei)。反映网络拥堵程度。",
+                'desc.gasPrice': "平均Gas价格(Gwei)。反映网络交易成本。",
                 'desc.blobFees': "EIP-4844 L2数据费用。越低L2越便宜。",
                 'desc.blobCount': "L2发布的数据块。越多=L2采用增长。",
                 'desc.tvl': "以太坊DeFi锁仓价值。核心效用指标。",
                 'desc.l2Tvl': "L2 Rollup锁仓价值。TVL增长=L2生态发展。",
-                'desc.supply': "ETH在流动供应、DeFi锁仓、质押间的分布。",
+                'desc.supply': "可交易的流动ETH。Others = L2桥接、丢失代币。",
                 'desc.staking': "信标链质押ETH。越高=网络安全性越强。",
                 'desc.lending': "DeFi借贷协议资产。表示DeFi资本部署。",
                 'desc.stables': "以太坊上稳定币价值。显示ETH结算层主导地位。",
@@ -15875,7 +15916,7 @@
                 'method.settlement.note': 'Velocity 6はUSD M1をベンチマーク；クリプトの流通速度は大きく異なる可能性',
                 'method.settlement.desc': 'こうかんほうていしき(MV=PQ)をてきようし、ETHをイーサリアムけっさいレイヤーのかへいとしてあつかいます。にちじけっさいりょうはL1そうきん、L2そうきん、ブリッジとりひきりょうをごうさんします。Velocity 6はETHのかちちょぞう(SoV)とくせいをはんえいします：ステーキングはETHをvelocity 0でこてい、ETFいこうビットコインとるいじのきかんほゆうパターン、USD M1 velocity (~5.5x)ベンチマーク。ひくいvelocity = たかいないざいかち（かへいがしょうひされずながくほゆうされる）。',
                 'method.sink.note': 'Sinkすいていちはさまざま；りゅうどうせいステーキングがぶぶんてきにステーキングSinkをそうさい',
-                'method.sink.desc': 'こうぞうてきSinkにロックされたETHをこうりょしたりゅうつうかぶちょうせいバリュエーション：ステーキング（~28%）、DeFiたんぽ（~12%）、L2ブリッジ（~4%）、ふんしつ/きゅうみんコイン（~3%）。ないぶしゃほゆうをじょがいするでんとうてきファイナンスのりゅうつうかぶちょうせいじかそうがくとるいじ。きょうきゅうりょうの~47%がSinkにあり、~53%のゆうこうりゅうつうりょうがけんちょなきしょうせいプレミアムをつくります。',
+                'method.sink.desc': 'こうぞうてきSinkにロックされたETHをこうりょしたりゅうつうかぶちょうせいバリュエーション：ステーキング、DeFiたんぽ、L2ブリッジ、ふんしつ/きゅうみんコイン。ないぶしゃほゆうをじょがいするでんとうてきファイナンスのりゅうつうかぶちょうせいじかそうがくとるいじ。',
                 'method.costBasis.note': 'MVRV 1.5はれきしてきへいきん；じっさいのきんこうてんはしじょうサイクルによりことなるばあいあり',
                 'method.costBasis.desc': 'じつげんかかく（りゅうつうちゅうのすべてのETHのへいきんしゅとくコスト）にMVRVきんこうひりつ1.5をかけます。じつげんかかくはすべてのほゆうしゃのそうコストきじゅんをあらわします。れきしてきに、MVRV 1.5はしじょうがかねつ（MVRV > 3）でもていひょうか（MVRV < 1）でもないてきせいかちいきをしめします。しじょうかかく < じつげんかかくのとき、おおくのほゆうしゃがそんしつじょうたいです。',
                 'criteria.model.settlement': 'Settlement Layer',
@@ -15958,12 +15999,12 @@
                 'desc.burn': "EIP-1559で焼却されたETH。高い=活動活発。",
                 'desc.issuance': "バリデーターへの新規発行ETH。マージ後約930 ETH/日。",
                 'desc.netSupply': "焼却-発行。マイナス=デフレ、ETH価値上昇要因。",
-                'desc.baseFee': "最低Gas価格(Gwei)。ネットワーク混雑度を反映。",
+                'desc.gasPrice': "平均ガス価格(Gwei)。ネットワーク取引コストを反映。",
                 'desc.blobFees': "EIP-4844 L2データ手数料。低い=L2が安価。",
                 'desc.blobCount': "L2投稿データブロブ。多い=L2採用増加。",
                 'desc.tvl': "イーサリアムDeFiロック額。主要ユーティリティ指標。",
                 'desc.l2Tvl': "L2ロールアップロック額。TVL増加=L2エコシステム成長。",
-                'desc.supply': "流動供給、DeFiロック、ステーキング間のETH分布。",
+                'desc.supply': "取引可能な流動ETH。Others = L2ブリッジ、紛失コイン。",
                 'desc.staking': "ビーコンチェーンステーキングETH。高い=ネットワーク安全性向上。",
                 'desc.lending': "DeFiレンディングプロトコル資産。DeFi資本配置指標。",
                 'desc.stables': "イーサリアム上のステーブルコイン価値。決済レイヤー優位性。",
@@ -16233,7 +16274,6 @@
         let blobFeesChart = null;
         let stablecoinChart = null;
         let gasPriceChart = null;
-        let baseFeeChart = null;
         let blobCountChart = null;
         let gasUtilizationChart = null;
         let dailyBurnChart = null;
@@ -19815,50 +19855,66 @@
             const ctx = document.getElementById('supply-chart');
             if (!ctx) return;
             
-            // Check if we have the necessary data - use fallback values if not available yet
-            const totalSupply = state.circulatingSupply || 120000000; // Default 120M ETH
+            // Data sources
+            const totalSupply = state.circulatingSupply || 120000000;
             const staked = state.stakedEth || 0;
             const tvl = state.tvl || 0;
+            const l2Tvl = state.l2Tvl || 0;
             const price = state.price || 3500;
             
-            // 데이터가 없어도 기본값으로 차트 그리기
             if (staked === 0 && tvl === 0 && state.circulatingSupply === 0) {
                 log('Supply Distribution: no data, using defaults');
             }
             
             if (supplyChart) supplyChart.destroy();
             
-            // Get current distribution for display
+            // Calculate current distribution (4 categories)
             const inDefi = tvl && price ? (tvl / price) : 0;
+            const inL2 = l2Tvl && price ? (l2Tvl / price) : 0;
+            const lostEst = totalSupply * 0.03; // ~3% lost/dormant
             
-            // Calculate percentages - use reasonable defaults if data is partial
-            const stakedPct = staked > 0 ? (staked / totalSupply) * 100 : 27; // ~27% staked typically
-            const defiPct = inDefi > 0 ? Math.min((inDefi / totalSupply) * 100, 100 - stakedPct) : 18; // ~18% in DeFi
-            const liquidPct = Math.max(0, 100 - stakedPct - defiPct);
+            const stakedPct = staked > 0 ? (staked / totalSupply) * 100 : 27;
+            const defiPct = inDefi > 0 ? (inDefi / totalSupply) * 100 : 18;
+            const othersPct = ((inL2 / totalSupply) * 100) + 3; // L2 bridges + lost (~3%)
+            const floatPct = Math.max(0, 100 - stakedPct - defiPct - othersPct);
             
-            state.supplyDistribution = { liquid: liquidPct, defi: defiPct, staking: stakedPct };
+            state.supplyDistribution = { float: floatPct, staking: stakedPct, defi: defiPct, others: othersPct };
             
-            // Build time series data from staking and TVL history
+            // Update effective float display for Monetary Sink model
+            const floatDisplay = document.getElementById('effective-float-display');
+            if (floatDisplay) floatDisplay.textContent = floatPct.toFixed(1);
+            
+            // Build time series data
             const stakingHist = state.stakingHistory || [];
             const tvlHist = state.tvlHistory || [];
+            const l2TvlHist = state.l2TvlHistory || [];
             
-            // Filter by period
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filteredStaking = stakingHist.filter(d => d.date.getTime() > cutoffDate);
             const filteredTvl = tvlHist.filter(d => d.date.getTime() > cutoffDate);
+            const filteredL2 = l2TvlHist.filter(d => d.date.getTime() > cutoffDate);
             
-            log('Supply chart - stakingHist:', filteredStaking.length, 'tvlHist:', filteredTvl.length);
+            log('Supply chart - stakingHist:', filteredStaking.length, 'tvlHist:', filteredTvl.length, 'l2Hist:', filteredL2.length);
+            
+            // Color scheme: Float=green, Staking=purple, DeFi=cyan, Others=gray
+            const colors = {
+                float: '#10b981',
+                staking: '#8b5cf6',
+                defi: '#00bcd4',
+                others: '#6b7280'
+            };
             
             if (filteredStaking.length < 5 || filteredTvl.length < 5) {
-                // Not enough history data - show simple bar chart
+                // Not enough history - show simple horizontal bar
                 supplyChart = new Chart(ctx.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: [''],
                         datasets: [
-                            { label: 'Liquid', data: [liquidPct], backgroundColor: '#94a3b8', barPercentage: 0.8 },
-                            { label: 'DeFi', data: [defiPct], backgroundColor: '#00bcd4', barPercentage: 0.8 },
-                            { label: 'Staking', data: [stakedPct], backgroundColor: '#8b5cf6', barPercentage: 0.8 }
+                            { label: 'Float', data: [floatPct], backgroundColor: colors.float, barPercentage: 0.8 },
+                            { label: 'Staking', data: [stakedPct], backgroundColor: colors.staking, barPercentage: 0.8 },
+                            { label: 'DeFi', data: [defiPct], backgroundColor: colors.defi, barPercentage: 0.8 },
+                            { label: 'Others', data: [othersPct], backgroundColor: colors.others, barPercentage: 0.8 }
                         ]
                     },
                     options: {
@@ -19869,43 +19925,48 @@
                         scales: { x: { stacked: true, max: 100, display: false }, y: { stacked: true, display: false } }
                     }
                 });
-                // Remove loading state since we rendered the chart
                 setChartLoading('supply-chart', false);
+                // No time series data - clear change display
+                const changeEl = document.getElementById('float-change');
+                if (changeEl) changeEl.textContent = '--';
             } else {
                 // Build aligned time series - 100% stacked area
                 const timePoints = Math.min(filteredStaking.length, filteredTvl.length, 52);
                 const stakingStep = Math.floor(filteredStaking.length / timePoints);
                 const tvlStep = Math.floor(filteredTvl.length / timePoints);
+                const l2Step = filteredL2.length > 0 ? Math.floor(filteredL2.length / timePoints) : 0;
                 
                 const labels = [];
+                const floatValues = [];
                 const stakingValues = [];
                 const defiValues = [];
-                const liquidValues = [];
+                const othersValues = [];
                 
                 for (let i = 0; i < timePoints; i++) {
                     const stakingIdx = Math.min(i * stakingStep, filteredStaking.length - 1);
                     const tvlIdx = Math.min(i * tvlStep, filteredTvl.length - 1);
+                    const l2Idx = l2Step > 0 ? Math.min(i * l2Step, filteredL2.length - 1) : 0;
                     
                     const stakingVal = filteredStaking[stakingIdx]?.value || 0;
                     const tvlVal = filteredTvl[tvlIdx]?.value || 0;
+                    const l2Val = filteredL2[l2Idx]?.value || 0;
                     const date = filteredStaking[stakingIdx]?.date || new Date();
                     
-                    // Use price history if available for better accuracy
                     const priceAtTime = state.price || 3500;
                     const ethInDefi = tvlVal / priceAtTime;
+                    const ethInL2 = l2Val / priceAtTime;
                     
-                    // Calculate percentages for this time point
                     const estSupply = totalSupply * (1 - (timePoints - i) * 0.0001);
                     const stakePctVal = (stakingVal / estSupply) * 100;
                     const defiPctVal = (ethInDefi / estSupply) * 100;
-                    const liquidPctVal = Math.max(0, 100 - stakePctVal - defiPctVal);
+                    const othersPctVal = ((ethInL2 / estSupply) * 100) + 3; // L2 + lost 3%
+                    const floatPctVal = Math.max(0, 100 - stakePctVal - defiPctVal - othersPctVal);
                     
                     labels.push(fmt.chartLabel(date));
-                    
-                    // Individual values for stacked chart
+                    floatValues.push(floatPctVal);
                     stakingValues.push(stakePctVal);
                     defiValues.push(defiPctVal);
-                    liquidValues.push(liquidPctVal);
+                    othersValues.push(othersPctVal);
                 }
                 
                 supplyChart = new Chart(ctx.getContext('2d'), {
@@ -19914,10 +19975,21 @@
                         labels,
                         datasets: [
                             {
-                                label: 'Liquid',
-                                data: liquidValues,
-                                backgroundColor: 'rgba(148, 163, 184, 0.9)',
-                                borderColor: 'rgba(148, 163, 184, 0.9)',
+                                label: 'Float',
+                                data: floatValues,
+                                backgroundColor: colors.float + 'dd',
+                                borderColor: colors.float,
+                                borderWidth: 1,
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 0,
+                                order: 4
+                            },
+                            {
+                                label: 'Staking',
+                                data: stakingValues,
+                                backgroundColor: colors.staking + 'dd',
+                                borderColor: colors.staking,
                                 borderWidth: 0,
                                 fill: true,
                                 tension: 0.3,
@@ -19927,8 +19999,8 @@
                             {
                                 label: 'DeFi',
                                 data: defiValues,
-                                backgroundColor: 'rgba(0, 188, 212, 1)',
-                                borderColor: 'rgba(0, 188, 212, 1)',
+                                backgroundColor: colors.defi + 'dd',
+                                borderColor: colors.defi,
                                 borderWidth: 0,
                                 fill: true,
                                 tension: 0.3,
@@ -19936,10 +20008,10 @@
                                 order: 2
                             },
                             {
-                                label: 'Staking',
-                                data: stakingValues,
-                                backgroundColor: 'rgba(139, 92, 246, 1)',
-                                borderColor: 'rgba(139, 92, 246, 1)',
+                                label: 'Others',
+                                data: othersValues,
+                                backgroundColor: colors.others + 'dd',
+                                borderColor: colors.others,
                                 borderWidth: 0,
                                 fill: true,
                                 tension: 0.3,
@@ -19954,11 +20026,25 @@
                         plugins: {
                             legend: { display: false },
                             tooltip: {
+                                enabled: true,
+                                backgroundColor: '#24292e',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                titleFont: { size: 11, weight: '600' },
+                                bodyFont: { size: 11 },
+                                padding: 10,
+                                cornerRadius: 6,
+                                displayColors: true,
+                                boxWidth: 10,
+                                boxHeight: 10,
                                 mode: 'index',
                                 intersect: false,
                                 callbacks: {
+                                    title: function(items) {
+                                        return items[0]?.label || '';
+                                    },
                                     label: function(context) {
-                                        return `${context.dataset.label}: ${context.raw.toFixed(1)}%`;
+                                        return ` ${context.dataset.label}: ${context.raw.toFixed(1)}%`;
                                     }
                                 }
                             }
@@ -19998,24 +20084,28 @@
                         }
                     }
                 });
-                // Remove loading state since we rendered the chart
                 setChartLoading('supply-chart', false);
+                
+                // Calculate and display change (시계열 데이터가 있을 때만)
+                if (floatValues.length > 1) {
+                    const latestFloat = floatValues[floatValues.length - 1];
+                    const oldestFloat = floatValues[0];
+                    const floatChange = latestFloat - oldestFloat; // Absolute change in percentage points
+                    
+                    const changeEl = document.getElementById('float-change');
+                    if (changeEl) {
+                        const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                        const sign = floatChange >= 0 ? '+' : '';
+                        changeEl.textContent = sign + floatChange.toFixed(1) + 'pp ' + periodLabel;
+                        changeEl.className = 'change ' + (floatChange >= 0 ? 'up' : 'down');
+                    }
+                }
             }
             
-            // Update legend values
-            const legendEl = document.querySelector('.chart-card-legend');
-            if (legendEl) {
-                legendEl.innerHTML = `
-                    <span class="legend-item"><span class="legend-dot liquid"></span>Liquid ${liquidPct.toFixed(0)}%</span>
-                    <span class="legend-item"><span class="legend-dot defi"></span>DeFi ${defiPct.toFixed(0)}%</span>
-                    <span class="legend-item"><span class="legend-dot staking"></span>Staking ${stakedPct.toFixed(0)}%</span>
-                `;
-            }
-            
-            // Update circ-supply display with fallback
-            const circSupplyEl = document.getElementById('circ-supply');
-            if (circSupplyEl && (circSupplyEl.textContent === '--' || !circSupplyEl.textContent.includes('ETH'))) {
-                circSupplyEl.textContent = fmt.num(totalSupply) + ' ETH';
+            // Update Float % display
+            const floatPctEl = document.getElementById('float-pct');
+            if (floatPctEl) {
+                floatPctEl.textContent = floatPct.toFixed(1) + '%';
             }
         }
 
@@ -20207,14 +20297,28 @@
                 }
                 
                 // Use Supabase gas history if available, otherwise calculate from fees
+                let gasPriceDataSource = 'supabase';
                 if (state.supabaseGasHistory && state.supabaseGasHistory.length > 10) {
-                    log(`   Using Supabase Gas data: ${state.supabaseGasHistory.length} points`);
-                    state.gasPriceHistory = state.supabaseGasHistory.map(d => ({
-                        date: d.date,
-                        value: d.gasPrice
-                    }));
+                    // Check if we have real gas price data (not null)
+                    const validGasPrices = state.supabaseGasHistory.filter(d => d.gasPrice > 0);
+                    if (validGasPrices.length > 10) {
+                        log(`   Using Supabase Gas data: ${validGasPrices.length} points with real gas price`);
+                        state.gasPriceHistory = validGasPrices.map(d => ({
+                            date: d.date,
+                            value: d.gasPrice
+                        }));
+                    } else {
+                        // Gas price is null in Supabase, calculate from fees (still Supabase-based)
+                        log(`   Gas price null in Supabase, calculating from fees...`);
+                        state.gasPriceHistory = state.supabaseGasHistory.map(d => {
+                            // Estimate: burnt * gas_used_ratio / utilization
+                            const estimatedGasPrice = d.burnt > 0 ? (d.burnt * 1e9 / (15000000 * (d.utilization / 100 || 0.5))) : 15;
+                            return { date: d.date, value: Math.max(5, Math.min(500, estimatedGasPrice)) };
+                        });
+                    }
                 } else {
-                    // Calculate from fees history
+                    // Calculate from fees history (fallback)
+                    gasPriceDataSource = 'fallback';
                     const feesHist = state.feesHistory || [];
                     const txHist = state.txEthHistory || [];
                     
@@ -20243,18 +20347,18 @@
                     state.gasPrice = currentGasPrice;
                 } else if (state.gasPriceHistory.length > 0) {
                     state.gasPrice = state.gasPriceHistory[state.gasPriceHistory.length - 1].value;
-                    dataSource = 'fees-calc';
                 }
                 
                 if (!state.gasPrice || state.gasPrice <= 0) {
                     state.gasPrice = 15;
-                    dataSource = 'fallback';
+                    gasPriceDataSource = 'fallback';
                 }
                 
                 const gasEl = document.getElementById('gas-price-value');
                 if (gasEl) gasEl.textContent = state.gasPrice.toFixed(1) + ' Gwei';
                 
                 updateGasPriceChart();
+                setDataSource('gas-price-chart', gasPriceDataSource);
             } catch (e) {
                 console.error('Gas price error:', e);
             }
@@ -20635,111 +20739,66 @@
             });
         }
         
-        // Base Fee - EIP-1559 base fee tracking
+        // Gas Price - Average gas price tracking (from Supabase historical_gas_burn)
 
-        async function fetchBaseFee() {
+        async function updateGasPriceDisplay() {
             try {
-                // log('   Fetching Base Fee...');
+                // Gas Price는 이미 state.gasPriceHistory에 수집되어 있음 (Supabase historical_gas_burn.avg_gas_price_gwei)
+                let currentGasPrice = state.gasPrice || 0;
+                let dataSource = 'fallback';
                 
-                let currentBaseFee = 0;
-                let dataSource = 'estimate';
-                
-                // === 1차: Etherscan Gas Oracle API (5초 타임아웃) ===
-                try {
-                    const data = await safeFetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle', 5000);
-                    if (data && data.status === '1' && data.result) {
-                        currentBaseFee = parseFloat(data.result.suggestBaseFee) || 0;
-                        if (currentBaseFee > 0) dataSource = 'etherscan';
+                // Supabase 히스토리가 있으면 supabase 소스
+                if (state.gasPriceHistory && state.gasPriceHistory.length > 0) {
+                    dataSource = 'supabase';
+                    if (currentGasPrice === 0) {
+                        currentGasPrice = state.gasPriceHistory[state.gasPriceHistory.length - 1].value;
                     }
-                } catch (e) {
-                    log('Etherscan base fee API failed...');
                 }
                 
-                // === 2차: Gas price에서 추정 ===
-                if (currentBaseFee === 0) {
-                    const gasPrice = state.gasPrice || 15;
-                    currentBaseFee = gasPrice * 0.85;
-                    dataSource = 'gas-estimate';
+                // Fallback
+                if (currentGasPrice === 0) {
+                    currentGasPrice = 15;
+                    dataSource = 'fallback';
                 }
                 
-                state.baseFee = currentBaseFee;
-                log(`Base Fee source: ${dataSource}, Value: ${currentBaseFee.toFixed(1)} Gwei`);
+                state.gasPrice = currentGasPrice;
+                log(`Gas Price source: ${dataSource}, Value: ${currentGasPrice.toFixed(1)} Gwei`);
                 
-                // Build history - use actual gas price data from Supabase
-                state.baseFeeHistory = [];
-                if (state.supabaseGasHistory && state.supabaseGasHistory.length > 0) {
-                    // Exclude today and yesterday (incomplete data)
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const twoDaysAgo = new Date(today);
-                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-                    
-                    // Use actual avg_gas_price_gwei from Supabase
-                    state.baseFeeHistory = state.supabaseGasHistory
-                        .filter(d => {
-                            const dDate = new Date(d.date);
-                            dDate.setHours(0, 0, 0, 0);
-                            return d.gasPrice > 0 && dDate.getTime() <= twoDaysAgo.getTime();
-                        })
-                        .map(d => ({
-                            date: d.date,
-                            value: d.gasPrice * 0.85  // Base fee is ~85% of gas price
-                        }));
-                    log(`   Base Fee: Using Supabase gas history (${state.baseFeeHistory.length} points)`);
-                } else if (state.gasPriceHistory && state.gasPriceHistory.length > 0) {
-                    for (let i = 0; i < state.gasPriceHistory.length; i++) {
-                        const d = state.gasPriceHistory[i];
-                        state.baseFeeHistory.push({
-                            date: d.date,
-                            value: d.value * 0.85
-                        });
-                    }
-                } else {
-                    // Generate simulated history if no data available yet
-                    const now = Date.now();
-                    for (let i = 0; i < 52; i++) {
-                        const variation = 1 + 0.3 * Math.sin(i * 0.4);
-                        state.baseFeeHistory.push({
-                            date: new Date(now - (52 - i) * 7 * 24 * 60 * 60 * 1000),
-                            value: currentBaseFee * variation
-                        });
-                    }
-                    log('   Base Fee: using simulated history');
+                // UI 업데이트
+                const gasPriceEl = document.getElementById('gas-price-value');
+                if (gasPriceEl) {
+                    gasPriceEl.textContent = currentGasPrice.toFixed(1) + ' Gwei';
                 }
                 
-                const baseFeeEl = document.getElementById('base-fee-value');
-                if (baseFeeEl) {
-                    baseFeeEl.textContent = state.baseFee.toFixed(1) + ' Gwei';
-                }
-                
-                updateBaseFeeChart();
-                log('   Base Fee:', state.baseFee.toFixed(1), 'Gwei');
+                updateGasPriceChart();
+                setDataSource('gas-price-chart', dataSource);
+                log('   Gas Price:', currentGasPrice.toFixed(1), 'Gwei');
             } catch (e) {
-                console.error('Base fee error:', e);
+                console.error('Gas price error:', e);
             }
         }
         
-        function updateBaseFeeChart(days = 1095) {
-            const ctx = document.getElementById('base-fee-chart');
+        function updateGasPriceChart(days = 1095) {
+            const ctx = document.getElementById('gas-price-chart');
             if (!ctx) return;
-            if (baseFeeChart) baseFeeChart.destroy();
+            if (gasPriceChart) gasPriceChart.destroy();
             
-            const history = state.baseFeeHistory || [];
+            const history = state.gasPriceHistory || [];
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
             if (filtered.length < 3) {
-                setChartLoading('base-fee-chart', false);
+                setChartLoading('gas-price-chart', false);
                 return;
             }
             
-            setChartLoading('base-fee-chart', false);
+            setChartLoading('gas-price-chart', false);
             
             const latest = filtered[filtered.length - 1].value;
             const oldest = filtered[0].value;
             const change = oldest > 0 ? ((latest - oldest) / oldest) * 100 : 0;
             
-            const changeEl = document.getElementById('base-fee-change');
+            const changeEl = document.getElementById('gas-price-change');
             if (changeEl) {
                 const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
@@ -20749,7 +20808,7 @@
             const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
             const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
-            baseFeeChart = new Chart(ctx.getContext('2d'), {
+            gasPriceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: sampled.map(d => fmt.chartLabel(d.date)),
@@ -21841,6 +21900,11 @@
                 const totalSink = stakedEth + defiEth + l2Eth + lostEth;
                 const effectiveFloat = cs - totalSink;
                 const sinkRatio = ((totalSink / cs) * 100).toFixed(0);
+                const floatRatio = (100 - parseInt(sinkRatio));
+                
+                // Update effective float display
+                const floatDisplay = document.getElementById('effective-float-display');
+                if (floatDisplay) floatDisplay.textContent = floatRatio;
                 
                 if (effectiveFloat > 0) {
                     const sinkFairValue = state.price * (cs / effectiveFloat);
@@ -21850,7 +21914,7 @@
                         formula: 'Price × (Supply ÷ Float)', 
                         price: sinkFairValue,
                         reliability: 2,
-                        source: `Sink=${sinkRatio}%, Float=${100-parseInt(sinkRatio)}%`
+                        source: `Sink=${sinkRatio}%, Float=${floatRatio}%`
                     });
                 }
             }
@@ -22265,16 +22329,6 @@
                 tab.classList.add('active');
                 const period = parseInt(tab.dataset.period);
                 updateBlobFeesChart(period);
-            });
-        });
-
-        // Base Fee chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="baseFee"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateBaseFeeChart(period);
             });
         });
 
@@ -23096,8 +23150,8 @@
                     }
                     
                     state.netSupplyChange = ((state.dailyIssuance - state.dailyBurn) * 365 / totalSupply) * 100;
-                    state.baseFee = state.supabaseGasHistory[state.supabaseGasHistory.length - 1]?.gasPrice || 12;
-                    state.baseFeeHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: d.gasPrice || 0 }));
+                    state.gasPrice = state.supabaseGasHistory[state.supabaseGasHistory.length - 1]?.gasPrice || 12;
+                    state.gasPriceHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: d.gasPrice || 0 }));
                     state.txEthHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: d.txCount || 0 }));
                     
                     // UI 업데이트
@@ -23124,7 +23178,7 @@
                     state.dailyIssuance = state.dailyIssuance || 2800;
                     state.gasUtilization = state.gasUtilization || 60;
                     state.netSupplyChange = ((state.dailyIssuance - state.dailyBurn) * 365 / 120000000) * 100;
-                    state.baseFee = state.baseFee || 12;
+                    state.gasPrice = state.gasPrice || 12;
                     
                     // Gas Utilization History - supabaseGasHistory가 있으면 사용
                     if (state.supabaseGasHistory?.length > 0) {
@@ -23145,9 +23199,9 @@
                 }
                 
                 // ═══════════════════════════════════════════════════════════════════
-                // 16. Base Fee - Use actual gas price data from Supabase
+                // 16. Gas Price - Use actual gas price data from Supabase
                 // ═══════════════════════════════════════════════════════════════════
-                let baseFeeSource = 'fallback';
+                let gasPriceSource = 'fallback';
                 if (state.supabaseGasHistory?.length > 0) {
                     // Exclude today and yesterday (incomplete data)
                     const today = new Date();
@@ -23156,7 +23210,7 @@
                     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
                     
                     // Use actual avg_gas_price_gwei from Supabase
-                    state.baseFeeHistory = state.supabaseGasHistory
+                    state.gasPriceHistory = state.supabaseGasHistory
                         .filter(d => {
                             const dDate = new Date(d.date);
                             dDate.setHours(0, 0, 0, 0);
@@ -23164,18 +23218,18 @@
                         })
                         .map(d => ({
                             date: d.date,
-                            value: d.gasPrice * 0.85  // Base fee is ~85% of gas price
+                            value: d.gasPrice  // Direct gas price, no multiplier
                         }));
-                    if (state.baseFeeHistory.length > 0) {
-                        state.baseFee = state.baseFeeHistory[state.baseFeeHistory.length - 1].value;
-                        baseFeeSource = 'supabase';
+                    if (state.gasPriceHistory.length > 0) {
+                        state.gasPrice = state.gasPriceHistory[state.gasPriceHistory.length - 1].value;
+                        gasPriceSource = 'supabase';
                     }
                 }
-                if (!state.baseFee || state.baseFee === 0) state.baseFee = 12;
-                if (!state.baseFeeHistory?.length) state.baseFeeHistory = simpleHistory(12);
-                setEl('base-fee-value', state.baseFee.toFixed(1) + ' Gwei');
-                safeCall(() => updateBaseFeeChart(), 'baseFee');
-                setDataSource('base-fee-chart', baseFeeSource);
+                if (!state.gasPrice || state.gasPrice === 0) state.gasPrice = 12;
+                if (!state.gasPriceHistory?.length) state.gasPriceHistory = simpleHistory(12);
+                setEl('gas-price-value', state.gasPrice.toFixed(1) + ' Gwei');
+                safeCall(() => updateGasPriceChart(), 'gasPrice');
+                setDataSource('gas-price-chart', gasPriceSource);
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // 17. Blob Fees & Count (7일 합계)
@@ -23487,7 +23541,7 @@
                 // Gas - Supabase 없으면 외부 API
                 if (!state.supabaseGasHistory?.length || state.supabaseGasHistory.length < MIN_DATA_POINTS) {
                     log('   → Gas data missing, fetching from API');
-                    apiCalls.push(fetchBaseFee());
+                    apiCalls.push(updateGasPriceDisplay());
                     apiCalls.push(fetchGasPrice());
                 }
                 
@@ -23577,14 +23631,17 @@
                     if (sourceEl) {
                         sourceEl.className = 'price-chart-source';
                         if (source === 'supabase') {
-                            sourceEl.classList.add('cached');
-                            sourceEl.textContent = 'Synced';
+                            // Supabase = no badge (normal state)
+                            sourceEl.textContent = '';
+                            sourceEl.style.display = 'none';
                         } else if (source === 'api') {
                             sourceEl.classList.add('live');
-                            sourceEl.textContent = apiName || 'API';
+                            sourceEl.textContent = apiName || 'Live';
+                            sourceEl.style.display = '';
                         } else {
                             sourceEl.classList.add('fallback');
                             sourceEl.textContent = 'Est.';
+                            sourceEl.style.display = '';
                         }
                     }
                     return;
@@ -23608,16 +23665,18 @@
                 const existing = sourceSpan.querySelector('.data-source-badge');
                 if (existing) existing.remove();
                 
-                // 새 배지 생성
+                // Supabase = no badge (normal state, most data)
+                if (source === 'supabase') {
+                    return; // No badge needed
+                }
+                
+                // 새 배지 생성 (API or fallback only)
                 const badge = document.createElement('span');
                 badge.className = 'data-source-badge';
                 
-                if (source === 'supabase') {
-                    badge.classList.add('cached');
-                    badge.textContent = 'Synced';
-                } else if (source === 'api') {
+                if (source === 'api') {
                     badge.classList.add('live');
-                    badge.textContent = apiName || 'API';  // 출처 표시
+                    badge.textContent = apiName || 'Live';
                 } else {
                     badge.classList.add('fallback');
                     badge.textContent = 'Est.';
