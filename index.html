@@ -10871,6 +10871,27 @@
                     </div>
                 </div>
 
+                <!-- New Addresses -->
+                <div class="metric-card" data-metric="newAddresses">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.newAddresses">New Addresses (Daily)</h4>
+                            <div class="metric-value-large" id="new-addr-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="new-addr-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>🔷 Dune</span>
+                        <span class="change" id="new-addr-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.newAddresses">Daily first-time transacting addresses. Network growth indicator.</div>
+                    </div>
+                </div>
+
                 <!-- 8. Total Value Locked -->
                 <div class="metric-card" data-metric="tvl">
                     <div class="metric-header">
@@ -14850,10 +14871,12 @@
                 'desc.l2Volume': "Daily ETH value transferred on L2s. Ecosystem activity metric.",
                 'desc.bridgeVolume': "Daily ETH bridged to L2s. Cross-chain capital flow indicator.",
                 'desc.whaleTx': "Daily 1000+ ETH transactions. Large player activity indicator.",
+                'desc.newAddresses': "Daily first-time transacting addresses. Network growth indicator.",
                 'metric.l1Volume': "L1 TX Volume (Daily)",
                 'metric.l2Volume': "L2 TX Volume (Daily)",
                 'metric.bridgeVolume': "Bridge Volume (Daily)",
-                'metric.whaleTx': "Whale Transactions"
+                'metric.whaleTx': "Whale Transactions",
+                'metric.newAddresses': "New Addresses (Daily)"
             },
             ko: {
                 'status.live': '실시간',
@@ -15146,10 +15169,12 @@
                 'desc.l2Volume': "L2 일일 ETH 전송량. 생태계 활동 지표.",
                 'desc.bridgeVolume': "L2로 브릿지된 일일 ETH. 크로스체인 자금 흐름.",
                 'desc.whaleTx': "1000 ETH 이상 대형 거래 수. 고래 활동 지표.",
+                'desc.newAddresses': "일일 신규 지갑 주소 수. 네트워크 성장 지표.",
                 'metric.l1Volume': "L1 TX 볼륨 (일일)",
                 'metric.l2Volume': "L2 TX 볼륨 (일일)",
                 'metric.bridgeVolume': "브릿지 볼륨 (일일)",
-                'metric.whaleTx': "고래 거래"
+                'metric.whaleTx': "고래 거래",
+                'metric.newAddresses': "신규 주소 (일일)"
             },
             zh: {
                 'status.live': '实时',
@@ -15442,10 +15467,12 @@
                 'desc.l2Volume': "L2每日ETH转账量。生态活动指标。",
                 'desc.bridgeVolume': "每日桥接至L2的ETH。跨链资金流动指标。",
                 'desc.whaleTx': "1000+ ETH大额交易数。巨鲸活动指标。",
+                'desc.newAddresses': "每日新增钱包地址数。网络增长指标。",
                 'metric.l1Volume': "L1交易量 (日)",
                 'metric.l2Volume': "L2交易量 (日)",
                 'metric.bridgeVolume': "桥接量 (日)",
-                'metric.whaleTx': "巨鲸交易"
+                'metric.whaleTx': "巨鲸交易",
+                'metric.newAddresses': "新增地址 (日)"
             },
             ja: {
                 'status.live': 'ライブ',
@@ -15738,10 +15765,12 @@
                 'desc.l2Volume': "L2日次ETH送金量。エコシステム活動指標。",
                 'desc.bridgeVolume': "L2へのETHブリッジ量。クロスチェーン資金フロー。",
                 'desc.whaleTx': "1000+ ETH大口取引数。クジラ活動指標。",
+                'desc.newAddresses': "日次新規ウォレット数。ネットワーク成長指標。",
                 'metric.l1Volume': "L1取引量 (日次)",
                 'metric.l2Volume': "L2取引量 (日次)",
                 'metric.bridgeVolume': "ブリッジ量 (日次)",
-                'metric.whaleTx': "クジラ取引"
+                'metric.whaleTx': "クジラ取引",
+                'metric.newAddresses': "新規アドレス (日次)"
             }
         };
 
@@ -16000,6 +16029,7 @@
         let l2VolumeChart = null;
         let bridgeVolumeChart = null;
         let whaleTxChart = null;
+        let newAddrChart = null;
         let historicalMainChart = null;
         
         // Chart colors helper - returns appropriate colors for dark/light mode
@@ -16059,6 +16089,10 @@
             whaleTxCount: 0,
             whaleTxVolume: 0,
             whaleTxHistory: [],
+            
+            // New Addresses
+            newAddresses: 0,
+            newAddressesHistory: [],
             // Staking Yield (from Lido API)
             stakingApr: 0,
             stakingAprSma: 0,
@@ -16436,7 +16470,7 @@
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData, whaleTxData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData, whaleTxData, newAddrData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -16462,7 +16496,8 @@
                     safeFetchSupabase(`${baseUrl}/historical_l2_transactions?select=date,chain,tx_count&order=date.desc&limit=${limit * 10}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_eth&order=date.desc&limit=${limit * 10}`),
                     safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 10}`),
-                    safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`)
+                    safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_new_addresses?select=date,new_addresses&order=date.desc&limit=${limit}`)
                 ]);
                 
                 // 데이터 저장 (10개 이상일 때만)
@@ -16766,6 +16801,22 @@
                     state.whaleTxCount = parseInt(latest.whale_tx_count) || 0;
                     state.whaleTxVolume = parseFloat(latest.whale_volume_eth) || 0;
                     log(`   ✓ Whale TX Today: ${state.whaleTxCount} txs, ${state.whaleTxVolume.toFixed(0)} ETH`);
+                }
+                
+                // New Addresses (first nonce=0 transactions)
+                if (newAddrData && newAddrData.length > 0) {
+                    log(`   ✓ New Addresses: ${newAddrData.length} records`);
+                    
+                    state.newAddressesHistory = newAddrData
+                        .map(d => ({ 
+                            date: new Date(d.date), 
+                            value: parseInt(d.new_addresses) || 0
+                        }))
+                        .reverse();
+                    
+                    // Latest value
+                    state.newAddresses = parseInt(newAddrData[0].new_addresses) || 0;
+                    log(`   ✓ New Addresses Today: ${state.newAddresses.toLocaleString()}`);
                 }
                 
                 if (issuanceData.length > 10) {
@@ -18971,6 +19022,17 @@
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
+            // New Addresses
+            if (state.newAddressesHistory && state.newAddressesHistory.length > 0) {
+                updateMetricChart('new-addr-chart', newAddrChart, state.newAddressesHistory, '#22c55e', 'newAddresses');
+                document.getElementById('new-addr-value').textContent = fmt.num(state.newAddresses);
+                if (state.newAddressesHistory.length > 1) {
+                    const first = state.newAddressesHistory[0].value, last = state.newAddressesHistory[state.newAddressesHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('new-addr-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
         }
 
         // NVT Ratio 계산 및 차트 업데이트
@@ -20986,6 +21048,7 @@
             if (key === 'l2Volume' && l2VolumeChart) l2VolumeChart.destroy();
             if (key === 'bridgeVolume' && bridgeVolumeChart) bridgeVolumeChart.destroy();
             if (key === 'whaleTx' && whaleTxChart) whaleTxChart.destroy();
+            if (key === 'newAddresses' && newAddrChart) newAddrChart.destroy();
 
             const formatFn = (key === 'staking' || key === 'ethInDefi') 
                 ? (v) => fmt.num(v) + ' ETH'
@@ -21030,6 +21093,7 @@
             if (key === 'l2Volume') l2VolumeChart = chart;
             if (key === 'bridgeVolume') bridgeVolumeChart = chart;
             if (key === 'whaleTx') whaleTxChart = chart;
+            if (key === 'newAddresses') newAddrChart = chart;
             
             // Remove loading spinner after chart is rendered
             setChartLoading(canvasId, false);
@@ -21888,6 +21952,10 @@
                     history = state.whaleTxHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('whale-tx-chart', whaleTxChart, history, '#f59e0b', 'whaleTx');
                     changeElId = 'whale-tx-change';
+                } else if (metric === 'newAddresses') {
+                    history = state.newAddressesHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('new-addr-chart', newAddrChart, history, '#22c55e', 'newAddresses');
+                    changeElId = 'new-addr-change';
                 }
                 
                 // Update change percentage based on selected period
