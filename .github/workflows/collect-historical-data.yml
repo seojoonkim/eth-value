@@ -40,8 +40,10 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           CRYPTOCOMPARE_API_KEY: ${{ secrets.CRYPTOCOMPARE_API_KEY }}
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
         run: |
-          echo "🚀 Starting ETHval data collection..."
+          echo "🚀 Starting ETHval data collection v7.0..."
+          echo "📊 Collecting 39 datasets (29 API + 10 Dune)"
           node scripts/data-collector.js
       
       - name: Summary
