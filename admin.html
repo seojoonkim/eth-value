@@ -81,6 +81,7 @@
                 </div>
                 <button class="btn btn-secondary" onclick="showConfig()">⚙️ Config</button>
                 <button class="btn btn-success" onclick="collectAll()">🚀 Collect All</button>
+                <button class="btn btn-warning" onclick="backfillGasPrice()" title="Fetch historical gas price from Etherscan">⛽ Backfill Gas Price</button>
                 <button class="btn btn-primary" onclick="verifyAll()">🔍 Verify All</button>
                 <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
             </div>
@@ -3490,6 +3491,161 @@
         }
 
         async function refreshData() { await loadDataStatus(); }
+        
+        // ══════════════════════════════════════════════════════════════
+        // GAS PRICE BACKFILL
+        // ══════════════════════════════════════════════════════════════
+        async function backfillGasPrice() {
+            if (!supabase) {
+                log('❌ Supabase not connected', 'error');
+                return;
+            }
+            if (!ETHERSCAN_API_KEY) {
+                log('❌ Etherscan API Key not set. Please configure in ⚙️ Config', 'error');
+                return;
+            }
+            
+            log('⛽ Starting Gas Price Backfill...', 'info');
+            
+            try {
+                // 1. Get records with null gas price
+                log('  📊 Fetching records with null gas price...', 'info');
+                const { data: nullRecords, error } = await supabase
+                    .from('historical_gas_burn')
+                    .select('date')
+                    .is('avg_gas_price_gwei', null)
+                    .order('date', { ascending: true });
+                
+                if (error) {
+                    log(`  ❌ Error fetching null records: ${error.message}`, 'error');
+                    return;
+                }
+                
+                if (!nullRecords || nullRecords.length === 0) {
+                    log('  ✅ No records need backfilling - all gas prices already filled!', 'success');
+                    return;
+                }
+                
+                log(`  📊 Found ${nullRecords.length} records with null gas price`, 'info');
+                
+                const startDate = nullRecords[0].date;
+                const endDate = nullRecords[nullRecords.length - 1].date;
+                log(`  📅 Date range: ${startDate} to ${endDate}`, 'info');
+                
+                // 2. Fetch gas price from Etherscan in chunks
+                const allGasPrices = new Map();
+                const chunkSize = 365; // 1 year at a time
+                
+                let currentStart = new Date(startDate);
+                const finalEnd = new Date(endDate);
+                let chunkNum = 0;
+                
+                while (currentStart <= finalEnd) {
+                    chunkNum++;
+                    const chunkEnd = new Date(currentStart);
+                    chunkEnd.setDate(chunkEnd.getDate() + chunkSize);
+                    if (chunkEnd > finalEnd) chunkEnd.setTime(finalEnd.getTime());
+                    
+                    const startStr = currentStart.toISOString().split('T')[0];
+                    const endStr = chunkEnd.toISOString().split('T')[0];
+                    
+                    log(`  ⛽ [Chunk ${chunkNum}] Fetching ${startStr} to ${endStr}...`, 'info');
+                    
+                    const url = `https://api.etherscan.io/api?module=stats&action=dailyavggasprice&startdate=${startStr}&enddate=${endStr}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
+                    
+                    try {
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        
+                        if (data?.status === '1' && data.result) {
+                            log(`     Got ${data.result.length} records from Etherscan`, 'success');
+                            data.result.forEach(d => {
+                                const gasPriceWei = parseFloat(d.avgGasPrice_Wei || 0);
+                                const gasPriceGwei = gasPriceWei / 1e9;
+                                if (gasPriceGwei > 0 && gasPriceGwei < 1000) {
+                                    allGasPrices.set(d.UTCDate, parseFloat(gasPriceGwei.toFixed(2)));
+                                }
+                            });
+                        } else {
+                            log(`     ⚠️ No data or error: ${data?.message || 'unknown'}`, 'warn');
+                        }
+                    } catch (fetchError) {
+                        log(`     ❌ Fetch error: ${fetchError.message}`, 'error');
+                    }
+                    
+                    // Rate limit: 5 calls per second
+                    await new Promise(r => setTimeout(r, 250));
+                    
+                    currentStart = new Date(chunkEnd);
+                    currentStart.setDate(currentStart.getDate() + 1);
+                }
+                
+                log(`  📦 Total gas prices collected: ${allGasPrices.size}`, 'info');
+                
+                if (allGasPrices.size === 0) {
+                    log('  ⚠️ No gas prices fetched from Etherscan', 'warn');
+                    return;
+                }
+                
+                // 3. Update Supabase records in batches
+                log('  💾 Updating Supabase...', 'info');
+                
+                let updated = 0;
+                let notFound = 0;
+                let errors = 0;
+                
+                // Prepare batch updates
+                const updates = [];
+                for (const record of nullRecords) {
+                    const gasPrice = allGasPrices.get(record.date);
+                    if (gasPrice) {
+                        updates.push({ date: record.date, avg_gas_price_gwei: gasPrice, source: 'etherscan' });
+                    } else {
+                        notFound++;
+                    }
+                }
+                
+                // Update in batches of 50
+                const batchSize = 50;
+                for (let i = 0; i < updates.length; i += batchSize) {
+                    const batch = updates.slice(i, i + batchSize);
+                    
+                    for (const update of batch) {
+                        const { error: updateError } = await supabase
+                            .from('historical_gas_burn')
+                            .update({ 
+                                avg_gas_price_gwei: update.avg_gas_price_gwei,
+                                source: 'etherscan'
+                            })
+                            .eq('date', update.date);
+                        
+                        if (updateError) {
+                            errors++;
+                        } else {
+                            updated++;
+                        }
+                    }
+                    
+                    // Log progress
+                    log(`     Progress: ${updated + notFound}/${nullRecords.length} (${updated} updated, ${notFound} not found, ${errors} errors)`, 'info');
+                    
+                    // Rate limit
+                    await new Promise(r => setTimeout(r, 100));
+                }
+                
+                log(`\n✅ Gas Price Backfill Complete!`, 'success');
+                log(`   📊 Updated: ${updated}`, 'success');
+                log(`   ⚠️ Not found in Etherscan: ${notFound}`, notFound > 0 ? 'warn' : 'success');
+                if (errors > 0) log(`   ❌ Errors: ${errors}`, 'error');
+                
+                // Refresh data status
+                await loadDataStatus();
+                
+            } catch (e) {
+                log(`❌ Backfill error: ${e.message}`, 'error');
+                console.error(e);
+            }
+        }
         
         // ══════════════════════════════════════════════════════════════
         // SCHEDULER LOGS
