@@ -15929,6 +15929,11 @@
             // App Capital (Stablecoins proxy)
             appCapital: 0,
             appCapitalHistory: [],
+            // Settlement Layer (L1 + L2 + Bridge TX Volume)
+            l1DailyVolume: 0,
+            l2DailyVolume: 0,
+            bridgeDailyVolume: 0,
+            dailySettlement: 0,
             // Staking Yield (from Lido API)
             stakingApr: 0,
             stakingAprSma: 0,
@@ -16306,7 +16311,7 @@
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -16326,10 +16331,12 @@
                     safeFetchSupabase(`${baseUrl}/historical_lending_tvl?select=date,total_tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_volatility?select=date,volatility_30d&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_tvl?select=date,chain,tvl&order=date.desc&limit=${limit * 10}`),
-                    safeFetchSupabase(`${baseUrl}/historical_nvt?select=date,nvt_ratio&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_nvt?select=date,nvt_ratio,tx_volume_usd&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_daily_issuance?select=date,daily_issuance&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_transactions?select=date,tx_count&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_transactions?select=date,chain,tx_count&order=date.desc&limit=${limit * 10}`)
+                    safeFetchSupabase(`${baseUrl}/historical_l2_transactions?select=date,chain,tx_count&order=date.desc&limit=${limit * 10}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_eth&order=date.desc&limit=${limit * 10}`),
+                    safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 10}`)
                 ]);
                 
                 // 데이터 저장 (10개 이상일 때만)
@@ -16539,6 +16546,58 @@
                     });
                     
                     log(`   ✓ NVT: ${state.supabaseNvtHistory.length} records (7-day MA)`);
+                    
+                    // Calculate dailySettlement from L1 TX Volume (stored in NVT table)
+                    const recentNvt = nvtData.filter(d => d.tx_volume_usd > 0).slice(0, 7);
+                    if (recentNvt.length > 0) {
+                        const avgL1Volume = recentNvt.reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / recentNvt.length;
+                        state.l1DailyVolume = avgL1Volume;
+                        log(`   ✓ L1 Daily Volume: $${(avgL1Volume / 1e9).toFixed(2)}B (7-day avg)`);
+                    }
+                }
+                
+                // L2 TX Volume (aggregate by date) for Settlement Layer
+                if (l2TxVolumeData && l2TxVolumeData.length > 0) {
+                    const l2VolByDate = {};
+                    l2TxVolumeData.forEach(d => {
+                        const dateKey = d.date;
+                        if (!l2VolByDate[dateKey]) l2VolByDate[dateKey] = 0;
+                        l2VolByDate[dateKey] += parseFloat(d.tx_volume_eth || 0);
+                    });
+                    
+                    // Get recent 7 days average
+                    const sortedDates = Object.keys(l2VolByDate).sort().reverse().slice(0, 7);
+                    if (sortedDates.length > 0) {
+                        const avgL2VolumeEth = sortedDates.reduce((sum, date) => sum + l2VolByDate[date], 0) / sortedDates.length;
+                        const ethPrice = state.price || 3500;
+                        state.l2DailyVolume = avgL2VolumeEth * ethPrice;
+                        log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (7-day avg)`);
+                    }
+                }
+                
+                // Bridge Volume (aggregate by date) for Settlement Layer
+                if (bridgeVolumeData && bridgeVolumeData.length > 0) {
+                    const bridgeByDate = {};
+                    bridgeVolumeData.forEach(d => {
+                        const dateKey = d.date;
+                        if (!bridgeByDate[dateKey]) bridgeByDate[dateKey] = 0;
+                        bridgeByDate[dateKey] += parseFloat(d.bridge_volume_eth || 0);
+                    });
+                    
+                    // Get recent 7 days average
+                    const sortedDates = Object.keys(bridgeByDate).sort().reverse().slice(0, 7);
+                    if (sortedDates.length > 0) {
+                        const avgBridgeVolumeEth = sortedDates.reduce((sum, date) => sum + bridgeByDate[date], 0) / sortedDates.length;
+                        const ethPrice = state.price || 3500;
+                        state.bridgeDailyVolume = avgBridgeVolumeEth * ethPrice;
+                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e9).toFixed(2)}B (7-day avg)`);
+                    }
+                }
+                
+                // Calculate total dailySettlement (L1 + L2 + Bridge)
+                if (state.l1DailyVolume || state.l2DailyVolume || state.bridgeDailyVolume) {
+                    state.dailySettlement = (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0) + (state.bridgeDailyVolume || 0);
+                    log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1+L2+Bridge)`);
                 }
                 
                 if (issuanceData.length > 10) {

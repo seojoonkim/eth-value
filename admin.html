@@ -264,6 +264,8 @@
         const DUNE_TX_VOLUME_QUERY_ID = 6350858;
         const DUNE_ACTIVE_ADDR_QUERY_ID = 6352303;
         const DUNE_L2_ACTIVE_ADDR_QUERY_ID = 6352308;
+        const DUNE_L2_TX_VOLUME_QUERY_ID = 6352386;
+        const DUNE_BRIDGE_VOLUME_QUERY_ID = 6352417;
         let supabase;
         
         // CSV Data Storage
@@ -1012,7 +1014,9 @@
             eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth', expectedDays: 1095, phase: 4, depends: ['ethereum_tvl', 'eth_price'] },
             global_mcap: { name: 'Global Market Cap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl', expectedDays: 365, phase: 4 },
             dex_by_protocol: { name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', valueField: 'volume', format: 'tvl', aggregate: true, expectedDays: 3000, phase: 4 },
-            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number', expectedDays: 1, phase: 4 }
+            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number', expectedDays: 1, phase: 4 },
+            l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
+            bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' }
         };
 
         function formatValue(val, format) {
@@ -2912,6 +2916,158 @@
                 const { error } = await batchUpsert('historical_network_stats', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : 1;
+            },
+
+            // L2 TX Volume - Dune API (Settlement Layer 계산용)
+            async l2_tx_volume() {
+                log('  🔍 Fetching L2 TX Volume...', 'info');
+                
+                if (!DUNE_API_KEY) {
+                    log('  ⚠️ No Dune API key', 'warn');
+                    return 0;
+                }
+                
+                try {
+                    log('  📡 Fetching from Dune API...', 'info');
+                    
+                    // Paginate through all results
+                    let allRows = [];
+                    let offset = 0;
+                    const pageSize = 1000;
+                    
+                    while (true) {
+                        const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_L2_TX_VOLUME_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
+                            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                        });
+                        
+                        if (!response.ok) break;
+                        
+                        const data = await response.json();
+                        const rows = data.result?.rows || [];
+                        
+                        if (rows.length === 0) break;
+                        
+                        allRows = allRows.concat(rows);
+                        log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`, 'info');
+                        
+                        if (rows.length < pageSize) break;
+                        offset += pageSize;
+                    }
+                    
+                    if (allRows.length > 0) {
+                        log(`  📊 Got ${allRows.length} L2 TX Volume records from Dune`, 'info');
+                        
+                        const records = allRows.map(row => {
+                            let dateStr = row.date;
+                            if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                                dateStr = dateStr.split(' ')[0];
+                            }
+                            
+                            return {
+                                date: dateStr,
+                                timestamp: new Date(dateStr).getTime(),
+                                chain: row.chain,
+                                tx_volume_eth: parseFloat(row.tx_volume_eth) || 0,
+                                source: 'dune'
+                            };
+                        }).filter(r => r.tx_volume_eth > 0);
+                        
+                        // Show samples by chain
+                        const chains = [...new Set(records.map(r => r.chain))];
+                        log(`  📊 Chains: ${chains.join(', ')}`, 'info');
+                        
+                        const { error } = await batchUpsert('historical_l2_tx_volume', records, 'date,chain');
+                        if (error) {
+                            log(`  ❌ Save error: ${error.message}`, 'error');
+                            return 0;
+                        }
+                        
+                        log(`  ✅ L2 TX Volume: ${records.length} records saved from Dune`, 'success');
+                        return records.length;
+                    }
+                    
+                    log('  ⚠️ No data from Dune', 'warn');
+                    return 0;
+                } catch (e) {
+                    log(`  ❌ Dune API error: ${e.message}`, 'error');
+                    return 0;
+                }
+            },
+
+            // Bridge Volume - Dune API (Settlement Layer 계산용)
+            async bridge_volume() {
+                log('  🔍 Fetching Bridge Volume...', 'info');
+                
+                if (!DUNE_API_KEY) {
+                    log('  ⚠️ No Dune API key', 'warn');
+                    return 0;
+                }
+                
+                try {
+                    log('  📡 Fetching from Dune API...', 'info');
+                    
+                    // Paginate through all results
+                    let allRows = [];
+                    let offset = 0;
+                    const pageSize = 1000;
+                    
+                    while (true) {
+                        const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_BRIDGE_VOLUME_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
+                            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                        });
+                        
+                        if (!response.ok) break;
+                        
+                        const data = await response.json();
+                        const rows = data.result?.rows || [];
+                        
+                        if (rows.length === 0) break;
+                        
+                        allRows = allRows.concat(rows);
+                        log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`, 'info');
+                        
+                        if (rows.length < pageSize) break;
+                        offset += pageSize;
+                    }
+                    
+                    if (allRows.length > 0) {
+                        log(`  📊 Got ${allRows.length} Bridge Volume records from Dune`, 'info');
+                        
+                        const records = allRows.map(row => {
+                            let dateStr = row.date;
+                            if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                                dateStr = dateStr.split(' ')[0];
+                            }
+                            
+                            return {
+                                date: dateStr,
+                                timestamp: new Date(dateStr).getTime(),
+                                chain: row.chain,
+                                bridge_volume_eth: parseFloat(row.bridge_volume_eth) || 0,
+                                source: 'dune'
+                            };
+                        }).filter(r => r.bridge_volume_eth > 0);
+                        
+                        // Show samples by chain
+                        const chains = [...new Set(records.map(r => r.chain))];
+                        log(`  📊 Chains: ${chains.join(', ')}`, 'info');
+                        
+                        const { error } = await batchUpsert('historical_bridge_volume', records, 'date,chain');
+                        if (error) {
+                            log(`  ❌ Save error: ${error.message}`, 'error');
+                            return 0;
+                        }
+                        
+                        log(`  ✅ Bridge Volume: ${records.length} records saved from Dune`, 'success');
+                        return records.length;
+                    }
+                    
+                    log('  ⚠️ No data from Dune', 'warn');
+                    return 0;
+                } catch (e) {
+                    log(`  ❌ Dune API error: ${e.message}`, 'error');
+                    return 0;
+                }
             }
         };
 
