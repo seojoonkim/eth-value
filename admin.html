@@ -3267,7 +3267,7 @@
                         log(`  📊 Got ${allRows.length} Stablecoin Volume records from Dune`, 'info');
                         
                         const records = allRows.map(row => {
-                            let dateStr = row.day || row.date;
+                            let dateStr = row.block_date || row.day || row.date;
                             if (typeof dateStr === 'string' && dateStr.includes(' ')) {
                                 dateStr = dateStr.split(' ')[0];
                             }
@@ -3278,7 +3278,7 @@
                                 daily_volume: parseFloat(row.daily_volume_usd || row.total_volume || row.volume) || 0,
                                 source: 'dune'
                             };
-                        }).filter(r => r.daily_volume > 0);
+                        }).filter(r => r.daily_volume > 0 && r.date);
                         
                         const { error } = await batchUpsert('historical_stablecoin_volume', records, 'date');
                         if (error) {
