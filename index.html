@@ -11054,7 +11054,7 @@
                 <div class="metric-card" data-metric="l1Volume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L1 TX Volume (Daily)</h4>
+                            <h4 data-i18n="metric.l1Volume">L1 TX Volume (Daily)</h4>
                             <div class="metric-value-large" id="l1-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11074,7 +11074,7 @@
                 <div class="metric-card" data-metric="l2Volume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L2 TX Volume (Daily)</h4>
+                            <h4 data-i18n="metric.l2Volume">L2 TX Volume (Daily)</h4>
                             <div class="metric-value-large" id="l2-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11094,7 +11094,7 @@
                 <div class="metric-card" data-metric="bridgeVolume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Bridge Volume (Daily)</h4>
+                            <h4 data-i18n="metric.bridgeVolume">Bridge Volume (Daily)</h4>
                             <div class="metric-value-large" id="bridge-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11108,6 +11108,26 @@
                         <span>🔷 Dune</span>
                         <span class="change" id="bridge-volume-change">--</span>
                         <div class="metric-desc" data-i18n="desc.bridgeVolume">Daily ETH bridged to L2s. Cross-chain capital flow indicator.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="whaleTx">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.whaleTx">Whale Transactions</h4>
+                            <div class="metric-value-large" id="whale-tx-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="whale-tx-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>🔷 Dune</span>
+                        <span class="change" id="whale-tx-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.whaleTx">Daily 1000+ ETH transactions. Large player activity indicator.</div>
                     </div>
                 </div>
 
@@ -14825,7 +14845,15 @@
                 'desc.nvt': "Market cap ÷ on-chain volume (7-day avg). Lower = undervalued.",
                 'desc.commitment': "Staked + DeFi ETH ÷ supply. Higher ratio = more committed holders.",
                 'desc.appCapital': "Capital deployed in Ethereum apps (DeFi, stables, etc.).",
-                'desc.stakingYield': "Annual staking return. Benchmark yield for ETH investment."
+                'desc.stakingYield': "Annual staking return. Benchmark yield for ETH investment.",
+                'desc.l1Volume': "Daily ETH value transferred on mainnet. Settlement layer metric.",
+                'desc.l2Volume': "Daily ETH value transferred on L2s. Ecosystem activity metric.",
+                'desc.bridgeVolume': "Daily ETH bridged to L2s. Cross-chain capital flow indicator.",
+                'desc.whaleTx': "Daily 1000+ ETH transactions. Large player activity indicator.",
+                'metric.l1Volume': "L1 TX Volume (Daily)",
+                'metric.l2Volume': "L2 TX Volume (Daily)",
+                'metric.bridgeVolume': "Bridge Volume (Daily)",
+                'metric.whaleTx': "Whale Transactions"
             },
             ko: {
                 'status.live': '실시간',
@@ -15113,7 +15141,15 @@
                 'desc.nvt': "시총 ÷ 온체인 거래량 (7일 평균). 낮을수록 저평가.",
                 'desc.commitment': "스테이킹+DeFi ETH ÷ 공급량. 높을수록 장기 보유자 많음.",
                 'desc.appCapital': "이더리움 앱에 배치된 자본 (DeFi, 스테이블 등).",
-                'desc.stakingYield': "연간 스테이킹 수익률. ETH 투자 벤치마크 수익률."
+                'desc.stakingYield': "연간 스테이킹 수익률. ETH 투자 벤치마크 수익률.",
+                'desc.l1Volume': "메인넷 일일 ETH 전송량. 정산 레이어 지표.",
+                'desc.l2Volume': "L2 일일 ETH 전송량. 생태계 활동 지표.",
+                'desc.bridgeVolume': "L2로 브릿지된 일일 ETH. 크로스체인 자금 흐름.",
+                'desc.whaleTx': "1000 ETH 이상 대형 거래 수. 고래 활동 지표.",
+                'metric.l1Volume': "L1 TX 볼륨 (일일)",
+                'metric.l2Volume': "L2 TX 볼륨 (일일)",
+                'metric.bridgeVolume': "브릿지 볼륨 (일일)",
+                'metric.whaleTx': "고래 거래"
             },
             zh: {
                 'status.live': '实时',
@@ -15401,7 +15437,15 @@
                 'desc.nvt': "市值÷交易量。越低越可能被低估。",
                 'desc.commitment': "质押+DeFi ETH÷供应量。越高=长期持有者越多。",
                 'desc.appCapital': "部署在以太坊应用中的资本(DeFi、稳定币等)。",
-                'desc.stakingYield': "年化质押收益率。ETH投资基准收益。"
+                'desc.stakingYield': "年化质押收益率。ETH投资基准收益。",
+                'desc.l1Volume': "主网每日ETH转账量。结算层指标。",
+                'desc.l2Volume': "L2每日ETH转账量。生态活动指标。",
+                'desc.bridgeVolume': "每日桥接至L2的ETH。跨链资金流动指标。",
+                'desc.whaleTx': "1000+ ETH大额交易数。巨鲸活动指标。",
+                'metric.l1Volume': "L1交易量 (日)",
+                'metric.l2Volume': "L2交易量 (日)",
+                'metric.bridgeVolume': "桥接量 (日)",
+                'metric.whaleTx': "巨鲸交易"
             },
             ja: {
                 'status.live': 'ライブ',
@@ -15689,7 +15733,15 @@
                 'desc.nvt': "時価総額÷取引量。低い=過小評価の可能性。",
                 'desc.commitment': "ステーキング+DeFi ETH÷供給量。高い=長期保有者多。",
                 'desc.appCapital': "イーサリアムアプリに配置された資本(DeFi、ステーブル等)。",
-                'desc.stakingYield': "年間ステーキング利回り。ETH投資ベンチマーク利回り。"
+                'desc.stakingYield': "年間ステーキング利回り。ETH投資ベンチマーク利回り。",
+                'desc.l1Volume': "メインネット日次ETH送金量。決済層指標。",
+                'desc.l2Volume': "L2日次ETH送金量。エコシステム活動指標。",
+                'desc.bridgeVolume': "L2へのETHブリッジ量。クロスチェーン資金フロー。",
+                'desc.whaleTx': "1000+ ETH大口取引数。クジラ活動指標。",
+                'metric.l1Volume': "L1取引量 (日次)",
+                'metric.l2Volume': "L2取引量 (日次)",
+                'metric.bridgeVolume': "ブリッジ量 (日次)",
+                'metric.whaleTx': "クジラ取引"
             }
         };
 
@@ -15947,6 +15999,7 @@
         let l1VolumeChart = null;
         let l2VolumeChart = null;
         let bridgeVolumeChart = null;
+        let whaleTxChart = null;
         let historicalMainChart = null;
         
         // Chart colors helper - returns appropriate colors for dark/light mode
@@ -16001,6 +16054,11 @@
             l1VolumeHistory: [],
             l2VolumeHistory: [],
             bridgeVolumeHistory: [],
+            
+            // Whale Transactions
+            whaleTxCount: 0,
+            whaleTxVolume: 0,
+            whaleTxHistory: [],
             // Staking Yield (from Lido API)
             stakingApr: 0,
             stakingAprSma: 0,
@@ -16378,7 +16436,7 @@
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData, whaleTxData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -16403,7 +16461,8 @@
                     safeFetchSupabase(`${baseUrl}/historical_transactions?select=date,tx_count&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_transactions?select=date,chain,tx_count&order=date.desc&limit=${limit * 10}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_eth&order=date.desc&limit=${limit * 10}`),
-                    safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 10}`)
+                    safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 10}`),
+                    safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`)
                 ]);
                 
                 // 데이터 저장 (10개 이상일 때만)
@@ -16688,6 +16747,25 @@
                 if (state.l1DailyVolume || state.bridgeDailyVolume) {
                     state.dailySettlement = (state.l1DailyVolume || 0) + (state.bridgeDailyVolume || 0);
                     log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1+Bridge)`);
+                }
+                
+                // Whale Transactions (1000+ ETH)
+                if (whaleTxData && whaleTxData.length > 0) {
+                    log(`   ✓ Whale TX: ${whaleTxData.length} records`);
+                    
+                    state.whaleTxHistory = whaleTxData
+                        .map(d => ({ 
+                            date: new Date(d.date), 
+                            value: parseInt(d.whale_tx_count) || 0,
+                            volume: parseFloat(d.whale_volume_eth) || 0
+                        }))
+                        .reverse();
+                    
+                    // Latest values
+                    const latest = whaleTxData[0];
+                    state.whaleTxCount = parseInt(latest.whale_tx_count) || 0;
+                    state.whaleTxVolume = parseFloat(latest.whale_volume_eth) || 0;
+                    log(`   ✓ Whale TX Today: ${state.whaleTxCount} txs, ${state.whaleTxVolume.toFixed(0)} ETH`);
                 }
                 
                 if (issuanceData.length > 10) {
@@ -18882,6 +18960,17 @@
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
+            // Whale Transactions
+            if (state.whaleTxHistory && state.whaleTxHistory.length > 0) {
+                updateMetricChart('whale-tx-chart', whaleTxChart, state.whaleTxHistory, '#f59e0b', 'whaleTx');
+                document.getElementById('whale-tx-value').textContent = fmt.num(state.whaleTxCount) + ' txs';
+                if (state.whaleTxHistory.length > 1) {
+                    const first = state.whaleTxHistory[0].value, last = state.whaleTxHistory[state.whaleTxHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('whale-tx-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
         }
 
         // NVT Ratio 계산 및 차트 업데이트
@@ -20896,6 +20985,7 @@
             if (key === 'l1Volume' && l1VolumeChart) l1VolumeChart.destroy();
             if (key === 'l2Volume' && l2VolumeChart) l2VolumeChart.destroy();
             if (key === 'bridgeVolume' && bridgeVolumeChart) bridgeVolumeChart.destroy();
+            if (key === 'whaleTx' && whaleTxChart) whaleTxChart.destroy();
 
             const formatFn = (key === 'staking' || key === 'ethInDefi') 
                 ? (v) => fmt.num(v) + ' ETH'
@@ -20939,6 +21029,7 @@
             if (key === 'l1Volume') l1VolumeChart = chart;
             if (key === 'l2Volume') l2VolumeChart = chart;
             if (key === 'bridgeVolume') bridgeVolumeChart = chart;
+            if (key === 'whaleTx') whaleTxChart = chart;
             
             // Remove loading spinner after chart is rendered
             setChartLoading(canvasId, false);
@@ -21793,6 +21884,10 @@
                     history = state.bridgeVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('bridge-volume-chart', bridgeVolumeChart, history, '#06b6d4', 'bridgeVolume');
                     changeElId = 'bridge-volume-change';
+                } else if (metric === 'whaleTx') {
+                    history = state.whaleTxHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('whale-tx-chart', whaleTxChart, history, '#f59e0b', 'whaleTx');
+                    changeElId = 'whale-tx-change';
                 }
                 
                 // Update change percentage based on selected period

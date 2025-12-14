@@ -266,6 +266,7 @@
         const DUNE_L2_ACTIVE_ADDR_QUERY_ID = 6352308;
         const DUNE_L2_TX_VOLUME_QUERY_ID = 6352386;
         const DUNE_BRIDGE_VOLUME_QUERY_ID = 6352417;
+        const DUNE_WHALE_TX_QUERY_ID = 6352498;
         let supabase;
         
         // CSV Data Storage
@@ -990,6 +991,7 @@
             l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true, expectedDays: 3000, phase: 1, source: 'growthepie API' },
             l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
             bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
+            whale_tx: { name: 'Whale Transactions', icon: '🐋', table: 'historical_whale_tx', valueField: 'whale_tx_count', format: 'number', expectedDays: 1095, phase: 1, source: '🔷 Dune API' },
             
             // ═══════════════════════════════════════════════════════════════════
             // PHASE 2: 1차 계산 (Phase 1 데이터 의존)
@@ -3059,6 +3061,78 @@
                         }
                         
                         log(`  ✅ Bridge Volume: ${records.length} records saved from Dune`, 'success');
+                        return records.length;
+                    }
+                    
+                    log('  ⚠️ No data from Dune', 'warn');
+                    return 0;
+                } catch (e) {
+                    log(`  ❌ Dune API error: ${e.message}`, 'error');
+                    return 0;
+                }
+            },
+
+            // Whale Transactions - Dune API (1000+ ETH transactions)
+            async whale_tx() {
+                log('  🔍 Fetching Whale Transactions...', 'info');
+                
+                if (!DUNE_API_KEY) {
+                    log('  ⚠️ No Dune API key', 'warn');
+                    return 0;
+                }
+                
+                try {
+                    log('  📡 Fetching from Dune API...', 'info');
+                    
+                    // Paginate through all results
+                    let allRows = [];
+                    let offset = 0;
+                    const pageSize = 1000;
+                    
+                    while (true) {
+                        const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_WHALE_TX_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
+                            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                        });
+                        
+                        if (!response.ok) break;
+                        
+                        const data = await response.json();
+                        const rows = data.result?.rows || [];
+                        
+                        if (rows.length === 0) break;
+                        
+                        allRows = allRows.concat(rows);
+                        log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`, 'info');
+                        
+                        if (rows.length < pageSize) break;
+                        offset += pageSize;
+                    }
+                    
+                    if (allRows.length > 0) {
+                        log(`  📊 Got ${allRows.length} Whale TX records from Dune`, 'info');
+                        
+                        const records = allRows.map(row => {
+                            let dateStr = row.date;
+                            if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                                dateStr = dateStr.split(' ')[0];
+                            }
+                            
+                            return {
+                                date: dateStr,
+                                timestamp: new Date(dateStr).getTime(),
+                                whale_tx_count: parseInt(row.whale_tx_count) || 0,
+                                whale_volume_eth: parseFloat(row.whale_volume_eth) || 0,
+                                source: 'dune'
+                            };
+                        }).filter(r => r.whale_tx_count > 0);
+                        
+                        const { error } = await batchUpsert('historical_whale_tx', records, 'date');
+                        if (error) {
+                            log(`  ❌ Save error: ${error.message}`, 'error');
+                            return 0;
+                        }
+                        
+                        log(`  ✅ Whale TX: ${records.length} records saved from Dune`, 'success');
                         return records.length;
                     }
                     
