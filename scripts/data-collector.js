@@ -32,7 +32,8 @@ const DUNE_QUERIES = {
     WHALE_TX: 6352498,
     NEW_ADDR: 6352513,
     MVRV: 6354057,
-    STABLECOIN_VOL: 6353868
+    STABLECOIN_VOL: 6353868,
+    GAS_PRICE: 6354506  // Daily average gas price
 };
 
 // ============================================================
@@ -1074,7 +1075,7 @@ async function collect_dune_mvrv() {
 
 // 39. Stablecoin Volume (Dune)
 async function collect_dune_stablecoin_vol() {
-    console.log('\n💵 [39/39] Stablecoin Volume (Dune)...');
+    console.log('\n💵 [39/40] Stablecoin Volume (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.STABLECOIN_VOL, 5000);
@@ -1091,6 +1092,63 @@ async function collect_dune_stablecoin_vol() {
     return await upsertBatch('historical_stablecoin_volume', records);
 }
 
+// 40. Gas Price (Dune) - Daily average gas price
+async function collect_dune_gas_price() {
+    console.log('\n⛽ [40/40] Gas Price (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (DUNE_QUERIES.GAS_PRICE === 0) { 
+        console.log('  ⏭️ Skipped - Query ID not set'); 
+        return 0; 
+    }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.GAS_PRICE, 5000);
+    if (!rows || rows.length === 0) return 0;
+    
+    // Update historical_gas_burn table with gas price data
+    const records = rows.map(r => {
+        // Parse date: "2025-12-14 00:00" or "2025-12-14T00:00:00" -> "2025-12-14"
+        let dateStr = r.block_date || r.date || '';
+        if (dateStr.includes(' ')) {
+            dateStr = dateStr.split(' ')[0];
+        } else if (dateStr.includes('T')) {
+            dateStr = dateStr.split('T')[0];
+        }
+        
+        return {
+            date: dateStr,
+            avg_gas_price_gwei: parseFloat(r.avg_gas_price_gwei || r.gas_price_gwei || r.avg_gas_price || 0),
+            gas_utilization: parseFloat(r.gas_utilization || r.utilization || 0),
+            transaction_count: parseInt(r.tx_count || r.transaction_count || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && r.avg_gas_price_gwei > 0);
+    
+    console.log(`  📊 Got ${records.length} records with gas price`);
+    if (records.length > 0) {
+        console.log(`  📅 Date range: ${records[records.length-1].date} to ${records[0].date}`);
+        console.log(`  ⛽ Sample: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(2)} Gwei`);
+    }
+    
+    // Update existing records in historical_gas_burn
+    let updated = 0;
+    for (const record of records) {
+        const { error } = await supabase
+            .from('historical_gas_burn')
+            .update({ 
+                avg_gas_price_gwei: record.avg_gas_price_gwei,
+                gas_utilization: record.gas_utilization > 0 ? record.gas_utilization : null,
+                transaction_count: record.transaction_count || null,
+                source: 'dune'
+            })
+            .eq('date', record.date);
+        
+        if (!error) updated++;
+    }
+    
+    console.log(`  ✅ Updated ${updated} records in historical_gas_burn`);
+    return updated;
+}
+
 // ============================================================
 // Main
 // ============================================================
@@ -1098,7 +1156,7 @@ async function main() {
     console.log('🚀 ETHval Data Collector v7.0');
     console.log(`📅 ${new Date().toISOString()}`);
     console.log('='.repeat(60));
-    console.log('Collecting 39 datasets (29 API + 10 Dune)...\n');
+    console.log('Collecting 40 datasets (29 API + 11 Dune)...\n');
     if (DUNE_API_KEY) {
         console.log('✅ Dune API Key detected - will collect Dune data');
     } else {
@@ -1152,7 +1210,8 @@ async function main() {
     results.dune_whale = await collect_dune_whale(); await sleep(1000);
     results.dune_new_addr = await collect_dune_new_addr(); await sleep(1000);
     results.dune_mvrv = await collect_dune_mvrv(); await sleep(1000);
-    results.dune_stablecoin_vol = await collect_dune_stablecoin_vol();
+    results.dune_stablecoin_vol = await collect_dune_stablecoin_vol(); await sleep(1000);
+    results.dune_gas_price = await collect_dune_gas_price();
     
     // Summary
     console.log('\n' + '='.repeat(60));
@@ -1188,7 +1247,7 @@ async function main() {
             failed_count: failed,
             failed_datasets: JSON.stringify(failedDatasets),
             duration_seconds: duration,
-            total_datasets: 39
+            total_datasets: 40
         }, { onConflict: 'run_date' });
         
         if (error) console.error('Failed to save scheduler log:', error.message);

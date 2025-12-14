@@ -81,7 +81,8 @@
                 </div>
                 <button class="btn btn-secondary" onclick="showConfig()">⚙️ Config</button>
                 <button class="btn btn-success" onclick="collectAll()">🚀 Collect All</button>
-                <button class="btn btn-warning" onclick="backfillGasPrice()" title="Fetch historical gas price from Etherscan">⛽ Backfill Gas Price</button>
+                <button class="btn btn-warning" onclick="backfillGasPrice()" title="Fetch historical gas price from Etherscan">⛽ Backfill Gas (Etherscan)</button>
+                <button class="btn btn-warning" onclick="collectDuneGasPrice()" title="Fetch gas price from Dune API">⛽ Gas Price (Dune)</button>
                 <button class="btn btn-primary" onclick="verifyAll()">🔍 Verify All</button>
                 <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
             </div>
@@ -304,6 +305,7 @@
         const DUNE_NEW_ADDR_QUERY_ID = 6352513;
         const DUNE_MVRV_QUERY_ID = 6354057;
         const DUNE_STABLECOIN_VOL_QUERY_ID = 6353868;
+        const DUNE_GAS_PRICE_QUERY_ID = 6354506;
         let supabase;
         
         // CSV Data Storage
@@ -3643,6 +3645,146 @@
                 
             } catch (e) {
                 log(`❌ Backfill error: ${e.message}`, 'error');
+                console.error(e);
+            }
+        }
+        
+        // ══════════════════════════════════════════════════════════════
+        // DUNE GAS PRICE COLLECTION
+        // ══════════════════════════════════════════════════════════════
+        async function collectDuneGasPrice() {
+            if (!supabase) {
+                log('❌ Supabase not connected', 'error');
+                return;
+            }
+            if (!DUNE_API_KEY) {
+                log('❌ Dune API Key not set. Please configure in ⚙️ Config', 'error');
+                return;
+            }
+            
+            log('⛽ Collecting Gas Price from Dune API...', 'info');
+            log(`   Query ID: ${DUNE_GAS_PRICE_QUERY_ID}`, 'info');
+            
+            try {
+                // Fetch from Dune API with pagination
+                const allRows = [];
+                const pageSize = 1000;
+                let offset = 0;
+                const maxRows = 5000;
+                
+                while (offset < maxRows) {
+                    log(`   📥 Fetching rows ${offset} - ${offset + pageSize}...`, 'info');
+                    
+                    const response = await fetch(
+                        `https://api.dune.com/api/v1/query/${DUNE_GAS_PRICE_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`,
+                        { headers: { 'X-Dune-API-Key': DUNE_API_KEY } }
+                    );
+                    
+                    if (!response.ok) {
+                        log(`   ❌ Dune API error: ${response.status}`, 'error');
+                        break;
+                    }
+                    
+                    const data = await response.json();
+                    const rows = data?.result?.rows || [];
+                    
+                    if (rows.length === 0) break;
+                    
+                    allRows.push(...rows);
+                    log(`      Got ${rows.length} rows (total: ${allRows.length})`, 'success');
+                    
+                    if (rows.length < pageSize) break;
+                    
+                    offset += pageSize;
+                    await new Promise(r => setTimeout(r, 500)); // Rate limit
+                }
+                
+                if (allRows.length === 0) {
+                    log('   ⚠️ No data returned from Dune', 'warn');
+                    return;
+                }
+                
+                log(`   📊 Total rows fetched: ${allRows.length}`, 'info');
+                
+                // Parse and prepare records
+                const records = allRows.map(r => {
+                    // Parse date: "2025-12-14 00:00" -> "2025-12-14"
+                    let dateStr = r.block_date || r.date || '';
+                    if (dateStr.includes(' ')) {
+                        dateStr = dateStr.split(' ')[0];
+                    } else if (dateStr.includes('T')) {
+                        dateStr = dateStr.split('T')[0];
+                    }
+                    
+                    return {
+                        date: dateStr,
+                        avg_gas_price_gwei: parseFloat(r.avg_gas_price_gwei || r.gas_price_gwei || 0),
+                        gas_utilization: parseFloat(r.gas_utilization || 0),
+                        transaction_count: parseInt(r.tx_count || r.transaction_count || 0)
+                    };
+                }).filter(r => r.date && r.avg_gas_price_gwei > 0);
+                
+                log(`   📦 Valid records: ${records.length}`, 'info');
+                
+                if (records.length > 0) {
+                    log(`   📅 Date range: ${records[records.length-1].date} to ${records[0].date}`, 'info');
+                    log(`   ⛽ Latest: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(4)} Gwei`, 'info');
+                }
+                
+                // Update Supabase
+                log('   💾 Updating Supabase...', 'info');
+                
+                let updated = 0;
+                let errors = 0;
+                
+                // Process in batches
+                const batchSize = 50;
+                for (let i = 0; i < records.length; i += batchSize) {
+                    const batch = records.slice(i, i + batchSize);
+                    
+                    for (const record of batch) {
+                        const updateData = { 
+                            avg_gas_price_gwei: record.avg_gas_price_gwei,
+                            source: 'dune'
+                        };
+                        
+                        // Only include gas_utilization and transaction_count if valid
+                        if (record.gas_utilization > 0) {
+                            updateData.gas_utilization = record.gas_utilization;
+                        }
+                        if (record.transaction_count > 0) {
+                            updateData.transaction_count = record.transaction_count;
+                        }
+                        
+                        const { error } = await supabase
+                            .from('historical_gas_burn')
+                            .update(updateData)
+                            .eq('date', record.date);
+                        
+                        if (error) {
+                            errors++;
+                        } else {
+                            updated++;
+                        }
+                    }
+                    
+                    // Log progress every 200 records
+                    if ((i + batchSize) % 200 === 0 || i + batchSize >= records.length) {
+                        log(`      Progress: ${Math.min(i + batchSize, records.length)}/${records.length} (${updated} updated, ${errors} errors)`, 'info');
+                    }
+                    
+                    await new Promise(r => setTimeout(r, 50)); // Rate limit
+                }
+                
+                log(`\n✅ Dune Gas Price Collection Complete!`, 'success');
+                log(`   📊 Updated: ${updated}`, 'success');
+                if (errors > 0) log(`   ❌ Errors: ${errors}`, 'error');
+                
+                // Refresh data status
+                await loadDataStatus();
+                
+            } catch (e) {
+                log(`❌ Dune collection error: ${e.message}`, 'error');
                 console.error(e);
             }
         }

@@ -1742,7 +1742,7 @@
         }
         
         .metric-card:hover {
-            z-index: 100;
+            z-index: 1000;
             border-color: var(--text-muted);
         }
 
@@ -11136,6 +11136,28 @@
                     </div>
                 </div>
 
+                <!-- 11. Commitment Ratio (바로 다음) -->
+                <div class="metric-card" data-metric="commitmentRatio">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Commitment Ratio</h4>
+                            <div class="metric-value-large" id="commitment-ratio-value">--%</div>
+                        </div>
+                        <div class="metric-tabs">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="commitment-ratio-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>DefiLlama</span>
+                        <span class="change" id="commitment-ratio-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.commitment">Staked + DeFi ETH ÷ supply. Higher ratio = more committed holders.</div>
+                    </div>
+                </div>
+
                 <!-- 4. Staked ETH -->
                 <div class="metric-card" data-metric="staking">
                     <div class="metric-header">
@@ -11413,28 +11435,6 @@
                         <span>Calculated</span>
                         <span class="change" id="nvt-change">--</span>
                         <div class="metric-desc" data-i18n="desc.nvt">Market cap ÷ on-chain volume (7-day avg). Lower = undervalued.</div>
-                    </div>
-                </div>
-
-                <!-- 16. Commitment Ratio -->
-                <div class="metric-card" data-metric="commitmentRatio">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Commitment Ratio</h4>
-                            <div class="metric-value-large" id="commitment-ratio-value">--%</div>
-                        </div>
-                        <div class="metric-tabs">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="commitment-ratio-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Calculated</span>
-                        <span class="change" id="commitment-ratio-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.commitment">Staked + DeFi ETH ÷ supply. Higher ratio = more committed holders.</div>
                     </div>
                 </div>
             </div>
@@ -19937,6 +19937,7 @@
                 const l2Step = filteredL2.length > 0 ? Math.floor(filteredL2.length / timePoints) : 0;
                 
                 const labels = [];
+                const dates = []; // 실제 날짜 저장 (tooltip용)
                 const floatValues = [];
                 const stakingValues = [];
                 const defiValues = [];
@@ -19963,6 +19964,28 @@
                     const floatPctVal = Math.max(0, 100 - stakePctVal - defiPctVal - othersPctVal);
                     
                     labels.push(fmt.chartLabel(date));
+                    dates.push(date);
+                    floatValues.push(floatPctVal);
+                    stakingValues.push(stakePctVal);
+                    defiValues.push(defiPctVal);
+                    othersValues.push(othersPctVal);
+                }
+                
+                // 마지막 데이터 포인트 추가 (최신 데이터 보장)
+                const lastStaking = filteredStaking[filteredStaking.length - 1];
+                const lastTvl = filteredTvl[filteredTvl.length - 1];
+                const lastL2 = filteredL2.length > 0 ? filteredL2[filteredL2.length - 1] : null;
+                if (lastStaking && lastTvl && dates[dates.length - 1]?.getTime() !== lastStaking.date?.getTime()) {
+                    const priceAtTime = state.price || 3500;
+                    const ethInDefi = (lastTvl?.value || 0) / priceAtTime;
+                    const ethInL2 = (lastL2?.value || 0) / priceAtTime;
+                    const stakePctVal = (lastStaking.value / totalSupply) * 100;
+                    const defiPctVal = (ethInDefi / totalSupply) * 100;
+                    const othersPctVal = ((ethInL2 / totalSupply) * 100) + 3;
+                    const floatPctVal = Math.max(0, 100 - stakePctVal - defiPctVal - othersPctVal);
+                    
+                    labels.push(fmt.chartLabel(lastStaking.date));
+                    dates.push(lastStaking.date);
                     floatValues.push(floatPctVal);
                     stakingValues.push(stakePctVal);
                     defiValues.push(defiPctVal);
@@ -20039,8 +20062,20 @@
                                 boxHeight: 10,
                                 mode: 'index',
                                 intersect: false,
+                                position: 'average',
+                                xAlign: 'center',
+                                yAlign: 'bottom',
+                                caretPadding: 6,
+                                itemSort: function(a, b) {
+                                    // Float(0), Staking(1), DeFi(2), Others(3) → 순서 유지 (Float 먼저)
+                                    return a.datasetIndex - b.datasetIndex;
+                                },
                                 callbacks: {
                                     title: function(items) {
+                                        const idx = items[0]?.dataIndex;
+                                        if (dates && dates[idx]) {
+                                            return dates[idx].toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                        }
                                         return items[0]?.label || '';
                                     },
                                     label: function(context) {
@@ -20049,6 +20084,10 @@
                                 }
                             }
                         },
+                        layout: {
+                            padding: { left: 5, right: 5, top: 5, bottom: 5 }
+                        },
+                        clip: false,
                         scales: {
                             x: {
                                 display: true,
@@ -20297,24 +20336,49 @@
                 }
                 
                 // Use Supabase gas history if available, otherwise calculate from fees
-                let gasPriceDataSource = 'supabase';
+                let gasPriceDataSource = 'dune';
                 if (state.supabaseGasHistory && state.supabaseGasHistory.length > 10) {
+                    // Debug: check raw data
+                    const sample = state.supabaseGasHistory.slice(0, 5);
+                    log(`   Gas data sample:`, sample.map(d => ({
+                        date: d.date.toISOString().split('T')[0],
+                        gasPrice: d.gasPrice,
+                        burnt: d.burnt,
+                        util: d.utilization
+                    })));
+                    
                     // Check if we have real gas price data (not null)
                     const validGasPrices = state.supabaseGasHistory.filter(d => d.gasPrice > 0);
+                    log(`   Valid gas prices: ${validGasPrices.length} / ${state.supabaseGasHistory.length}`);
+                    
                     if (validGasPrices.length > 10) {
-                        log(`   Using Supabase Gas data: ${validGasPrices.length} points with real gas price`);
+                        log(`   Using Dune Gas data: ${validGasPrices.length} points with real gas price`);
                         state.gasPriceHistory = validGasPrices.map(d => ({
                             date: d.date,
                             value: d.gasPrice
                         }));
                     } else {
-                        // Gas price is null in Supabase, calculate from fees (still Supabase-based)
-                        log(`   Gas price null in Supabase, calculating from fees...`);
+                        // Gas price is null in Supabase, calculate from fees (estimated)
+                        log(`   Gas price null, calculating from burnt ETH...`);
+                        gasPriceDataSource = 'estimate';
                         state.gasPriceHistory = state.supabaseGasHistory.map(d => {
-                            // Estimate: burnt * gas_used_ratio / utilization
-                            const estimatedGasPrice = d.burnt > 0 ? (d.burnt * 1e9 / (15000000 * (d.utilization / 100 || 0.5))) : 15;
-                            return { date: d.date, value: Math.max(5, Math.min(500, estimatedGasPrice)) };
+                            // Estimate gas price from ETH burnt:
+                            // Daily Gas Used = block_gas_limit × blocks_per_day × utilization
+                            // blocks_per_day ≈ 86400 / 12 = 7200
+                            // Gas Price (Gwei) = ETH_Burnt × 1e9 / Daily_Gas_Used
+                            const blocksPerDay = 7200;
+                            const blockGasLimit = 15000000;
+                            const utilization = d.utilization > 0 ? d.utilization / 100 : 0.5;
+                            const dailyGasUsed = blockGasLimit * blocksPerDay * utilization;
+                            const estimatedGasPrice = d.burnt > 0 ? (d.burnt * 1e9 / dailyGasUsed) : 15;
+                            return { date: d.date, value: Math.max(1, Math.min(500, estimatedGasPrice)) };
                         });
+                        // Debug: show calculated samples
+                        const calcSample = state.gasPriceHistory.slice(-5);
+                        log(`   Calculated gas price sample (last 5):`, calcSample.map(d => ({
+                            date: d.date.toISOString().split('T')[0],
+                            gasPrice: d.value.toFixed(2)
+                        })));
                     }
                 } else {
                     // Calculate from fees history (fallback)
@@ -20739,17 +20803,17 @@
             });
         }
         
-        // Gas Price - Average gas price tracking (from Supabase historical_gas_burn)
+        // Gas Price - Average gas price tracking (from Dune via historical_gas_burn)
 
         async function updateGasPriceDisplay() {
             try {
-                // Gas Price는 이미 state.gasPriceHistory에 수집되어 있음 (Supabase historical_gas_burn.avg_gas_price_gwei)
+                // Gas Price는 이미 state.gasPriceHistory에 수집되어 있음 (Dune -> historical_gas_burn.avg_gas_price_gwei)
                 let currentGasPrice = state.gasPrice || 0;
                 let dataSource = 'fallback';
                 
-                // Supabase 히스토리가 있으면 supabase 소스
+                // 히스토리가 있으면 dune 소스
                 if (state.gasPriceHistory && state.gasPriceHistory.length > 0) {
-                    dataSource = 'supabase';
+                    dataSource = 'dune';
                     if (currentGasPrice === 0) {
                         currentGasPrice = state.gasPriceHistory[state.gasPriceHistory.length - 1].value;
                     }
@@ -21051,10 +21115,10 @@
                 updateNetSupplyChart(1095);
                 
                 // 데이터 소스 레이블 설정
-                const dataSource = state.supabaseGasHistory?.length > 0 ? 'supabase' : 'api';
+                const dataSource = state.supabaseGasHistory?.length > 0 ? 'dune' : 'api';
                 setDataSource('gas-utilization-chart', dataSource);
                 setDataSource('daily-burn-chart', dataSource);
-                setDataSource('daily-issuance-chart', dataSource);
+                setDataSource('daily-issuance-chart', 'beaconchain');
                 setDataSource('net-supply-chart', dataSource);
                 
                 log('   Gas Utilization:', state.gasUtilization.toFixed(1) + '%');
@@ -23106,8 +23170,8 @@
                 const hasSupplyData = state.supabaseGasHistory?.length > 30 && state.supabaseIssuanceHistory?.length > 30;
                 
                 if (hasSupplyData) {
-                    supplySource = 'supabase';
-                    log(`   Supply Dynamics: Using Supabase (Burn: ${state.supabaseGasHistory.length}, Issuance: ${state.supabaseIssuanceHistory.length} points)`);
+                    supplySource = 'dune';
+                    log(`   Supply Dynamics: Using Dune/Beaconchain (Burn: ${state.supabaseGasHistory.length}, Issuance: ${state.supabaseIssuanceHistory.length} points)`);
                     
                     // Daily Burn 히스토리
                     state.burnHistory = state.supabaseGasHistory.map(d => ({ date: d.date, value: d.burnt || 0 }));
@@ -23167,7 +23231,7 @@
                     safeCall(() => updateNetSupplyChart(1095), 'netSupply');
                     setDataSource('gas-utilization-chart', supplySource);
                     setDataSource('daily-burn-chart', supplySource);
-                    setDataSource('daily-issuance-chart', supplySource);
+                    setDataSource('daily-issuance-chart', 'beaconchain');
                     setDataSource('net-supply-chart', supplySource);
                     
                     // Supabase 데이터로 처리 완료 표시
@@ -23209,7 +23273,7 @@
                     const twoDaysAgo = new Date(today);
                     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
                     
-                    // Use actual avg_gas_price_gwei from Supabase
+                    // Use actual avg_gas_price_gwei from Supabase (Dune source)
                     state.gasPriceHistory = state.supabaseGasHistory
                         .filter(d => {
                             const dDate = new Date(d.date);
@@ -23222,7 +23286,7 @@
                         }));
                     if (state.gasPriceHistory.length > 0) {
                         state.gasPrice = state.gasPriceHistory[state.gasPriceHistory.length - 1].value;
-                        gasPriceSource = 'supabase';
+                        gasPriceSource = 'dune';
                     }
                 }
                 if (!state.gasPrice || state.gasPrice === 0) state.gasPrice = 12;
