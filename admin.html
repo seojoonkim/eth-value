@@ -988,6 +988,8 @@
             staking_apr: { name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', valueField: 'lido_apr', format: 'percent', expectedDays: 1095, phase: 1, source: 'DefiLlama Yields' },
             blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, note: 'Since Dencun 2024-03-13', phase: 1, source: '🔷 Dune API' },
             l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true, expectedDays: 3000, phase: 1, source: 'growthepie API' },
+            l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
+            bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
             
             // ═══════════════════════════════════════════════════════════════════
             // PHASE 2: 1차 계산 (Phase 1 데이터 의존)
@@ -1014,9 +1016,7 @@
             eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth', expectedDays: 1095, phase: 4, depends: ['ethereum_tvl', 'eth_price'] },
             global_mcap: { name: 'Global Market Cap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl', expectedDays: 365, phase: 4 },
             dex_by_protocol: { name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', valueField: 'volume', format: 'tvl', aggregate: true, expectedDays: 3000, phase: 4 },
-            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number', expectedDays: 1, phase: 4 },
-            l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
-            bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' }
+            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number', expectedDays: 1, phase: 4 }
         };
 
         function formatValue(val, format) {

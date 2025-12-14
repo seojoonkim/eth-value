@@ -11050,6 +11050,67 @@
                     </div>
                 </div>
 
+                <!-- Settlement Layer Volumes -->
+                <div class="metric-card" data-metric="l1Volume">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>L1 TX Volume (Daily)</h4>
+                            <div class="metric-value-large" id="l1-volume-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-volume-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>🔷 Dune</span>
+                        <span class="change" id="l1-volume-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l1Volume">Daily ETH value transferred on mainnet. Settlement layer metric.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="l2Volume">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>L2 TX Volume (Daily)</h4>
+                            <div class="metric-value-large" id="l2-volume-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-volume-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>🔷 Dune</span>
+                        <span class="change" id="l2-volume-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l2Volume">Daily ETH value transferred on L2s. Ecosystem activity metric.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="bridgeVolume">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Bridge Volume (Daily)</h4>
+                            <div class="metric-value-large" id="bridge-volume-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="bridge-volume-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>🔷 Dune</span>
+                        <span class="change" id="bridge-volume-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.bridgeVolume">Daily ETH bridged to L2s. Cross-chain capital flow indicator.</div>
+                    </div>
+                </div>
+
                 <!-- 12. TX Count (ETH) -->
                 <div class="metric-card" data-metric="txEth">
                     <div class="metric-header">
@@ -15883,6 +15944,9 @@
         let fundingChart = null;
         let supplyChart = null;
         let supplyDistChart = null;
+        let l1VolumeChart = null;
+        let l2VolumeChart = null;
+        let bridgeVolumeChart = null;
         let historicalMainChart = null;
         
         // Chart colors helper - returns appropriate colors for dark/light mode
@@ -15934,6 +15998,9 @@
             l2DailyVolume: 0,
             bridgeDailyVolume: 0,
             dailySettlement: 0,
+            l1VolumeHistory: [],
+            l2VolumeHistory: [],
+            bridgeVolumeHistory: [],
             // Staking Yield (from Lido API)
             stakingApr: 0,
             stakingAprSma: 0,
@@ -16547,6 +16614,16 @@
                     
                     log(`   ✓ NVT: ${state.supabaseNvtHistory.length} records (7-day MA)`);
                     
+                    // L1 Volume History (from NVT table tx_volume_usd)
+                    const l1VolHistory = nvtData
+                        .filter(d => d.tx_volume_usd > 0)
+                        .map(d => ({ date: new Date(d.date), value: parseFloat(d.tx_volume_usd) }))
+                        .reverse();
+                    if (l1VolHistory.length > 0) {
+                        state.l1VolumeHistory = l1VolHistory;
+                        log(`   ✓ L1 Volume History: ${l1VolHistory.length} records`);
+                    }
+                    
                     // Calculate dailySettlement from L1 TX Volume (stored in NVT table)
                     const recentNvt = nvtData.filter(d => d.tx_volume_usd > 0).slice(0, 7);
                     if (recentNvt.length > 0) {
@@ -16565,11 +16642,17 @@
                         l2VolByDate[dateKey] += parseFloat(d.tx_volume_eth || 0);
                     });
                     
+                    // Build history (ETH → USD)
+                    const ethPrice = state.price || 3500;
+                    state.l2VolumeHistory = Object.entries(l2VolByDate)
+                        .map(([date, eth]) => ({ date: new Date(date), value: eth * ethPrice }))
+                        .sort((a, b) => a.date - b.date);
+                    log(`   ✓ L2 Volume History: ${state.l2VolumeHistory.length} records`);
+                    
                     // Get recent 7 days average
                     const sortedDates = Object.keys(l2VolByDate).sort().reverse().slice(0, 7);
                     if (sortedDates.length > 0) {
                         const avgL2VolumeEth = sortedDates.reduce((sum, date) => sum + l2VolByDate[date], 0) / sortedDates.length;
-                        const ethPrice = state.price || 3500;
                         state.l2DailyVolume = avgL2VolumeEth * ethPrice;
                         log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (7-day avg)`);
                     }
@@ -16584,20 +16667,27 @@
                         bridgeByDate[dateKey] += parseFloat(d.bridge_volume_eth || 0);
                     });
                     
+                    // Build history (ETH → USD)
+                    const ethPrice = state.price || 3500;
+                    state.bridgeVolumeHistory = Object.entries(bridgeByDate)
+                        .map(([date, eth]) => ({ date: new Date(date), value: eth * ethPrice }))
+                        .sort((a, b) => a.date - b.date);
+                    log(`   ✓ Bridge Volume History: ${state.bridgeVolumeHistory.length} records`);
+                    
                     // Get recent 7 days average
                     const sortedDates = Object.keys(bridgeByDate).sort().reverse().slice(0, 7);
                     if (sortedDates.length > 0) {
                         const avgBridgeVolumeEth = sortedDates.reduce((sum, date) => sum + bridgeByDate[date], 0) / sortedDates.length;
-                        const ethPrice = state.price || 3500;
                         state.bridgeDailyVolume = avgBridgeVolumeEth * ethPrice;
                         log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e9).toFixed(2)}B (7-day avg)`);
                     }
                 }
                 
-                // Calculate total dailySettlement (L1 + L2 + Bridge)
-                if (state.l1DailyVolume || state.l2DailyVolume || state.bridgeDailyVolume) {
-                    state.dailySettlement = (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0) + (state.bridgeDailyVolume || 0);
-                    log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1+L2+Bridge)`);
+                // Calculate total dailySettlement (L1 + Bridge only)
+                // Note: L2 TX Volume excluded - it double-counts DEX swaps and contract calls
+                if (state.l1DailyVolume || state.bridgeDailyVolume) {
+                    state.dailySettlement = (state.l1DailyVolume || 0) + (state.bridgeDailyVolume || 0);
+                    log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1+Bridge)`);
                 }
                 
                 if (issuanceData.length > 10) {
@@ -18112,6 +18202,38 @@
             
             updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees');
             
+            // Settlement Volume Charts
+            if (state.l1VolumeHistory && state.l1VolumeHistory.length > 0) {
+                updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
+                document.getElementById('l1-volume-value').textContent = fmt.usd(state.l1DailyVolume);
+                if (state.l1VolumeHistory.length > 1) {
+                    const first = state.l1VolumeHistory[0].value, last = state.l1VolumeHistory[state.l1VolumeHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l1-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
+                updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
+                document.getElementById('l2-volume-value').textContent = fmt.usd(state.l2DailyVolume);
+                if (state.l2VolumeHistory.length > 1) {
+                    const first = state.l2VolumeHistory[0].value, last = state.l2VolumeHistory[state.l2VolumeHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l2-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            if (state.bridgeVolumeHistory && state.bridgeVolumeHistory.length > 0) {
+                updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume');
+                document.getElementById('bridge-volume-value').textContent = fmt.usd(state.bridgeDailyVolume);
+                if (state.bridgeVolumeHistory.length > 1) {
+                    const first = state.bridgeVolumeHistory[0].value, last = state.bridgeVolumeHistory[state.bridgeVolumeHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('bridge-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            
             if (state.feesHistory.length > 1) {
                 const first = state.feesHistory[0].value;
                 const last = state.feesHistory[state.feesHistory.length - 1].value;
@@ -18729,7 +18851,37 @@
         }
 
         function updateVolumeChart(days = 1095) {
-            // 이제 통합 차트로 처리됨
+            // Settlement Volume Charts (L1, L2, Bridge)
+            if (state.l1VolumeHistory && state.l1VolumeHistory.length > 0) {
+                updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
+                document.getElementById('l1-volume-value').textContent = fmt.usd(state.l1DailyVolume);
+                if (state.l1VolumeHistory.length > 1) {
+                    const first = state.l1VolumeHistory[0].value, last = state.l1VolumeHistory[state.l1VolumeHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l1-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
+                updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
+                document.getElementById('l2-volume-value').textContent = fmt.usd(state.l2DailyVolume);
+                if (state.l2VolumeHistory.length > 1) {
+                    const first = state.l2VolumeHistory[0].value, last = state.l2VolumeHistory[state.l2VolumeHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l2-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            if (state.bridgeVolumeHistory && state.bridgeVolumeHistory.length > 0) {
+                updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume');
+                document.getElementById('bridge-volume-value').textContent = fmt.usd(state.bridgeDailyVolume);
+                if (state.bridgeVolumeHistory.length > 1) {
+                    const first = state.bridgeVolumeHistory[0].value, last = state.bridgeVolumeHistory[state.bridgeVolumeHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('bridge-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
         }
 
         // NVT Ratio 계산 및 차트 업데이트
@@ -20741,6 +20893,9 @@
             if (key === 'commitmentRatio' && commitmentRatioChart) commitmentRatioChart.destroy();
             if (key === 'appCapital' && appCapitalChart) appCapitalChart.destroy();
             if (key === 'stakingApr' && stakingAprChart) stakingAprChart.destroy();
+            if (key === 'l1Volume' && l1VolumeChart) l1VolumeChart.destroy();
+            if (key === 'l2Volume' && l2VolumeChart) l2VolumeChart.destroy();
+            if (key === 'bridgeVolume' && bridgeVolumeChart) bridgeVolumeChart.destroy();
 
             const formatFn = (key === 'staking' || key === 'ethInDefi') 
                 ? (v) => fmt.num(v) + ' ETH'
@@ -20781,6 +20936,9 @@
             if (key === 'commitmentRatio') commitmentRatioChart = chart;
             if (key === 'appCapital') appCapitalChart = chart;
             if (key === 'stakingApr') stakingAprChart = chart;
+            if (key === 'l1Volume') l1VolumeChart = chart;
+            if (key === 'l2Volume') l2VolumeChart = chart;
+            if (key === 'bridgeVolume') bridgeVolumeChart = chart;
             
             // Remove loading spinner after chart is rendered
             setChartLoading(canvasId, false);
@@ -22596,6 +22754,9 @@
                     calculateAndUpdateNVT(),
                     calculateVolatility(),
                 ]);
+                
+                // Settlement Volume 차트 업데이트
+                updateVolumeChart();
                 
                 // 최종 렌더링
                 renderValuations();
