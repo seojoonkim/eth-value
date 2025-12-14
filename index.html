@@ -12009,8 +12009,8 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">(DailyVol × 365 ÷ Velocity) ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH's Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.</div>
+                            <div class="method-formula">(L1 Vol × 365 ÷ Velocity) ÷ Supply</div>
+                            <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume uses L1 mainnet transfers (L2 excluded as it double-counts DEX activity). Velocity of 6 reflects ETH's Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -21118,7 +21118,7 @@
                 models.push({ 
                     id: 'settlementLayer',
                     name: 'Settlement Layer', 
-                    formula: '(DailyVol × 365 ÷ Velocity) ÷ Supply', 
+                    formula: '(L1 Vol × 365 ÷ Velocity) ÷ Supply', 
                     price: fairMarketCap / cs,
                     reliability: 2,
                     source: `Velocity=${velocity} (SoV-heavy)`
@@ -21781,6 +21781,18 @@
                     history = state.stakingAprHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('staking-yield-chart', stakingAprChart, history, '#10b981', 'stakingApr');
                     changeElId = 'staking-yield-change';
+                } else if (metric === 'l1Volume') {
+                    history = state.l1VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('l1-volume-chart', l1VolumeChart, history, '#3b82f6', 'l1Volume');
+                    changeElId = 'l1-volume-change';
+                } else if (metric === 'l2Volume') {
+                    history = state.l2VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('l2-volume-chart', l2VolumeChart, history, '#8b5cf6', 'l2Volume');
+                    changeElId = 'l2-volume-change';
+                } else if (metric === 'bridgeVolume') {
+                    history = state.bridgeVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('bridge-volume-chart', bridgeVolumeChart, history, '#06b6d4', 'bridgeVolume');
+                    changeElId = 'bridge-volume-change';
                 }
                 
                 // Update change percentage based on selected period
@@ -23615,22 +23627,27 @@ Check out ETHval 👇`;
                 }
                 
                 // 12. Settlement Layer (MV=PQ)
-                // Uses daily settlement volume with velocity assumption
-                // Historical: estimate based on price and TVL correlation with baseline
+                // Uses L1 daily settlement volume + bridge volume with velocity assumption
                 const velocity = 6;
                 if (isLastPoint) {
-                    const dailySettlement = state.dailySettlement || 10130000000;
+                    const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
                     const settlementValue = (dailySettlement * 365 / velocity) / supply;
                     results.settlementLayer.push({ date, value: settlementValue });
-                } else if (tvl > 0 && price > 0) {
-                    // Historical estimation: scale baseline settlement by TVL ratio
-                    // Current baseline: $10.13B daily when TVL ~$58B
-                    const currentTvl = state.tvl || 58000000000;
-                    const baselineSettlement = 10130000000;
-                    const tvlRatio = tvl / currentTvl;
-                    const estimatedSettlement = baselineSettlement * Math.pow(tvlRatio, 0.7); // dampened scaling
-                    const settlementValue = (estimatedSettlement * 365 / velocity) / supply;
-                    results.settlementLayer.push({ date, value: settlementValue });
+                } else {
+                    // Use actual L1 volume history from Dune
+                    const l1Volume = findClosest(state.l1VolumeHistory, date, 7);
+                    if (l1Volume && l1Volume > 0) {
+                        const settlementValue = (l1Volume * 365 / velocity) / supply;
+                        results.settlementLayer.push({ date, value: settlementValue });
+                    } else if (tvl > 0 && price > 0) {
+                        // Fallback: estimate based on TVL if no L1 data
+                        const currentTvl = state.tvl || 58000000000;
+                        const baselineSettlement = 5000000000; // $5B baseline
+                        const tvlRatio = tvl / currentTvl;
+                        const estimatedSettlement = baselineSettlement * Math.pow(tvlRatio, 0.7);
+                        const settlementValue = (estimatedSettlement * 365 / velocity) / supply;
+                        results.settlementLayer.push({ date, value: settlementValue });
+                    }
                 }
             }
             
@@ -23719,8 +23736,8 @@ Check out ETHval 👇`;
             const targetYield = riskFreeRate + riskPremium; // 6%
             valuation.validatorEcon = state.price * (targetYield / state.stakingApr);
             
-            // 12. Settlement Layer: (DailySettlement × 365 / Velocity) / Supply
-            const dailySettlement = state.dailySettlement || 10130000000;
+            // 12. Settlement Layer: (L1 Vol × 365 / Velocity) / Supply
+            const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
             valuation.settlementLayer = (dailySettlement * 365 / 6) / csVal;
             
             modelKeys.forEach(key => {
