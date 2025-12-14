@@ -1,20 +1,39 @@
 /**
- * ETHval Data Collector v6.0
- * 29개 전체 데이터셋 수집
+ * ETHval Data Collector v7.0
+ * 39개 전체 데이터셋 수집 (Dune API 포함)
  */
 
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const DUNE_API_KEY = process.env.DUNE_API_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_KEY');
     process.exit(1);
 }
 
+if (!DUNE_API_KEY) {
+    console.warn('⚠️ Missing DUNE_API_KEY - Dune data collection will be skipped');
+}
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+// Dune Query IDs
+const DUNE_QUERIES = {
+    BLOB: 6350774,
+    TX_VOLUME: 6350858,
+    ACTIVE_ADDR: 6352303,
+    L2_ACTIVE_ADDR: 6352308,
+    L2_TX_VOLUME: 6352386,
+    BRIDGE_VOLUME: 6352417,
+    WHALE_TX: 6352498,
+    NEW_ADDR: 6352513,
+    MVRV: 6354057,
+    STABLECOIN_VOL: 6353868
+};
 
 // ============================================================
 // Helper Functions
@@ -26,7 +45,7 @@ async function fetchJSON(url, retries = 3) {
             const timeout = setTimeout(() => controller.abort(), 30000);
             const res = await fetch(url, {
                 signal: controller.signal,
-                headers: { 'User-Agent': 'ETHval/6.0', 'Accept': 'application/json' }
+                headers: { 'User-Agent': 'ETHval/7.0', 'Accept': 'application/json' }
             });
             clearTimeout(timeout);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -36,6 +55,45 @@ async function fetchJSON(url, retries = 3) {
         }
     }
     return null;
+}
+
+// Dune API helper - fetch all results with pagination
+async function fetchDuneResults(queryId, maxRows = 10000) {
+    if (!DUNE_API_KEY) return null;
+    
+    const allRows = [];
+    const pageSize = 1000;
+    let offset = 0;
+    
+    try {
+        while (offset < maxRows) {
+            const response = await fetch(
+                `https://api.dune.com/api/v1/query/${queryId}/results?limit=${pageSize}&offset=${offset}`,
+                { headers: { 'X-Dune-API-Key': DUNE_API_KEY } }
+            );
+            
+            if (!response.ok) {
+                console.error(`  Dune API error: ${response.status}`);
+                break;
+            }
+            
+            const data = await response.json();
+            const rows = data?.result?.rows || [];
+            
+            if (rows.length === 0) break;
+            
+            allRows.push(...rows);
+            offset += pageSize;
+            
+            if (rows.length < pageSize) break;
+            await sleep(500); // Rate limit
+        }
+        
+        return allRows;
+    } catch (e) {
+        console.error(`  Dune fetch error: ${e.message}`);
+        return null;
+    }
 }
 
 async function upsertBatch(table, records, conflict = 'date') {
@@ -818,13 +876,213 @@ async function collect_network_stats() {
 }
 
 // ============================================================
+// DUNE API COLLECTIONS (30-39)
+// ============================================================
+
+// 30. Blob Data (Dune)
+async function collect_dune_blob() {
+    console.log('\n🫧 [30/39] Blob Data (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.BLOB, 1000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        blob_count: parseInt(r.blob_count || r.blobs || 0),
+        blob_gas_used: parseFloat(r.blob_gas_used || 0),
+        blob_fee_eth: parseFloat(r.blob_fee_eth || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.blob_count > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_blob_data', records);
+}
+
+// 31. L1 TX Volume (Dune)
+async function collect_dune_l1_volume() {
+    console.log('\n💸 [31/39] L1 TX Volume (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.TX_VOLUME, 5000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        tx_volume_eth: parseFloat(r.tx_volume_eth || r.volume_eth || 0),
+        tx_volume_usd: parseFloat(r.tx_volume_usd || r.volume_usd || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.tx_volume_eth > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_l1_volume', records);
+}
+
+// 32. Active Addresses L1 (Dune)
+async function collect_dune_active_addr() {
+    console.log('\n👥 [32/39] Active Addresses L1 (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.ACTIVE_ADDR, 5000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        active_addresses: parseInt(r.active_addresses || r.unique_addresses || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.active_addresses > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_active_addresses', records);
+}
+
+// 33. L2 Active Addresses (Dune)
+async function collect_dune_l2_addr() {
+    console.log('\n👤 [33/39] L2 Active Addresses (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.L2_ACTIVE_ADDR, 10000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        chain: r.chain || r.l2_name || 'unknown',
+        active_addresses: parseInt(r.active_addresses || r.unique_addresses || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.active_addresses > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_l2_addresses', records, 'date,chain');
+}
+
+// 34. L2 TX Volume (Dune)
+async function collect_dune_l2_volume() {
+    console.log('\n🔗 [34/39] L2 TX Volume (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.L2_TX_VOLUME, 10000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        chain: r.chain || r.l2_name || 'unknown',
+        tx_volume_eth: parseFloat(r.tx_volume_eth || r.volume_eth || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.tx_volume_eth > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_l2_tx_volume', records, 'date,chain');
+}
+
+// 35. Bridge Volume (Dune)
+async function collect_dune_bridge() {
+    console.log('\n🌉 [35/39] Bridge Volume (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.BRIDGE_VOLUME, 10000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        chain: r.chain || r.l2_name || 'unknown',
+        bridge_volume_eth: parseFloat(r.bridge_volume_eth || r.volume_eth || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.bridge_volume_eth > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_bridge_volume', records, 'date,chain');
+}
+
+// 36. Whale Transactions (Dune)
+async function collect_dune_whale() {
+    console.log('\n🐋 [36/39] Whale Transactions (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.WHALE_TX, 5000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        whale_tx_count: parseInt(r.whale_tx_count || r.tx_count || 0),
+        whale_volume_eth: parseFloat(r.whale_volume_eth || r.volume_eth || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.whale_tx_count > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_whale_tx', records);
+}
+
+// 37. New Addresses (Dune)
+async function collect_dune_new_addr() {
+    console.log('\n🆕 [37/39] New Addresses (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.NEW_ADDR, 5000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        new_addresses: parseInt(r.new_addresses || r.new_wallets || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.new_addresses > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_new_addresses', records);
+}
+
+// 38. MVRV Ratio (Dune)
+async function collect_dune_mvrv() {
+    console.log('\n📊 [38/39] MVRV Ratio (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.MVRV, 5000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        mvrv_ratio: parseFloat(r.mvrv_ratio || r.mvrv || 0),
+        realized_price: parseFloat(r.realized_price || r.realised_price || 0),
+        market_cap: parseFloat(r.market_cap || 0),
+        realized_cap: parseFloat(r.realized_cap || r.realised_cap || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.mvrv_ratio > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_mvrv', records);
+}
+
+// 39. Stablecoin Volume (Dune)
+async function collect_dune_stablecoin_vol() {
+    console.log('\n💵 [39/39] Stablecoin Volume (Dune)...');
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.STABLECOIN_VOL, 5000);
+    if (!rows || rows.length === 0) return 0;
+    
+    const records = rows.map(r => ({
+        date: r.block_date || r.date,
+        daily_volume: parseFloat(r.daily_volume || r.volume || 0),
+        tx_count: parseInt(r.tx_count || 0),
+        source: 'dune'
+    })).filter(r => r.date && r.daily_volume > 0);
+    
+    console.log(`  📊 Got ${records.length} records`);
+    return await upsertBatch('historical_stablecoin_volume', records);
+}
+
+// ============================================================
 // Main
 // ============================================================
 async function main() {
-    console.log('🚀 ETHval Data Collector v6.0');
+    console.log('🚀 ETHval Data Collector v7.0');
     console.log(`📅 ${new Date().toISOString()}`);
     console.log('='.repeat(60));
-    console.log('Collecting 29 datasets...\n');
+    console.log('Collecting 39 datasets (29 API + 10 Dune)...\n');
+    if (DUNE_API_KEY) {
+        console.log('✅ Dune API Key detected - will collect Dune data');
+    } else {
+        console.log('⚠️ No Dune API Key - Dune collections will be skipped');
+    }
     
     const results = {};
     
@@ -858,6 +1116,22 @@ async function main() {
     results.dex_by_protocol = await collect_dex_by_protocol(); await sleep(500);
     results.network_stats = await collect_network_stats();
     
+    // Dune API Collections (if API key available)
+    console.log('\n' + '='.repeat(60));
+    console.log('🔷 DUNE API COLLECTIONS');
+    console.log('='.repeat(60));
+    
+    results.dune_blob = await collect_dune_blob(); await sleep(1000);
+    results.dune_l1_volume = await collect_dune_l1_volume(); await sleep(1000);
+    results.dune_active_addr = await collect_dune_active_addr(); await sleep(1000);
+    results.dune_l2_addr = await collect_dune_l2_addr(); await sleep(1000);
+    results.dune_l2_volume = await collect_dune_l2_volume(); await sleep(1000);
+    results.dune_bridge = await collect_dune_bridge(); await sleep(1000);
+    results.dune_whale = await collect_dune_whale(); await sleep(1000);
+    results.dune_new_addr = await collect_dune_new_addr(); await sleep(1000);
+    results.dune_mvrv = await collect_dune_mvrv(); await sleep(1000);
+    results.dune_stablecoin_vol = await collect_dune_stablecoin_vol();
+    
     // Summary
     console.log('\n' + '='.repeat(60));
     console.log('📊 COLLECTION SUMMARY:');
@@ -871,7 +1145,7 @@ async function main() {
     });
     
     console.log('='.repeat(60));
-    console.log(`✅ Success: ${success}/29  |  ❌ Failed: ${failed}/29`);
+    console.log(`✅ Success: ${success}/39  |  ❌ Failed: ${failed}/39`);
     console.log('='.repeat(60));
 }
 
