@@ -2864,7 +2864,6 @@
         .model-item[data-model="l2Ecosystem"] .model-item-name { color: #16a34a; }
         .model-item[data-model="stakingScarcity"] .model-item-name { color: #ea580c; }
         .model-item[data-model="commitmentPremium"] .model-item-name { color: #0284c7; }
-        .model-item[data-model="monetarySink"] .model-item-name { color: #db2777; }
 
         /* Model-specific bullet colors */
         .model-item[data-model="dcf"]::before { background: #84cc16; }
@@ -2879,7 +2878,6 @@
         .model-item[data-model="l2Ecosystem"]::before { background: #22c55e; }
         .model-item[data-model="stakingScarcity"]::before { background: #f97316; }
         .model-item[data-model="commitmentPremium"]::before { background: #0ea5e9; }
-        .model-item[data-model="monetarySink"]::before { background: #f472b6; }
 
         .model-entry-desc {
             color: var(--text-muted);
@@ -10619,7 +10617,7 @@
                     <div class="summary-valuation-row">
                         <span class="summary-label">
                             <span data-i18n="valuation.compositeFairValue">Composite Fair Value</span>
-                            <span class="model-count-light model-count-break">(<span id="active-model-count">13</span> / 13 models)</span>
+                            <span class="model-count-light model-count-break">(<span id="active-model-count">12</span> / 12 models)</span>
                         </span>
                         <span class="summary-value" id="summary-fair-value" style="font-size: var(--font-h2); color: #a8b4c0;"><span class="calculating-dots">Calculating</span></span>
                     </div>
@@ -10637,7 +10635,7 @@
                 <!-- Description 영역 -->
                 <div class="summary-description">
                     <p class="summary-text" data-i18n="summary.desc1">
-                        This dashboard derives <strong>Ethereum's intrinsic value</strong> using 13 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe's Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Lock-up Premium, Effective Float).
+                        This dashboard derives <strong>Ethereum's intrinsic value</strong> using 12 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe's Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Liquidity Premium).
                     </p>
                     <p class="summary-text" data-i18n="summary.feedback">
                         Found a bug or have suggestions? Let me know anytime — feedback is always welcome!
@@ -11126,14 +11124,14 @@
                             
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab active" data-period="all">All</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-fees-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Etherscan</span>
                         <span class="change" id="blob-fees-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.blobFees">Fees paid by L2s to post data on Ethereum. Higher fees = more L1 revenue (blob fees are burned like gas).</div>
+                        <div class="metric-desc" data-i18n="desc.blobFees">L2 data posting fees since Dencun upgrade (Mar 2024). Blob fees are burned like gas, contributing to L1 revenue.</div>
                     </div>
                 </div>
 
@@ -11148,14 +11146,14 @@
                             
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab active" data-period="all">All</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-count-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Etherscan</span>
                         <span class="change" id="blob-count-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.blobCount">Data blobs posted by L2s. More blobs = growing L2 adoption.</div>
+                        <div class="metric-desc" data-i18n="desc.blobCount">Data blobs posted by L2s since Dencun (Mar 2024). More blobs = growing L2 adoption.</div>
                     </div>
                 </div>
 
@@ -11291,28 +11289,6 @@
                             <span class="legend-item"><span class="legend-dot" style="background:#6b7280;"></span>Others</span>
                         </div>
                         <div class="metric-desc" data-i18n="desc.supply">Liquid ETH available for trading. Others = L2 bridges, lost coins.</div>
-                    </div>
-                </div>
-
-                <!-- 11. Commitment Ratio (바로 다음) -->
-                <div class="metric-card" data-metric="commitmentRatio">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Commitment Ratio</h4>
-                            <div class="metric-value-large" id="commitment-ratio-value">--%</div>
-                        </div>
-                        <div class="metric-tabs">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="commitment-ratio-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>DefiLlama</span>
-                        <span class="change" id="commitment-ratio-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.commitment">Staked + DeFi ETH ÷ supply. Higher ratio = more committed holders.</div>
                     </div>
                 </div>
 
@@ -11622,7 +11598,7 @@
                 </div>
 
                 <div class="conclusion-panel">
-                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="model-count-light">(<span id="conclusion-model-count">13</span> / 13 models)</span></div>
+                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="model-count-light">(<span id="conclusion-model-count">12</span> / 12 models)</span></div>
                     <div class="conclusion-price" id="composite-price">$--</div>
                     <div class="conclusion-diff up" id="composite-diff">-- vs Current</div>
                     <div class="conclusion-verdict bullish" id="verdict">--</div>
@@ -11662,7 +11638,7 @@
                     </div>
                     
                     <div class="conclusion-note" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: var(--font-caption); color: var(--text-muted); line-height: 1.4;">
-                        <span data-i18n="conclusion.notePrefix">Simple average of</span> <span id="active-model-count">13</span> <span data-i18n="conclusion.noteSuffix">active models. Toggle off any model below to exclude it from the calculation.</span>
+                        <span data-i18n="conclusion.notePrefix">Simple average of</span> <span id="active-model-count">12</span> <span data-i18n="conclusion.noteSuffix">active models. Toggle off any model below to exclude it from the calculation.</span>
                     </div>
 
                 </div>
@@ -11671,7 +11647,7 @@
             <!-- Historical Chart (integrated) -->
             <div class="historical-main-chart" style="margin-top: 24px;">
                 <div class="historical-chart-header">
-                    <div class="conclusion-label"><span data-i18n="chart.historicalTitle">FAIR VALUE TREND</span> <span class="model-count-light">(<span id="chart-model-count">13</span> / 13 models)</span></div>
+                    <div class="conclusion-label"><span data-i18n="chart.historicalTitle">FAIR VALUE TREND</span> <span class="model-count-light">(<span id="chart-model-count">12</span> / 12 models)</span></div>
                 </div>
                 
                 <!-- Price Display Row -->
@@ -11709,7 +11685,7 @@
                         <div class="legend-item-fixed">
                             <span class="legend-color legend-color-composite"></span>
                             <span class="legend-name" data-i18n="chart.compositeFairValue">Composite Fair Value</span>
-                            <span class="model-count-badge" id="legend-model-count">13 / 13</span>
+                            <span class="model-count-badge" id="legend-model-count">12 / 12</span>
                         </div>
                     </div>
                     <div class="legend-hint"><span class="legend-hint-icon">👇</span>Click model buttons below to toggle visibility</div>
@@ -11756,7 +11732,7 @@
                         </div>
                         <div class="legend-btn active" data-model="commitmentPremium">
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#0ea5e9;"></span>
-                            <span class="legend-name" style="color:#0ea5e9;">Lock-up Premium</span>
+                            <span class="legend-name" style="color:#0ea5e9;">Liquidity Premium</span>
                             <span class="legend-value" id="legend-val-commitmentPremium">--</span>
                         </div>
                         <div class="legend-btn active" data-model="appCapital">
@@ -11773,11 +11749,6 @@
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#a855f7;"></span>
                             <span class="legend-name" style="color:#a855f7;">Settlement Layer (MV=PQ)</span>
                             <span class="legend-value" id="legend-val-settlementLayer">--</span>
-                        </div>
-                        <div class="legend-btn active" data-model="monetarySink">
-                            <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#f472b6;"></span>
-                            <span class="legend-name" style="color:#f472b6;">Effective Float</span>
-                            <span class="legend-value" id="legend-val-monetarySink">--</span>
                         </div>
                     </div>
                 </div>
@@ -11941,7 +11912,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">Price × √(Supply ÷ Liquid)</div>
+                            <div class="method-formula">Price × √(Supply ÷ (Supply - Staked))</div>
                             <div class="method-desc" data-i18n="method.staking.desc">Applies a scarcity premium when circulating supply decreases due to staking. As more ETH is locked in validators (currently ~28%), liquid supply shrinks, theoretically increasing price pressure. The square root function dampens extreme valuations while still capturing the scarcity effect. This model gained relevance post-Merge with ETH's transition to Proof-of-Stake.</div>
                         </div>
                         <div class="method-right">
@@ -12242,13 +12213,13 @@
 
                 <div class="method-card" data-model="commitmentPremium">
                     <div class="method-header">
-                        <span class="method-name">Lock-up Premium</span>
+                        <span class="method-name">Liquidity Premium</span>
                         
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">Price × (1 + Commit% × Multiplier)</div>
-                            <div class="method-desc" data-i18n="method.commitment.desc">Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. The multiplier (1.5x) reflects the value premium of committed vs. liquid assets. Inspired by the concept that L1 tokens should be valued as money (Store of Value) rather than stocks.</div>
+                            <div class="method-formula">Price × √(Supply ÷ Liquid Float)</div>
+                            <div class="method-desc" data-i18n="method.commitment.desc">Based on Amihud's liquidity premium theory: as tradeable ETH decreases, reduced market liquidity creates upward price pressure. Liquid Float = Supply minus all locked ETH (staking, DeFi, L2 bridges, lost/dormant wallets). More comprehensive than Staking Scarcity as it includes all illiquid supply. Current Liquid Float: <strong id="liquid-float-display">--</strong>%</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -12272,14 +12243,14 @@
                                 <div class="method-footer-row">
                                     <div class="method-meta">
                                     </div>
-                                    <div class="method-note" data-i18n="method.commitment.note">1.5x premium multiplier for committed ETH is arbitrary without empirical basis</div>
+                                    <div class="method-note" data-i18n="method.commitment.note">Liquid staking (stETH) partially offsets illiquidity as it remains tradeable</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="method-references">
+                        <a href="https://pages.stern.nyu.edu/~lpedMDen/papers/liquidity_asset_pricing.pdf" target="_blank" class="method-ref-link">Amihud & Mendelson: Liquidity and Asset Prices</a>
                         <a href="https://insights.glassnode.com/bitcoin-liquid-supply/" target="_blank" class="method-ref-link">Glassnode: Bitcoin Liquid and Illiquid Supply</a>
-                        <a href="https://www.nber.org/system/files/working_papers/w33640/w33640.pdf" target="_blank" class="method-ref-link">NBER: Tokenomics of Staking (Working Paper, 2024)</a>
                     </div>
                     <div class="model-community" data-model="commitmentPremium"></div>
                 </div>
@@ -12415,51 +12386,6 @@
                     </div>
                     <div class="model-community" data-model="settlementLayer"></div>
                 </div>
-
-                <div class="method-card" data-model="monetarySink">
-                    <div class="method-header">
-                        <span class="method-name">Effective Float</span>
-                        
-                    </div>
-                    <div class="method-content">
-                        <div class="method-left">
-                            <div class="method-formula">Price × (Supply ÷ Effective Float)</div>
-                            <div class="method-desc" data-i18n="method.sink.desc">Inspired by Miller (1977): when tradeable supply is constrained, optimists set prices, creating a premium. Greenwood (Harvard) empirically confirmed float reduction correlates with price increases in equity markets. Our assumption: if market cap stays constant while effective float (excluding staked, DeFi-locked, and lost ETH) decreases, per-unit price rises proportionally. Current effective float: <strong id="effective-float-display">--</strong>%</div>
-                        </div>
-                        <div class="method-right">
-                            <div class="method-chart-inline">
-                                <div class="method-chart-header">
-                                    <div>
-                                        <span class="method-chart-value" id="method-value-monetarySink" >--</span>
-                                        <span class="method-chart-diff" id="method-diff-monetarySink">--</span>
-                                    </div>
-                                    <div class="method-chart-tabs" data-model="monetarySink">
-                                        
-                                        <button class="method-chart-tab" data-period="90">90D</button>
-                                        <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
-                                    </div>
-                                </div>
-                                <div class="method-chart-area">
-                                    <canvas id="method-chart-monetarySink"></canvas>
-                                </div>
-                            </div>
-                            <div class="method-footer">
-                                <div class="method-footer-row">
-                                    <div class="method-meta">
-                                    </div>
-                                    <div class="method-note" data-i18n="method.sink.note">Sink estimates vary; liquid staking (stETH) partially offsets staking sink as it remains tradeable</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="method-references">
-                        <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.1977.tb03317.x" target="_blank" class="method-ref-link">Miller (1977): Risk, Uncertainty, and Divergence of Opinion</a>
-                        <a href="https://www.hbs.edu/ris/Publication%20Files/05-079.pdf" target="_blank" class="method-ref-link">Greenwood (Harvard): Float Manipulation and Stock Prices</a>
-                        <a href="https://www.nber.org/reporter/spring05/short-sale-constraints-and-overpricing" target="_blank" class="method-ref-link">NBER: Short Sale Constraints and Overpricing</a>
-                    </div>
-                    <div class="model-community" data-model="monetarySink"></div>
-                </div>
             </div>
 
             <!-- Appendix: Model Categories -->
@@ -12467,7 +12393,7 @@
                 <div class="appendix-title" data-i18n="appendix.title">Appendix: Valuation Framework</div>
                 
                 <div class="appendix-intro" data-i18n="appendix.intro">
-                    This dashboard employs 13 valuation models organized into four methodological categories. Each category represents a distinct theoretical approach to estimating Ethereum's intrinsic value, ranging from traditional finance frameworks to crypto-native metrics.
+                    This dashboard employs 12 valuation models organized into four methodological categories. Each category represents a distinct theoretical approach to estimating Ethereum's intrinsic value, ranging from traditional finance frameworks to crypto-native metrics.
                 </div>
 
                 <div class="category-grid">
@@ -12545,12 +12471,8 @@
                                 <span class="model-item-desc" data-i18n="appendix.model.staking">Simple ratio: Values ETH based on non-staked supply only. Higher staking % = higher fair value.</span>
                             </div>
                             <div class="model-item" data-model="commitmentPremium">
-                                <span class="model-item-name">Lock-up Premium</span>
-                                <span class="model-item-desc" data-i18n="appendix.model.commitment">Behavioral: 1.5x premium for ETH in staking + DeFi. Focus on holder conviction signals.</span>
-                            </div>
-                            <div class="model-item" data-model="monetarySink">
-                                <span class="model-item-name">Effective Float</span>
-                                <span class="model-item-desc" data-i18n="appendix.model.sink">Miller (1977) theory: Reduced tradeable float from staking/DeFi/lost coins creates price premium. Most comprehensive approach.</span>
+                                <span class="model-item-name">Liquidity Premium</span>
+                                <span class="model-item-desc" data-i18n="appendix.model.commitment">Amihud liquidity theory: Reduced tradeable float from staking, DeFi, L2, and lost ETH creates price premium via lower market liquidity.</span>
                             </div>
                         </div>
                     </div>
@@ -13646,11 +13568,10 @@
                 'l2Ecosystem': 'L2 Ecosystem',
                 'ps': 'P/S Ratio',
                 'revenueYield': 'Fee Yield',
-                'commitmentPremium': 'Lock-up Premium',
+                'commitmentPremium': 'Liquidity Premium',
                 'appCapital': 'App Capital Flow',
                 'validatorEcon': 'Validator Economics',
-                'settlementLayer': 'Settlement Layer (MV=PQ)',
-                'monetarySink': 'Effective Float'
+                'settlementLayer': 'Settlement Layer (MV=PQ)'
             };
             
             // 총 댓글 수 (대댓글 포함)
@@ -13693,7 +13614,7 @@
                     ]
                 },
                 'stakingScarcity': {
-                    formula: 'Price × √(Supply ÷ Liquid)',
+                    formula: 'Price × √(Supply ÷ (Supply - Staked))',
                     desc: t('method.staking.desc', 'Applies a scarcity premium when circulating supply decreases due to staking. As more ETH is locked in validators (currently ~28%), liquid supply shrinks, theoretically increasing price pressure. The square root function dampens extreme valuations while still capturing the scarcity effect.'),
                     reliability: 1,
                     caveat: t('method.staking.note', 'Proprietary model developed for this dashboard. Lacks peer review or academic validation'),
@@ -13757,13 +13678,13 @@
                     ]
                 },
                 'commitmentPremium': {
-                    formula: 'Price × (1 + Commit% × Multiplier)',
-                    desc: t('method.commitment.desc', 'Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. Inspired by Store of Value demand concepts.'),
+                    formula: 'Price × √(Supply ÷ Liquid Float)',
+                    desc: t('method.commitment.desc', 'Based on Amihud\'s liquidity premium theory: as tradeable ETH decreases, reduced market liquidity creates upward price pressure. Liquid Float = Supply minus all locked ETH (staking, DeFi, L2 bridges, lost/dormant wallets). More comprehensive than Staking Scarcity.'),
                     reliability: 1,
-                    caveat: t('method.commitment.note', '1.5x premium multiplier for committed ETH is arbitrary without empirical basis'),
+                    caveat: t('method.commitment.note', 'Liquid staking (stETH) partially offsets illiquidity as it remains tradeable'),
                     sources: [
-                        { name: 'Glassnode: Bitcoin Liquid and Illiquid Supply', url: 'https://insights.glassnode.com/bitcoin-liquid-supply/' },
-                        { name: 'NBER: Tokenomics of Staking (Working Paper, 2024)', url: 'https://www.nber.org/papers/w32760' }
+                        { name: 'Amihud & Mendelson: Liquidity and Asset Prices', url: 'https://pages.stern.nyu.edu/~lpedersen/papers/liquidity_asset_pricing.pdf' },
+                        { name: 'Glassnode: Bitcoin Liquid and Illiquid Supply', url: 'https://insights.glassnode.com/bitcoin-liquid-supply/' }
                     ]
                 },
                 'appCapital': {
@@ -13791,17 +13712,6 @@
                     caveat: t('method.settlement.note', 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly'),
                     sources: [
                         { name: 'Artemis: On-chain Settlement Data', url: 'https://www.artemis.xyz' }
-                    ]
-                },
-                'monetarySink': {
-                    formula: 'Price × (Supply ÷ Effective Float)',
-                    desc: t('method.sink.desc', 'Inspired by Miller (1977): when tradeable supply is constrained, optimists set prices, creating a premium. Greenwood (Harvard) empirically confirmed float reduction correlates with price increases in equity markets. Our assumption: if market cap stays constant while effective float (excluding staked, DeFi-locked, and lost ETH) decreases, per-unit price rises proportionally.'),
-                    reliability: 2,
-                    caveat: t('method.sink.note', 'Sink estimates vary; liquid staking (stETH) partially offsets staking sink as it remains tradeable'),
-                    sources: [
-                        { name: 'Miller (1977): Risk, Uncertainty, and Divergence of Opinion', url: 'https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.1977.tb03317.x' },
-                        { name: 'Greenwood (Harvard): Float Manipulation and Stock Prices', url: 'https://www.hbs.edu/ris/Publication%20Files/05-079.pdf' },
-                        { name: 'NBER: Short Sale Constraints and Overpricing', url: 'https://www.nber.org/reporter/spring05/short-sale-constraints-and-overpricing' }
                     ]
                 }
             };
@@ -14927,7 +14837,7 @@
         
         // Initialize community sections when DOM is ready
         function initCommunity() {
-            const models = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'];
+            const models = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
             models.forEach(modelId => {
                 renderCommunitySection(modelId);
             });
@@ -15133,10 +15043,10 @@
                 'summary.fairValue': 'Fair Value (12 Models)',
                 'summary.opportunity': 'Opportunity',
                 'summary.toggleHint': 'Toggle individual models on/off below to customize your valuation.',
-                'summary.desc1': 'This dashboard derives <strong>Ethereum\'s intrinsic value</strong> using 13 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Lock-up Premium, Effective Float).',
+                'summary.desc1': 'This dashboard derives <strong>Ethereum\'s intrinsic value</strong> using 12 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Liquidity Premium).',
                 'summary.feedback': 'Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
                 'summary.community': '<strong>Join the Discussion!</strong> Rate each model\'s confidence level and share your thoughts. Your feedback helps improve the valuation framework.',
-                'appendix.intro': 'This dashboard employs 13 valuation models organized into four methodological categories. Each category represents a distinct theoretical approach to estimating Ethereum\'s intrinsic value, ranging from traditional finance frameworks to crypto-native metrics.',
+                'appendix.intro': 'This dashboard employs 12 valuation models organized into four methodological categories. Each category represents a distinct theoretical approach to estimating Ethereum\'s intrinsic value, ranging from traditional finance frameworks to crypto-native metrics.',
                 'appendix.title': 'Appendix: Valuation Framework',
                 'category.tradfi.full': 'Traditional Finance (TradFi)',
                 'category.asset.full': 'On-chain Asset Value',
@@ -15199,7 +15109,7 @@
                 'criteria.model.tvl': 'TVL Multiple',
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
-                'criteria.model.commitment': 'Lock-up Premium',
+                'criteria.model.commitment': 'Liquidity Premium',
                 'criteria.revenueYield.m': 'TradFi yield-based valuation widely used for bonds and dividend stocks',
                 'criteria.revenueYield.d': 'Real-time Lido APR + on-chain fee revenue from DefiLlama',
                 'criteria.revenueYield.a': 'No arbitrary multiples; directly uses market-derived yield',
@@ -15363,8 +15273,8 @@
                 'desc.issuance': "New ETH issued to validators. ~930 ETH/day post-merge.",
                 'desc.netSupply': "Burn minus issuance. Negative = deflationary, bullish for ETH value.",
                 'desc.gasPrice': "Average gas price in Gwei. Reflects network transaction costs.",
-                'desc.blobFees': "Fees paid by L2s to post data on Ethereum. Higher fees = more L1 revenue (blob fees are burned like gas).",
-                'desc.blobCount': "Data blobs posted by L2s. More blobs = growing L2 adoption.",
+                'desc.blobFees': "L2 data posting fees since Dencun upgrade (Mar 2024). Blob fees are burned like gas, contributing to L1 revenue.",
+                'desc.blobCount': "Data blobs posted by L2s since Dencun (Mar 2024). More blobs = growing L2 adoption.",
                 'desc.tvl': "USD value locked in Ethereum DeFi protocols. Key utility metric.",
                 'desc.l2Tvl': "USD value locked in L2 rollups. Growing TVL = L2 ecosystem adoption.",
                 'desc.supply': "Liquid ETH available for trading. Others = L2 bridges, lost coins.",
@@ -15467,13 +15377,13 @@
                 'section.historicalTitle': '시계열 적정가치 분석',
                 'summary.title': '개요',
                 'summary.currentPrice': '현재 가격',
-                'summary.fairValue': '적정 가치 (13개 모델)',
+                'summary.fairValue': '적정 가치 (12개 모델)',
                 'summary.opportunity': '투자 기회',
                 'summary.toggleHint': '아래에서 개별 모델을 켜고 끄며 나만의 밸류에이션을 계산해 보세요.',
-                'summary.desc1': '이 대시보드는 4가지 방법론 카테고리에 걸쳐 13개 밸류에이션 모델로 <strong>이더리움의 내재 가치</strong>를 도출합니다: <strong>전통금융</strong>(Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>온체인 자산가치</strong>(TVL Multiple, MC/TVL Ratio, App Capital), <strong>네트워크 효과</strong>(Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), <strong>공급 희소성</strong>(Staking Scarcity, Lock-up Premium, Effective Float).',
+                'summary.desc1': '이 대시보드는 4가지 방법론 카테고리에 걸쳐 12개 밸류에이션 모델로 <strong>이더리움의 내재 가치</strong>를 도출합니다: <strong>전통금융</strong>(Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>온체인 자산가치</strong>(TVL Multiple, MC/TVL Ratio, App Capital), <strong>네트워크 효과</strong>(Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), <strong>공급 희소성</strong>(Staking Scarcity, Liquidity Premium).',
                 'summary.feedback': '버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
                 'summary.community': '<strong>방법론 & 토론에 참여하세요!</strong> 각 모델의 확신도를 평가하고 의견을 공유해주세요. 함께 더 정확한 신뢰도 가중치 시스템을 만들어갑니다.',
-                'appendix.intro': '이 대시보드는 4가지 방법론 카테고리로 구성된 13개 밸류에이션 모델을 사용합니다. 각 카테고리는 전통 금융 프레임워크부터 크립토 네이티브 지표까지 이더리움 내재 가치를 추정하는 고유한 이론적 접근방식을 나타냅니다.',
+                'appendix.intro': '이 대시보드는 4가지 방법론 카테고리로 구성된 12개 밸류에이션 모델을 사용합니다. 각 카테고리는 전통 금융 프레임워크부터 크립토 네이티브 지표까지 이더리움 내재 가치를 추정하는 고유한 이론적 접근방식을 나타냅니다.',
                 'appendix.title': '부록: 밸류에이션 프레임워크',
                 'category.tradfi.full': '전통금융 (TradFi)',
                 'category.asset.full': '온체인 자산가치',
@@ -15493,7 +15403,7 @@
                 'section.valuationTitle': '밸류에이션 분석 & 시나리오 시뮬레이터',
                 'section.methodologyTitle': '밸류에이션 방법론 & 토론',
                 'section.weeklyData': '주간 데이터',
-                'section.models': '13개 모델',
+                'section.models': '12개 모델',
                 'section.reference': '참고 자료',
                 'valuation.compositeFairValue': '종합 적정 가치',
                 'chart.historicalTitle': '종합 적정 가치의 변화',
@@ -15536,7 +15446,7 @@
                 'criteria.model.tvl': 'TVL Multiple',
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
-                'criteria.model.commitment': 'Lock-up Premium',
+                'criteria.model.commitment': 'Liquidity Premium',
                 'criteria.revenueYield.m': '채권, 배당주에 널리 사용되는 TradFi 수익률 기반 밸류에이션',
                 'criteria.revenueYield.d': '실시간 Lido APR + DefiLlama 온체인 수수료 수익',
                 'criteria.revenueYield.a': '임의 배수 없음; 시장 파생 수익률 직접 사용',
@@ -15700,8 +15610,8 @@
                 'desc.issuance': "검증자에게 발행된 신규 ETH. 머지 후 일 ~930 ETH.",
                 'desc.netSupply': "소각 - 발행. 음수 = 디플레이션, ETH 가치 상승 요인.",
                 'desc.gasPrice': "평균 가스 가격 (Gwei). 네트워크 트랜잭션 비용 반영.",
-                'desc.blobFees': "L2가 이더리움에 데이터를 올릴 때 내는 수수료. 높을수록 L1 수익 증가 (가스처럼 소각됨).",
-                'desc.blobCount': "L2가 게시한 데이터 블롭. 많을수록 L2 채택 증가.",
+                'desc.blobFees': "Dencun 업그레이드(2024.3) 이후 L2가 이더리움에 데이터를 올릴 때 내는 수수료. 가스처럼 소각되어 L1 수익에 기여.",
+                'desc.blobCount': "Dencun(2024.3) 이후 L2가 게시한 데이터 블롭. 많을수록 L2 채택 증가.",
                 'desc.tvl': "이더리움 DeFi 프로토콜 예치 금액. 핵심 유틸리티 지표.",
                 'desc.l2Tvl': "L2 롤업 예치 금액. TVL 증가 = L2 생태계 성장.",
                 'desc.supply': "거래 가능한 유동 ETH. Others = L2 브릿지, 분실 코인.",
@@ -15804,13 +15714,13 @@
                 'section.historicalTitle': '历史公允价值分析',
                 'summary.title': '概览',
                 'summary.currentPrice': '当前价格',
-                'summary.fairValue': '公允价值 (10个模型)',
+                'summary.fairValue': '公允价值 (12个模型)',
                 'summary.opportunity': '投资机会',
                 'summary.toggleHint': '在下方开关各个模型，自定义您的估值计算。',
-                'summary.desc1': '本仪表板使用四种方法论类别的13个估值模型推导<strong>以太坊的内在价值</strong>：<strong>传统金融</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>链上资产价值</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>网络效应</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）和<strong>供应稀缺</strong>（Staking Scarcity、Lock-up Premium、Effective Float）。',
+                'summary.desc1': '本仪表板使用四种方法论类别的12个估值模型推导<strong>以太坊的内在价值</strong>：<strong>传统金融</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>链上资产价值</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>网络效应</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）和<strong>供应稀缺</strong>（Staking Scarcity、Liquidity Premium）。',
                 'summary.feedback': '发现bug或有建议？随时联系我——非常欢迎反馈！',
                 'summary.community': '<strong>参与讨论！</strong>对每个模型的信心度进行评分并分享您的想法。让我们一起构建更准确的社区驱动可靠性权重系统。',
-                'appendix.intro': '本仪表板采用四种方法论类别组织的13个估值模型。每个类别代表一种独特的理论方法来估算以太坊的内在价值，从传统金融框架到加密原生指标。',
+                'appendix.intro': '本仪表板采用四种方法论类别组织的12个估值模型。每个类别代表一种独特的理论方法来估算以太坊的内在价值，从传统金融框架到加密原生指标。',
                 'appendix.title': '附录：估值框架',
                 'category.tradfi.full': '传统金融 (TradFi)',
                 'category.asset.full': '链上资产价值',
@@ -15873,7 +15783,7 @@
                 'criteria.model.tvl': 'TVL Multiple',
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
-                'criteria.model.commitment': 'Lock-up Premium',
+                'criteria.model.commitment': 'Liquidity Premium',
                 'criteria.revenueYield.m': '广泛用于债券和股息股票的TradFi收益率估值',
                 'criteria.revenueYield.d': '实时Lido APR + DefiLlama链上手续费收入',
                 'criteria.revenueYield.a': '无任意倍数；直接使用市场衍生收益率',
@@ -16037,8 +15947,8 @@
                 'desc.issuance': "验证者新发行ETH。合并后约930 ETH/天。",
                 'desc.netSupply': "销毁-发行。负数=通缩，利好ETH价值。",
                 'desc.gasPrice': "平均Gas价格(Gwei)。反映网络交易成本。",
-                'desc.blobFees': "L2向以太坊发布数据支付的费用。费用越高=L1收入越多（blob费用像gas一样被销毁）。",
-                'desc.blobCount': "L2发布的数据块。越多=L2采用增长。",
+                'desc.blobFees': "Dencun升级(2024.3)以来L2向以太坊发布数据的费用。blob费用像gas一样被销毁，贡献L1收入。",
+                'desc.blobCount': "Dencun(2024.3)以来L2发布的数据块。越多=L2采用增长。",
                 'desc.tvl': "以太坊DeFi锁仓价值。核心效用指标。",
                 'desc.l2Tvl': "L2 Rollup锁仓价值。TVL增长=L2生态发展。",
                 'desc.supply': "可交易的流动ETH。Others = L2桥接、丢失代币。",
@@ -16141,13 +16051,13 @@
                 'section.historicalTitle': 'りれきてきせいかかくぶんせき',
                 'summary.title': 'がいよう',
                 'summary.currentPrice': 'げんざいかかく',
-                'summary.fairValue': 'てきせいかかく (10モデル)',
+                'summary.fairValue': 'てきせいかかく (12モデル)',
                 'summary.opportunity': 'とうしきかい',
                 'summary.toggleHint': 'したのかくモデルをオン・オフして、どくじのバリュエーションをけいさんしてみましょう。',
-                'summary.desc1': 'このダッシュボードは4つのほうほうろんカテゴリにわたる13のバリュエーションモデルで<strong>イーサリアムのほんしつてきかち</strong>をどうしゅつします：<strong>でんとうきんゆう</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>オンチェーンしさんかち</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>ネットワークこうか</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）、<strong>きょうきゅうきしょうせい</strong>（Staking Scarcity、Lock-up Premium、Effective Float）。',
+                'summary.desc1': 'このダッシュボードは4つのほうほうろんカテゴリにわたる12のバリュエーションモデルで<strong>イーサリアムのほんしつてきかち</strong>をどうしゅつします：<strong>でんとうきんゆう</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>オンチェーンしさんかち</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>ネットワークこうか</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）、<strong>きょうきゅうきしょうせい</strong>（Staking Scarcity、Liquidity Premium）。',
                 'summary.feedback': 'バグをはっけんされたり、ごていあんがありましたら、いつでもおしらせください — フィードバックはだいかんげいです！',
                 'summary.community': '<strong>ディスカッションにさんかしましょう！</strong>かくモデルのかくしんどをひょうかし、ごいけんをきょうゆうしてください。いっしょに、よりせいかくなコミュニティしゅどうのしんらいどかじゅうシステムをつくりましょう。',
-                'appendix.intro': 'このダッシュボードは4つのほうほうろんカテゴリでせいりされた13のバリュエーションモデルをさいようしています。かくカテゴリはでんとうきんゆうフレームワークからクリプトネイティブしひょうまで、イーサリアムのほんしつてきかちをすいていするどくじのりろんてきアプローチをだいひょうしています。',
+                'appendix.intro': 'このダッシュボードは4つのほうほうろんカテゴリでせいりされた12のバリュエーションモデルをさいようしています。かくカテゴリはでんとうきんゆうフレームワークからクリプトネイティブしひょうまで、イーサリアムのほんしつてきかちをすいていするどくじのりろんてきアプローチをだいひょうしています。',
                 'appendix.title': 'ふろく：バリュエーションフレームワーク',
                 'category.tradfi.full': 'でんとうきんゆう (TradFi)',
                 'category.asset.full': 'オンチェーンしさんかち',
@@ -16210,7 +16120,7 @@
                 'criteria.model.tvl': 'TVL Multiple',
                 'criteria.model.staking': 'Staking Scarcity',
                 'criteria.model.l2': 'L2 Ecosystem',
-                'criteria.model.commitment': 'Lock-up Premium',
+                'criteria.model.commitment': 'Liquidity Premium',
                 'criteria.revenueYield.m': 'さいけん・はいとうかぶでひろくしようされるTradFiイールドベースのバリュエーション',
                 'criteria.revenueYield.d': 'リアルタイムLido APR + DefiLlamaオンチェーンてすうりょうしゅうえき',
                 'criteria.revenueYield.a': 'にんいのばいりつなし；マーケットはせいイールドをちょくせつしよう',
@@ -16374,8 +16284,8 @@
                 'desc.issuance': "バリデーターへの新規発行ETH。マージ後約930 ETH/日。",
                 'desc.netSupply': "焼却-発行。マイナス=デフレ、ETH価値上昇要因。",
                 'desc.gasPrice': "平均ガス価格(Gwei)。ネットワーク取引コストを反映。",
-                'desc.blobFees': "L2がイーサリアムにデータを投稿する際の手数料。高い=L1収益増加（ガスのようにバーンされる）。",
-                'desc.blobCount': "L2投稿データブロブ。多い=L2採用増加。",
+                'desc.blobFees': "Dencunアップグレード(2024.3)以降、L2がイーサリアムにデータを投稿する際の手数料。ガスのようにバーンされL1収益に貢献。",
+                'desc.blobCount': "Dencun(2024.3)以降L2が投稿したデータブロブ。多い=L2採用増加。",
                 'desc.tvl': "イーサリアムDeFiロック額。主要ユーティリティ指標。",
                 'desc.l2Tvl': "L2ロールアップロック額。TVL増加=L2エコシステム成長。",
                 'desc.supply': "取引可能な流動ETH。Others = L2ブリッジ、紛失コイン。",
@@ -16459,7 +16369,7 @@
             
             // Re-render community sections with translated labels
             if (typeof renderCommunitySection === 'function') {
-                const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'];
+                const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
                 MODEL_ORDER.forEach(modelId => {
                     renderCommunitySection(modelId);
                 });
@@ -16470,7 +16380,7 @@
         function updateMethodologyDiffLabels() {
             if (!state.historicalFairValues || state.price <= 0) return;
             
-            const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'];
+            const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
             
             MODEL_ORDER.forEach(model => {
                 const data = state.historicalFairValues[model];
@@ -16709,7 +16619,7 @@
             nvtHistory: [],
             activeAddresses: 0,
             activeAddrHistory: [],
-            // Lock-up Premium metrics
+            // Liquidity Premium metrics
             ethInDefi: 0,
             ethInDefiHistory: [],
             commitmentRatio: 0,
@@ -16780,7 +16690,6 @@
                 commitmentPremium: [],
                 appCapital: [],
                 settlementLayer: [],
-                monetarySink: [],
                 composite: []
             },
             historicalDataLoaded: false
@@ -21116,13 +21025,14 @@
             }
         }
         
-        function updateBlobFeesChart(days = 1095) {
+        function updateBlobFeesChart(days = 'all') {
             const ctx = document.getElementById('blob-fees-chart');
             if (!ctx) return;
             if (blobFeesChart) blobFeesChart.destroy();
             
             const history = state.blobFeesHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            // 'all'이면 전체 데이터, 아니면 days 기준 필터
+            const cutoffDate = days === 'all' ? 0 : Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
             setChartLoading('blob-fees-chart', false);
@@ -21143,7 +21053,7 @@
             
             const changeEl = document.getElementById('blob-fees-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = days === 90 ? '90D' : days === 365 ? '1Y' : 'All';
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -21357,13 +21267,14 @@
             }
         }
         
-        function updateBlobCountChart(days = 1095) {
+        function updateBlobCountChart(days = 'all') {
             const ctx = document.getElementById('blob-count-chart');
             if (!ctx) return;
             if (blobCountChart) blobCountChart.destroy();
             
             const history = state.blobCountHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            // 'all'이면 전체 데이터, 아니면 days 기준 필터
+            const cutoffDate = days === 'all' ? 0 : Date.now() - (days * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
             if (filtered.length < 3) {
@@ -21382,7 +21293,7 @@
             
             const changeEl = document.getElementById('blob-count-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = days === 90 ? '90D' : days === 365 ? '1Y' : 'All';
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -22206,7 +22117,7 @@
                 models.push({ 
                     id: 'stakingScarcity',
                     name: 'Staking Scarcity', 
-                    formula: 'Price × √(Supply ÷ Liquid)', 
+                    formula: 'Price × √(Supply ÷ (Supply - Staked))', 
                     price: state.price * Math.pow(scarcity, 0.5),
                     reliability: 1,
                     source: `Staked=${stakedPct}%`
@@ -22288,23 +22199,32 @@
                 });
             }
             
-            // Lock-up Premium
-            // Staked + DeFi ETH의 비율에 따른 가치 프리미엄
+            // Liquidity Premium
+            // Based on Amihud liquidity theory: reduced tradeable supply creates price premium
+            // Liquid Float = Supply - (Staked + DeFi + L2 + Lost)
             const ethInDefi = state.ethInDefi || (state.price > 0 ? tvl / state.price : 0);
-            if (stakedEth > 0 && ethInDefi > 0 && cs > 0 && state.price > 0) {
-                const committedEth = stakedEth + ethInDefi;
-                const commitmentRatio = committedEth / cs;
-                // 커밋된 ETH에 대한 가치 프리미엄 (1.5x multiplier)
-                const committedValueMultiplier = 1.5;
-                const commitPct = (commitmentRatio * 100).toFixed(0);
-                models.push({
-                    id: 'commitmentPremium',
-                    name: 'Lock-up Premium',
-                    formula: 'Price × (1 + Commit% × Multiplier)',
-                    price: state.price * (1 + (commitmentRatio * committedValueMultiplier)),
-                    reliability: 1,
-                    source: `Multiplier=1.5, Commit=${commitPct}%`
-                });
+            const l2Eth = state.price > 0 ? (state.l2Tvl || 15000000000) / state.price : 0;
+            const lostEth = cs * 0.03; // ~3% lost/dormant estimate
+            if (stakedEth > 0 && cs > 0 && state.price > 0) {
+                const totalLocked = stakedEth + ethInDefi + l2Eth + lostEth;
+                const liquidFloat = cs - totalLocked;
+                const liquidFloatPct = ((liquidFloat / cs) * 100).toFixed(0);
+                
+                // Update liquid float display
+                const floatDisplay = document.getElementById('liquid-float-display');
+                if (floatDisplay) floatDisplay.textContent = liquidFloatPct;
+                
+                if (liquidFloat > 0) {
+                    const liquidityPremium = state.price * Math.sqrt(cs / liquidFloat);
+                    models.push({
+                        id: 'commitmentPremium',
+                        name: 'Liquidity Premium',
+                        formula: 'Price × √(Supply ÷ Liquid Float)',
+                        price: liquidityPremium,
+                        reliability: 1,
+                        source: `Liquid Float=${liquidFloatPct}%`
+                    });
+                }
             }
             
             // App Capital
@@ -22356,36 +22276,6 @@
                     reliability: 2,
                     source: `Velocity=${velocity} (SoV-heavy)`
                 });
-            }
-            
-            // Effective Float (Effective Float Valuation)
-            // Effective Float = Supply - Structural Sinks
-            // Sinks: staking + DeFi TVL (in ETH) + L2 bridged + lost/dormant (est. 3%)
-            // Fair Value = Price × (Supply / Effective Float)
-            if (state.price > 0 && cs > 0) {
-                const defiEth = (state.tvl || 70000000000) / state.price;
-                const l2Eth = (state.l2Tvl || 15000000000) / state.price;
-                const lostEth = cs * 0.03; // ~3% lost/dormant estimate
-                const totalSink = stakedEth + defiEth + l2Eth + lostEth;
-                const effectiveFloat = cs - totalSink;
-                const sinkRatio = ((totalSink / cs) * 100).toFixed(0);
-                const floatRatio = (100 - parseInt(sinkRatio));
-                
-                // Update effective float display
-                const floatDisplay = document.getElementById('effective-float-display');
-                if (floatDisplay) floatDisplay.textContent = floatRatio;
-                
-                if (effectiveFloat > 0) {
-                    const sinkFairValue = state.price * (cs / effectiveFloat);
-                    models.push({ 
-                        id: 'monetarySink',
-                        name: 'Effective Float', 
-                        formula: 'Price × (Supply ÷ Float)', 
-                        price: sinkFairValue,
-                        reliability: 2,
-                        source: `Sink=${sinkRatio}%, Float=${floatRatio}%`
-                    });
-                }
             }
             
             return models;
@@ -22796,7 +22686,7 @@
             tab.addEventListener('click', () => {
                 tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
+                const period = tab.dataset.period === 'all' ? 'all' : parseInt(tab.dataset.period);
                 updateBlobFeesChart(period);
             });
         });
@@ -22806,7 +22696,7 @@
             tab.addEventListener('click', () => {
                 tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
+                const period = tab.dataset.period === 'all' ? 'all' : parseInt(tab.dataset.period);
                 updateBlobCountChart(period);
             });
         });
@@ -24587,7 +24477,7 @@
             document.getElementById('share-buy-count').textContent = buyCount;
             document.getElementById('share-hold-count').textContent = holdCount;
             document.getElementById('share-sell-count').textContent = sellCount;
-            document.getElementById('share-model-count').textContent = modelCount + ' / 13 models analyzed';
+            document.getElementById('share-model-count').textContent = modelCount + ' / 12 models analyzed';
             
             // Update verdict class and diff color
             verdictEl.className = 'share-card-verdict';
@@ -24625,7 +24515,7 @@ Current: ${currentPrice}
 Fair Value: ${fairValue}
 Potential: ${upside}
 
-Based on ${modelCount}/13 valuation models.
+Based on ${modelCount}/12 valuation models.
 
 Check out ETHval 👇`;
             
@@ -24670,7 +24560,7 @@ Check out ETHval 👇`;
             return {
                 price: isDark ? '#ffffff' : '#64748b',      // White in dark, gray in light
                 composite: isDark ? '#e6edf3' : '#24292e',  // Light gray in dark, black in light
-                // Rainbow spectrum order (13 models)
+                // Rainbow spectrum order (12 models)
                 tvlMultiple: '#ef4444',      // 1. Red
                 stakingScarcity: '#f97316',  // 2. Orange
                 mctvl: '#f59e0b',            // 3. Amber
@@ -24690,7 +24580,7 @@ Check out ETHval 👇`;
         const MODEL_COLORS = {
             price: '#8b949e',      // Gray for market price
             composite: '#24292e',  // Black for composite
-            // Rainbow spectrum order (13 models)
+            // Rainbow spectrum order (12 models)
             tvlMultiple: '#ef4444',      // 1. Red
             stakingScarcity: '#f97316',  // 2. Orange
             mctvl: '#f59e0b',            // 3. Amber
@@ -24702,8 +24592,7 @@ Check out ETHval 👇`;
             commitmentPremium: '#0ea5e9', // 9. Sky
             appCapital: '#6366f1',       // 10. Indigo
             validatorEcon: '#8b5cf6',    // 11. Violet
-            settlementLayer: '#a855f7',  // 12. Purple
-            monetarySink: '#f472b6'      // 13. Pink
+            settlementLayer: '#a855f7'   // 12. Purple
         };
 
         const MODEL_NAMES = {
@@ -24715,19 +24604,18 @@ Check out ETHval 👇`;
             l2Ecosystem: 'L2 Ecosystem',
             ps: 'P/S Ratio (25x)',
             revenueYield: 'Fee Yield',
-            commitmentPremium: 'Lock-up Premium',
+            commitmentPremium: 'Liquidity Premium',
             appCapital: 'App Capital',
             validatorEcon: 'Validator Economics',
             settlementLayer: 'Settlement Layer (MV=PQ)',
-            monetarySink: 'Effective Float',
             composite: 'Composite'
         };
         
         // Model order matching methodology section
         const MODEL_ORDER = ['tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe', 'dcf', 'l2Ecosystem', 
-                            'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'];
+                            'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'];
 
-        // Calculate historical fair values for all 13 models
+        // Calculate historical fair values for all 12 models
         async function calculateHistoricalFairValues() {
             log('📊 Calculating historical fair values...');
             
@@ -24756,7 +24644,6 @@ Check out ETHval 👇`;
                 commitmentPremium: [],
                 appCapital: [],
                 settlementLayer: [],
-                monetarySink: [],
                 composite: []
             };
             
@@ -24894,13 +24781,17 @@ Check out ETHval 👇`;
                     results.revenueYield.push({ date, value: revYieldValue });
                 }
                 
-                // 9. Lock-up Premium (matches: Price × (1 + Commit% × Multiplier))
+                // 9. Liquidity Premium (matches: Price × √(Supply ÷ Liquid Float))
                 const ethInDefi = price > 0 ? tvl / price : 0;
-                if (stakedEth > 0 && ethInDefi > 0 && price > 0) {
-                    const committed = stakedEth + ethInDefi;
-                    const commitRatio = committed / supply;
-                    const commitValue = price * (1 + commitRatio * 1.5);
-                    results.commitmentPremium.push({ date, value: commitValue });
+                const l2EthHist = price > 0 ? l2Tvl / price : 0;
+                const lostEthHist = supply * 0.03; // ~3% lost/dormant estimate
+                if (stakedEth > 0 && price > 0) {
+                    const totalLocked = stakedEth + ethInDefi + l2EthHist + lostEthHist;
+                    const liquidFloat = supply - totalLocked;
+                    if (liquidFloat > 0) {
+                        const liquidityPremiumValue = price * Math.sqrt(supply / liquidFloat);
+                        results.commitmentPremium.push({ date, value: liquidityPremiumValue });
+                    }
                 }
                 
                 // 10. App Capital (matches: Stables ÷ Ratio ÷ Supply)
@@ -24940,21 +24831,6 @@ Check out ETHval 👇`;
                         const estimatedSettlement = baselineSettlement * Math.pow(tvlRatio, 0.7);
                         const settlementValue = (estimatedSettlement * 365 / velocity) / supply;
                         results.settlementLayer.push({ date, value: settlementValue });
-                    }
-                }
-                
-                // 13. Effective Float (Effective Float Valuation)
-                // Fair Value = Price × (Supply / Effective Float)
-                if (price > 0 && stakedEth > 0) {
-                    const ethInDefi = tvl / price;
-                    const l2Eth = l2Tvl / price;
-                    const lostEth = supply * 0.03; // ~3% lost/dormant estimate
-                    const totalSink = stakedEth + ethInDefi + l2Eth + lostEth;
-                    const effectiveFloat = supply - totalSink;
-                    
-                    if (effectiveFloat > 0) {
-                        const sinkValue = price * (supply / effectiveFloat);
-                        results.monetarySink.push({ date, value: sinkValue });
                     }
                 }
             }
@@ -25030,7 +24906,7 @@ Check out ETHval 👇`;
             // 8. Fee Yield: AnnualFees ÷ APR ÷ Supply
             valuation.revenueYield = (state.fees * 365 / (state.stakingApr / 100)) / csVal;
             
-            // 9. Lock-up Premium: Price × (1 + Commit% × Multiplier)
+            // 9. Liquidity Premium: Price × (1 + Commit% × Multiplier)
             const ethInDefi = state.tvl / state.price;
             const commitRatio = (state.stakedEth + ethInDefi) / csVal;
             valuation.commitmentPremium = state.price * (1 + commitRatio * 1.5);
@@ -25102,7 +24978,7 @@ Check out ETHval 👇`;
             
             const labels = sampledPrice.map(d => fmt.chartLabel(d.date));
             
-            // All 13 models
+            // All 12 models
             // Use MODEL_ORDER for consistent ordering
             const allModels = MODEL_ORDER;
             
@@ -25678,7 +25554,7 @@ Check out ETHval 👇`;
             const MODEL_ORDER = [
                 'tvlMultiple', 'stakingScarcity', 'mctvl', 'metcalfe',
                 'dcf', 'l2Ecosystem', 'ps', 'revenueYield',
-                'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer', 'monetarySink'
+                'commitmentPremium', 'appCapital', 'validatorEcon', 'settlementLayer'
             ];
             
             // Model calculations with full names and matching colors (same as historical chart legend)
@@ -25724,9 +25600,15 @@ Check out ETHval 👇`;
                     calc: function(p) { return ((p.fees * 365) / 0.032) / p.supply; }
                 },
                 commitmentPremium: {
-                    name: 'Lock-up Premium',
+                    name: 'Liquidity Premium',
                     color: '#0ea5e9',
-                    calc: function(p) { return p.price * (1 + ((p.stakedEth + p.tvl / p.price) / p.supply) * 1.5); }
+                    calc: function(p) {
+                        var defiEth = p.tvl / p.price;
+                        var l2Eth = p.l2Tvl / p.price;
+                        var lostEth = p.supply * 0.03;
+                        var liquidFloat = p.supply - p.stakedEth - defiEth - l2Eth - lostEth;
+                        return liquidFloat > 0 ? p.price * Math.sqrt(p.supply / liquidFloat) : p.price;
+                    }
                 },
                 appCapital: {
                     name: 'App Capital',
@@ -25742,18 +25624,6 @@ Check out ETHval 👇`;
                     name: 'Settlement Layer (MV=PQ)',
                     color: '#a855f7',
                     calc: function(p) { return ((p.dailySettlement * 365 / 6)) / p.supply; }
-                },
-                monetarySink: {
-                    name: 'Effective Float',
-                    color: '#f472b6',
-                    calc: function(p) {
-                        var defiEth = p.tvl / p.price;
-                        var l2Eth = p.l2Tvl / p.price;
-                        var lostEth = p.supply * 0.03;
-                        var totalSink = p.stakedEth + defiEth + l2Eth + lostEth;
-                        var effectiveFloat = p.supply - totalSink;
-                        return effectiveFloat > 0 ? p.price * (p.supply / effectiveFloat) : p.price;
-                    }
                 }
             };
             
@@ -26059,10 +25929,9 @@ Check out ETHval 👇`;
                 metcalfe: "Metcalfe's Law",
                 stakingScarcity: 'Staking Scarcity',
                 l2Ecosystem: 'L2 Ecosystem',
-                commitmentPremium: 'Lock-up Premium',
+                commitmentPremium: 'Liquidity Premium',
                 appCapital: 'App Capital Value',
-                settlementLayer: 'Settlement Layer (MV=PQ)',
-                monetarySink: 'Effective Float'
+                settlementLayer: 'Settlement Layer (MV=PQ)'
             };
             
             const MODEL_COLORS = {
@@ -26077,14 +25946,13 @@ Check out ETHval 👇`;
                 l2Ecosystem: '#f97316',
                 commitmentPremium: '#6366f1',
                 appCapital: '#14b8a6',
-                settlementLayer: '#a855f7',
-                monetarySink: '#f472b6'
+                settlementLayer: '#a855f7'
             };
             
             const MODEL_WEIGHTS = {
                 dcf: 3, ps: 2, revenueYield: 3, validatorEcon: 2,
                 tvlMultiple: 1, mctvl: 2, metcalfe: 2, stakingScarcity: 1,
-                l2Ecosystem: 1, commitmentPremium: 1, appCapital: 2, settlementLayer: 2, monetarySink: 2
+                l2Ecosystem: 1, commitmentPremium: 1, appCapital: 2, settlementLayer: 2
             };
             
             let modelRankingChart = null;
@@ -26498,7 +26366,7 @@ Check out ETHval 👇`;
             // ENGAGEMENT UX - Participation Encouragement
             // ========================================
             
-            const TOTAL_MODELS = 13;
+            const TOTAL_MODELS = 12;
             const STORAGE_KEY_BANNER = 'ethval_banner_dismissed';
             const STORAGE_KEY_FIRST_VOTE = 'ethval_first_vote_shown';
             const STORAGE_KEY_USER_RATINGS = 'ethval_user_ratings';
