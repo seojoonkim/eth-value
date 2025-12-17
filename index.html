@@ -13635,10 +13635,26 @@
                 return;
             }
             
-            // State: Logged in with 2+ ratings - FULL ACCESS
-            floatingBadge.classList.add('hidden');
-            floatingBadge.classList.remove('login-mode');
-            floatingBadge.classList.remove('rate-mode');
+            // State: Logged in with 2+ ratings - FULL ACCESS but encourage more ratings
+            const totalModels = 12;
+            const remainingModels = totalModels - userRatingCount;
+            
+            if (remainingModels > 0) {
+                // Show floating badge - encourage more ratings
+                floatingBadge.classList.remove('hidden');
+                floatingBadge.classList.remove('login-mode');
+                floatingBadge.classList.add('rate-mode');
+                floatingBadge.onclick = () => document.getElementById('section-methodology')?.scrollIntoView({behavior: 'smooth'});
+                floatingBadgeIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
+                floatingBadgeTitle.textContent = gt('gated.rateRemaining', '{n} models left to rate').replace('{n}', remainingModels);
+                floatingBadgeSubtitle.textContent = gt('gated.contributeSubtitle', 'Your ratings help build better valuation data');
+                floatingBadgeProgress.style.display = 'none';
+            } else {
+                // All 12 rated - hide badge
+                floatingBadge.classList.add('hidden');
+                floatingBadge.classList.remove('login-mode');
+                floatingBadge.classList.remove('rate-mode');
+            }
             
             // Historical 3Y tab - unlocked
             if (historicalTab3Y) {
@@ -16082,6 +16098,8 @@
                 'gated.loginSubtitle': 'Rate 2+ valuation models to access all features',
                 'gated.rateTitle': 'Rate {n} more valuation models',
                 'gated.rateSubtitle': 'to unlock 3Y data & simulator',
+                'gated.rateRemaining': '{n} models left to rate',
+                'gated.contributeSubtitle': 'Your ratings help build better valuation data',
                 'gated.rateModels': 'Rate Models',
                 'gated.simulatorLoginRequired': 'Log in with 𝕏 & rate 2+ valuation models to unlock',
                 'gated.simulatorRateRequired': 'Rate {n} more valuation models to unlock',
@@ -16437,6 +16455,8 @@
                 'gated.loginSubtitle': '2+ 밸류에이션 모델 평가 시 모든 기능 이용 가능',
                 'gated.rateTitle': '{n}개 밸류에이션 모델 더 평가',
                 'gated.rateSubtitle': '3Y 데이터 & 시뮬레이터 해제',
+                'gated.rateRemaining': '{n}개 모델 평가 남음',
+                'gated.contributeSubtitle': '평가가 더 나은 밸류에이션 데이터를 만듭니다',
                 'gated.rateModels': '모델 평가하기',
                 'gated.simulatorLoginRequired': '𝕏 로그인 & 2+ 밸류에이션 모델 평가 시 해제',
                 'gated.simulatorRateRequired': '{n}개 밸류에이션 모델 더 평가 시 해제',
