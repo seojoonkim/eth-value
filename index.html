@@ -13605,8 +13605,8 @@
                 floatingBadge.classList.add('rate-mode');
                 floatingBadge.onclick = () => document.getElementById('section-methodology')?.scrollIntoView({behavior: 'smooth'});
                 floatingBadgeIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
-                floatingBadgeTitle.textContent = gt('gated.rateTitle', 'Rate {n} more valuation models').replace('{n}', remaining);
-                floatingBadgeSubtitle.textContent = gt('gated.rateSubtitle', 'to unlock 3Y data & simulator');
+                floatingBadgeTitle.textContent = gt('gated.rateTitle', 'Just {n} more to unlock!').replace('{n}', remaining);
+                floatingBadgeSubtitle.textContent = gt('gated.rateSubtitle', 'Rate to access 3Y data & simulator');
                 floatingBadgeProgress.style.display = 'flex';
                 
                 // Update progress dots
@@ -14477,12 +14477,12 @@
                         ${!isLoggedIn ? `
                             <button class="summary-btn login-btn" onclick="loginWithTwitter(); event.stopPropagation();">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                Rate with <span class="x-logo">𝕏</span>
+                                Login with <span class="x-logo">𝕏</span> to Rate
                             </button>
                         ` : `
-                            <button class="summary-btn" data-action="open-modal" data-model="${modelId}">
+                            <button class="summary-btn login-btn" data-action="open-modal" data-model="${modelId}">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                ${t('modal.viewReview', 'View & Review')}
+                                ${t('modal.viewReview', 'Rate & Discuss')}
                             </button>
                         `}
                     </div>
@@ -14780,7 +14780,7 @@
                                 ${!currentUser ? `
                                     <div class="modal-vote-status login-required${document.body.classList.contains('dark') ? ' dark-mode-btn' : ''}" onclick="loginWithTwitter()" style="background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important; color: #fff !important;">
                                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                        Rate with <span class="x-logo">𝕏</span>
+                                        Login with <span class="x-logo">𝕏</span> to Rate
                                     </div>
                                 ` : ratings.userRating ? `
                                     <div class="modal-vote-status voted">
@@ -15243,7 +15243,7 @@
                         voteStatusEl.className = 'modal-vote-status login-required';
                         voteStatusEl.innerHTML = `
                             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                            Rate with <span class="x-logo">𝕏</span>
+                            Login with <span class="x-logo">𝕏</span> to Rate
                         `;
                         voteStatusEl.onclick = loginWithTwitter;
                         // Apply dark mode styling
@@ -16096,8 +16096,8 @@
                 'summary.whyBuilt': '📝 The Story',
                 'gated.loginTitle': 'Log in with 𝕏 to unlock',
                 'gated.loginSubtitle': 'Rate 2+ valuation models to access all features',
-                'gated.rateTitle': 'Rate {n} more valuation models',
-                'gated.rateSubtitle': 'to unlock 3Y data & simulator',
+                'gated.rateTitle': 'Just {n} more to unlock!',
+                'gated.rateSubtitle': 'Rate to access 3Y data & simulator',
                 'gated.rateRemaining': '{n} models left to rate',
                 'gated.contributeSubtitle': 'Your ratings help build better valuation data',
                 'gated.rateModels': 'Rate Models',
@@ -16321,7 +16321,7 @@
                 'alert.likeFailed': 'Failed to update like.',
                 'alert.replyFailed': 'Failed to add reply.',
                 'alert.cantLikeOwn': "You can't like your own post.",
-                'modal.viewReview': 'View & Review',
+                'modal.viewReview': 'Rate & Discuss',
                 'desc.dominance': "ETH's share of total crypto market cap. Higher = ETH outperforming alts.",
                 'desc.ethbtc': "ETH price relative to BTC. Rising ratio signals ETH strength vs Bitcoin.",
                 'desc.stablecoin': "Total stablecoin market cap. Growth indicates capital inflow to crypto.",
@@ -16453,8 +16453,8 @@
                 'summary.whyBuilt': '📝 개발 배경',
                 'gated.loginTitle': '𝕏로 로그인하여 잠금 해제',
                 'gated.loginSubtitle': '2+ 밸류에이션 모델 평가 시 모든 기능 이용 가능',
-                'gated.rateTitle': '{n}개 밸류에이션 모델 더 평가',
-                'gated.rateSubtitle': '3Y 데이터 & 시뮬레이터 해제',
+                'gated.rateTitle': '{n}개만 더 평가하면 해제!',
+                'gated.rateSubtitle': '3Y 데이터 & 시뮬레이터 개방',
                 'gated.rateRemaining': '{n}개 모델 평가 남음',
                 'gated.contributeSubtitle': '평가가 더 나은 밸류에이션 데이터를 만듭니다',
                 'gated.rateModels': '모델 평가하기',
@@ -16678,7 +16678,7 @@
                 'alert.likeFailed': '좋아요 업데이트에 실패했습니다.',
                 'alert.replyFailed': '답글 추가에 실패했습니다.',
                 'alert.cantLikeOwn': '본인 글에는 좋아요를 할 수 없습니다.',
-                'modal.viewReview': '보기 & 리뷰',
+                'modal.viewReview': '평가 & 토론',
                 'desc.dominance': "전체 크립토 시총 중 ETH 비중. 높을수록 ETH가 알트 대비 강세.",
                 'desc.ethbtc': "BTC 대비 ETH 가격. 상승하면 ETH 강세 신호.",
                 'desc.stablecoin': "전체 스테이블코인 시총. 증가는 크립토 자금 유입 신호.",
@@ -17022,7 +17022,7 @@
                 'alert.likeFailed': '点赞更新失败。',
                 'alert.replyFailed': '添加回复失败。',
                 'alert.cantLikeOwn': '不能给自己的帖子点赞。',
-                'modal.viewReview': '查看与评论',
+                'modal.viewReview': '评分与讨论',
                 'desc.dominance': "ETH占加密总市值比例。越高=ETH跑赢山寨币。",
                 'desc.ethbtc': "ETH相对BTC价格。上涨=ETH强势信号。",
                 'desc.stablecoin': "稳定币总市值。增长表示资金流入加密市场。",
@@ -17366,7 +17366,7 @@
                 'alert.likeFailed': 'いいねの更新に失敗しました。',
                 'alert.replyFailed': '返信の追加に失敗しました。',
                 'alert.cantLikeOwn': '自分の投稿にいいねはできません。',
-                'modal.viewReview': '閲覧 & レビュー',
+                'modal.viewReview': '評価 & 議論',
                 'desc.dominance': "暗号資産時価総額に占めるETHシェア。高い=ETHがアルト優勢。",
                 'desc.ethbtc': "BTC対ETH価格。上昇=ETH強気シグナル。",
                 'desc.stablecoin': "ステーブルコイン総時価総額。増加=暗号資産への資金流入。",
@@ -27890,7 +27890,7 @@ Check out ETHval 👇`;
                 
                 if (!isLoggedIn) {
                     // Not logged in - show login prompt
-                    textEl.innerHTML = 'Rate with <span class="x-logo">𝕏</span>';
+                    textEl.innerHTML = 'Login with <span class="x-logo">𝕏</span> to Rate';
                     button.classList.remove('pulse', 'all-done');
                     button.classList.add('login-btn');
                     if (starEl) {
