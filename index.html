@@ -14607,16 +14607,16 @@
             const modelNames = {
                 'tvlMultiple': 'TVL Multiple',
                 'stakingScarcity': 'Staking Scarcity',
-                'mctvl': 'MC/TVL',
+                'mctvl': 'MC/TVL Ratio',
                 'metcalfe': "Metcalfe's Law",
-                'dcf': 'DCF Model',
+                'dcf': 'Staking DCF',
                 'l2Ecosystem': 'L2 Ecosystem',
-                'ps': 'P/S Ratio',
+                'ps': 'P/S Ratio (25x)',
                 'revenueYield': 'Fee Yield',
                 'commitmentPremium': 'Liquidity Premium',
-                'appCapital': 'App Capital Flow',
+                'appCapital': 'App Capital',
                 'validatorEcon': 'Validator Economics',
-                'settlementLayer': 'Settlement Layer (MV=PQ)'
+                'settlementLayer': 'Settlement Layer'
             };
             
             // 총 댓글 수 (대댓글 포함)
@@ -14960,16 +14960,14 @@
                 if (canvas && state.historicalFairValues && state.historicalFairValues[modelId]) {
                     const modelData = state.historicalFairValues[modelId];
                     const cutoffDate = new Date();
-                    cutoffDate.setDate(cutoffDate.getDate() - 365);
+                    cutoffDate.setDate(cutoffDate.getDate() - 1095);
                     const filteredData = modelData.filter(d => d.date >= cutoffDate);
                     const sampleRate = Math.max(1, Math.floor(filteredData.length / 60));
                     const sampledData = filteredData.filter((_, i) => i % sampleRate === 0 || i === filteredData.length - 1);
                     
                     if (sampledData.length > 1) {
-                        // 차트 색상 결정 (상승/하락)
-                        const firstVal = sampledData[0]?.value || 0;
-                        const lastVal = sampledData[sampledData.length - 1]?.value || 0;
-                        const chartColor = lastVal >= firstVal ? '#22c55e' : '#ef4444';
+                        // 차트 색상 결정 (모델별 고정 색상)
+                        const chartColor = MODEL_COLORS[modelId] || '#888';
                         
                         new Chart(canvas, {
                             type: 'line',
@@ -14978,9 +14976,9 @@
                                 datasets: [{
                                     data: sampledData.map(d => d.value),
                                     borderColor: chartColor,
-                                    backgroundColor: chartColor === '#22c55e' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    backgroundColor: 'transparent',
                                     borderWidth: 1.5,
-                                    fill: true,
+                                    fill: false,
                                     tension: 0.3,
                                     pointRadius: 0,
                                     pointHoverRadius: 3
@@ -15049,9 +15047,8 @@
                             const sampledData = filteredData.filter((_, i) => i % sampleRate === 0 || i === filteredData.length - 1);
                             
                             if (sampledData.length > 1) {
-                                const firstVal = sampledData[0]?.value || 0;
-                                const lastVal = sampledData[sampledData.length - 1]?.value || 0;
-                                const chartColor = lastVal >= firstVal ? '#22c55e' : '#ef4444';
+                                // 차트 색상 결정 (모델별 고정 색상)
+                                const chartColor = MODEL_COLORS[modelId] || '#888';
                                 
                                 new Chart(canvas, {
                                     type: 'line',
@@ -15060,9 +15057,9 @@
                                         datasets: [{
                                             data: sampledData.map(d => d.value),
                                             borderColor: chartColor,
-                                            backgroundColor: chartColor === '#22c55e' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                            backgroundColor: 'transparent',
                                             borderWidth: 1.5,
-                                            fill: true,
+                                            fill: false,
                                             tension: 0.3,
                                             pointRadius: 0,
                                             pointHoverRadius: 3
