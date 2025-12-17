@@ -436,9 +436,18 @@
         }
         
         /* Dark mode - modal sort buttons */
+        body.dark .modal-sort-btns {
+            background: #21262d;
+        }
+        
+        body.dark .modal-sort-btn {
+            background: transparent;
+            color: #a8b4c0;
+        }
+        
         body.dark .modal-sort-btn.active {
-            background: #30363d;
-            color: var(--accent);
+            background: rgba(124, 58, 237, 0.3);
+            color: #c4b5fd;
         }
         
         /* Dark mode - disabled toggle */
@@ -3820,10 +3829,12 @@
             padding: 16px 20px;
             touch-action: pan-y;
             overscroll-behavior: contain;
+            text-align: left;
         }
 
         .review-modal {
             touch-action: auto;
+            text-align: left;
         }
 
         /* 모달 별점 요약 + 작성 섹션 wrapper */
@@ -4235,7 +4246,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .modal-sort-label {
@@ -4247,17 +4258,17 @@
             display: flex;
             gap: 2px;
             background: var(--bg-subtle);
-            padding: 3px;
+            padding: 2px;
             border-radius: var(--radius-sm);
         }
 
         .modal-sort-btn {
-            padding: 4px 10px;
+            padding: 2px 8px;
+            font-size: var(--font-tiny);
+            font-weight: 500;
             background: transparent;
             border: none;
             border-radius: var(--radius-sm);
-            font-size: 11px;
-            font-weight: 500;
             color: var(--text-muted);
             cursor: pointer;
             transition: all 0.15s ease;
@@ -4268,10 +4279,9 @@
         }
 
         .modal-sort-btn.active {
-            background: white;
+            background: var(--bg-card);
             color: var(--accent);
-            font-weight: 600;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-sm);
         }
 
         .modal-likes-count {
@@ -14616,7 +14626,7 @@
                 'commitmentPremium': 'Liquidity Premium',
                 'appCapital': 'App Capital',
                 'validatorEcon': 'Validator Economics',
-                'settlementLayer': 'Settlement Layer'
+                'settlementLayer': 'Settlement Layer (MV=PQ)'
             };
             
             // 총 댓글 수 (대댓글 포함)
@@ -14664,8 +14674,8 @@
                     reliability: 1,
                     caveat: t('method.staking.note', 'Proprietary model developed for this dashboard. Lacks peer review or academic validation'),
                     sources: [
-                        { name: 'Glassnode: Bitcoin Liquid and Illiquid Supply', url: 'https://insights.glassnode.com/bitcoin-liquid-supply/' },
-                        { name: 'NBER: Tokenomics of Staking (Working Paper, 2024)', url: 'https://www.nber.org/papers/w32760' }
+                        { name: 'SSRN: Exploring Ethereum Staking (Krause, 2024)', url: 'https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4905828' },
+                        { name: 'SSRN: Refining Metcalfe\'s Law for Blockchain (Alabi & Eick, 2024)', url: 'https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4839567' }
                     ]
                 },
                 'mctvl': {
@@ -14674,7 +14684,7 @@
                     reliability: 2,
                     caveat: t('method.mctvl.note', 'Optimal MC/TVL ratio (6.0) lacks empirical justification across market cycles'),
                     sources: [
-                        { name: 'Messari: MC/TVL Framework', url: 'https://messari.io' }
+                        { name: 'arXiv: Piercing the Veil of TVL: DeFi Reappraised (2024)', url: 'https://arxiv.org/abs/2404.11745' }
                     ]
                 },
                 'metcalfe': {
@@ -14683,7 +14693,8 @@
                     reliability: 2,
                     caveat: t('method.metcalfe.note', 'DAU-to-value coefficient varies significantly; 1.5 exponent may not fit all conditions'),
                     sources: [
-                        { name: 'SSRN: Metcalfe\'s Law in Bitcoin (Peterson, 2018)', url: 'https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3078248' }
+                        { name: 'SSRN: Metcalfe\'s Law as a Model for Bitcoin\'s Value (Peterson, 2018)', url: 'https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3078248' },
+                        { name: 'Royal Society: Speculative Bubble and Metcalfe\'s Law (Wheatley et al., 2019)', url: 'https://royalsocietypublishing.org/doi/10.1098/rsos.180538' }
                     ]
                 },
                 'dcf': {
@@ -14692,7 +14703,8 @@
                     reliability: 2,
                     caveat: t('method.dcf.note', 'Highly sensitive to discount rate and growth rate assumptions'),
                     sources: [
-                        { name: 'Lido Finance: stETH APR', url: 'https://lido.fi' }
+                        { name: 'Sam Andrew: Crypto DCF (Non)-Sense (2022)', url: 'https://samuelandrew.substack.com/p/crypto-dcf-non-sense' },
+                        { name: 'MDPI: Cryptocurrency Yield Valuation Model (2024)', url: 'https://www.mdpi.com/2674-1032/3/1/8' }
                     ]
                 },
                 'l2Ecosystem': {
@@ -14701,7 +14713,8 @@
                     reliability: 1,
                     caveat: t('method.l2.note', '2x L2 weight multiplier is proprietary without empirical basis'),
                     sources: [
-                        { name: 'L2Beat: Layer 2 TVL', url: 'https://l2beat.com' }
+                        { name: 'Fidelity Digital Assets: The Rise of Layer 2 Scaling on Ethereum', url: 'https://www.fidelitydigitalassets.com/research-and-insights/rise-layer-2-scaling-ethereum' },
+                        { name: 'IET Blockchain: EIP-4844 Proto-Danksharding Analysis', url: 'https://ietresearch.onlinelibrary.wiley.com/doi/full/10.1049/blc2.70014' }
                     ]
                 },
                 'ps': {
@@ -14710,7 +14723,7 @@
                     reliability: 2,
                     caveat: t('method.ps.note', '25x multiple borrowed from SaaS sector; crypto protocols may warrant different multiples'),
                     sources: [
-                        { name: 'Token Terminal: Ethereum Fees', url: 'https://tokenterminal.com' }
+                        { name: 'Token Terminal: Price-to-Earnings Ratio Methodology', url: 'https://tokenterminal.com/resources/articles/price-to-earnings-ratio' }
                     ]
                 },
                 'revenueYield': {
@@ -14719,7 +14732,8 @@
                     reliability: 3,
                     caveat: t('method.yield.note', 'Assumes stable yield environment; actual staking yields are volatile in practice'),
                     sources: [
-                        { name: 'Lido Finance: Real-time APR', url: 'https://lido.fi' }
+                        { name: 'MDPI: Cryptocurrency Yield Valuation Model (2024)', url: 'https://www.mdpi.com/2674-1032/3/1/8' },
+                        { name: 'The DeFi Report: Ethereum Valuation Framework', url: 'https://thedefireport.substack.com/p/ethereum-valuation-framework' }
                     ]
                 },
                 'commitmentPremium': {
@@ -14738,7 +14752,8 @@
                     reliability: 2,
                     caveat: t('method.appCapital.note', 'Stablecoins estimated at 28% of total App Capital based on historical ratio'),
                     sources: [
-                        { name: 'DefiLlama: Stablecoins', url: 'https://defillama.com/stablecoins' }
+                        { name: 'Yewjin: Ethereum as Financial Infrastructure (TVS Framework)', url: 'https://yewjin.com/blog/2025/ethereum-as-financial-infra/' },
+                        { name: 'Dipanshu: TVS Could Redefine ETH Forever', url: 'https://medium.com/@dipanshuchaudhry9/ignore-this-ethereum-insight-at-your-own-risk-tvs-could-redefine-eth-forever-d34bfcfd278a' }
                     ]
                 },
                 'validatorEcon': {
@@ -14747,7 +14762,8 @@
                     reliability: 2,
                     caveat: t('method.validator.note', 'Target 6% required yield is subjective; varies significantly by investor risk appetite'),
                     sources: [
-                        { name: 'Beaconcha.in: Validator Stats', url: 'https://beaconcha.in' }
+                        { name: 'arXiv: Game Theory of Validator Economics (2024)', url: 'https://arxiv.org/html/2405.03357v2' },
+                        { name: 'arXiv: Optimal Staking Mechanism Design (2024)', url: 'https://arxiv.org/html/2405.14617v1' }
                     ]
                 },
                 'settlementLayer': {
@@ -14756,7 +14772,8 @@
                     reliability: 2,
                     caveat: t('method.settlement.note', 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly'),
                     sources: [
-                        { name: 'Artemis: On-chain Settlement Data', url: 'https://www.artemis.xyz' }
+                        { name: 'Willy Woo: Introducing NVT Ratio - Bitcoin\'s PE Ratio (2017)', url: 'https://woobull.com/introducing-nvt-ratio-bitcoins-pe-ratio-use-it-to-detect-bubbles/' },
+                        { name: 'Chris Burniske: Cryptoasset Valuations (MV=PQ Framework)', url: 'https://medium.com/@cburniske/cryptoasset-valuations-ac83479ffca7' }
                     ]
                 }
             };
