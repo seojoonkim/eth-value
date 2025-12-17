@@ -1,13 +1,14 @@
 # .github/workflows/collect-historical-data.yml
 # ETHval Historical Data Collection
-# 매일 UTC 06:00에 자동 실행 (KST 15:00)
+# 매일 UTC 04:30에 자동 실행 (Dune 스케줄 03:30-04:00 완료 후)
+# KST 13:30
 
 name: Collect Historical Data
 
 on:
-  # 매일 자동 실행
+  # 매일 자동 실행 (Dune queries complete at 04:00 UTC)
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '30 4 * * *'
   
   # 수동 실행 가능
   workflow_dispatch:
@@ -32,8 +33,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-
-      
       - name: Run data collector
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -43,7 +42,8 @@ jobs:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
         run: |
           echo "🚀 Starting ETHval data collection v7.0..."
-          echo "📊 Collecting 39 datasets (29 API + 10 Dune)"
+          echo "📊 Collecting 40 datasets (29 API + 11 Dune)"
+          echo "📌 Dune queries auto-refresh daily at 03:30-04:00 UTC"
           node scripts/data-collector.js
       
       - name: Summary

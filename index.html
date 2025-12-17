@@ -284,9 +284,17 @@
             border-color: #30363d;
         }
         
-        body.dark .sim-breakdown-item {
-            background: #21262d;
+        body.dark .sim-breakdown-grid {
+            background: #161b22;
             border-color: #30363d;
+        }
+        
+        body.dark .sim-breakdown-item {
+            background: transparent;
+        }
+        
+        body.dark .sim-breakdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
         
         body.dark .sim-breakdown-chg.positive { color: #34d399; }
@@ -310,7 +318,7 @@
         body.dark .progress-login-btn,
         body.dark .progress-login-btn-compact,
         body.dark .modal-vote-status.login-required {
-            background: var(--accent) !important;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important;
             border-color: var(--accent) !important;
             color: #ffffff !important;
         }
@@ -320,7 +328,7 @@
         body.dark .progress-login-btn:hover,
         body.dark .progress-login-btn-compact:hover,
         body.dark .modal-vote-status.login-required:hover {
-            background: var(--primary-hover) !important;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
             border-color: var(--primary-hover) !important;
         }
         
@@ -3293,23 +3301,35 @@
         }
         
         .summary-btn.login-btn {
-            background: #000;
-            animation: login-btn-pulse 2s ease-in-out infinite;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+            animation: login-btn-pulse 2s ease-in-out infinite, login-btn-glow 2s ease-in-out infinite;
         }
         
         @keyframes login-btn-pulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4);
+            0%, 100% { 
+                box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
             }
-            50% {
-                box-shadow: 0 0 0 6px rgba(124, 58, 237, 0);
+            50% { 
+                box-shadow: 0 2px 18px rgba(124, 58, 237, 0.5), 0 0 0 3px rgba(124, 58, 237, 0.1);
+            }
+        }
+        
+        @keyframes login-btn-glow {
+            0%, 100% { 
+                border-color: transparent;
+            }
+            50% { 
+                border-color: rgba(167, 139, 250, 0.5);
             }
         }
         
         .summary-btn.login-btn:hover {
-            background: #333;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
             animation: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
         }
 
         /* 카드 박스 폰트 크기 조정 - 작은 화면 */
@@ -3681,15 +3701,27 @@
         }
         
         .modal-vote-status.login-required {
-            background: #000;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             color: white;
             cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+            animation: login-btn-pulse 2s ease-in-out infinite, login-btn-glow 2s ease-in-out infinite;
             transition: transform 0.2s ease, box-shadow 0.2s ease; /* Only animate transform and shadow, not background */
+        }
+        
+        .modal-vote-status.login-required svg {
+            display: none;
+        }
+        
+        .modal-vote-status.login-required .x-logo {
+            font-size: 1.3em;
+            font-weight: 700;
         }
         
         /* Dark mode - dedicated class applied via JS */
         .modal-vote-status.login-required.dark-mode-btn {
-            background: #7c3aed !important;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important;
             color: #ffffff !important;
         }
         
@@ -3697,14 +3729,16 @@
         body.dark .modal-vote-status.login-required,
         html.dark .modal-vote-status.login-required,
         .dark .modal-vote-status.login-required {
-            background: #7c3aed !important;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important;
             color: #ffffff !important;
-            border-color: #7c3aed !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
         }
         
         .modal-vote-status.login-required:hover {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            animation: none;
             transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
         }
         
         .modal-vote-status.not-voted {
@@ -5804,27 +5838,38 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 12px;
-            background: #000;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             color: #fff;
-            border: none;
-            border-radius: var(--radius-lg);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
             font-size: 11px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s ease;
-            animation: login-btn-pulse 2s ease-in-out infinite;
+            transition: all 0.2s ease;
+            animation: login-btn-pulse 2s ease-in-out infinite, login-btn-glow 2s ease-in-out infinite;
+            box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
         }
 
         .twitter-login-btn:hover {
-            background: #333;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
             animation: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+            transform: translateY(-1px);
         }
 
         .twitter-login-btn svg {
-            width: 14px;
-            height: 14px;
+            display: none;
+        }
+        
+        .summary-btn.login-btn svg {
+            display: none;
+        }
+        
+        .twitter-login-btn .x-logo,
+        .summary-btn.login-btn .x-logo {
+            font-size: 1.3em;
+            font-weight: 700;
         }
 
         /* 로그인된 사용자 표시 */
@@ -7558,7 +7603,7 @@
             }
 
             .section-title {
-                font-size: var(--font-h1);
+                font-size: 20px;
             }
 
             /* Price Card */
@@ -8577,6 +8622,10 @@
         }
 
         @media (max-width: 480px) {
+            .section-title {
+                font-size: 18px;
+            }
+            
             .model-charts-grid {
                 grid-template-columns: 1fr;
             }
@@ -8693,6 +8742,371 @@
         /* ========================================
            SCENARIO SIMULATOR - Chart Style
            ======================================== */
+        
+        /* ========================================
+           GATED ACCESS SYSTEM
+           ======================================== */
+        
+        /* Gated Hint Tooltip - Eye-catching purple style with animation */
+        @keyframes gatedHintPulse {
+            0%, 100% { 
+                box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 2px 16px rgba(124, 58, 237, 0.5);
+                transform: scale(1.02);
+            }
+        }
+        
+        @keyframes gatedHintPulseDark {
+            0%, 100% { 
+                box-shadow: 0 2px 12px rgba(167, 139, 250, 0.4);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 2px 20px rgba(167, 139, 250, 0.6);
+                transform: scale(1.02);
+            }
+        }
+        
+        .gated-hint {
+            position: absolute;
+            top: -28px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+            animation: gatedHintPulse 2.5s ease-in-out infinite;
+        }
+        
+        .gated-hint svg {
+            color: white;
+            opacity: 0.9;
+        }
+        
+        /* Dark mode - lighter purple */
+        body.dark .gated-hint {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            box-shadow: 0 2px 12px rgba(167, 139, 250, 0.4);
+            animation: gatedHintPulseDark 2.5s ease-in-out infinite;
+        }
+        
+        /* Lock Overlay - Hidden by default, only used for tooltip */
+        .gated-lock-overlay {
+            display: none;
+        }
+        
+        /* Simulator gated state */
+        .simulator-box.gated-locked {
+            position: relative;
+        }
+        
+        /* Allow slider interaction but visually indicate locked state */
+        .simulator-box.gated-locked .sim-slider-track {
+            opacity: 0.7;
+        }
+        
+        .simulator-box.gated-locked input[type="range"] {
+            cursor: grab;
+        }
+        
+        .simulator-box.gated-locked input[type="range"]:active {
+            cursor: grabbing;
+        }
+        
+        /* Spring animation for slider reset */
+        .simulator-box.gated-locked input[type="range"].spring-back {
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        /* Simulator unlock tooltip - Eye-catching purple style with animation */
+        .simulator-unlock-tooltip {
+            position: fixed;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(5px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .simulator-unlock-tooltip.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            animation: gatedHintPulse 2.5s ease-in-out infinite;
+        }
+        
+        body.dark .simulator-unlock-tooltip {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            box-shadow: 0 4px 24px rgba(167, 139, 250, 0.5);
+        }
+        
+        body.dark .simulator-unlock-tooltip.visible {
+            animation: gatedHintPulseDark 2.5s ease-in-out infinite;
+        }
+        
+        .simulator-unlock-tooltip svg {
+            width: 16px;
+            height: 16px;
+            color: white;
+            opacity: 0.9;
+            flex-shrink: 0;
+        }
+        
+        .simulator-unlock-tooltip a {
+            color: white;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-left: 4px;
+            pointer-events: auto;
+            position: relative;
+            z-index: 10;
+            padding: 4px 8px;
+            margin: -4px -8px -4px 0;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+        
+        .simulator-unlock-tooltip a:hover {
+            opacity: 1;
+        }
+        
+        /* Lock indicator badge on simulator header - Eye-catching purple style with animation */
+        .simulator-lock-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+            white-space: nowrap;
+            margin-left: 12px;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+            animation: gatedHintPulse 2.5s ease-in-out infinite;
+        }
+        
+        .simulator-lock-indicator svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+            opacity: 0.9;
+        }
+        
+        /* Dark mode - lighter purple */
+        body.dark .simulator-lock-indicator {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            box-shadow: 0 2px 12px rgba(167, 139, 250, 0.4);
+            animation: gatedHintPulseDark 2.5s ease-in-out infinite;
+        }
+        
+        .simulator-box.gated-locked .simulator-lock-indicator {
+            display: flex;
+        }
+        
+        .gated-lock-icon {
+            width: 48px;
+            height: 48px;
+            color: var(--accent);
+            opacity: 0.9;
+        }
+        
+        .gated-lock-message {
+            font-size: var(--font-body);
+            color: var(--text);
+            text-align: center;
+            max-width: 280px;
+            line-height: 1.5;
+        }
+        
+        .gated-lock-btn {
+            margin-top: 8px;
+            padding: 10px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-body);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .gated-lock-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .gated-lock-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Tab Lock Badge */
+        .tab-lock-badge {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 4px;
+            color: var(--accent);
+        }
+        
+        .tab-lock-badge svg {
+            width: 12px;
+            height: 12px;
+        }
+        
+        .historical-tab.gated-tab-locked {
+            opacity: 0.7;
+            cursor: pointer;
+        }
+        
+        .historical-tab.gated-tab-locked:hover {
+            background: rgba(124, 58, 237, 0.1);
+        }
+        
+        /* Floating Action Badge */
+        /* Floating Action Badge - Eye-catching inverted style */
+        @keyframes floatingBadgePulse {
+            0%, 100% { 
+                box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+            }
+            50% { 
+                box-shadow: 0 4px 30px rgba(124, 58, 237, 0.5), 0 0 0 4px rgba(124, 58, 237, 0.1);
+            }
+        }
+        
+        @keyframes floatingBadgeGlow {
+            0%, 100% { 
+                border-color: var(--accent);
+            }
+            50% { 
+                border-color: rgba(167, 139, 250, 1);
+            }
+        }
+        
+        .floating-action-badge {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 10px 18px;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            max-width: 300px;
+            animation: floatingBadgePulse 2s ease-in-out infinite, floatingBadgeGlow 2s ease-in-out infinite;
+        }
+        
+        .floating-action-badge:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 32px rgba(124, 58, 237, 0.5);
+        }
+        
+        .floating-action-badge.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            animation: none;
+        }
+        
+        .floating-badge-icon {
+            display: none;
+        }
+        
+        .floating-badge-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        
+        .floating-badge-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .floating-badge-subtitle {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .floating-badge-arrow {
+            width: 16px;
+            height: 16px;
+            color: white;
+            flex-shrink: 0;
+            opacity: 0.9;
+        }
+        
+        /* Progress indicator */
+        .floating-badge-progress {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: background 0.2s ease;
+        }
+        
+        .progress-dot.filled {
+            background: white;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Rate mode - slightly different gradient */
+        .floating-action-badge.rate-mode {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%);
+        }
+        
+        @media (max-width: 768px) {
+            .floating-action-badge {
+                bottom: 16px;
+                right: 16px;
+                left: 16px;
+                max-width: none;
+            }
+        }
         
         .simulator-box {
             margin-top: 60px;
@@ -9008,21 +9422,35 @@
         .sim-breakdown-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 2px 8px;
             align-content: start;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
         }
         
         .sim-breakdown-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 12px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            padding: 10px 8px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
             font-size: 11px;
-            min-height: 48px;
+            min-height: 38px;
             box-sizing: border-box;
+            transition: background 0.15s ease;
+        }
+        
+        .sim-breakdown-item:nth-last-child(-n+2) {
+            border-bottom: none;
+        }
+        
+        .sim-breakdown-item:hover {
+            background: var(--bg-subtle);
         }
         
         .sim-breakdown-name {
@@ -9138,6 +9566,26 @@
             font-weight: 600;
             color: var(--text);
             margin: 0 0 8px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .rankings-section-title {
+                font-size: 20px;
+            }
+            
+            .rankings-description {
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .rankings-section-title {
+                font-size: 18px;
+            }
+            
+            .rankings-description {
+                font-size: 12px;
+            }
         }
         
         .rankings-icon {
@@ -9584,12 +10032,44 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 768px) {
+            .user-stats-summary {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .user-stat-box {
+                padding: 8px 12px;
+            }
+            
+            .user-stat-value {
+                font-size: 18px;
+            }
+            
+            .user-stat-label {
+                font-size: 10px;
+            }
         }
         
         @media (max-width: 480px) {
             .user-stats-summary {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            
+            .user-stat-box {
+                padding: 6px 10px;
                 flex-direction: column;
-                gap: 8px;
+                align-items: flex-start;
+                gap: 2px;
+            }
+            
+            .user-stat-value {
+                font-size: 16px;
             }
         }
         
@@ -9664,6 +10144,69 @@
         
         .user-leaderboard-table tr:hover td {
             background: var(--bg-subtle);
+        }
+        
+        /* Leaderboard Mobile Styles */
+        @media (max-width: 768px) {
+            .user-leaderboard-table th,
+            .user-leaderboard-table td {
+                padding: 8px 6px;
+                font-size: 12px;
+            }
+            
+            .user-leaderboard-table th {
+                font-size: 10px;
+            }
+            
+            /* Hide Liked column on mobile */
+            .user-leaderboard-table th:nth-child(5),
+            .user-leaderboard-table td:nth-child(5) {
+                display: none;
+            }
+            
+            .leaderboard-avatar {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .leaderboard-user-name {
+                font-size: 12px;
+            }
+            
+            .leaderboard-user-handle {
+                font-size: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .user-leaderboard-table th,
+            .user-leaderboard-table td {
+                padding: 6px 4px;
+                font-size: 11px;
+            }
+            
+            /* Also hide Score column on very small screens */
+            .user-leaderboard-table th:nth-child(6),
+            .user-leaderboard-table td:nth-child(6) {
+                display: none;
+            }
+            
+            .leaderboard-avatar {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .leaderboard-user-info {
+                gap: 0;
+            }
+            
+            .leaderboard-user-name {
+                font-size: 11px;
+            }
+            
+            .leaderboard-user-handle {
+                display: none;
+            }
         }
         
         /* Sortable Table Headers */
@@ -10005,20 +10548,31 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 12px;
-            background: #000;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             color: white;
-            border: none;
-            border-radius: var(--radius-sm);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
-            animation: login-btn-pulse 2s ease-in-out infinite;
+            box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+            animation: login-btn-pulse 2s ease-in-out infinite, login-btn-glow 2s ease-in-out infinite;
+        }
+        
+        .progress-login-btn-compact svg {
+            display: none;
+        }
+        
+        .progress-login-btn-compact .x-logo {
+            font-size: 1.2em;
+            font-weight: 700;
         }
         
         .progress-login-btn-compact:hover {
-            background: #333;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
             animation: none;
         }
         
@@ -10094,22 +10648,33 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 20px;
-            background: #000;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             color: white;
-            border: none;
-            border-radius: var(--radius-md);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
             font-size: var(--font-h2);
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
-            animation: login-btn-pulse 2s ease-in-out infinite;
+            box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+            animation: login-btn-pulse 2s ease-in-out infinite, login-btn-glow 2s ease-in-out infinite;
+        }
+        
+        .progress-login-btn svg {
+            display: none;
+        }
+        
+        .progress-login-btn .x-logo {
+            font-size: 1.2em;
+            font-weight: 700;
         }
         
         .progress-login-btn:hover {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
             animation: none;
         }
         
@@ -10343,12 +10908,20 @@
         }
         
         .fab-button.login-btn {
-            background: #000;
-            animation: login-btn-pulse 2s ease-in-out infinite;
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+            animation: login-btn-pulse 2s ease-in-out infinite, login-btn-glow 2s ease-in-out infinite;
+        }
+        
+        .fab-button.login-btn .x-logo {
+            font-size: 1.3em;
+            font-weight: 700;
         }
         
         .fab-button.login-btn:hover {
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            box-shadow: 0 6px 24px rgba(124, 58, 237, 0.5);
             animation: none;
         }
         
@@ -10557,8 +11130,8 @@
         <button class="onboarding-close" onclick="dismissOnboardingBanner()">&times;</button>
     </div>
     
-    <!-- Floating Action Button -->
-    <div class="fab-container" id="fab-container">
+    <!-- Floating Action Button (hidden - replaced by floating-action-badge) -->
+    <div class="fab-container" id="fab-container" style="display: none;">
         <button class="fab-button pulse" id="fab-button" onclick="handleFabClick()">
             <span class="fab-text" id="fab-text">13 more to rate</span>
             <span class="fab-star">⭐</span>
@@ -10673,17 +11246,13 @@
                 <!-- Description 영역 -->
                 <div class="summary-description">
                     <p class="summary-text" data-i18n="summary.desc1">
-                        This dashboard derives <strong>Ethereum's intrinsic value</strong> using 12 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe's Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Liquidity Premium).
+                        📊 This dashboard derives <strong>Ethereum's intrinsic value</strong> using 12 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe's Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Liquidity Premium).
                     </p>
-                    <p class="summary-text" data-i18n="summary.feedback">
-                        Found a bug or have suggestions? Let me know anytime — feedback is always welcome!
-                    </p>
-                    <p class="summary-text" data-i18n="summary.community">
-                        <strong>Join the Discussion!</strong> Rate each model's confidence level and share your thoughts. 
-                        Your feedback helps improve the valuation framework.
+                    <p class="summary-text" data-i18n="summary.proofOfRating">
+                        <strong>🔓 Proof of Rating:</strong> This dashboard is completely free — no subscriptions, no hidden fees. Log in with 𝕏 and rate just 2 models to unlock 3Y historical data & the What-If Simulator. Your ratings help refine the valuation framework — think of it as staking your opinion to earn access. Let's build better data together!
                     </p>
                     <p class="summary-text" data-i18n="summary.sharePrompt">
-                        <strong>Found this useful?</strong> Share it on <a href="https://twitter.com/intent/tweet?text=ETHval%20-%20Ethereum%20Intrinsic%20Value%20Dashboard%0A%0A12%20valuation%20models%20to%20estimate%20ETH%27s%20fair%20value.%20Check%20it%20out!%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a> and help others discover it!
+                        🔗 <strong>Found this useful?</strong> Share it on <a href="https://twitter.com/intent/tweet?text=ETHval%20-%20Ethereum%20Intrinsic%20Value%20Dashboard%0A%0A12%20valuation%20models%20to%20estimate%20ETH%27s%20fair%20value.%20Check%20it%20out!%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a> and help others discover it — and if you spot a bug or have suggestions, always happy to hear from you!
                     </p>
                     <div class="community-stats-box" onclick="document.getElementById('section-methodology').scrollIntoView({behavior: 'smooth'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelector('.nav-item[href=\'#section-methodology\']').classList.add('active');" style="cursor: pointer;">
                         <span class="community-stats-label">
@@ -10736,6 +11305,10 @@
                         <a href="https://x.com/simonkim_nft" target="_blank" class="contact-link">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                             @simonkim_nft
+                        </a>
+                        <span class="contact-divider">|</span>
+                        <a href="https://x.com/simonkim_nft/status/1995594975556648998" target="_blank" class="contact-link" style="font-size: 12px;" data-i18n="summary.whyBuilt">
+                            📝 The Story
                         </a>
                     </div>
                 </div>
@@ -11742,8 +12315,12 @@
 
             <!-- Historical Chart (integrated) -->
             <div class="historical-main-chart" style="margin-top: 60px;">
-                <div class="historical-chart-header">
+                <div class="historical-chart-header" style="display: flex; justify-content: center; align-items: center; gap: 12px;">
                     <div class="conclusion-label"><span data-i18n="chart.historicalTitle">FAIR VALUE TREND</span> <span class="model-count-light">(<span id="chart-model-count">12</span> / 12 models)</span></div>
+                    <div class="gated-hint" id="historical-3y-hint" style="display: none; position: static;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span data-i18n="gated.hint3Y">Rate 2+ valuation models to unlock 3Y data</span>
+                    </div>
                 </div>
                 
                 <!-- Price Display Row -->
@@ -11760,11 +12337,12 @@
                 </div>
                 
                 <!-- Period tabs (below price) -->
-                <div class="historical-tabs" style="margin-bottom: 12px;">
-                    
-                    <button class="historical-tab" data-period="90">90D</button>
-                    <button class="historical-tab" data-period="365">1Y</button>
-                    <button class="historical-tab active" data-period="1095">3Y</button>
+                <div class="historical-tabs-wrapper" style="position: relative; margin-bottom: 12px;">
+                    <div class="historical-tabs">
+                        <button class="historical-tab" data-period="90">90D</button>
+                        <button class="historical-tab active" data-period="365" id="historical-tab-1y">1Y</button>
+                        <button class="historical-tab gated-tab-locked" data-period="1095" id="historical-tab-3y">3Y<span class="tab-lock-badge" id="tab-3y-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
+                    </div>
                 </div>
                 
                 <div class="historical-chart-area">
@@ -11851,10 +12429,14 @@
             </div>
             
             <!-- What-If Simulator -->
-            <div class="simulator-box">
+            <div class="simulator-box" id="simulator-section" style="position: relative;">
                 <!-- Header - Same as historical chart -->
                 <div class="simulator-box-header">
                     <div class="simulator-box-title" data-i18n="simulator.title">WHAT-IF SCENARIO SIMULATOR</div>
+                    <div class="simulator-lock-indicator" id="simulator-lock-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span data-i18n="gated.rateToUnlock">Rate 2+ valuation models to unlock simulator</span>
+                    </div>
                     <button class="simulator-reset-all-btn" id="simulator-reset-all"><span data-i18n="simulator.reset">↺ Reset</span></button>
                 </div>
                 
@@ -11879,7 +12461,7 @@
                 <div class="simulator-box-content">
                     <!-- Left: Sliders - Compact 2-column layout -->
                     <div class="simulator-sliders">
-                        <div class="sim-section-title" data-i18n="simulator.scenarioVariables">Scenario Variables <span class="sim-hint">← Drag handles to adjust</span></div>
+                        <div class="sim-section-title" data-i18n="simulator.scenarioVariables">Scenario Variables <span class="sim-hint">(drag to adjust)</span></div>
                         <div class="sim-slider-item" data-param="tvl">
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Total Value Locked (TVL)</span>
@@ -12900,7 +13482,356 @@
             // Expose currentUser to window for engagement UX and dispatch event
             window.currentUser = currentUser;
             window.dispatchEvent(new CustomEvent('authStateChanged'));
+            
+            // Update gated access based on user state
+            updateGatedAccess();
         }
+        
+        // ========================================
+        // GATED ACCESS SYSTEM
+        // ========================================
+        
+        // Custom alert modal for gated access
+        function showGatedAlert(message, onConfirm) {
+            const overlay = document.getElementById('gated-alert-overlay');
+            const messageEl = document.getElementById('gated-alert-message');
+            const okBtn = document.getElementById('gated-alert-ok');
+            
+            if (!overlay || !messageEl || !okBtn) {
+                if (onConfirm) onConfirm();
+                return;
+            }
+            
+            messageEl.textContent = message;
+            overlay.style.display = 'flex';
+            overlay.style.pointerEvents = 'auto';
+            
+            // Store callback for this specific call
+            overlay._gatedCallback = onConfirm;
+            
+            // Close function
+            const closeOverlay = () => {
+                overlay.style.display = 'none';
+                overlay._gatedCallback = null;
+            };
+            
+            // Handle OK button
+            okBtn.onclick = (e) => {
+                e.stopPropagation();
+                const callback = overlay._gatedCallback;
+                closeOverlay();
+                if (callback) callback();
+            };
+            
+            // Handle overlay click (close without callback)
+            overlay.onclick = (e) => {
+                if (e.target === overlay) {
+                    closeOverlay();
+                }
+            };
+        }
+        
+        // Initialize gated alert overlay click handler once
+        (function initGatedAlertOverlay() {
+            const overlay = document.getElementById('gated-alert-overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        })();
+        
+        function updateGatedAccess() {
+            const isLoggedIn = !!window.currentUser;
+            const userRatingCount = window.userRatings ? Object.keys(window.userRatings).length : 0;
+            
+            log(`Gated Access: loggedIn=${isLoggedIn}, ratings=${userRatingCount}`);
+            
+            // Safe translation helper
+            const lang = typeof currentLang !== 'undefined' ? currentLang : 'en';
+            const trans = typeof translations !== 'undefined' ? translations : {};
+            const gt = (key, fallback) => trans[lang]?.[key] || fallback;
+            
+            // Elements
+            const floatingBadge = document.getElementById('floating-action-badge');
+            const floatingBadgeIcon = document.getElementById('floating-badge-icon');
+            const floatingBadgeTitle = document.getElementById('floating-badge-title');
+            const floatingBadgeSubtitle = document.getElementById('floating-badge-subtitle');
+            const floatingBadgeProgress = document.getElementById('floating-badge-progress');
+            const simulatorSection = document.getElementById('simulator-section');
+            const historicalTab3Y = document.getElementById('historical-tab-3y');
+            const tab3YLock = document.getElementById('tab-3y-lock');
+            const historical3YHint = document.getElementById('historical-3y-hint');
+            
+            // Progress dots
+            const progressDots = [
+                document.getElementById('progress-dot-1'),
+                document.getElementById('progress-dot-2')
+            ];
+            
+            if (!floatingBadge) return;
+            
+            // State: Not logged in
+            if (!isLoggedIn) {
+                // Show floating badge - prompt to login
+                floatingBadge.classList.remove('hidden');
+                floatingBadge.classList.add('login-mode');
+                floatingBadge.onclick = () => loginWithTwitter();
+                floatingBadgeIcon.innerHTML = '<path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>';
+                floatingBadgeTitle.textContent = gt('gated.loginTitle', 'Log in with 𝕏 to unlock');
+                floatingBadgeSubtitle.textContent = gt('gated.loginSubtitle', 'Rate 2+ valuation models to access all features');
+                floatingBadgeProgress.style.display = 'none';
+                
+                // Historical 3Y tab - show modal for non-logged in
+                if (historicalTab3Y) {
+                    historicalTab3Y.classList.add('gated-tab-locked');
+                    if (tab3YLock) tab3YLock.style.display = 'inline-flex';
+                }
+                
+                // Historical 3Y hint - show for non-logged in
+                if (historical3YHint) historical3YHint.style.display = 'flex';
+                
+                // Simulator - locked
+                if (simulatorSection) simulatorSection.classList.add('gated-locked');
+                
+                return;
+            }
+            
+            // State: Logged in but less than 3 ratings
+            if (userRatingCount < 2) {
+                const remaining = 2 - userRatingCount;
+                
+                // Show floating badge - prompt to rate
+                floatingBadge.classList.remove('hidden');
+                floatingBadge.classList.remove('login-mode');
+                floatingBadge.classList.add('rate-mode');
+                floatingBadge.onclick = () => document.getElementById('section-methodology')?.scrollIntoView({behavior: 'smooth'});
+                floatingBadgeIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
+                floatingBadgeTitle.textContent = gt('gated.rateTitle', 'Rate {n} more valuation models').replace('{n}', remaining);
+                floatingBadgeSubtitle.textContent = gt('gated.rateSubtitle', 'to unlock 3Y data & simulator');
+                floatingBadgeProgress.style.display = 'flex';
+                
+                // Update progress dots
+                progressDots.forEach((dot, i) => {
+                    if (dot) dot.classList.toggle('filled', i < userRatingCount);
+                });
+                
+                // Historical 3Y tab - locked with indicator
+                if (historicalTab3Y) {
+                    historicalTab3Y.classList.add('gated-tab-locked');
+                    if (tab3YLock) tab3YLock.style.display = 'inline-flex';
+                }
+                
+                // Historical 3Y hint - show with remaining count
+                if (historical3YHint) {
+                    historical3YHint.style.display = 'flex';
+                    const hintText = historical3YHint.querySelector('span');
+                    if (hintText) {
+                        hintText.textContent = gt('gated.hint3YRemaining', 'Rate {n} more to unlock 3Y').replace('{n}', remaining);
+                    }
+                }
+                
+                // Simulator - locked
+                if (simulatorSection) simulatorSection.classList.add('gated-locked');
+                
+                return;
+            }
+            
+            // State: Logged in with 2+ ratings - FULL ACCESS
+            floatingBadge.classList.add('hidden');
+            floatingBadge.classList.remove('login-mode');
+            floatingBadge.classList.remove('rate-mode');
+            
+            // Historical 3Y tab - unlocked
+            if (historicalTab3Y) {
+                historicalTab3Y.classList.remove('gated-tab-locked');
+                if (tab3YLock) tab3YLock.style.display = 'none';
+                historicalTab3Y.onclick = null; // Reset to default behavior
+                
+                // Auto-switch to 3Y view if not already
+                const tab1Y = document.getElementById('historical-tab-1y');
+                if (tab1Y && tab1Y.classList.contains('active')) {
+                    // Switch to 3Y
+                    document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
+                    historicalTab3Y.classList.add('active');
+                    if (typeof renderHistoricalMainChart === 'function') {
+                        renderHistoricalMainChart(1095);
+                    }
+                }
+            }
+            
+            // Hide 3Y hint
+            if (historical3YHint) historical3YHint.style.display = 'none';
+            
+            // Simulator - unlocked
+            if (simulatorSection) simulatorSection.classList.remove('gated-locked');
+        }
+        
+        // Listen for rating changes
+        window.addEventListener('userRatingChanged', updateGatedAccess);
+        window.addEventListener('authStateChanged', updateGatedAccess);
+        
+        // Simulator unlock tooltip + spring-back slider logic (deferred until DOM ready)
+        function initSimulatorGatedInteraction() {
+            const simulatorSection = document.getElementById('simulator-section');
+            const tooltip = document.getElementById('simulator-unlock-tooltip');
+            const tooltipText = document.getElementById('simulator-unlock-tooltip-text');
+            const tooltipLink = document.getElementById('simulator-unlock-tooltip-link');
+            
+            if (!simulatorSection || !tooltip) return;
+            
+            let tooltipTimeout = null;
+            let originalValues = new Map(); // Store original slider values
+            let activeSlider = null;
+            
+            function showTooltip(slider) {
+                // Check if simulator is locked
+                if (!simulatorSection.classList.contains('gated-locked')) return;
+                
+                // Update tooltip text based on state
+                const isLoggedIn = !!window.currentUser;
+                const userRatingCount = window.userRatings ? Object.keys(window.userRatings).length : 0;
+                const remaining = 2 - userRatingCount;
+                
+                const lang = typeof currentLang !== 'undefined' ? currentLang : 'en';
+                const trans = typeof translations !== 'undefined' ? translations : {};
+                
+                if (!isLoggedIn) {
+                    tooltipText.textContent = trans[lang]?.['gated.simulatorLoginRequired'] || 'Log in with 𝕏 & rate 2+ valuation models to unlock';
+                } else {
+                    tooltipText.textContent = (trans[lang]?.['gated.simulatorRateRequired'] || 'Rate {n} more valuation models to unlock').replace('{n}', remaining);
+                }
+                
+                // Position tooltip above the slider
+                const rect = slider.getBoundingClientRect();
+                const tooltipWidth = 280;
+                let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+                left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
+                
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = (rect.top - 50) + 'px';
+                
+                // Show tooltip
+                tooltip.classList.add('visible');
+                
+                // Auto-hide after 5s (longer duration)
+                clearTimeout(tooltipTimeout);
+                tooltipTimeout = setTimeout(() => {
+                    tooltip.classList.remove('visible');
+                }, 5000);
+            }
+            
+            // Keep tooltip visible when hovering over it
+            tooltip.onmouseenter = () => {
+                clearTimeout(tooltipTimeout);
+            };
+            
+            tooltip.onmouseleave = () => {
+                tooltipTimeout = setTimeout(() => {
+                    tooltip.classList.remove('visible');
+                }, 1000);
+            };
+            
+            // Tooltip link click - use tooltipLink variable
+            if (tooltipLink) {
+                tooltipLink.style.cursor = 'pointer';
+                tooltipLink.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    tooltip.classList.remove('visible');
+                    clearTimeout(tooltipTimeout);
+                    
+                    const isLoggedIn = !!window.currentUser;
+                    
+                    if (!isLoggedIn) {
+                        const loginBtn = document.getElementById('login-btn');
+                        if (loginBtn) loginBtn.click();
+                    } else {
+                        const section = document.getElementById('section-methodology');
+                        if (section) {
+                            const targetY = section.getBoundingClientRect().top + window.pageYOffset - 80;
+                            window.scrollTo({
+                                top: targetY,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                    return false;
+                };
+            }
+            
+            function springBack(slider) {
+                if (!originalValues.has(slider)) return;
+                
+                const originalValue = originalValues.get(slider);
+                
+                // Add spring animation class
+                slider.classList.add('spring-back');
+                
+                // Reset to original value
+                slider.value = originalValue;
+                
+                // Remove animation class after transition
+                setTimeout(() => {
+                    slider.classList.remove('spring-back');
+                }, 400);
+                
+                originalValues.delete(slider);
+                activeSlider = null;
+            }
+            
+            // Attach listeners to all simulator sliders
+            simulatorSection.querySelectorAll('input[type="range"]').forEach(slider => {
+                // On interaction start - store original value
+                slider.addEventListener('mousedown', (e) => {
+                    if (!simulatorSection.classList.contains('gated-locked')) return;
+                    
+                    originalValues.set(slider, slider.value);
+                    activeSlider = slider;
+                    showTooltip(slider);
+                });
+                
+                slider.addEventListener('touchstart', (e) => {
+                    if (!simulatorSection.classList.contains('gated-locked')) return;
+                    
+                    originalValues.set(slider, slider.value);
+                    activeSlider = slider;
+                    showTooltip(slider);
+                }, { passive: true });
+                
+                // On interaction end - spring back
+                slider.addEventListener('mouseup', () => {
+                    if (!simulatorSection.classList.contains('gated-locked')) return;
+                    springBack(slider);
+                });
+                
+                slider.addEventListener('touchend', () => {
+                    if (!simulatorSection.classList.contains('gated-locked')) return;
+                    springBack(slider);
+                });
+                
+                slider.addEventListener('mouseleave', () => {
+                    if (!simulatorSection.classList.contains('gated-locked')) return;
+                    if (originalValues.has(slider)) {
+                        springBack(slider);
+                    }
+                });
+            });
+            
+            // Global mouseup/touchend to catch releases outside slider
+            document.addEventListener('mouseup', () => {
+                if (activeSlider && simulatorSection.classList.contains('gated-locked')) {
+                    springBack(activeSlider);
+                }
+            });
+            
+            document.addEventListener('touchend', () => {
+                if (activeSlider && simulatorSection.classList.contains('gated-locked')) {
+                    springBack(activeSlider);
+                }
+            });
+        }
+        
+        // Will be called from DOMContentLoaded
+        window.initSimulatorGatedInteraction = initSimulatorGatedInteraction;
         
         // Load model ratings (comments 테이블의 rating에서)
         async function loadModelRatings(modelId) {
@@ -13009,6 +13940,8 @@
                 window.userRatings[modelId] = rating;
                 // Dispatch ratingUpdated event for engagement UX
                 window.dispatchEvent(new CustomEvent('ratingUpdated', { detail: { modelId, rating } }));
+                // Dispatch userRatingChanged for gated access system
+                window.dispatchEvent(new CustomEvent('userRatingChanged'));
             }
             
             // 리뷰 작성 폼 초기화
@@ -13528,7 +14461,7 @@
                         ${!isLoggedIn ? `
                             <button class="summary-btn login-btn" onclick="loginWithTwitter(); event.stopPropagation();">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                Login to rate
+                                Rate with <span class="x-logo">𝕏</span>
                             </button>
                         ` : `
                             <button class="summary-btn" data-action="open-modal" data-model="${modelId}">
@@ -13829,9 +14762,9 @@
                             </div>
                             <div class="modal-header-right">
                                 ${!currentUser ? `
-                                    <div class="modal-vote-status login-required${document.body.classList.contains('dark') ? ' dark-mode-btn' : ''}" onclick="loginWithTwitter()" style="background: ${document.body.classList.contains('dark') ? '#7c3aed' : '#000'} !important; color: #fff !important;">
+                                    <div class="modal-vote-status login-required${document.body.classList.contains('dark') ? ' dark-mode-btn' : ''}" onclick="loginWithTwitter()" style="background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important; color: #fff !important;">
                                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                        Login to rate
+                                        Rate with <span class="x-logo">𝕏</span>
                                     </div>
                                 ` : ratings.userRating ? `
                                     <div class="modal-vote-status voted">
@@ -13991,10 +14924,10 @@
                 if (loginBtn) {
                     if (document.body.classList.contains('dark')) {
                         loginBtn.classList.add('dark-mode-btn');
-                        loginBtn.style.cssText = 'background: #7c3aed !important; color: #ffffff !important;';
+                        loginBtn.style.cssText = 'background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important; color: #ffffff !important;';
                     } else {
                         loginBtn.classList.remove('dark-mode-btn');
-                        loginBtn.style.cssText = 'background: #000 !important; color: #ffffff !important;';
+                        loginBtn.style.cssText = 'background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important; color: #ffffff !important;';
                     }
                 }
             };
@@ -14286,7 +15219,7 @@
                         const el = document.querySelector('.modal-vote-status.login-required');
                         if (el && document.body.classList.contains('dark')) {
                             el.classList.add('dark-mode-btn');
-                            el.style.cssText = 'background: #7c3aed !important; color: #ffffff !important;';
+                            el.style.cssText = 'background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important; color: #ffffff !important;';
                         }
                     };
                     
@@ -14294,16 +15227,16 @@
                         voteStatusEl.className = 'modal-vote-status login-required';
                         voteStatusEl.innerHTML = `
                             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                            Login to rate
+                            Rate with <span class="x-logo">𝕏</span>
                         `;
                         voteStatusEl.onclick = loginWithTwitter;
                         // Apply dark mode styling
                         if (document.body.classList.contains('dark')) {
                             voteStatusEl.classList.add('dark-mode-btn');
-                            voteStatusEl.style.cssText = 'background: #7c3aed !important; color: #ffffff !important;';
+                            voteStatusEl.style.cssText = 'background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important; color: #ffffff !important;';
                         } else {
                             voteStatusEl.classList.remove('dark-mode-btn');
-                            voteStatusEl.style.cssText = 'background: #000 !important; color: #ffffff !important;';
+                            voteStatusEl.style.cssText = 'background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important; color: #ffffff !important;';
                         }
                         setTimeout(applyVoteStatusStyle, 50);
                         setTimeout(applyVoteStatusStyle, 200);
@@ -15131,7 +16064,7 @@
                 'simulator.marketPrice': 'Market Price',
                 'simulator.currentFairValue': 'Current Fair Value',
                 'simulator.simulatedFairValue': 'Simulated Fair Value',
-                'simulator.scenarioVariables': 'Scenario Variables',
+                'simulator.scenarioVariables': 'Scenario Variables <span class=\"sim-hint\">(drag to adjust)</span>',
                 'simulator.modelBreakdown': 'Model Breakdown',
                 'section.historicalTitle': 'Historical Fair Value Analysis',
                 'summary.title': 'Overview',
@@ -15139,10 +16072,23 @@
                 'summary.fairValue': 'Fair Value (12 Models)',
                 'summary.opportunity': 'Opportunity',
                 'summary.toggleHint': 'Toggle individual models on/off below to customize your valuation.',
-                'summary.desc1': 'This dashboard derives <strong>Ethereum\'s intrinsic value</strong> using 12 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Liquidity Premium).',
-                'summary.feedback': 'Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
-                'summary.community': '<strong>Join the Discussion!</strong> Rate each model\'s confidence level and share your thoughts. Your feedback helps improve the valuation framework.',
-                'summary.sharePrompt': '<strong>Found this useful?</strong> Share it on <a href=\"https://twitter.com/intent/tweet?text=ETHval%20-%20Ethereum%20Intrinsic%20Value%20Dashboard%0A%0A12%20valuation%20models%20to%20estimate%20ETH%27s%20fair%20value.%20Check%20it%20out!%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--accent); text-decoration: underline;\">𝕏</a> and help others discover it!',
+                'summary.desc1': '📊 This dashboard derives <strong>Ethereum\'s intrinsic value</strong> using 12 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, MC/TVL Ratio, App Capital), <strong>Network Effects</strong> (Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Liquidity Premium).',
+                'summary.proofOfRating': '<strong>🔓 Proof of Rating:</strong> This dashboard is completely free — no subscriptions, no hidden fees. Log in with 𝕏 and rate just 2 models to unlock 3Y historical data & the What-If Simulator. Your ratings help refine the valuation framework — think of it as staking your opinion to earn access. Let\'s build better data together!',
+                'summary.feedback': '🐛 Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
+                'summary.community': '💬 <strong>Join the Discussion!</strong> Rate each model\'s confidence level and share your thoughts. Your feedback helps improve the valuation framework.',
+                'summary.sharePrompt': '🔗 <strong>Found this useful?</strong> Share it on <a href=\"https://twitter.com/intent/tweet?text=ETHval%20-%20Ethereum%20Intrinsic%20Value%20Dashboard%0A%0A12%20valuation%20models%20to%20estimate%20ETH%27s%20fair%20value.%20Check%20it%20out!%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--accent); text-decoration: underline;\">𝕏</a> and help others discover it — and if you spot a bug or have suggestions, always happy to hear from you!',
+                'summary.whyBuilt': '📝 The Story',
+                'gated.loginTitle': 'Log in with 𝕏 to unlock',
+                'gated.loginSubtitle': 'Rate 2+ valuation models to access all features',
+                'gated.rateTitle': 'Rate {n} more valuation models',
+                'gated.rateSubtitle': 'to unlock 3Y data & simulator',
+                'gated.rateModels': 'Rate Models',
+                'gated.simulatorLoginRequired': 'Log in with 𝕏 & rate 2+ valuation models to unlock',
+                'gated.simulatorRateRequired': 'Rate {n} more valuation models to unlock',
+                'gated.rate3ToUnlock': 'Rate 2+ valuation models to unlock 3Y data',
+                'gated.hint3Y': 'Rate 2+ valuation models to unlock 3Y data',
+                'gated.hint3YRemaining': 'Rate {n} more valuation models to unlock 3Y',
+                'gated.rateToUnlock': 'Rate 2+ valuation models to unlock simulator',
                 'appendix.intro': 'This dashboard employs 12 valuation models organized into four methodological categories. Each category represents a distinct theoretical approach to estimating Ethereum\'s intrinsic value, ranging from traditional finance frameworks to crypto-native metrics.',
                 'appendix.title': 'Appendix: Valuation Framework Categories',
                 'category.tradfi.full': 'Traditional Finance (TradFi)',
@@ -15473,7 +16419,7 @@
                 'simulator.marketPrice': '시장 가격',
                 'simulator.currentFairValue': '현재 적정가치',
                 'simulator.simulatedFairValue': '시뮬레이션 적정가치',
-                'simulator.scenarioVariables': '시나리오 변수',
+                'simulator.scenarioVariables': '시나리오 변수 <span class=\"sim-hint\">(드래그하여 조정)</span>',
                 'simulator.modelBreakdown': '모델별 결과',
                 'section.historicalTitle': '시계열 적정가치 분석',
                 'summary.title': '개요',
@@ -15481,10 +16427,23 @@
                 'summary.fairValue': '적정 가치 (12개 모델)',
                 'summary.opportunity': '투자 기회',
                 'summary.toggleHint': '아래에서 개별 모델을 켜고 끄며 나만의 밸류에이션을 계산해 보세요.',
-                'summary.desc1': '이 대시보드는 4가지 방법론 카테고리에 걸쳐 12개 밸류에이션 모델로 <strong>이더리움의 내재 가치</strong>를 도출합니다: <strong>전통금융</strong>(Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>온체인 자산가치</strong>(TVL Multiple, MC/TVL Ratio, App Capital), <strong>네트워크 효과</strong>(Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), <strong>공급 희소성</strong>(Staking Scarcity, Liquidity Premium).',
-                'summary.feedback': '버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
-                'summary.community': '<strong>방법론 & 토론에 참여하세요!</strong> 각 모델의 확신도를 평가하고 의견을 공유해주세요. 함께 더 정확한 신뢰도 가중치 시스템을 만들어갑니다.',
-                'summary.sharePrompt': '<strong>유용하셨나요?</strong> <a href=\"https://twitter.com/intent/tweet?text=ETHval%20-%20%EC%9D%B4%EB%8D%94%EB%A6%AC%EC%9B%80%20%EB%82%B4%EC%9E%AC%EA%B0%80%EC%B9%98%20%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C%0A%0A12%EA%B0%9C%20%EB%B0%B8%EB%A5%98%EC%97%90%EC%9D%B4%EC%85%98%20%EB%AA%A8%EB%8D%B8%EB%A1%9C%20ETH%20%EC%A0%81%EC%A0%95%EA%B0%80%EC%B9%98%EB%A5%BC%20%EC%B6%94%EC%A0%95%ED%95%A9%EB%8B%88%EB%8B%A4.%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--accent); text-decoration: underline;\">𝕏</a>에 공유해서 더 많은 분들이 알 수 있게 도와주세요!',
+                'summary.desc1': '📊 이 대시보드는 4가지 방법론 카테고리에 걸쳐 12개 밸류에이션 모델로 <strong>이더리움의 내재 가치</strong>를 도출합니다: <strong>전통금융</strong>(Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>온체인 자산가치</strong>(TVL Multiple, MC/TVL Ratio, App Capital), <strong>네트워크 효과</strong>(Metcalfe\'s Law, Settlement Layer, L2 Ecosystem), <strong>공급 희소성</strong>(Staking Scarcity, Liquidity Premium).',
+                'summary.proofOfRating': '<strong>🔓 Proof of Rating:</strong> 이 대시보드는 완전 무료입니다 — 구독료도, 숨겨진 비용도 없습니다. 𝕏로 로그인하고 단 2개 모델만 평가하면 3Y 히스토리 데이터와 What-If 시뮬레이터를 이용할 수 있습니다. 당신의 평가가 밸류에이션 프레임워크를 발전시킵니다 — 의견을 스테이킹해서 접근 권한을 얻는다고 생각해보세요. 함께 더 나은 데이터를 만들어가요!',
+                'summary.feedback': '🐛 버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
+                'summary.community': '💬 <strong>방법론 & 토론에 참여하세요!</strong> 각 모델의 확신도를 평가하고 의견을 공유해주세요. 함께 더 정확한 신뢰도 가중치 시스템을 만들어갑니다.',
+                'summary.sharePrompt': '🔗 <strong>유용하셨나요?</strong> <a href=\"https://twitter.com/intent/tweet?text=ETHval%20-%20%EC%9D%B4%EB%8D%94%EB%A6%AC%EC%9B%80%20%EB%82%B4%EC%9E%AC%EA%B0%80%EC%B9%98%20%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C%0A%0A12%EA%B0%9C%20%EB%B0%B8%EB%A5%98%EC%97%90%EC%9D%B4%EC%85%98%20%EB%AA%A8%EB%8D%B8%EB%A1%9C%20ETH%20%EC%A0%81%EC%A0%95%EA%B0%80%EC%B9%98%EB%A5%BC%20%EC%B6%94%EC%A0%95%ED%95%A9%EB%8B%88%EB%8B%A4.%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--accent); text-decoration: underline;\">𝕏</a>에 공유해서 더 많은 분들이 알 수 있게 도와주세요 — 버그나 제안이 있다면 언제든 알려주세요!',
+                'summary.whyBuilt': '📝 개발 배경',
+                'gated.loginTitle': '𝕏로 로그인하여 잠금 해제',
+                'gated.loginSubtitle': '2+ 밸류에이션 모델 평가 시 모든 기능 이용 가능',
+                'gated.rateTitle': '{n}개 밸류에이션 모델 더 평가',
+                'gated.rateSubtitle': '3Y 데이터 & 시뮬레이터 해제',
+                'gated.rateModels': '모델 평가하기',
+                'gated.simulatorLoginRequired': '𝕏 로그인 & 2+ 밸류에이션 모델 평가 시 해제',
+                'gated.simulatorRateRequired': '{n}개 밸류에이션 모델 더 평가 시 해제',
+                'gated.rate3ToUnlock': '2+ 밸류에이션 모델 평가 시 3Y 데이터 해제',
+                'gated.hint3Y': '2+ 밸류에이션 모델 평가 시 3Y 데이터 해제',
+                'gated.hint3YRemaining': '{n}개 밸류에이션 모델 더 평가 시 3Y 해제',
+                'gated.rateToUnlock': '2+ 밸류에이션 모델 평가 시 시뮬레이터 해제',
                 'appendix.intro': '이 대시보드는 4가지 방법론 카테고리로 구성된 12개 밸류에이션 모델을 사용합니다. 각 카테고리는 전통 금융 프레임워크부터 크립토 네이티브 지표까지 이더리움 내재 가치를 추정하는 고유한 이론적 접근방식을 나타냅니다.',
                 'appendix.title': '부록: 밸류에이션 프레임워크 카테고리',
                 'category.tradfi.full': '전통금융 (TradFi)',
@@ -15815,7 +16774,7 @@
                 'simulator.marketPrice': '市场价格',
                 'simulator.currentFairValue': '当前公允价值',
                 'simulator.simulatedFairValue': '模拟公允价值',
-                'simulator.scenarioVariables': '情景变量',
+                'simulator.scenarioVariables': '情景变量 <span class=\"sim-hint\">(拖动调整)</span>',
                 'simulator.modelBreakdown': '模型明细',
                 'section.historicalTitle': '历史公允价值分析',
                 'summary.title': '概览',
@@ -15823,10 +16782,12 @@
                 'summary.fairValue': '公允价值 (12个模型)',
                 'summary.opportunity': '投资机会',
                 'summary.toggleHint': '在下方开关各个模型，自定义您的估值计算。',
-                'summary.desc1': '本仪表板使用四种方法论类别的12个估值模型推导<strong>以太坊的内在价值</strong>：<strong>传统金融</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>链上资产价值</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>网络效应</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）和<strong>供应稀缺</strong>（Staking Scarcity、Liquidity Premium）。',
-                'summary.feedback': '发现bug或有建议？随时联系我——非常欢迎反馈！',
-                'summary.community': '<strong>参与讨论！</strong>对每个模型的信心度进行评分并分享您的想法。让我们一起构建更准确的社区驱动可靠性权重系统。',
-                'summary.sharePrompt': '<strong>觉得有用吗？</strong>在<a href=\"https://twitter.com/intent/tweet?text=ETHval%20-%20%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%86%85%E5%9C%A8%E4%BB%B7%E5%80%BC%E4%BB%AA%E8%A1%A8%E6%9D%BF%0A%0A12%E4%B8%AA%E4%BC%B0%E5%80%BC%E6%A8%A1%E5%9E%8B%E4%BC%B0%E7%AE%97ETH%E5%85%AC%E5%85%81%E4%BB%B7%E5%80%BC%E3%80%82%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--accent); text-decoration: underline;\">𝕏</a>上分享，帮助更多人发现！',
+                'summary.desc1': '📊 本仪表板使用四种方法论类别的12个估值模型推导<strong>以太坊的内在价值</strong>：<strong>传统金融</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>链上资产价值</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>网络效应</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）和<strong>供应稀缺</strong>（Staking Scarcity、Liquidity Premium）。',
+                'summary.proofOfRating': '<strong>🔓 Proof of Rating:</strong> 本仪表板完全免费 — 无订阅，无隐藏费用。用𝕏登录并评价2个模型即可解锁3Y历史数据和What-If模拟器。您的评价有助于完善估值框架 — 可以理解为质押您的意见来获取访问权限。一起构建更好的数据吧！',
+                'summary.feedback': '🐛 发现bug或有建议？随时联系我——非常欢迎反馈！',
+                'summary.community': '💬 <strong>参与讨论！</strong>对每个模型的信心度进行评分并分享您的想法。让我们一起构建更准确的社区驱动可靠性权重系统。',
+                'summary.sharePrompt': '🔗 <strong>觉得有用吗？</strong>在<a href=\"https://twitter.com/intent/tweet?text=ETHval%20-%20%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%86%85%E5%9C%A8%E4%BB%B7%E5%80%BC%E4%BB%AA%E8%A1%A8%E6%9D%BF%0A%0A12%E4%B8%AA%E4%BC%B0%E5%80%BC%E6%A8%A1%E5%9E%8B%E4%BC%B0%E7%AE%97ETH%E5%85%AC%E5%85%81%E4%BB%B7%E5%80%BC%E3%80%82%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--accent); text-decoration: underline;\">𝕏</a>上分享，帮助更多人发现 — 发现bug或有建议？随时告诉我！',
+                'summary.whyBuilt': '📝 开发背景',
                 'appendix.intro': '本仪表板采用四种方法论类别组织的12个估值模型。每个类别代表一种独特的理论方法来估算以太坊的内在价值，从传统金融框架到加密原生指标。',
                 'appendix.title': '附录：估值框架',
                 'category.tradfi.full': '传统金融 (TradFi)',
@@ -16157,7 +17118,7 @@
                 'simulator.marketPrice': '市場価格',
                 'simulator.currentFairValue': '現在の適正価値',
                 'simulator.simulatedFairValue': 'シミュレーション適正価値',
-                'simulator.scenarioVariables': 'シナリオ変数',
+                'simulator.scenarioVariables': 'シナリオ変数 <span class=\"sim-hint\">(ドラッグして調整)</span>',
                 'simulator.modelBreakdown': 'モデル別結果',
                 'section.historicalTitle': 'りれきてきせいかかくぶんせき',
                 'summary.title': 'がいよう',
@@ -16165,10 +17126,12 @@
                 'summary.fairValue': 'てきせいかかく (12モデル)',
                 'summary.opportunity': 'とうしきかい',
                 'summary.toggleHint': 'したのかくモデルをオン・オフして、どくじのバリュエーションをけいさんしてみましょう。',
-                'summary.desc1': 'このダッシュボードは4つのほうほうろんカテゴリにわたる12のバリュエーションモデルで<strong>イーサリアムのほんしつてきかち</strong>をどうしゅつします：<strong>でんとうきんゆう</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>オンチェーンしさんかち</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>ネットワークこうか</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）、<strong>きょうきゅうきしょうせい</strong>（Staking Scarcity、Liquidity Premium）。',
-                'summary.feedback': 'バグをはっけんされたり、ごていあんがありましたら、いつでもおしらせください — フィードバックはだいかんげいです！',
-                'summary.community': '<strong>ディスカッションにさんかしましょう！</strong>かくモデルのかくしんどをひょうかし、ごいけんをきょうゆうしてください。いっしょに、よりせいかくなコミュニティしゅどうのしんらいどかじゅうシステムをつくりましょう。',
-                'summary.sharePrompt': '<strong>やくにたちましたか？</strong><a href=\"https://twitter.com/intent/tweet?text=ETHval%20-%20%E3%82%A4%E3%83%BC%E3%82%B5%E3%83%AA%E3%82%A2%E3%83%A0%E6%9C%AC%E8%B3%AA%E7%9A%84%E4%BE%A1%E5%80%A4%E3%83%80%E3%83%83%E3%82%B7%E3%83%A5%E3%83%9C%E3%83%BC%E3%83%89%0A%0A12%E3%81%AE%E3%83%90%E3%83%AA%E3%83%A5%E3%82%A8%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%83%A2%E3%83%87%E3%83%AB%E3%81%A7ETH%E3%81%AE%E9%81%A9%E6%AD%A3%E4%BE%A1%E6%A0%BC%E3%82%92%E6%8E%A8%E5%AE%9A%E3%80%82%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--accent); text-decoration: underline;\">𝕏</a>でシェアして、たくさんのひとにとどけましょう！',
+                'summary.desc1': '📊 このダッシュボードは4つのほうほうろんカテゴリにわたる12のバリュエーションモデルで<strong>イーサリアムのほんしつてきかち</strong>をどうしゅつします：<strong>でんとうきんゆう</strong>（DCF、P/S Ratio、Fee Yield、Validator Economics）、<strong>オンチェーンしさんかち</strong>（TVL Multiple、MC/TVL、App Capital）、<strong>ネットワークこうか</strong>（Metcalfe\'s Law、Settlement Layer (MV=PQ)、L2 Ecosystem）、<strong>きょうきゅうきしょうせい</strong>（Staking Scarcity、Liquidity Premium）。',
+                'summary.proofOfRating': '<strong>🔓 Proof of Rating:</strong> このダッシュボードはかんぜんむりょうです — サブスクもかくれたひようもありません。𝕏でログインして2つのモデルをひょうかするだけで、3Yれきしデータとシミュレーターがアンロックされます。あなたのひょうかがバリュエーションフレームワークをはってんさせます — いけんをステーキングしてアクセスけんをえるとかんがえてください。いっしょによりよいデータをつくりましょう！',
+                'summary.feedback': '🐛 バグをはっけんされたり、ごていあんがありましたら、いつでもおしらせください — フィードバックはだいかんげいです！',
+                'summary.community': '💬 <strong>ディスカッションにさんかしましょう！</strong>かくモデルのかくしんどをひょうかし、ごいけんをきょうゆうしてください。いっしょに、よりせいかくなコミュニティしゅどうのしんらいどかじゅうシステムをつくりましょう。',
+                'summary.sharePrompt': '🔗 <strong>やくにたちましたか？</strong><a href=\"https://twitter.com/intent/tweet?text=ETHval%20-%20%E3%82%A4%E3%83%BC%E3%82%B5%E3%83%AA%E3%82%A2%E3%83%A0%E6%9C%AC%E8%B3%AA%E7%9A%84%E4%BE%A1%E5%80%A4%E3%83%80%E3%83%83%E3%82%B7%E3%83%A5%E3%83%9C%E3%83%BC%E3%83%89%0A%0A12%E3%81%AE%E3%83%90%E3%83%AA%E3%83%A5%E3%82%A8%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%83%A2%E3%83%87%E3%83%AB%E3%81%A7ETH%E3%81%AE%E9%81%A9%E6%AD%A3%E4%BE%A1%E6%A0%BC%E3%82%92%E6%8E%A8%E5%AE%9A%E3%80%82%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--accent); text-decoration: underline;\">𝕏</a>でシェアして、たくさんのひとにとどけましょう — バグやごていあんがあれば、いつでもおしらせください！',
+                'summary.whyBuilt': '📝 ストーリー',
                 'appendix.intro': 'このダッシュボードは4つのほうほうろんカテゴリでせいりされた12のバリュエーションモデルをさいようしています。かくカテゴリはでんとうきんゆうフレームワークからクリプトネイティブしひょうまで、イーサリアムのほんしつてきかちをすいていするどくじのりろんてきアプローチをだいひょうしています。',
                 'appendix.title': 'ふろく：バリュエーションフレームワーク',
                 'category.tradfi.full': 'でんとうきんゆう (TradFi)',
@@ -22115,6 +23078,43 @@
                 history = history.filter(d => d.date && d.date.getTime() > threeYearsAgo.getTime());
             }
             
+            // ═══════════════════════════════════════════════════════════════════
+            // 급락 데이터 감지 및 제외 (불완전한 최근 데이터 처리)
+            // 마지막 데이터가 이전 7일 평균의 30% 미만이면 제외
+            // ═══════════════════════════════════════════════════════════════════
+            if (history && history.length > 10) {
+                const removeIncompleteData = () => {
+                    let removed = 0;
+                    const maxRemove = 3; // 최대 3개까지만 제거
+                    
+                    while (removed < maxRemove && history.length > 10) {
+                        // 마지막 10일 데이터에서 baseline 계산 (최근 3일 제외)
+                        const recentData = history.slice(-10);
+                        const baselineData = recentData.slice(0, -3);
+                        const avgValue = baselineData.reduce((sum, d) => sum + d.value, 0) / baselineData.length;
+                        
+                        if (avgValue <= 0) break;
+                        
+                        // 마지막 데이터 포인트 확인
+                        const lastValue = history[history.length - 1].value;
+                        const lastDate = history[history.length - 1].date;
+                        const today = new Date();
+                        const daysDiff = Math.floor((today - lastDate) / (24 * 60 * 60 * 1000));
+                        
+                        // 마지막 데이터가 최근 7일 이내이고 평균의 30% 미만이면 제외
+                        // 또는 값이 0이거나 음수인 경우도 제외
+                        if (daysDiff <= 7 && (lastValue < avgValue * 0.3 || lastValue <= 0)) {
+                            log(`   ⚠️ ${canvasId}: Removing incomplete data point (${lastValue.toFixed(0)} < 30% of avg ${avgValue.toFixed(0)}, ${daysDiff}d ago)`);
+                            history = history.slice(0, -1);
+                            removed++;
+                        } else {
+                            break;
+                        }
+                    }
+                };
+                removeIncompleteData();
+            }
+            
             // 데이터 없으면 fallback 생성
             if (!history || history.length < 2) {
                 log(`${canvasId}: no data, generating fallback...`);
@@ -22790,17 +23790,8 @@
                 activeModelCountEl.textContent = activeCount;
             }
             
-            // Historical 차트의 Composite Fair Value도 동기화 (상단 패널과 동일한 값 표시)
-            const chartCompositeEl = document.getElementById('chart-composite-value');
-            const chartDiffEl = document.getElementById('chart-price-diff');
-            if (chartCompositeEl) {
-                chartCompositeEl.textContent = fmt.price(avgPrice);
-                
-                if (chartDiffEl && state.price > 0) {
-                    chartDiffEl.textContent = fmt.pct(avgDiff);
-                    chartDiffEl.className = 'chart-price-diff ' + (avgDiff >= 0 ? 'up' : 'down');
-                }
-            }
+            // Note: chart-composite-value is now updated by renderHistoricalMainChart() 
+            // and updateChartData() to match the chart's composite line
         }
 
         // Price chart mini-tabs (in price-card)
@@ -24436,7 +25427,7 @@
                         if (window.closeLikersModal) window.closeLikersModal();
                         return;
                     }
-                    if (target.classList.contains('confirm-modal-overlay')) {
+                    if (target.classList.contains('confirm-modal-overlay') && target.id !== 'gated-alert-overlay') {
                         e.preventDefault();
                         if (window.closeConfirmModal) window.closeConfirmModal();
                         return;
@@ -24479,6 +25470,16 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             log('DOM loaded, initializing...');
+            
+            // Initial gated access check (before auth loads)
+            setTimeout(updateGatedAccess, 500);
+            
+            // Initialize simulator gated interaction
+            setTimeout(() => {
+                if (typeof window.initSimulatorGatedInteraction === 'function') {
+                    window.initSimulatorGatedInteraction();
+                }
+            }, 1000);
             
             // Theme toggle initialization
             const themeToggle = document.getElementById('theme-toggle');
@@ -25229,18 +26230,110 @@ Check out ETHval 👇`;
             // Calculate and store fixed Y-axis max
             state.yAxisMax = calculateYAxisMax();
             
-            // Render charts
+            // Render charts (this will also update chart header composite value)
             renderHistoricalMainChart();
             renderModelCharts();
+            
+            // Sync all model values from DB data (single source of truth)
+            syncAllModelValuesFromDB();
+        }
+        
+        // Sync all model values from historicalFairValues (DB data)
+        // This ensures consistency across sidebar, chart legend, methodology, and simulator
+        function syncAllModelValuesFromDB() {
+            if (!state.historicalFairValues) return;
+            
+            const maxDiff = 60;
+            
+            // Update sidebar model cards
+            MODEL_ORDER.forEach(model => {
+                const data = state.historicalFairValues[model];
+                if (!data || data.length === 0) return;
+                
+                const price = data[data.length - 1].value;
+                const diff = state.price > 0 ? ((price - state.price) / state.price) * 100 : 0;
+                
+                // Update state.models
+                state.models[model] = price;
+                
+                // Find and update the model card
+                const card = document.querySelector(`.valuation-model[data-model="${model}"]`);
+                if (card) {
+                    // Update data attribute
+                    card.dataset.price = price;
+                    
+                    // Update price display
+                    const priceEl = card.querySelector('.model-price');
+                    if (priceEl) {
+                        priceEl.textContent = '$' + price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                    }
+                    
+                    // Update diff display
+                    const diffEl = card.querySelector('.model-diff');
+                    if (diffEl) {
+                        const diffClass = diff > 15 ? 'up' : diff < -15 ? 'down' : 'neutral';
+                        const labelUndervalued = translations[currentLang]?.['valuation.undervalued'] || 'Undervalued';
+                        const labelOvervalued = translations[currentLang]?.['valuation.overvalued'] || 'Overvalued';
+                        const labelFair = translations[currentLang]?.['valuation.fair'] || 'Fair';
+                        const label = diff > 15 ? labelUndervalued : diff < -15 ? labelOvervalued : labelFair;
+                        
+                        diffEl.className = 'model-diff ' + diffClass;
+                        diffEl.innerHTML = fmt.pct(diff) + '<small>' + label + '</small>';
+                    }
+                    
+                    // Update bar
+                    const clampedDiff = Math.max(-maxDiff, Math.min(maxDiff, diff));
+                    const barWidth = Math.abs(clampedDiff) / maxDiff * 50;
+                    const markerPos = 50 + (clampedDiff / maxDiff * 50);
+                    const isPositive = diff >= 0;
+                    const markerClass = diff > 15 ? 'positive' : diff < -15 ? 'negative' : 'neutral';
+                    
+                    const barFill = card.querySelector('.model-bar-fill');
+                    const barMarker = card.querySelector('.model-bar-marker');
+                    if (barFill) {
+                        barFill.className = 'model-bar-fill ' + (isPositive ? 'positive' : 'negative');
+                        barFill.style.width = barWidth + '%';
+                    }
+                    if (barMarker) {
+                        barMarker.className = 'model-bar-marker ' + markerClass;
+                        barMarker.style.left = markerPos + '%';
+                    }
+                }
+            });
+            
+            // Recalculate weighted average with DB values
+            recalculateWeightedAverage();
+            
+            // Update simulator with DB values
+            if (typeof window.updateSimulation === 'function') {
+                window.updateSimulation();
+            }
+            
+            log('✅ All model values synced from DB');
         }
         
         // Store current period for reuse
-        let currentHistoricalPeriod = 1095;
+        let currentHistoricalPeriod = 365; // Default to 1Y, will be updated based on auth state
         
         // Render main historical chart
         function renderHistoricalMainChart(period = null) {
             if (period !== null) {
                 currentHistoricalPeriod = period;
+            }
+            
+            // Check gated access for 3Y
+            if (currentHistoricalPeriod === 1095) {
+                const isLoggedIn = !!window.currentUser;
+                const userRatingCount = window.userRatings ? Object.keys(window.userRatings).length : 0;
+                
+                if (!isLoggedIn || userRatingCount < 2) {
+                    // Fallback to 1Y if not authorized
+                    currentHistoricalPeriod = 365;
+                    // Update tab UI
+                    document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
+                    const tab1Y = document.getElementById('historical-tab-1y');
+                    if (tab1Y) tab1Y.classList.add('active');
+                }
             }
             
             const ctx = document.getElementById('historical-main-chart');
@@ -25332,9 +26425,10 @@ Check out ETHval 👇`;
             });
             
             // Composite dataset - solid line (key output), ALWAYS visible
+            const compositeChartData = calculateDynamicComposite();
             datasets.push({
                 label: 'Composite',
-                data: calculateDynamicComposite(),
+                data: compositeChartData,
                 borderColor: colors.composite,
                 backgroundColor: 'transparent',
                 borderWidth: 3,
@@ -25344,6 +26438,20 @@ Check out ETHval 👇`;
                 pointHoverRadius: 4,
                 order: 0
             });
+            
+            // Update chart header with composite last value
+            const chartCompositeEl = document.getElementById('chart-composite-value');
+            const chartDiffEl = document.getElementById('chart-price-diff');
+            if (chartCompositeEl && compositeChartData.length > 0) {
+                const lastComposite = compositeChartData[compositeChartData.length - 1];
+                chartCompositeEl.textContent = '$' + lastComposite.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                
+                if (chartDiffEl && state.price > 0) {
+                    const diff = ((lastComposite - state.price) / state.price) * 100;
+                    chartDiffEl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%';
+                    chartDiffEl.className = 'chart-price-diff ' + (diff >= 0 ? 'up' : 'down');
+                }
+            }
             
             // Individual model datasets - thin solid lines
             allModels.forEach((model, index) => {
@@ -25549,24 +26657,12 @@ Check out ETHval 👇`;
                 }
             });
             
-            // Update chart price display
+            // Update chart market price display only
+            // Note: chart-composite-value is synced from recalculateWeightedAverage() to match sidebar
             const marketPriceEl = document.getElementById('chart-market-price');
-            const compositeEl = document.getElementById('chart-composite-value');
-            const diffEl = document.getElementById('chart-price-diff');
             
             if (marketPriceEl && state.price) {
                 marketPriceEl.textContent = '$' + state.price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-            }
-            
-            if (compositeEl && state.compositeFairValue) {
-                compositeEl.textContent = '$' + state.compositeFairValue.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-            }
-            
-            if (diffEl && state.price && state.compositeFairValue) {
-                const diff = ((state.compositeFairValue - state.price) / state.price) * 100;
-                const isUp = diff >= 0;
-                diffEl.textContent = (isUp ? '+' : '') + diff.toFixed(1) + '%';
-                diffEl.className = 'chart-price-diff ' + (isUp ? 'up' : 'down');
             }
         }
         
@@ -25710,10 +26806,26 @@ Check out ETHval 👇`;
         
         // Historical tabs event listeners
         document.querySelectorAll('.historical-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
+            tab.addEventListener('click', (e) => {
+                const period = parseInt(tab.dataset.period);
+                
+                // Check gated access for 3Y tab
+                if (period === 1095 && tab.classList.contains('gated-tab-locked')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const isLoggedIn = !!window.currentUser;
+                    const lang = typeof currentLang !== 'undefined' ? currentLang : 'en';
+                    const trans = typeof translations !== 'undefined' ? translations : {};
+                    const msg = !isLoggedIn 
+                        ? (trans[lang]?.['gated.simulatorLoginRequired'] || 'Log in with 𝕏 & rate 2+ valuation models to unlock')
+                        : (trans[lang]?.['gated.rate3ToUnlock'] || 'Rate 2+ valuation models to unlock 3Y data');
+                    showGatedAlert(msg);
+                    return;
+                }
+                
                 document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
                 renderHistoricalMainChart(period);
             });
         });
@@ -25800,8 +26912,19 @@ Check out ETHval 👇`;
             // Update composite dataset (index 1)
             historicalMainChart.data.datasets[1].data = newCompositeData;
             
-            // Note: chart-composite-value is updated by recalculateWeightedAverage() 
-            // to ensure consistency with the conclusion panel
+            // Update chart header composite value to match the chart's last composite value
+            const chartCompositeEl = document.getElementById('chart-composite-value');
+            const chartDiffEl = document.getElementById('chart-price-diff');
+            if (chartCompositeEl && newCompositeData.length > 0) {
+                const lastComposite = newCompositeData[newCompositeData.length - 1];
+                chartCompositeEl.textContent = '$' + lastComposite.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                
+                if (chartDiffEl && state.price > 0) {
+                    const diff = ((lastComposite - state.price) / state.price) * 100;
+                    chartDiffEl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%';
+                    chartDiffEl.className = 'chart-price-diff ' + (diff >= 0 ? 'up' : 'down');
+                }
+            }
             
             // Update individual model visibility
             MODEL_ORDER.forEach((model, index) => {
@@ -26001,7 +27124,7 @@ Check out ETHval 👇`;
                 // Slider events
                 ['tvl', 'fees', 'staking', 'stables'].forEach(function(p) {
                     var s = document.getElementById('sim-' + p);
-                    if (s) s.addEventListener('input', updateSimulation);
+                    if (s) s.addEventListener('input', function() { updateSimulation(true); });
                 });
                 
                 // Individual reset buttons
@@ -26030,7 +27153,13 @@ Check out ETHval 👇`;
                 }
             }
             
-            function updateSimulation() {
+            function updateSimulation(fromSliderInput) {
+                // Skip update if simulator is locked AND triggered by slider input
+                const simulatorSection = document.getElementById('simulator-section');
+                if (fromSliderInput && simulatorSection && simulatorSection.classList.contains('gated-locked')) {
+                    return;
+                }
+                
                 // Sync Market Price with main chart (ensure consistency)
                 if (typeof state !== 'undefined' && state.price > 0) {
                     var simMarketEl = document.getElementById('sim-market-price');
@@ -26110,7 +27239,7 @@ Check out ETHval 👇`;
                 updateDisplay('staking', stakingPct * 100, baseStakingRatio, true);
                 updateDisplay('stables', simParams.stablecoins, baseParams.stablecoins, false);
                 
-                // Calculate fair values
+                // Calculate fair values using DB data for Current values
                 var currentTotal = 0, simTotal = 0, count = 0;
                 var breakdown = {};
                 
@@ -26120,8 +27249,26 @@ Check out ETHval 👇`;
                     if (!model) continue;
                     
                     try {
-                        var curr = model.calc(baseParams);
-                        var sim = model.calc(simParams);
+                        // Get Current value from DB (historicalFairValues)
+                        var curr = 0;
+                        if (typeof state !== 'undefined' && state.historicalFairValues && state.historicalFairValues[key]) {
+                            var dbData = state.historicalFairValues[key];
+                            if (dbData.length > 0) {
+                                curr = dbData[dbData.length - 1].value;
+                            }
+                        }
+                        // Fallback to MODELS calculation if no DB data
+                        if (curr === 0) {
+                            curr = model.calc(baseParams);
+                        }
+                        
+                        // Calculate Simulated value
+                        var sim;
+                        if (isReset) {
+                            sim = curr; // At reset, simulated = current
+                        } else {
+                            sim = model.calc(simParams);
+                        }
                         
                         if (isFinite(curr) && isFinite(sim) && curr > 0 && sim > 0) {
                             currentTotal += curr;
@@ -26130,8 +27277,9 @@ Check out ETHval 👇`;
                             breakdown[key] = {
                                 name: model.name,
                                 color: model.color,
+                                curr: curr,
                                 sim: sim,
-                                chg: ((sim - curr) / curr) * 100
+                                chg: isReset ? 0 : ((sim - curr) / curr) * 100
                             };
                         }
                     } catch (e) {}
@@ -26141,11 +27289,8 @@ Check out ETHval 👇`;
                 var simFV = count > 0 ? simTotal / count : 0;
                 var marketPrice = baseParams.price;
                 
-                // Use actual state.compositeFairValue if available (more accurate than simulator's simplified formulas)
+                // Use the calculated currentFV from DB data
                 var displayCurrentFV = currentFV;
-                if (typeof state !== 'undefined' && state.compositeFairValue > 0) {
-                    displayCurrentFV = state.compositeFairValue;
-                }
                 
                 // When at reset, simulated should equal current
                 if (isReset) {
@@ -26194,6 +27339,9 @@ Check out ETHval 👇`;
             } else {
                 initSimulator();
             }
+            
+            // Expose updateSimulation for external sync
+            window.updateSimulation = updateSimulation;
         })();
     </script>
 
@@ -26722,11 +27870,11 @@ Check out ETHval 👇`;
                 
                 if (!isLoggedIn) {
                     // Not logged in - show login prompt
-                    textEl.textContent = 'Login to rate';
+                    textEl.innerHTML = 'Rate with <span class="x-logo">𝕏</span>';
                     button.classList.remove('pulse', 'all-done');
                     button.classList.add('login-btn');
                     if (starEl) {
-                        starEl.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
+                        starEl.innerHTML = '';
                     }
                 } else {
                     // Logged in - check ratings
@@ -27059,6 +28207,53 @@ Check out ETHval 👇`;
             }
         })();
     </script>
+
+    <!-- Floating Action Badge -->
+    <div class="floating-action-badge" id="floating-action-badge">
+        <svg class="floating-badge-icon" id="floating-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <div class="floating-badge-content">
+            <div class="floating-badge-title" id="floating-badge-title">Log in to unlock more</div>
+            <div class="floating-badge-subtitle" id="floating-badge-subtitle">Access historical data & simulator</div>
+            <div class="floating-badge-progress" id="floating-badge-progress" style="display: none;">
+                <div class="progress-dot" id="progress-dot-1"></div>
+                <div class="progress-dot" id="progress-dot-2"></div>
+            </div>
+        </div>
+        <svg class="floating-badge-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
+        </svg>
+    </div>
+
+    <!-- Simulator Unlock Tooltip -->
+    <div class="simulator-unlock-tooltip" id="simulator-unlock-tooltip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span id="simulator-unlock-tooltip-text">Rate 2+ valuation models to unlock simulator</span>
+        <a href="#section-methodology" id="simulator-unlock-tooltip-link">Rate now ↓</a>
+    </div>
+
+    <!-- Gated Alert Modal -->
+    <div class="confirm-modal-overlay" id="gated-alert-overlay" style="display: none;">
+        <div class="confirm-modal alert-modal">
+            <div class="confirm-body">
+                <div style="margin-bottom: 12px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" width="40" height="40" style="margin: 0 auto; display: block;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <p id="gated-alert-message">Rate 2+ valuation models to unlock simulator</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn confirm-ok" id="gated-alert-ok">Rate Models</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Share Card (Hidden, for capture) -->
     <div class="share-card" id="share-card">

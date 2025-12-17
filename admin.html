@@ -90,6 +90,7 @@
             <div class="stat-card"><div class="label">OK</div><div class="value success" id="statOk">-</div></div>
             <div class="stat-card"><div class="label">Partial</div><div class="value warning" id="statPartial">-</div></div>
             <div class="stat-card"><div class="label">Failed</div><div class="value error" id="statFailed">-</div></div>
+            <div class="stat-card"><div class="label">Stale (>3d)</div><div class="value error" id="statStale">-</div></div>
             <div class="stat-card"><div class="label">Records</div><div class="value" id="statRecords">-</div></div>
         </div>
         
@@ -304,7 +305,7 @@
         const DUNE_MVRV_QUERY_ID = 6354057;
         const DUNE_STABLECOIN_VOL_QUERY_ID = 6353868;
         const DUNE_GAS_PRICE_QUERY_ID = 6354506;
-        let supabase;
+        let sb;
         
         // CSV Data Storage
         const csvData = { burn: null, tx: null, gas: null, supply: null, dailyIssuance: null, blob: null, gasUtil: null };
@@ -524,7 +525,7 @@
         }
         
         async function importAllCSV() {
-            if (!supabase) {
+            if (!sb) {
                 alert('Please configure Supabase first!');
                 return;
             }
@@ -595,7 +596,7 @@
                     // Also update gas_burn table with tx counts
                     if (csvData.burn || csvData.gas) {
                         const txMap = new Map(csvData.tx.map(r => [r.date, Math.round(r.value)]));
-                        const { data: gasData } = await supabase.from('historical_gas_burn')
+                        const { data: gasData } = await sb.from('historical_gas_burn')
                             .select('date, eth_burnt, avg_gas_price_gwei')
                             .order('date', { ascending: false })
                             .limit(2000);
@@ -669,13 +670,13 @@
                     
                     let updated = 0;
                     for (const record of gasUtilRecords) {
-                        const { error } = await supabase.from('historical_gas_burn')
+                        const { error } = await sb.from('historical_gas_burn')
                             .update({ gas_utilization: record.gas_utilization, source: 'etherscan_csv' })
                             .eq('date', record.date);
                         if (!error) updated++;
                     }
                     
-                    const { data: existingDates } = await supabase.from('historical_gas_burn').select('date');
+                    const { data: existingDates } = await sb.from('historical_gas_burn').select('date');
                     const existingSet = new Set(existingDates?.map(d => d.date) || []);
                     
                     const newRecords = gasUtilRecords
@@ -712,7 +713,7 @@
         // AUTO-FILL NEW DATA (Block-based calculation)
         // ═══════════════════════════════════════════════════════════════════
         async function autoFillNewData() {
-            if (!supabase || !ETHERSCAN_API_KEY) {
+            if (!sb || !ETHERSCAN_API_KEY) {
                 alert('Please configure Supabase and Etherscan API key first!');
                 return;
             }
@@ -720,12 +721,12 @@
             log('🔄 Auto-fill: Starting...', 'info');
             
             try {
-                const { data: latestGas } = await supabase.from('historical_gas_burn')
+                const { data: latestGas } = await sb.from('historical_gas_burn')
                     .select('date')
                     .order('date', { ascending: false })
                     .limit(1);
                 
-                const { data: latestTx } = await supabase.from('historical_transactions')
+                const { data: latestTx } = await sb.from('historical_transactions')
                     .select('date')
                     .order('date', { ascending: false })
                     .limit(1);
@@ -867,7 +868,7 @@
             
             try {
                 const dateStrs = dates.map(d => d.toISOString().split('T')[0]);
-                const { data: existingData } = await supabase.from('historical_eth_supply')
+                const { data: existingData } = await sb.from('historical_eth_supply')
                     .select('date, eth_supply')
                     .in('date', dateStrs);
                 
@@ -876,7 +877,7 @@
                 
                 if (missingDates.length === 0) return;
                 
-                const { data: latestSupply } = await supabase.from('historical_eth_supply')
+                const { data: latestSupply } = await sb.from('historical_eth_supply')
                     .select('eth_supply')
                     .order('date', { ascending: false })
                     .limit(1);
@@ -968,7 +969,7 @@
             exchange_reserve: { name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', valueField: 'reserve_eth', format: 'eth', expectedDays: 1095, phase: 2, depends: [], source: '⚠️ Estimated' },
             eth_supply: { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', format: 'eth', expectedDays: 1095, phase: 2, depends: ['staking_data'], source: 'Etherscan API' },
             l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true, expectedDays: 3000, phase: 2, depends: [], source: '🔷 Dune API' },
-            daily_issuance: { name: 'Daily Issuance', icon: '🪙', table: 'historical_daily_issuance', valueField: 'daily_issuance', format: 'eth', expectedDays: 30, phase: 2, depends: [], source: 'Etherscan API' },
+            daily_issuance: { name: 'Daily Issuance', icon: '🪙', table: 'historical_daily_issuance', valueField: 'daily_issuance', format: 'eth', expectedDays: 30, phase: 2, depends: ['staking'], source: '📊 Calculated' },
             
             // ═══════════════════════════════════════════════════════════════════
             // PHASE 3: 2차 계산 (Phase 1+2 데이터 의존)
@@ -1051,9 +1052,9 @@
             const results = await Promise.all(entries.map(async ([key, ds]) => {
                 try {
                     const [countRes, latestRes, oldestRes] = await Promise.all([
-                        supabase.from(ds.table).select('*', { count: 'exact', head: true }),
-                        supabase.from(ds.table).select('*').order('date', { ascending: false }).limit(1),
-                        supabase.from(ds.table).select('date').order('date', { ascending: true }).limit(1)
+                        sb.from(ds.table).select('*', { count: 'exact', head: true }),
+                        sb.from(ds.table).select('*').order('date', { ascending: false }).limit(1),
+                        sb.from(ds.table).select('date').order('date', { ascending: true }).limit(1)
                     ]);
                     
                     if (countRes.error) {
@@ -1065,7 +1066,7 @@
                     // For aggregate tables, sum all records from the latest date
                     if (ds.aggregate && latestRes.data?.[0]?.date) {
                         const latestDate = latestRes.data[0].date;
-                        const { data: sumData } = await supabase
+                        const { data: sumData } = await sb
                             .from(ds.table)
                             .select(ds.valueField)
                             .eq('date', latestDate);
@@ -1090,7 +1091,15 @@
             }));
             
             // Process results
-            let ok = 0, partial = 0, failed = 0, totalRecords = 0;
+            let ok = 0, partial = 0, failed = 0, stale = 0, totalRecords = 0;
+            
+            // 3일 전 날짜 계산 (로컬 시간 기준) - 2일 지연까지는 OK
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            const threeDaysAgoStr = threeDaysAgo.getFullYear() + '-' + 
+                String(threeDaysAgo.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(threeDaysAgo.getDate()).padStart(2, '0');
+            
             for (const result of results) {
                 const ds = DATASETS[result.key];
                 if (result.error) {
@@ -1103,16 +1112,22 @@
                 const expected = ds.expectedDays || 1095;
                 const coverage = (result.status.count || 0) / expected;
                 if (coverage >= 0.9) ok++; else if (coverage >= 0.3) partial++; else failed++;
+                
+                // Stale 체크 (마지막 데이터가 3일 전 이하 = 2일 넘게 지연)
+                if (result.status.latest && result.status.latest <= threeDaysAgoStr) {
+                    stale++;
+                }
             }
             
             document.getElementById('stats-total').textContent = Object.keys(DATASETS).length;
             document.getElementById('statOk').textContent = ok;
             document.getElementById('statPartial').textContent = partial;
             document.getElementById('statFailed').textContent = failed;
+            document.getElementById('statStale').textContent = stale;
             document.getElementById('statRecords').textContent = totalRecords.toLocaleString();
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
             renderTable();
-            log(`Loaded: ${ok} OK, ${partial} Partial, ${failed} Failed`, 'success');
+            log(`Loaded: ${ok} OK, ${partial} Partial, ${failed} Failed, ${stale} Stale`, 'success');
         }
 
         function renderTable() {
@@ -1127,6 +1142,24 @@
                 3: '🟠 Phase 3: Second-order Calculation',
                 4: '⚪ Phase 4: Miscellaneous'
             };
+            
+            // 오늘 날짜 계산 (로컬 시간 기준)
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + 
+                String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(today.getDate()).padStart(2, '0');
+            
+            const twoDaysAgo = new Date(today);
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+            const twoDaysAgoStr = twoDaysAgo.getFullYear() + '-' + 
+                String(twoDaysAgo.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(twoDaysAgo.getDate()).padStart(2, '0');
+            
+            const threeDaysAgo = new Date(today);
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            const threeDaysAgoStr = threeDaysAgo.getFullYear() + '-' + 
+                String(threeDaysAgo.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(threeDaysAgo.getDate()).padStart(2, '0');
             
             for (const [key, ds] of Object.entries(DATASETS)) {
                 // Phase 헤더 추가
@@ -1145,10 +1178,16 @@
                 if (coverage < 30) { statusClass = 'fail'; statusText = 'Missing'; }
                 else if (coverage < 90) { statusClass = 'warn'; statusText = 'Partial'; }
                 
+                // 마지막 데이터가 오래됐는지 확인 (3일 전 이하면 stale = 2일 넘게 지연)
+                const isStale = s.latest && s.latest <= threeDaysAgoStr;
+                const isFresh = s.latest && (s.latest >= twoDaysAgoStr);
+                const dateStyle = isStale ? 'color:var(--error);font-weight:600' : isFresh ? 'color:var(--success)' : '';
+                const staleIcon = isStale ? ' ⚠️' : isFresh ? ' ✓' : '';
+                
                 // Format date range
                 const dateRange = s.oldest && s.latest 
-                    ? `${s.oldest} → ${s.latest}` 
-                    : (s.latest || '-');
+                    ? `${s.oldest} → <span style="${dateStyle}">${s.latest}${staleIcon}</span>` 
+                    : (s.latest ? `<span style="${dateStyle}">${s.latest}${staleIcon}</span>` : '-');
                 
                 // Depends 표시
                 const dependsText = ds.depends?.length > 0 
@@ -1171,6 +1210,7 @@
                 }
                 
                 const row = document.createElement('tr');
+                if (isStale) row.style.background = 'rgba(239, 68, 68, 0.1)'; // 오래된 데이터 행 강조
                 const sourceStyle = ds.source?.includes('Dune') ? 'color:#7c3aed;font-weight:600' : ds.source?.includes('Estimated') ? 'color:var(--warning)' : ds.source?.includes('Calculated') ? 'color:var(--text-muted)' : '';
                 const collectBtn = ds.noCollect 
                     ? `<button class="btn btn-secondary btn-sm" disabled title="Collected via Gas Price">-</button>`
@@ -1224,7 +1264,7 @@
                 let lastError = null;
                 for (let retry = 0; retry < 3; retry++) {
                     try {
-                        const { error } = await supabase.from(table).upsert(batch, { onConflict: conflictKey });
+                        const { error } = await sb.from(table).upsert(batch, { onConflict: conflictKey });
                         if (!error) {
                             totalInserted += batch.length;
                             lastError = null;
@@ -1350,7 +1390,7 @@
                         return 0;
                     }
                     
-                    const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
+                    const { data: prices } = await sb.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
                     const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
                     
                     const cutoff = Date.now() / 1000 - (1095 * 86400);
@@ -1393,7 +1433,7 @@
                 }
                 
                 // Get ETH prices for TVL calculation
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
+                const { data: prices } = await sb.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
                 const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
                 
                 const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
@@ -1456,7 +1496,7 @@
                 
                 if (!DUNE_API_KEY) {
                     log('  ⚠️ No Dune API key - falling back to tx-based estimation', 'warn');
-                    const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date', { ascending: false }).limit(1100);
+                    const { data: txs } = await sb.from('historical_transactions').select('date, tx_count').order('date', { ascending: false }).limit(1100);
                     if (!txs?.length) return 0;
                     const records = txs.map(t => ({
                         date: t.date, timestamp: Date.now(),
@@ -1539,7 +1579,7 @@
             // 8. ETH Supply - HAS source (no timestamp in schema)
             async eth_supply() {
                 // 먼저 기존 데이터 확인 (CSV 데이터 보호)
-                const { data: existingData } = await supabase.from('historical_eth_supply')
+                const { data: existingData } = await sb.from('historical_eth_supply')
                     .select('date, eth_supply')
                     .order('date', { ascending: false })
                     .limit(1200);
@@ -1589,7 +1629,7 @@
                     log('  ⚠️ API failed, using price-based estimates', 'warn');
                     
                     // Fallback: ETH price 변동 기반 추정
-                    const { data: prices } = await supabase.from('historical_eth_price')
+                    const { data: prices } = await sb.from('historical_eth_price')
                         .select('date, close')
                         .order('date', { ascending: true })
                         .limit(1100);
@@ -1929,8 +1969,28 @@
                         }
                     }
                     
-                    // If no cached data or too old, execute fresh query
-                    if (!duneData || duneData.length < 600) {
+                    // Check if data is stale (latest date > 2 days old)
+                    let dataIsStale = false;
+                    if (duneData && duneData.length > 0) {
+                        const latestDate = duneData.reduce((max, row) => {
+                            const d = row.block_date || row.date || '';
+                            return d > max ? d : max;
+                        }, '');
+                        
+                        if (latestDate) {
+                            const twoDaysAgo = new Date();
+                            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                            const twoDaysAgoStr = twoDaysAgo.toISOString().split('T')[0];
+                            
+                            if (latestDate < twoDaysAgoStr) {
+                                dataIsStale = true;
+                                log(`  ⚠️ Cached data is stale (latest: ${latestDate}, need >= ${twoDaysAgoStr})`, 'warn');
+                            }
+                        }
+                    }
+                    
+                    // If no cached data, too old, or stale data, execute fresh query
+                    if (!duneData || duneData.length < 600 || dataIsStale) {
                         log('  🔄 Executing fresh Dune query...', 'info');
                         
                         // Execute query
@@ -1995,7 +2055,7 @@
                     }
                     
                     // 2. 기존 데이터 조회 (fee 정보 유지를 위해)
-                    const { data: existingData } = await supabase.from('historical_blob_data')
+                    const { data: existingData } = await sb.from('historical_blob_data')
                         .select('date, blob_fee_eth')
                         .order('date', { ascending: true });
                     
@@ -2017,11 +2077,12 @@
                         const blobCount = parseInt(row.blob_count) || 0;
                         const blobGasUsed = parseInt(row.blob_gas_used) || 0;
                         
-                        // Fee: 기존 값 유지 또는 추정
-                        let blobFeeEth = existingFees[dateStr];
+                        // Fee: Dune 결과에서 직접 가져오기 (blob_fee_eth 컬럼)
+                        let blobFeeEth = parseFloat(row.blob_fee_eth) || 0;
+                        
+                        // Dune에서 fee가 없으면 기존 값 또는 추정
                         if (!blobFeeEth || blobFeeEth < 0.01) {
-                            // Estimate fee based on blob count (약 0.0002 ETH per blob)
-                            blobFeeEth = blobCount * 0.0002;
+                            blobFeeEth = existingFees[dateStr] || (blobCount * 0.0002);
                         }
                         
                         return {
@@ -2034,12 +2095,9 @@
                         };
                     }).filter(r => r.blob_count > 0);
                     
-                    // 오늘/어제 불완전 데이터 제외 (마지막 1일)
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const cutoffDate = yesterday.toISOString().split('T')[0];
-                    
-                    const validRecords = records.filter(r => r.date < cutoffDate);
+                    // 오늘 불완전 데이터만 제외 (어제까지는 포함)
+                    const today = new Date().toISOString().split('T')[0];
+                    const validRecords = records.filter(r => r.date < today);
                     
                     log(`  📊 Valid records: ${validRecords.length} (excluded ${records.length - validRecords.length} recent incomplete)`, 'info');
                     
@@ -2086,12 +2144,12 @@
                 return error ? 0 : records.length;
             },
 
-            // 19. Daily Issuance - Etherscan ethsupply2 API
+            // 19. Daily Issuance - Calculate from staking data
             async daily_issuance() {
                 log('  🔍 Fetching Daily Issuance data...', 'info');
                 
                 // 기존 데이터 확인
-                const { data: existingData } = await supabase.from('historical_daily_issuance')
+                const { data: existingData } = await sb.from('historical_daily_issuance')
                     .select('date, daily_issuance')
                     .order('date', { ascending: false })
                     .limit(1200);
@@ -2099,125 +2157,94 @@
                 const existingDates = new Set(existingData?.filter(d => d.daily_issuance > 0).map(d => d.date) || []);
                 log(`  📋 Existing daily_issuance records: ${existingDates.size}`, 'info');
                 
-                // 데이터가 충분하면 (1000개 이상) 오늘 데이터만 업데이트
-                const hasEnoughData = existingDates.size > 1000;
-                
-                // 현재 Eth2Staking 값 가져오기 (오늘 데이터용)
-                if (ETHERSCAN_API_KEY) {
-                    const url = `https://api.etherscan.io/v2/api?chainid=1&module=stats&action=ethsupply2&apikey=${ETHERSCAN_API_KEY}`;
-                    const data = await fetchJSON(url);
-                    
-                    if (data?.status === '1' && data?.result?.Eth2Staking) {
-                        const currentEth2Staking = parseFloat(data.result.Eth2Staking) / 1e18;
-                        const burntFees = parseFloat(data.result.BurntFees) / 1e18;
-                        const withdrawnTotal = parseFloat(data.result.WithdrawnTotal || 0) / 1e18;
-                        
-                        const today = new Date().toISOString().split('T')[0];
-                        
-                        // 이전 데이터와 비교해서 daily issuance 계산
-                        if (existingData && existingData.length > 0 && !existingDates.has(today)) {
-                            const lastRecord = existingData[0];
-                            const lastDate = lastRecord.date;
-                            
-                            // 어제 데이터로 cumulative 값 추정
-                            const { data: yesterdayData } = await supabase.from('historical_daily_issuance')
-                                .select('eth2_staking_cumulative')
-                                .eq('date', lastDate)
-                                .single();
-                            
-                            if (yesterdayData?.eth2_staking_cumulative) {
-                                const lastEth2Staking = yesterdayData.eth2_staking_cumulative;
-                                const daysDiff = Math.max(1, Math.round((new Date(today) - new Date(lastDate)) / 86400000));
-                                const dailyIssuance = (currentEth2Staking - lastEth2Staking) / daysDiff;
-                                
-                                if (dailyIssuance > 500 && dailyIssuance < 3500) {
-                                    const { error } = await batchUpsert('historical_daily_issuance', [{
-                                        date: today,
-                                        eth2_staking_cumulative: currentEth2Staking,
-                                        daily_issuance: parseFloat(dailyIssuance.toFixed(2)),
-                                        burnt_fees_cumulative: burntFees,
-                                        withdrawn_total: withdrawnTotal,
-                                        source: 'etherscan'
-                                    }]);
-                                    if (!error) {
-                                        log(`  ✅ Today's Daily Issuance: ${dailyIssuance.toFixed(0)} ETH`, 'success');
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if (hasEnoughData) {
-                            log(`  📋 Sufficient historical data exists (${existingDates.size} records)`, 'success');
-                            return -1;
-                        }
-                    }
-                }
-                
-                // 백필: staking 데이터로부터 Daily Issuance 계산
-                log('  🔄 Backfilling Daily Issuance from staking data...', 'info');
-                
-                const { data: stakingData } = await supabase.from('historical_staking')
+                // staking 테이블에서 최신 데이터 가져오기
+                const { data: stakingData } = await sb.from('historical_staking')
                     .select('date, total_staked_eth, avg_apr')
-                    .order('date', { ascending: true })
-                    .limit(1200);
+                    .order('date', { ascending: false })
+                    .limit(30);
                 
-                if (!stakingData || stakingData.length < 10) {
-                    log('  ⚠️ Not enough staking data for backfill', 'warn');
+                if (!stakingData || stakingData.length === 0) {
+                    log('  ❌ No staking data available', 'error');
                     return 0;
                 }
                 
-                const records = [];
-                const mergeDate = new Date('2022-09-15');
+                let newRecords = 0;
                 
-                for (const d of stakingData) {
-                    const date = new Date(d.date);
+                for (const staking of stakingData) {
+                    // 이미 있는 날짜는 건너뛰기
+                    if (existingDates.has(staking.date)) continue;
                     
-                    // Merge 이전은 건너뛰기
-                    if (date < mergeDate) continue;
+                    const stakedEth = staking.total_staked_eth || 0;
+                    const apr = staking.avg_apr || 3.5;
                     
-                    // 이미 데이터가 있으면 건너뛰기
-                    if (existingDates.has(d.date)) continue;
+                    if (stakedEth < 1000000) continue; // 최소 1M ETH
                     
-                    const stakedEth = d.total_staked_eth || 15000000;
-                    const apr = d.avg_apr || 4.0;
-                    
-                    // Daily Issuance = Staked ETH × APR / 365
+                    // Daily Issuance = Total Staked ETH × APR / 365
                     const dailyIssuance = (stakedEth * (apr / 100)) / 365;
                     
-                    // 합리적인 범위 확인 (500-3500 ETH/day)
-                    if (dailyIssuance >= 500 && dailyIssuance <= 3500) {
-                        records.push({
-                            date: d.date,
+                    log(`  📊 ${staking.date}: ${(stakedEth/1e6).toFixed(1)}M ETH × ${apr.toFixed(2)}% APR / 365 = ${dailyIssuance.toFixed(0)} ETH/day`, 'info');
+                    
+                    if (dailyIssuance >= 500 && dailyIssuance <= 5000) {
+                        const { error } = await batchUpsert('historical_daily_issuance', [{
+                            date: staking.date,
                             daily_issuance: parseFloat(dailyIssuance.toFixed(2)),
-                            source: 'calculated'
-                        });
+                            source: 'calculated_from_staking'
+                        }]);
+                        
+                        if (!error) {
+                            newRecords++;
+                        }
                     }
                 }
                 
-                if (records.length === 0) {
-                    log(`  ✅ All dates already have data or no valid records`, 'success');
-                    return 0;
+                if (newRecords > 0) {
+                    log(`  ✅ Added ${newRecords} new daily_issuance records`, 'success');
+                    return newRecords;
                 }
                 
-                log(`  📦 Generated ${records.length} records from staking data`, 'info');
-                const { error } = await batchUpsert('historical_daily_issuance', records);
-                if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                log(`  📋 All dates already have data`, 'success');
+                return existingDates.size > 1000 ? -1 : 0;
             },
 
             // 20. Volatility - HAS source
             async volatility() {
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
+                // 오름차순으로 전체 데이터 가져와서 계산
+                const { data: prices } = await sb.from('historical_eth_price').select('date, close').order('date', { ascending: true });
                 if (!prices || prices.length < 30) return 0;
+                
+                log(`  📊 Got ${prices.length} price records`, 'info');
+                
                 const records = [];
-                for (let i = 30; i < prices.length; i++) {
-                    const window = prices.slice(i - 30, i);
+                // i = 29부터 시작 (30일 윈도우 필요)
+                for (let i = 29; i < prices.length; i++) {
+                    const window = prices.slice(i - 29, i + 1); // 30일 윈도우
                     const returns = [];
-                    for (let j = 1; j < window.length; j++) returns.push(Math.log(window[j].close / window[j-1].close));
+                    for (let j = 1; j < window.length; j++) {
+                        if (window[j-1].close > 0) {
+                            returns.push(Math.log(window[j].close / window[j-1].close));
+                        }
+                    }
+                    if (returns.length < 20) continue; // 최소 20일 데이터 필요
+                    
                     const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
                     const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length;
-                    records.push({ date: prices[i].date, timestamp: Date.now(), volatility_30d: parseFloat((Math.sqrt(variance * 365) * 100).toFixed(2)), source: 'calculated' });
+                    const volatility = Math.sqrt(variance * 365) * 100;
+                    
+                    if (volatility > 0 && volatility < 500) { // 합리적인 범위 체크
+                        records.push({ 
+                            date: prices[i].date, 
+                            timestamp: Date.now(), 
+                            volatility_30d: parseFloat(volatility.toFixed(2)), 
+                            source: 'calculated' 
+                        });
+                    }
                 }
+                
+                log(`  📊 Calculated ${records.length} volatility records`, 'info');
+                if (records.length > 0) {
+                    log(`  📅 Latest: ${records[records.length-1].date} = ${records[records.length-1].volatility_30d}%`, 'info');
+                }
+                
                 const { error } = await batchUpsert('historical_volatility', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
@@ -2229,7 +2256,7 @@
                 log('  🔍 Fetching NVT data...', 'info');
                 
                 // Get ETH prices first
-                const { data: prices } = await supabase.from('historical_eth_price')
+                const { data: prices } = await sb.from('historical_eth_price')
                     .select('date, close')
                     .order('date', { ascending: false })
                     .limit(1100);
@@ -2329,7 +2356,7 @@
                 }
                 
                 // Fallback: fee-based estimation (less accurate)
-                const { data: fees } = await supabase.from('historical_protocol_fees')
+                const { data: fees } = await sb.from('historical_protocol_fees')
                     .select('date, fees')
                     .order('date', { ascending: false })
                     .limit(1100);
@@ -2441,7 +2468,7 @@
                 
                 if (!DUNE_API_KEY) {
                     log('  ⚠️ No Dune API key - falling back to tx-based estimation', 'warn');
-                    const { data: txs } = await supabase.from('historical_l2_transactions')
+                    const { data: txs } = await sb.from('historical_l2_transactions')
                         .select('date, chain, tx_count').order('date', { ascending: false }).limit(8000);
                     if (!txs?.length) return 0;
                     const records = txs.map(t => ({
@@ -2557,7 +2584,7 @@
                             // Batch upsert in chunks of 500 for speed
                             for (let i = 0; i < records.length; i += 500) {
                                 const chunk = records.slice(i, i + 500);
-                                const { error } = await supabase.from('historical_protocol_tvl').upsert(chunk, { onConflict: 'date,protocol,chain' });
+                                const { error } = await sb.from('historical_protocol_tvl').upsert(chunk, { onConflict: 'date,protocol,chain' });
                                 if (error) {
                                     log(`    ❌ ${protocol} chunk error: ${error.message}`, 'error');
                                     break;
@@ -2623,8 +2650,8 @@
 
             // 27. ETH in DeFi - HAS source
             async eth_in_defi() {
-                const { data: tvl } = await supabase.from('historical_ethereum_tvl').select('date, tvl').order('date', { ascending: false }).limit(1100);
-                const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
+                const { data: tvl } = await sb.from('historical_ethereum_tvl').select('date, tvl').order('date', { ascending: false }).limit(1100);
+                const { data: prices } = await sb.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
                 if (!tvl || !prices) return 0;
                 const priceMap = new Map(prices.map(p => [p.date, p.close]));
                 const records = tvl.map(t => {
@@ -3344,7 +3371,7 @@
                 const sevenDaysAgo = new Date();
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
                 
-                const { data: logs, error } = await supabase
+                const { data: logs, error } = await sb
                     .from('scheduler_logs')
                     .select('*')
                     .gte('run_date', sevenDaysAgo.toISOString().split('T')[0])
@@ -3502,7 +3529,7 @@
             
             try {
                 // Get cached value
-                const { data: cached } = await supabase.from(ds.table).select('*').order('date', { ascending: false }).limit(1);
+                const { data: cached } = await sb.from(ds.table).select('*').order('date', { ascending: false }).limit(1);
                 const cachedValue = cached?.[0]?.[ds.valueField];
                 
                 // Get live value
@@ -3623,6 +3650,7 @@
         }
 
         async function init() {
+            console.log('🚀 init() started');
             try {
                 log('🚀 ETHval Admin v7.0 (Schema Aligned)', 'info');
                 
@@ -3648,8 +3676,17 @@
                     return;
                 }
                 
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                await supabase.from('historical_eth_price').select('date').limit(1);
+                console.log('Creating Supabase client...');
+                sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // 타임아웃이 있는 연결 테스트
+                const testPromise = sb.from('historical_eth_price').select('date').limit(1);
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Connection timeout')), 10000)
+                );
+                
+                await Promise.race([testPromise, timeoutPromise]);
+                
                 document.getElementById('connStatus').className = 'connection-status connected';
                 document.getElementById('connText').textContent = 'Connected';
                 log('✅ Supabase connected', 'success');
@@ -3659,10 +3696,10 @@
                 // Auto-collect if more than 12 hours since last collection
                 await checkAutoCollect();
             } catch (e) {
+                console.error('Init error:', e);
                 document.getElementById('connStatus').className = 'connection-status disconnected';
                 document.getElementById('connText').textContent = 'Error';
                 log('❌ Init error: ' + e.message, 'error');
-                console.error('Init error:', e);
             }
         }
         

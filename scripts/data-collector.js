@@ -59,6 +59,7 @@ async function fetchJSON(url, retries = 3) {
 }
 
 // Dune API helper - fetch all results with pagination
+// Note: Dune queries are scheduled to auto-refresh daily at 03:30-04:00 UTC
 async function fetchDuneResults(queryId, maxRows = 10000) {
     if (!DUNE_API_KEY) return null;
     
@@ -659,26 +660,36 @@ async function collect_lending_tvl() {
 // ============================================================
 async function collect_volatility() {
     console.log('\n📉 [19/29] Volatility...');
-    const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+    const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: true });
     if (!prices || prices.length < 30) return 0;
     
+    console.log(`  Got ${prices.length} price records`);
+    
     const records = [];
-    for (let i = 30; i < prices.length; i++) {
-        const window = prices.slice(i - 30, i);
+    // i = 29부터 시작 (30일 윈도우 필요)
+    for (let i = 29; i < prices.length; i++) {
+        const window = prices.slice(i - 29, i + 1); // 30일 윈도우
         const returns = [];
         for (let j = 1; j < window.length; j++) {
-            returns.push(Math.log(window[j].close / window[j-1].close));
+            if (window[j-1].close > 0) {
+                returns.push(Math.log(window[j].close / window[j-1].close));
+            }
         }
+        if (returns.length < 20) continue;
+        
         const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
         const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length;
         const volatility = Math.sqrt(variance * 365) * 100; // Annualized
         
-        records.push({
-            date: prices[i].date,
-            volatility_30d: parseFloat(volatility.toFixed(2)),
-            source: 'calculated'
-        });
+        if (volatility > 0 && volatility < 500) {
+            records.push({
+                date: prices[i].date,
+                volatility_30d: parseFloat(volatility.toFixed(2)),
+                source: 'calculated'
+            });
+        }
     }
+    console.log(`  Latest: ${records[records.length-1]?.date} = ${records[records.length-1]?.volatility_30d}%`);
     return await upsertBatch('historical_volatility', records);
 }
 
@@ -1158,7 +1169,8 @@ async function main() {
     console.log('='.repeat(60));
     console.log('Collecting 40 datasets (29 API + 11 Dune)...\n');
     if (DUNE_API_KEY) {
-        console.log('✅ Dune API Key detected - will collect Dune data');
+        console.log('✅ Dune API Key detected');
+        console.log('📌 Note: Dune queries auto-refresh daily at 03:30-04:00 UTC');
     } else {
         console.log('⚠️ No Dune API Key - Dune collections will be skipped');
     }
@@ -1166,6 +1178,7 @@ async function main() {
     const startTime = Date.now();
     const results = {};
     
+    // Collect API data
     results.eth_price = await collect_eth_price(); await sleep(500);
     results.ethereum_tvl = await collect_ethereum_tvl(); await sleep(500);
     results.l2_tvl = await collect_l2_tvl(); await sleep(500);
@@ -1196,9 +1209,9 @@ async function main() {
     results.dex_by_protocol = await collect_dex_by_protocol(); await sleep(500);
     results.network_stats = await collect_network_stats();
     
-    // Dune API Collections (if API key available)
+    // Dune API Collections (fetch pre-scheduled results)
     console.log('\n' + '='.repeat(60));
-    console.log('🔷 DUNE API COLLECTIONS');
+    console.log('🔷 DUNE API COLLECTIONS (fetching scheduled results)');
     console.log('='.repeat(60));
     
     results.dune_blob = await collect_dune_blob(); await sleep(1000);
