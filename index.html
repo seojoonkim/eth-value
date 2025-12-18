@@ -780,6 +780,65 @@
                 --font-body: 11px;
                 --font-caption: 9px;
             }
+            
+            /* ═══════════════════════════════════════════════════════════════════
+               MOBILE SCROLL PERFORMANCE OPTIMIZATIONS
+               ═══════════════════════════════════════════════════════════════════ */
+            
+            /* Disable smooth scrolling on mobile for better performance */
+            html {
+                scroll-behavior: auto !important;
+            }
+            
+            /* GPU acceleration for main containers */
+            .dashboard-grid,
+            .metric-card,
+            .model-grid,
+            .nav-buttons,
+            section {
+                transform: translateZ(0);
+                -webkit-transform: translateZ(0);
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+            }
+            
+            /* Reduce transitions on mobile */
+            .metric-card,
+            .nav-btn,
+            .tab-btn,
+            button {
+                transition: none !important;
+            }
+            
+            /* Optimize chart containers */
+            .chart-container,
+            .mini-chart {
+                contain: layout style paint;
+                will-change: auto;
+            }
+            
+            /* Prevent layout thrashing */
+            .metric-value-large,
+            .current-price,
+            .change {
+                contain: layout style;
+            }
+        }
+        
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            /* Disable hover effects on touch devices */
+            .metric-card:hover,
+            .nav-btn:hover,
+            .tab-btn:hover {
+                transform: none !important;
+                box-shadow: none !important;
+            }
+            
+            /* Faster tap response */
+            button, a, .clickable {
+                touch-action: manipulation;
+            }
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1880,10 +1939,20 @@
             margin-top: var(--space-sm);
             overflow: visible;
             position: relative;
+            touch-action: pan-y;  /* Allow vertical scroll on chart area */
         }
         
         .metric-chart canvas {
             overflow: visible;
+            touch-action: pan-y;  /* Allow vertical scroll on canvas */
+        }
+        
+        .price-chart-area {
+            touch-action: pan-y;  /* Allow vertical scroll on main price chart */
+        }
+        
+        .price-chart-area canvas {
+            touch-action: pan-y;
         }
         
         body.dark .metric-chart canvas,
@@ -6856,6 +6925,7 @@
             font-size: 11px;
             color: var(--text-secondary);
             font-weight: 500;
+            flex-wrap: wrap;
         }
 
         .summary-cta a {
@@ -6895,6 +6965,7 @@
             color: var(--text-muted) !important;
             font-size: 13px;
             transition: color 0.15s ease;
+            white-space: nowrap;
         }
 
         .contact-link:hover {
@@ -9112,9 +9183,15 @@
         @media (max-width: 768px) {
             .floating-action-badge {
                 bottom: 16px;
-                right: 16px;
-                left: 16px;
-                max-width: none;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                max-width: calc(100% - 32px);
+                width: auto;
+            }
+            
+            .floating-action-badge:hover {
+                transform: translateX(-50%) translateY(-3px) scale(1.02);
             }
         }
         
@@ -9271,6 +9348,11 @@
             border-radius: 8px;
             padding: 12px 14px;
             transition: all var(--transition-fast);
+            touch-action: pan-y;  /* Allow vertical scroll, horizontal for slider */
+        }
+        
+        .sim-slider-item input[type="range"] {
+            touch-action: pan-x;  /* Slider uses horizontal only */
         }
         
         .sim-slider-item.modified {
@@ -11212,10 +11294,9 @@
         </header>
         <nav class="nav-bar">
             <a class="nav-item active" href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); this.classList.add('active');" data-i18n="nav.overview">Overview</a>
-            <a class="nav-item" href="#section-price" data-i18n="nav.price">Price & Market</a>
-            <a class="nav-item" href="#section-onchain" data-i18n="nav.onchain">On-Chain Metrics</a>
+            <a class="nav-item" href="#section-metrics" data-i18n="nav.metrics">Market & Metrics</a>
             <a class="nav-item" href="#section-valuation" data-i18n="nav.valuation">Valuation & Simulator</a>
-            <a class="nav-item" href="#section-methodology" data-i18n="nav.methodology">Methodology</a>
+            <a class="nav-item" href="#section-methodology" data-i18n="nav.methodology">Ratings & Discussion</a>
             <a class="nav-item" href="#section-rankings" data-i18n="nav.rankings">Leaderboard</a>
         </nav>
     </div>
@@ -11326,9 +11407,9 @@
         </div>
 
         <!-- SECTION 1: PRICE & MARKET -->
-        <section class="section" id="section-price">
+        <section class="section" id="section-metrics">
             <div class="section-header">
-                <div class="section-title"><span data-i18n="section.priceTitle">Price & Market</span></div>
+                <div class="section-title"><span data-i18n="section.metricsTitle">Market & Metrics</span></div>
             </div>
 
             <!-- Price Card - Combined -->
@@ -11379,15 +11460,14 @@
                 </div>
             </div>
 
-            <!-- Three Column Charts -->
+            <!-- Metrics Grid -->
             <div class="triple-chart-grid">
-                <!-- Price & Performance -->
+                <!-- Investor Sentiment -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title">Price & Performance</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.investorSentiment">Investor Sentiment</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
-                <!-- 1. Realized ETH Price -->
                 <div class="metric-card" data-metric="realizedPrice">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11408,7 +11488,6 @@
                     </div>
                 </div>
 
-                <!-- 2. MVRV Ratio -->
                 <div class="metric-card" data-metric="mvrvRatio">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11429,144 +11508,26 @@
                     </div>
                 </div>
 
-                <!-- 3. ETH Dominance -->
-                <div class="metric-card" data-metric="dominance">
+                <div class="metric-card" data-metric="feargreed">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>ETH Dominance</h4>
-                            <div class="metric-value-large" id="eth-dominance">--%</div>
+                            <h4>Fear & Greed</h4>
+                            <div class="metric-value-large" id="fear-greed">--</div>
                         </div>
-                        <div class="metric-tabs" data-chart="dominance">
+                        <div class="metric-tabs" data-chart="feargreed">
                             
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dominance-chart"></canvas></div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="feargreed-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>CoinGecko</span>
-                        <span class="change" id="dominance-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.dominance">ETH's share of total crypto market cap. Higher = ETH outperforming alts.</div>
+                        <span>Alternative.me</span>
+                        <span class="change" id="fg-label">--</span>
+                        <div class="metric-desc" data-i18n="desc.feargreed">Market sentiment index (0-100). Extreme fear often = buying opportunity.</div>
                     </div>
                 </div>
-
-                <!-- 2. ETH/BTC Ratio -->
-                <div class="metric-card" data-metric="ethbtc">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>ETH/BTC Ratio</h4>
-                            <div class="metric-value-large" id="eth-btc">--</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="ethbtc">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="ethbtc-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>CoinGecko</span>
-                        <span class="change" id="ethbtc-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.ethbtc">ETH price relative to BTC. Rising ratio signals ETH strength vs Bitcoin.</div>
-                    </div>
-                </div>
-
-                <!-- Liquidity & Sentiment -->
-                <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title">Liquidity & Sentiment</span>
-                    <div class="metrics-subgroup-line"></div>
-                </div>
-
-                <!-- 3. Stablecoin Market Cap -->
-                <div class="metric-card" data-metric="stablecoin">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Stablecoin Mcap</h4>
-                            <div class="metric-value-large" id="stablecoin-mcap">$--</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="stablecoin">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>DefiLlama</span>
-                        <span class="change" id="stablecoin-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.stablecoin">Total stablecoin market cap. Growth indicates capital inflow to crypto.</div>
-                    </div>
-                </div>
-
-                <!-- 4. Exchange ETH Reserve -->
-                <div class="metric-card" data-metric="reserve">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Exchange ETH Reserve</h4>
-                            <div class="metric-value-large" id="exchange-reserve">-- ETH</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="reserve">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="reserve-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Santiment</span>
-                        <span class="change" id="reserve-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.reserve">ETH held on exchanges. Declining reserve = accumulation, bullish signal.</div>
-                    </div>
-                </div>
-
-                <!-- Whale Transactions -->
-                <div class="metric-card" data-metric="whaleTx">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Whale Transactions</h4>
-                            <div class="metric-value-large" id="whale-tx-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="whale-tx-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="whale-tx-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.whaleTx">Daily 1000+ ETH transactions. Large player activity indicator.</div>
-                    </div>
-                </div>
-
-                <!-- 5. Volatility -->
-                <div class="metric-card" data-metric="volatility">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Volatility</h4>
-                            <div class="metric-value-large" id="volatility">--%</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="volatility">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="volatility-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>CoinGecko</span>
-                        <span class="change" id="volatility-level">--</span>
-                        <div class="metric-desc" data-i18n="desc.volatility">30-day price volatility. Lower volatility often precedes big moves.</div>
-                    </div>
-                </div>
-
-                <!-- 6. Funding Rate -->
                 <div class="metric-card" data-metric="funding">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11588,42 +11549,163 @@
                     </div>
                 </div>
 
-                <!-- 7. Fear & Greed Index -->
-                <div class="metric-card" data-metric="feargreed">
+                <div class="metric-card" data-metric="reserve">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Fear & Greed</h4>
-                            <div class="metric-value-large" id="fear-greed">--</div>
+                            <h4>Exchange ETH Reserve</h4>
+                            <div class="metric-value-large" id="exchange-reserve">-- ETH</div>
                         </div>
-                        <div class="metric-tabs" data-chart="feargreed">
+                        <div class="metric-tabs" data-chart="reserve">
                             
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="feargreed-chart"></canvas></div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="reserve-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Alternative.me</span>
-                        <span class="change" id="fg-label">--</span>
-                        <div class="metric-desc" data-i18n="desc.feargreed">Market sentiment index (0-100). Extreme fear often = buying opportunity.</div>
+                        <span>Santiment</span>
+                        <span class="change" id="reserve-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.reserve">ETH held on exchanges. Declining reserve = accumulation, bullish signal.</div>
                     </div>
                 </div>
-            </div>
-        </section>
-        <section class="section" id="section-onchain">
-            <div class="section-header">
-                <div class="section-title"><span data-i18n="section.onchainTitle">On-Chain Metrics & Trends</span></div>
-            </div>
 
-            <div class="metrics-grid">
-                <!-- Fees & Supply -->
+                <div class="metric-card" data-metric="whaleTx">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Whale Transactions</h4>
+                            <div class="metric-value-large" id="whale-tx-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="whale-tx-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="whale-tx-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.whaleTx">Daily 1000+ ETH transactions. Large player activity indicator.</div>
+                    </div>
+                </div>
+
+                <!-- Market Position -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title">Fees & Supply</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.marketPosition">Market Position</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
-                
-                <!-- Staking Yield -->
+
+                <div class="metric-card" data-metric="ethbtc">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>ETH/BTC Ratio</h4>
+                            <div class="metric-value-large" id="eth-btc">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="ethbtc">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="ethbtc-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>CoinGecko</span>
+                        <span class="change" id="ethbtc-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.ethbtc">ETH price relative to BTC. Rising ratio signals ETH strength vs Bitcoin.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="dominance">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>ETH Dominance</h4>
+                            <div class="metric-value-large" id="eth-dominance">--%</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="dominance">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dominance-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>CoinGecko</span>
+                        <span class="change" id="dominance-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.dominance">ETH's share of total crypto market cap. Higher = ETH outperforming alts.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="stablecoin">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Stablecoin Mcap</h4>
+                            <div class="metric-value-large" id="stablecoin-mcap">$--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="stablecoin">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>DefiLlama</span>
+                        <span class="change" id="stablecoin-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.stablecoin">Total stablecoin market cap. Growth indicates capital inflow to crypto.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="volatility">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Volatility</h4>
+                            <div class="metric-value-large" id="volatility">--%</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="volatility">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="volatility-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>CoinGecko</span>
+                        <span class="change" id="volatility-level">--</span>
+                        <div class="metric-desc" data-i18n="desc.volatility">30-day price volatility. Lower volatility often precedes big moves.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="nvt">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>NVT Ratio</h4>
+                            <div class="metric-value-large" id="nvt-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="nvt-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Calculated</span>
+                        <span class="change" id="nvt-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.nvt">Market cap ÷ on-chain volume (7-day avg). Lower = undervalued.</div>
+                    </div>
+                </div>
+
+                <!-- Supply Dynamics -->
+                <div class="metrics-subgroup">
+                    <span class="metrics-subgroup-title" data-i18n="metrics.supplyDynamics">Supply Dynamics</span>
+                    <div class="metrics-subgroup-line"></div>
+                </div>
+
                 <div class="metric-card" data-metric="stakingApr">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11644,271 +11726,6 @@
                     </div>
                 </div>
 
-                <!-- ETH Burned -->
-                <div class="metric-card" data-metric="daily-burn">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>ETH Burned</h4>
-                            <div class="metric-value-large burn-color" id="daily-burn-value">-- ETH</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="daily-burn">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-burn-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="burn-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.burn">ETH burned via EIP-1559 on L1. Higher burn = more mainnet activity.</div>
-                    </div>
-                </div>
-
-                <!-- ETH Issued -->
-                <div class="metric-card" data-metric="daily-issuance">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>ETH Issued</h4>
-                            <div class="metric-value-large issuance-color" id="daily-issuance-value">-- ETH</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="daily-issuance">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-issuance-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Beaconcha.in</span>
-                        <span class="change" id="issuance-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.issuance">New ETH issued to L1 validators. ~930 ETH/day post-merge.</div>
-                    </div>
-                </div>
-
-                <!-- Net Supply -->
-                <div class="metric-card" data-metric="net-supply">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Net Supply</h4>
-                            <div class="metric-value-large" id="net-supply-change">--%/yr</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="net-supply">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="net-supply-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Calculated</span>
-                        <span class="change" id="net-supply-status">--</span>
-                        <div class="metric-desc" data-i18n="desc.netSupply">L1 burn minus issuance. Negative = deflationary, bullish for ETH value.</div>
-                    </div>
-                </div>
-
-                <!-- Gas Price -->
-                <div class="metric-card" data-metric="gasPrice">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Gas Price</h4>
-                            <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="gasPrice">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-price-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="gas-price-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.gasPrice">Average L1 gas price in Gwei. Reflects mainnet transaction costs.</div>
-                    </div>
-                </div>
-
-                <!-- Gas Utilization -->
-                <div class="metric-card" data-metric="gas-utilization">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Gas Utilization</h4>
-                            <div class="metric-value-large" id="gas-utilization-value">--%</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="gas-utilization">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-utilization-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="gas-util-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.gasUtil">% of L1 block gas limit used. High utilization = strong network demand.</div>
-                    </div>
-                </div>
-
-                <!-- Blob Fees -->
-                <div class="metric-card" data-metric="blobFees">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Blob Fees</h4>
-                            <div class="metric-value-large" id="blob-fees-value">-- ETH</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="blobFees">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="all">All</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-fees-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Etherscan</span>
-                        <span class="change" id="blob-fees-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.blobFees">L2 data posting fees since Dencun upgrade (Mar 2024). Blob fees are burned like gas, contributing to L1 revenue.</div>
-                    </div>
-                </div>
-
-                <!-- Blob Count -->
-                <div class="metric-card" data-metric="blobCount">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Blob Count</h4>
-                            <div class="metric-value-large" id="blob-count-value">--</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="blobCount">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="all">All</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-count-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Etherscan</span>
-                        <span class="change" id="blob-count-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.blobCount">Data blobs posted by L2s since Dencun (Mar 2024). More blobs = growing L2 adoption.</div>
-                    </div>
-                </div>
-
-                <!-- Users & Transactions -->
-                <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title">Users & Transactions</span>
-                    <div class="metrics-subgroup-line"></div>
-                </div>
-
-                <!-- New Addresses -->
-                <div class="metric-card" data-metric="newAddresses">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>New Addresses</h4>
-                            <div class="metric-value-large" id="new-addr-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="new-addr-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="new-addr-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.newAddresses">Daily first-time transacting addresses. Network growth indicator.</div>
-                    </div>
-                </div>
-
-                <!-- L1 Active Addresses -->
-                <div class="metric-card" data-metric="l1ActiveAddr">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>L1 Active Addresses</h4>
-                            <div class="metric-value-large" id="l1-active-addr-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-active-addr-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="l1-active-addr-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.l1ActiveAddr">Daily unique addresses on Ethereum mainnet.</div>
-                    </div>
-                </div>
-
-                <!-- L2 Active Addresses -->
-                <div class="metric-card" data-metric="l2ActiveAddr">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>L2 Active Addresses</h4>
-                            <div class="metric-value-large" id="l2-active-addr-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-active-addr-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="l2-active-addr-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.l2ActiveAddr">Daily unique addresses on L2s (Arbitrum, Optimism, Base, etc).</div>
-                    </div>
-                </div>
-
-                <!-- TX Count (ETH) -->
-                <div class="metric-card" data-metric="txEth">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>L1 Transactions</h4>
-                            <div class="metric-value-large" id="tx-eth-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-eth-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Etherscan</span>
-                        <span class="change" id="tx-eth-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.txEth">Daily mainnet transactions. Core network usage indicator.</div>
-                    </div>
-                </div>
-
-                <!-- TX Count (L2) -->
-                <div class="metric-card" data-metric="txTotal">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>L2 Transactions</h4>
-                            <div class="metric-value-large" id="tx-total-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-total-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>L2Beat</span>
-                        <span class="change" id="tx-total-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.txTotal">Combined L1+L2 daily transactions. Full ecosystem activity measure.</div>
-                    </div>
-                </div>
-
-                <!-- Capital & Volume -->
-                <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title">Capital & Volume</span>
-                    <div class="metrics-subgroup-line"></div>
-                </div>
-
-                <!-- Staked ETH -->
                 <div class="metric-card" data-metric="staking">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11929,28 +11746,66 @@
                     </div>
                 </div>
 
-                <!-- DeFi Lending TVL -->
-                <div class="metric-card" data-metric="lending">
+                <div class="metric-card" data-metric="daily-burn">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>DeFi Lending TVL</h4>
-                            <div class="metric-value-large" id="lending-tvl">--</div>
+                            <h4>ETH Burned</h4>
+                            <div class="metric-value-large burn-color" id="daily-burn-value">-- ETH</div>
                         </div>
-                        <div class="metric-tabs" data-chart="lending">
+                        <div class="metric-tabs" data-chart="daily-burn">
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="lending-chart"></canvas></div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-burn-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>DefiLlama</span>
-                        <span class="change" id="lending-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.lending">Assets in DeFi lending protocols. Indicates DeFi capital deployment.</div>
+                        <span>Dune</span>
+                        <span class="change" id="burn-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.burn">ETH burned via EIP-1559 on L1. Higher burn = more mainnet activity.</div>
                     </div>
                 </div>
 
-                <!-- Effective Float -->
+                <div class="metric-card" data-metric="daily-issuance">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>ETH Issued</h4>
+                            <div class="metric-value-large issuance-color" id="daily-issuance-value">-- ETH</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="daily-issuance">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-issuance-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Beaconcha.in</span>
+                        <span class="change" id="issuance-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.issuance">New ETH issued to L1 validators. ~930 ETH/day post-merge.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="net-supply">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Net Supply</h4>
+                            <div class="metric-value-large" id="net-supply-change">--%/yr</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="net-supply">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="net-supply-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Calculated</span>
+                        <span class="change" id="net-supply-status">--</span>
+                        <div class="metric-desc" data-i18n="desc.netSupply">L1 burn minus issuance. Negative = deflationary, bullish for ETH value.</div>
+                    </div>
+                </div>
+
                 <div class="metric-card" data-metric="supply">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11977,7 +11832,225 @@
                     </div>
                 </div>
 
-                <!-- L1 Total Value Locked -->
+                <!-- Network Demand -->
+                <div class="metrics-subgroup">
+                    <span class="metrics-subgroup-title" data-i18n="metrics.networkDemand">Network Demand</span>
+                    <div class="metrics-subgroup-line"></div>
+                </div>
+
+                <div class="metric-card" data-metric="gasPrice">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Gas Price</h4>
+                            <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="gasPrice">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-price-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="gas-price-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.gasPrice">Average L1 gas price in Gwei. Reflects mainnet transaction costs.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="gas-utilization">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Gas Utilization</h4>
+                            <div class="metric-value-large" id="gas-utilization-value">--%</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="gas-utilization">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-utilization-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="gas-util-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.gasUtil">% of L1 block gas limit used. High utilization = strong network demand.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="fees">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Network Fees</h4>
+                            <div class="metric-value-large" id="fees-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="fees-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>DefiLlama</span>
+                        <span class="change" id="fees-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.fees">Total fees paid to network. Revenue proxy for Ethereum value.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="blobFees">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Blob Fees</h4>
+                            <div class="metric-value-large" id="blob-fees-value">-- ETH</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="blobFees">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="all">All</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-fees-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Etherscan</span>
+                        <span class="change" id="blob-fees-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.blobFees">L2 data posting fees since Dencun upgrade (Mar 2024). Blob fees are burned like gas, contributing to L1 revenue.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="blobCount">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>Blob Count</h4>
+                            <div class="metric-value-large" id="blob-count-value">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="blobCount">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="all">All</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-count-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Etherscan</span>
+                        <span class="change" id="blob-count-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.blobCount">Data blobs posted by L2s since Dencun (Mar 2024). More blobs = growing L2 adoption.</div>
+                    </div>
+                </div>
+
+                <!-- User Activity -->
+                <div class="metrics-subgroup">
+                    <span class="metrics-subgroup-title" data-i18n="metrics.userActivity">User Activity</span>
+                    <div class="metrics-subgroup-line"></div>
+                </div>
+
+                <div class="metric-card" data-metric="newAddresses">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>New Addresses</h4>
+                            <div class="metric-value-large" id="new-addr-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="new-addr-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="new-addr-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.newAddresses">Daily first-time transacting addresses. Network growth indicator.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="l1ActiveAddr">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>L1 Active Addresses</h4>
+                            <div class="metric-value-large" id="l1-active-addr-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-active-addr-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l1-active-addr-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l1ActiveAddr">Daily unique addresses on Ethereum mainnet.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="l2ActiveAddr">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>L2 Active Addresses</h4>
+                            <div class="metric-value-large" id="l2-active-addr-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-active-addr-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l2-active-addr-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l2ActiveAddr">Daily unique addresses on L2s (Arbitrum, Optimism, Base, etc).</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="txEth">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>L1 Transactions</h4>
+                            <div class="metric-value-large" id="tx-eth-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-eth-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Etherscan</span>
+                        <span class="change" id="tx-eth-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.txEth">Daily mainnet transactions. Core network usage indicator.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="txTotal">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>L2 Transactions</h4>
+                            <div class="metric-value-large" id="tx-total-value">--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-total-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>L2Beat</span>
+                        <span class="change" id="tx-total-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.txTotal">Combined L1+L2 daily transactions. Full ecosystem activity measure.</div>
+                    </div>
+                </div>
+
+                <!-- Locked Capital -->
+                <div class="metrics-subgroup">
+                    <span class="metrics-subgroup-title" data-i18n="metrics.lockedCapital">Locked Capital</span>
+                    <div class="metrics-subgroup-line"></div>
+                </div>
+
                 <div class="metric-card" data-metric="tvl">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -11998,7 +12071,6 @@
                     </div>
                 </div>
 
-                <!-- L2 TVL -->
                 <div class="metric-card" data-metric="l2">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -12019,7 +12091,26 @@
                     </div>
                 </div>
 
-                <!-- L1 Stablecoin Supply -->
+                <div class="metric-card" data-metric="lending">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>DeFi Lending TVL</h4>
+                            <div class="metric-value-large" id="lending-tvl">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="lending">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="lending-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>DefiLlama</span>
+                        <span class="change" id="lending-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.lending">Assets in DeFi lending protocols. Indicates DeFi capital deployment.</div>
+                    </div>
+                </div>
+
                 <div class="metric-card" data-metric="stables">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -12061,7 +12152,6 @@
                     </div>
                 </div>
 
-                <!-- 7. App Capital -->
                 <div class="metric-card" data-metric="appCapital">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -12083,92 +12173,12 @@
                     </div>
                 </div>
 
-                <!-- 8. Stablecoin Daily Volume -->
-                <div class="metric-card" data-metric="stablecoinVol">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4 data-i18n="metric.stablecoinVol">L1 Stablecoin Volume</h4>
-                            <div class="metric-value-large" id="stablecoin-vol-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-vol-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="stablecoin-vol-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.stablecoinVol">Daily stablecoin transfer volume on L1 (USDT, USDC, DAI, USDe, FDUSD).</div>
-                    </div>
+                <!-- Settlement Volume -->
+                <div class="metrics-subgroup">
+                    <span class="metrics-subgroup-title" data-i18n="metrics.settlementVolume">Settlement Volume</span>
+                    <div class="metrics-subgroup-line"></div>
                 </div>
 
-                <div class="metric-card" data-metric="l2StablecoinVol">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4 data-i18n="metric.l2StablecoinVol">L2 Stablecoin Volume</h4>
-                            <div class="metric-value-large" id="l2-stablecoin-vol-value">--</div>
-                        </div>
-                        <div class="metric-tabs" data-chart="l2StablecoinVol">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-stablecoin-vol-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="l2-stablecoin-vol-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.l2StablecoinVol">Daily stablecoin transfer volume on L2s (Arbitrum, Base, Optimism, Polygon, zkSync, Linea, Scroll).</div>
-                    </div>
-                </div>
-
-                <!-- 8. DEX Volume -->
-                <div class="metric-card" data-metric="dex">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>DEX Volume</h4>
-                            <div class="metric-value-large" id="dex-value">$--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dex-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>DefiLlama</span>
-                        <span class="change" id="dex-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.dex">Weekly DEX trading volume. Key indicator of DeFi activity level.</div>
-                    </div>
-                </div>
-
-                <!-- 8. Network Fees -->
-                <div class="metric-card" data-metric="fees">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4>Network Fees</h4>
-                            <div class="metric-value-large" id="fees-value">$--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="fees-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>DefiLlama</span>
-                        <span class="change" id="fees-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.fees">Total fees paid to network. Revenue proxy for Ethereum value.</div>
-                    </div>
-                </div>
-
-                <!-- Settlement Layer (MV=PQ) Volumes -->
                 <div class="metric-card" data-metric="l1Volume">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -12229,12 +12239,11 @@
                     </div>
                 </div>
 
-                <!-- NVT Ratio -->
-                <div class="metric-card" data-metric="nvt">
+                <div class="metric-card" data-metric="stablecoinVol">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>NVT Ratio</h4>
-                            <div class="metric-value-large" id="nvt-value">--</div>
+                            <h4 data-i18n="metric.stablecoinVol">L1 Stablecoin Volume</h4>
+                            <div class="metric-value-large" id="stablecoin-vol-value">--</div>
                         </div>
                         <div class="metric-tabs">
                             <button class="metric-tab" data-period="90">90D</button>
@@ -12242,16 +12251,58 @@
                             <button class="metric-tab active" data-period="1095">3Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="nvt-chart"></canvas></div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-vol-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Calculated</span>
-                        <span class="change" id="nvt-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.nvt">Market cap ÷ on-chain volume (7-day avg). Lower = undervalued.</div>
+                        <span>Dune</span>
+                        <span class="change" id="stablecoin-vol-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.stablecoinVol">Daily stablecoin transfer volume on L1 (USDT, USDC, DAI, USDe, FDUSD).</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="l2StablecoinVol">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.l2StablecoinVol">L2 Stablecoin Volume</h4>
+                            <div class="metric-value-large" id="l2-stablecoin-vol-value">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="l2StablecoinVol">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-stablecoin-vol-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l2-stablecoin-vol-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l2StablecoinVol">Daily stablecoin transfer volume on L2s (Arbitrum, Base, Optimism, Polygon, zkSync, Linea, Scroll).</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="dex">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4>DEX Volume</h4>
+                            <div class="metric-value-large" id="dex-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dex-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>DefiLlama</span>
+                        <span class="change" id="dex-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.dex">Weekly DEX trading volume. Key indicator of DeFi activity level.</div>
                     </div>
                 </div>
 
             </div>
         </section>
+
 
         <!-- SECTION 3: VALUATION -->
         <section class="section" id="section-valuation">
@@ -12547,7 +12598,7 @@
         <!-- Methodology Section -->
         <section class="section methodology-section" id="section-methodology">
             <div class="section-header">
-                <div class="section-title"><span data-i18n="section.methodologyTitle">Valuation Methodology</span></div>
+                <div class="section-title"><span data-i18n="section.methodologyTitle">Ratings & Discussion</span></div>
             </div>
             <div class="methodology-grid">
                 <div class="method-card" data-model="tvlMultiple">
@@ -16038,7 +16089,7 @@
                 'nav.onchain': 'On-Chain Metrics',
                 'nav.valuation': 'Valuation',
                 'nav.historical': 'Historical',
-                'nav.methodology': 'Discussion',
+                'nav.methodology': 'Ratings & Discussion',
                 'nav.rankings': 'Leaderboard',
                 'rankings.title': 'Leaderboard',
                 'rankings.badge': 'LEADERBOARD',
@@ -16139,7 +16190,7 @@
                 'section.priceTitle': 'Price & Market',
                 'section.onchainTitle': 'On-Chain Metrics & Trends',
                 'section.valuationTitle': 'Valuation Analysis & Scenario Simulator',
-                'section.methodologyTitle': 'Valuation Methodology & Discussion',
+                'section.methodologyTitle': 'Ratings & Discussion',
                 'section.weeklyData': 'Weekly Data',
                 'section.models': '12 Models',
                 'section.reference': 'Reference',
@@ -16395,7 +16446,7 @@
                 'nav.onchain': '온체인 지표',
                 'nav.valuation': '밸류에이션',
                 'nav.historical': '히스토리',
-                'nav.methodology': '방법론 & 토론',
+                'nav.methodology': '평가 & 토론',
                 'nav.rankings': '리더보드',
                 'rankings.title': '리더보드',
                 'rankings.badge': '리더보드',
@@ -16496,7 +16547,7 @@
                 'section.priceTitle': '시세 & 시장',
                 'section.onchainTitle': '온체인 지표 & 트렌드',
                 'section.valuationTitle': '밸류에이션 분석 & 시나리오 시뮬레이터',
-                'section.methodologyTitle': '밸류에이션 방법론 & 토론',
+                'section.methodologyTitle': '평가 & 토론',
                 'section.weeklyData': '주간 데이터',
                 'section.models': '12개 모델',
                 'section.reference': '참고 자료',
@@ -16752,7 +16803,7 @@
                 'nav.onchain': '链上指标',
                 'nav.valuation': '估值',
                 'nav.historical': '历史分析',
-                'nav.methodology': '方法论 & 讨论',
+                'nav.methodology': '评分与讨论',
                 'nav.rankings': '排行榜',
                 'rankings.title': '排行榜',
                 'rankings.badge': '排名',
@@ -16840,7 +16891,7 @@
                 'section.priceTitle': '价格与市场',
                 'section.onchainTitle': '链上指标与趋势',
                 'section.valuationTitle': '估值分析 & 情景模拟器',
-                'section.methodologyTitle': '估值方法论 & 讨论',
+                'section.methodologyTitle': '评分与讨论',
                 'section.weeklyData': '周数据',
                 'section.models': '9个模型',
                 'section.reference': '参考',
@@ -17096,7 +17147,7 @@
                 'nav.onchain': 'オンチェーンしひょう',
                 'nav.valuation': 'バリュエーション',
                 'nav.historical': 'りれきぶんせき',
-                'nav.methodology': 'ディスカッション',
+                'nav.methodology': '評価 & 議論',
                 'nav.rankings': 'リーダーボード',
                 'rankings.title': 'リーダーボード',
                 'rankings.badge': 'リーダーボード',
@@ -17184,7 +17235,7 @@
                 'section.priceTitle': '価格・マーケット',
                 'section.onchainTitle': 'オンチェーンしひょう・トレンド',
                 'section.valuationTitle': 'バリュエーション分析 & シナリオシミュレーター',
-                'section.methodologyTitle': 'バリュエーション方法論 & ディスカッション',
+                'section.methodologyTitle': '評価 & 議論',
                 'section.weeklyData': 'しゅうかんデータ',
                 'section.models': '9モデル',
                 'section.reference': 'さんこう',
@@ -17921,6 +17972,9 @@
         // Charts - 이미 상단에서 선언됨
         let modelCharts = {};
 
+        // Mobile detection for performance optimizations
+        const isMobile = () => window.innerWidth <= 768 || 'ontouchstart' in window;
+
         // Chart axis font sizes (responsive)
         const getChartAxisFontSize = () => {
             const width = window.innerWidth;
@@ -17930,6 +17984,7 @@
 
         const chartConfig = (color, data, labels, formatFn, yAxisFormat, dates) => {
             const axisFontSize = getChartAxisFontSize();
+            const mobile = isMobile();
             return {
             type: 'line',
             data: {
@@ -17941,7 +17996,7 @@
                     fill: true,
                     tension: 0.4,
                     pointRadius: 0,
-                    pointHoverRadius: 4,
+                    pointHoverRadius: mobile ? 0 : 4,
                     pointHoverBackgroundColor: color,
                     pointHoverBorderColor: '#fff',
                     pointHoverBorderWidth: 2,
@@ -17951,7 +18006,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: {
+                animation: mobile ? false : {
                     duration: 800,
                     easing: 'easeOutQuart'
                 },
@@ -18848,10 +18903,8 @@
                     value: parseFloat(k[4]) // close price
                 }));
                 
-                state.volumeHistory = data.map(k => ({
-                    date: new Date(k[0]),
-                    value: parseFloat(k[5]) * parseFloat(k[4]) // volume in USD
-                }));
+                // Note: Binance volume is exchange-specific, not total market volume
+                // Volume will be fetched separately from CoinGecko for total market data
                 
                 log('   Binance ETHUSDT history:', state.priceHistory.length, 'points');
                 
@@ -19016,6 +19069,7 @@
             
             const labels = sampled.map(d => fmt.chartLabel(d.date));
             const values = sampled.map(d => d.value);
+            const dates = sampled.map(d => d.date); // Store dates for tooltip
             
             // Color based on positive/negative
             const bgColors = values.map(v => v >= 0 ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)');
@@ -19040,6 +19094,12 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
+                                title: (ctx) => {
+                                    const idx = ctx[0].dataIndex;
+                                    const date = dates[idx];
+                                    if (date) return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                    return ctx[0].label;
+                                },
                                 label: (ctx) => (ctx.raw >= 0 ? '+' : '') + ctx.raw.toFixed(4) + '%'
                             }
                         }
@@ -19184,6 +19244,7 @@
             
             const labels = sampled.map(d => fmt.chartLabel(d.date));
             const values = sampled.map(d => d.value);
+            const dates = sampled.map(d => d.date);
             
             volatilityChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -19206,6 +19267,12 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
+                                title: (ctx) => {
+                                    const idx = ctx[0].dataIndex;
+                                    const date = dates[idx];
+                                    if (date) return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                    return ctx[0].label;
+                                },
                                 label: (ctx) => ctx.raw.toFixed(1) + '% annualized'
                             }
                         }
@@ -19313,6 +19380,7 @@
             
             const labels = sampled.map(d => fmt.chartLabel(d.date));
             const values = sampled.map(d => d.value / 1e9);
+            const dates = sampled.map(d => d.date);
             
             stablecoinChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -19335,6 +19403,12 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
+                                title: (ctx) => {
+                                    const idx = ctx[0].dataIndex;
+                                    const date = dates[idx];
+                                    if (date) return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                    return ctx[0].label;
+                                },
                                 label: (ctx) => '$' + ctx.raw.toFixed(1) + 'B'
                             }
                         }
@@ -19460,10 +19534,19 @@
                 }
             }
             
+            // ═══════════════════════════════════════════════════════════════════
+            // SYNC: Force last chart value to match current Fear & Greed value
+            // ═══════════════════════════════════════════════════════════════════
+            if (filtered.length > 0 && state.fearGreed) {
+                filtered[filtered.length - 1].value = state.fearGreed;
+                filtered[filtered.length - 1].date = new Date(); // Today
+            }
+            
             if (fearGreedChart) fearGreedChart.destroy();
             
             const labels = filtered.map(d => fmt.chartLabel(d.date));
             const values = filtered.map(d => d.value);
+            const dates = filtered.map(d => d.date); // Store dates for tooltip
             
             // Gradient color based on value
             const getColor = (value) => {
@@ -19501,6 +19584,14 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
+                                title: (ctx) => {
+                                    const idx = ctx[0].dataIndex;
+                                    const date = dates[idx];
+                                    if (date) {
+                                        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                    }
+                                    return ctx[0].label;
+                                },
                                 label: (ctx) => {
                                     const v = ctx.raw;
                                     let label = v <= 25 ? 'Extreme Fear' : v <= 45 ? 'Fear' : v <= 54 ? 'Neutral' : v <= 75 ? 'Greed' : 'Extreme Greed';
@@ -19660,6 +19751,43 @@
                     updatePriceChart(days);
                     updateVolumeChart(days);
                 }
+            }
+            
+            // Always fetch volume from CoinGecko (total market volume, not exchange-specific)
+            await fetchVolumeFromCoinGecko(days);
+        }
+        
+        // Fetch total market volume from CoinGecko
+        async function fetchVolumeFromCoinGecko(days = 1095) {
+            // Skip if already have volume data
+            if (state.volumeHistory && state.volumeHistory.length > 100) {
+                log('Volume history already loaded:', state.volumeHistory.length, 'points');
+                return;
+            }
+            
+            try {
+                log('Fetching volume from CoinGecko...');
+                const res = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=${days}&interval=daily`);
+                
+                if (!res.ok) {
+                    log('CoinGecko volume fetch failed:', res.status);
+                    return;
+                }
+                
+                const data = await res.json();
+                
+                if (data.total_volumes && data.total_volumes.length > 0) {
+                    state.volumeHistory = data.total_volumes.map(v => ({ 
+                        date: new Date(v[0]), 
+                        value: v[1] 
+                    }));
+                    log('Volume data from CoinGecko:', state.volumeHistory.length, 'points');
+                    
+                    // Update chart with new volume data
+                    updatePriceChart(days);
+                }
+            } catch (e) {
+                console.warn('CoinGecko volume fetch error:', e);
             }
         }
 
@@ -20681,19 +20809,50 @@
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - days);
             const filteredPrices = state.priceHistory.filter(d => d.date >= cutoffDate);
-            const filteredVolumes = state.volumeHistory ? state.volumeHistory.filter(d => d.date >= cutoffDate) : [];
             
             // 샘플링 - 일간 데이터로 표시 (3년이면 ~365포인트, 1년이면 ~365, 90일이면 90)
             const maxPoints = days <= 90 ? 90 : days <= 365 ? 180 : 365;
             const sampleRate = Math.max(1, Math.ceil(filteredPrices.length / maxPoints));
             const sampledPrices = filteredPrices.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            const sampledVolumes = filteredVolumes.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
             const priceData = sampledPrices.map(d => d.value);
-            const volumeData = sampledVolumes.map(d => d.value);
             const labels = sampledPrices.map(d => fmt.chartLabel(d.date));
             
-            log(`Updating combined chart: ${days} days, ${priceData.length} points`);
+            // 볼륨 데이터: 가격 날짜에 맞춰 매핑
+            let volumeData = [];
+            if (state.volumeHistory && state.volumeHistory.length > 0) {
+                volumeData = sampledPrices.map(pricePoint => {
+                    // 가장 가까운 날짜의 볼륨 찾기
+                    const targetTime = pricePoint.date.getTime();
+                    let closest = state.volumeHistory[0];
+                    let minDiff = Math.abs(closest.date.getTime() - targetTime);
+                    
+                    for (const vol of state.volumeHistory) {
+                        const diff = Math.abs(vol.date.getTime() - targetTime);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            closest = vol;
+                        }
+                        // 날짜가 정렬되어 있으면 더 이상 찾을 필요 없음
+                        if (vol.date.getTime() > targetTime + 86400000) break;
+                    }
+                    
+                    return closest.value;
+                });
+            } else {
+                // Fallback: 24h 볼륨 기반으로 가상 볼륨 히스토리 생성
+                const baseVolume = state.volume24h || 15000000000; // 기본 $15B
+                volumeData = sampledPrices.map((_, i) => {
+                    // 가격 변동과 연동하여 볼륨 시뮬레이션 (랜덤 변동 + 가격 기반)
+                    const priceRatio = priceData[i] / (state.price || priceData[priceData.length - 1]);
+                    const randomFactor = 0.5 + Math.random() * 1.0; // 0.5x ~ 1.5x
+                    return baseVolume * priceRatio * randomFactor;
+                });
+                log('Using simulated volume data based on 24h volume:', baseVolume);
+            }
+            
+            log(`Updating combined chart: ${days} days, ${priceData.length} price points, ${volumeData.length} volume points`);
+            log(`Volume history exists: ${!!state.volumeHistory}, length: ${state.volumeHistory?.length || 0}`);
             
             // ═══════════════════════════════════════════════════════════════════
             // 가격 변화율 계산 및 표시 (선택된 기간에 맞춰)
@@ -20741,33 +20900,44 @@
             
             if (priceChart) priceChart.destroy();
             
+            // 볼륨 데이터가 없으면 0으로 채움
+            const safeVolumeData = volumeData.length > 0 ? volumeData : priceData.map(() => 0);
+            const maxVolume = safeVolumeData.length > 0 ? Math.max(...safeVolumeData) : 1;
+            
             priceChart = new Chart(ctx.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels,
                     datasets: [
                         {
+                            type: 'bar',
+                            label: 'Volume',
+                            data: safeVolumeData,
+                            backgroundColor: document.body.classList.contains('dark') 
+                                ? 'rgba(139, 92, 246, 0.35)' 
+                                : 'rgba(124, 58, 237, 0.2)',
+                            hoverBackgroundColor: document.body.classList.contains('dark')
+                                ? 'rgba(139, 92, 246, 0.6)'
+                                : 'rgba(124, 58, 237, 0.4)',
+                            borderWidth: 0,
+                            barPercentage: 0.85,
+                            categoryPercentage: 1.0,
+                            yAxisID: 'y1',
+                            order: 2
+                        },
+                        {
                             type: 'line',
                             label: 'Price',
                             data: priceData,
                             borderColor: '#7c3aed',
-                            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                            backgroundColor: 'rgba(124, 58, 237, 0.08)',
                             borderWidth: 1.5,
                             fill: true,
                             tension: 0.3,
                             pointRadius: 0,
                             pointHoverRadius: 4,
-                            yAxisID: 'y'
-                        },
-                        {
-                            type: 'bar',
-                            label: 'Volume',
-                            data: volumeData,
-                            backgroundColor: 'rgba(139, 92, 246, 0.4)',
-                            borderWidth: 0,
-                            barPercentage: 0.9,
-                            categoryPercentage: 1.0,
-                            yAxisID: 'y1'
+                            yAxisID: 'y',
+                            order: 1
                         }
                     ]
                 },
@@ -20781,6 +20951,11 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
+                            backgroundColor: document.body.classList.contains('dark') ? '#24292e' : '#fff',
+                            titleColor: document.body.classList.contains('dark') ? '#fff' : '#24292e',
+                            bodyColor: document.body.classList.contains('dark') ? '#e5e7eb' : '#4b5563',
+                            borderColor: document.body.classList.contains('dark') ? '#30363d' : '#e5e7eb',
+                            borderWidth: 1,
                             callbacks: {
                                 title: function(ctx) {
                                     const idx = ctx[0].dataIndex;
@@ -20828,7 +21003,7 @@
                             display: false,
                             grid: { display: false },
                             min: 0,
-                            max: Math.max(...volumeData) * 4
+                            max: maxVolume * 3.5
                         }
                     }
                 }
@@ -21486,6 +21661,17 @@
                     othersValues.push(othersPctVal);
                 }
                 
+                // ═══════════════════════════════════════════════════════════════════
+                // SYNC: Force last chart values to match current calculated metrics
+                // This ensures chart tooltip matches the displayed metric value
+                // ═══════════════════════════════════════════════════════════════════
+                if (floatValues.length > 0) {
+                    floatValues[floatValues.length - 1] = floatPct;
+                    stakingValues[stakingValues.length - 1] = stakedPct;
+                    defiValues[defiValues.length - 1] = defiPct;
+                    othersValues[othersValues.length - 1] = othersPct;
+                }
+                
                 supplyChart = new Chart(ctx.getContext('2d'), {
                     type: 'line',
                     data: {
@@ -21750,6 +21936,7 @@
             
             const labels = sampled.map(d => fmt.chartLabel(d.date));
             const values = sampled.map(d => d.value / 1e9);
+            const dates = sampled.map(d => d.date);
             
             lendingChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -21772,6 +21959,12 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
+                                title: (ctx) => {
+                                    const idx = ctx[0].dataIndex;
+                                    const date = dates[idx];
+                                    if (date) return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                    return ctx[0].label;
+                                },
                                 label: (ctx) => '$' + ctx.raw.toFixed(2) + 'B'
                             }
                         }
@@ -22689,6 +22882,22 @@
                 state.burnHistory.push({ date, value: Math.max(100, dailyBurn) });
                 state.issuanceHistory.push({ date, value: dailyIssuance });
                 state.netSupplyHistory.push({ date, value: annualChange });
+            }
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // SYNC: Force last values to match current calculated metrics
+            // ═══════════════════════════════════════════════════════════════════
+            if (state.gasUtilizationHistory.length > 0) {
+                state.gasUtilizationHistory[state.gasUtilizationHistory.length - 1].value = currentUtil;
+            }
+            if (state.burnHistory.length > 0) {
+                state.burnHistory[state.burnHistory.length - 1].value = currentBurn;
+            }
+            if (state.issuanceHistory.length > 0) {
+                state.issuanceHistory[state.issuanceHistory.length - 1].value = dailyIssuance;
+            }
+            if (state.netSupplyHistory.length > 0) {
+                state.netSupplyHistory[state.netSupplyHistory.length - 1].value = currentNetChange;
             }
             
             log('   History generated:', state.burnHistory.length, 'points');
@@ -25530,6 +25739,16 @@
             Chart.defaults.color = initialChartColors.tick;
             Chart.defaults.borderColor = initialChartColors.grid;
             
+            // ═══════════════════════════════════════════════════════════════════
+            // MOBILE PERFORMANCE: Disable Chart.js animations on mobile devices
+            // ═══════════════════════════════════════════════════════════════════
+            if (isMobile()) {
+                Chart.defaults.animation = false;
+                Chart.defaults.animations = { colors: false, x: false };
+                Chart.defaults.transitions = { active: { animation: { duration: 0 } } };
+                log('📱 Mobile detected: Chart animations disabled for performance');
+            }
+            
             themeToggle?.addEventListener('click', () => {
                 document.body.classList.toggle('dark');
                 document.documentElement.classList.toggle('dark');
@@ -25685,50 +25904,88 @@
                 }
             });
 
-            // 스크롤 감지 - setInterval로 체크
-            setInterval(function() {
-                var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                var headerHeight = 150;
+            // ═══════════════════════════════════════════════════════════════════
+            // OPTIMIZED: Use IntersectionObserver instead of setInterval for scroll detection
+            // ═══════════════════════════════════════════════════════════════════
+            const sections = [
+                { id: 'section-metrics', navId: 'section-metrics' },
+                { id: 'section-valuation', navId: 'section-valuation' },
+                { id: 'section-historical', navId: 'section-historical' },
+                { id: 'section-methodology', navId: 'section-methodology' },
+                { id: 'section-rankings', navId: 'section-rankings' }
+            ];
+            
+            let currentActiveSection = 'overview';
+            
+            const updateActiveNav = (sectionId) => {
+                if (currentActiveSection === sectionId) return;
+                currentActiveSection = sectionId;
                 
-                var sectionPrice = document.getElementById('section-price');
-                var sectionOnchain = document.getElementById('section-onchain');
-                var sectionValuation = document.getElementById('section-valuation');
-                var sectionHistorical = document.getElementById('section-historical');
-                var sectionMethodology = document.getElementById('section-methodology');
-                var sectionRankings = document.getElementById('section-rankings');
-                
-                var current = 'overview';
-                
-                if (sectionRankings && scrollTop >= sectionRankings.offsetTop - headerHeight) {
-                    current = 'section-rankings';
-                } else if (sectionMethodology && scrollTop >= sectionMethodology.offsetTop - headerHeight) {
-                    current = 'section-methodology';
-                } else if (sectionHistorical && scrollTop >= sectionHistorical.offsetTop - headerHeight) {
-                    current = 'section-historical';
-                } else if (sectionValuation && scrollTop >= sectionValuation.offsetTop - headerHeight) {
-                    current = 'section-valuation';
-                } else if (sectionOnchain && scrollTop >= sectionOnchain.offsetTop - headerHeight) {
-                    current = 'section-onchain';
-                } else if (sectionPrice && scrollTop >= sectionPrice.offsetTop - headerHeight) {
-                    current = 'section-price';
-                }
-                
-                document.querySelectorAll('.nav-bar .nav-item').forEach(function(nav) {
-                    var href = nav.getAttribute('href');
-                    if (current === 'overview') {
-                        // 개요 탭 활성화 (href가 javascript:void(0)인 것)
-                        if (href === 'javascript:void(0)') {
-                            nav.className = 'nav-item active';
-                        } else {
-                            nav.className = 'nav-item';
-                        }
-                    } else if (href === '#' + current) {
+                document.querySelectorAll('.nav-bar .nav-item').forEach(nav => {
+                    const href = nav.getAttribute('href');
+                    if (sectionId === 'overview') {
+                        nav.className = href === 'javascript:void(0)' ? 'nav-item active' : 'nav-item';
+                    } else if (href === '#' + sectionId) {
                         nav.className = 'nav-item active';
                     } else {
                         nav.className = 'nav-item';
                     }
                 });
-            }, 100);
+            };
+            
+            // Use IntersectionObserver for efficient scroll detection
+            if ('IntersectionObserver' in window) {
+                const observerOptions = {
+                    root: null,
+                    rootMargin: '-20% 0px -70% 0px', // Trigger when section is in top 20-30% of viewport
+                    threshold: 0
+                };
+                
+                const sectionObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            updateActiveNav(entry.target.id);
+                        }
+                    });
+                }, observerOptions);
+                
+                // Observe all sections
+                sections.forEach(({ id }) => {
+                    const el = document.getElementById(id);
+                    if (el) sectionObserver.observe(el);
+                });
+                
+                // Handle top of page (overview)
+                const topObserver = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        updateActiveNav('overview');
+                    }
+                }, { root: null, rootMargin: '0px', threshold: 0.5 });
+                
+                const heroSection = document.querySelector('.hero-section');
+                if (heroSection) topObserver.observe(heroSection);
+                
+            } else {
+                // Fallback for older browsers - throttled setInterval
+                let lastScrollTop = -1;
+                setInterval(function() {
+                    var scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+                    if (Math.abs(scrollTop - lastScrollTop) < 10) return; // Skip if barely moved
+                    lastScrollTop = scrollTop;
+                    
+                    var headerHeight = 150;
+                    var current = 'overview';
+                    
+                    for (let i = sections.length - 1; i >= 0; i--) {
+                        const el = document.getElementById(sections[i].id);
+                        if (el && scrollTop >= el.offsetTop - headerHeight) {
+                            current = sections[i].navId;
+                            break;
+                        }
+                    }
+                    updateActiveNav(current);
+                }, isMobile() ? 250 : 100); // Slower on mobile
+            }
         });
 
         // ===== SHARE FUNCTIONALITY =====
@@ -26522,7 +26779,7 @@ Check out ETHval 👇`;
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: {
+                    animation: isMobile() ? false : {
                         duration: 400,
                         easing: 'easeOutQuart'
                     },
