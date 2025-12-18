@@ -810,11 +810,20 @@
                 transition: none !important;
             }
             
-            /* Optimize chart containers */
+            /* Optimize chart containers - use content-visibility instead of contain for better scroll */
             .chart-container,
             .mini-chart {
-                contain: layout style paint;
-                will-change: auto;
+                content-visibility: auto;
+                contain-intrinsic-size: 0 70px;
+            }
+            
+            /* Allow smooth scrolling on chart areas */
+            .chart-container,
+            .mini-chart,
+            .metric-chart,
+            .historical-chart-area {
+                touch-action: pan-y !important;
+                -webkit-overflow-scrolling: touch;
             }
             
             /* Prevent layout thrashing */
@@ -8223,6 +8232,11 @@
 
         .historical-chart-area {
             height: 480px;
+            touch-action: pan-y;  /* Allow vertical scroll */
+        }
+        
+        .historical-chart-area canvas {
+            touch-action: pan-y;  /* Allow vertical scroll on canvas */
         }
 
         /* Interactive Legend Container */
@@ -9102,14 +9116,14 @@
             background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 50px;
-            padding: 8px 14px;
+            padding: 12px 18px;
             box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
-            max-width: 280px;
+            max-width: 320px;
             animation: floatingBadgePulse 2s ease-in-out infinite, floatingBadgeGlow 2s ease-in-out infinite;
         }
         
@@ -9132,11 +9146,11 @@
         .floating-badge-content {
             display: flex;
             flex-direction: column;
-            gap: 0;
+            gap: 1px;
         }
         
         .floating-badge-title {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 700;
             color: white;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -9144,14 +9158,14 @@
         }
         
         .floating-badge-subtitle {
-            font-size: 10px;
+            font-size: 12px;
             color: rgba(255, 255, 255, 0.85);
             line-height: 1.3;
         }
         
         .floating-badge-arrow {
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             color: white;
             flex-shrink: 0;
             opacity: 0.9;
@@ -9182,15 +9196,15 @@
         
         @media (max-width: 768px) {
             .floating-action-badge {
-                bottom: 12px;
-                right: 12px;
+                bottom: 6px;
+                right: 8px;
                 left: auto;
                 transform: none;
                 max-width: none;
                 width: auto;
-                padding: 8px 12px;
-                gap: 6px;
-                border-radius: 24px;
+                padding: 10px 16px;
+                gap: 8px;
+                border-radius: 28px;
             }
             
             .floating-action-badge:hover {
@@ -9198,16 +9212,16 @@
             }
             
             .floating-badge-title {
-                font-size: 11px;
+                font-size: 13px;
             }
             
             .floating-badge-subtitle {
-                font-size: 9px;
+                font-size: 11px;
             }
             
             .floating-badge-arrow {
-                width: 12px;
-                height: 12px;
+                width: 14px;
+                height: 14px;
             }
         }
         
@@ -11281,7 +11295,7 @@
                     <span class="logo-text">ETHval</span>
                     <span class="logo-subtitle">Intrinsic Value Dashboard</span>
                 </div>
-                <span class="version-badge">v0.5.2</span>
+                <span class="version-badge">v0.5.3</span>
             </div>
             <div class="header-right">
                 <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
@@ -13343,7 +13357,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v0.5.2</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: 11px;">🔧 Admin</a>
+                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v0.5.3</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: 11px;">🔧 Admin</a>
             </div>
         </footer>
     </div>
@@ -18022,11 +18036,13 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                // 모바일에서 터치 이벤트 제한 - 스크롤 허용
+                events: mobile ? ['click'] : ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
                 animation: mobile ? false : {
                     duration: 800,
                     easing: 'easeOutQuart'
                 },
-                interaction: { intersect: false, mode: 'index' },
+                interaction: { intersect: false, mode: mobile ? 'nearest' : 'index' },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -18837,9 +18853,27 @@
         // Binance API - 빠른 가격 데이터 소스
         async function fetchBinancePrice() {
             try {
-                // log('   Fetching Binance price data...');
+                // ═══════════════════════════════════════════════════════════════════
+                // CoinGecko에서 가격, 24h 변화율, 총 시장 거래량 가져오기 (우선)
+                // ═══════════════════════════════════════════════════════════════════
+                let cgPrice = null, cgChange24h = null, cgVolume = null;
+                try {
+                    const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true');
+                    if (cgRes.ok) {
+                        const cgData = await cgRes.json();
+                        if (cgData.ethereum) {
+                            cgPrice = cgData.ethereum.usd;
+                            cgChange24h = cgData.ethereum.usd_24h_change;
+                            cgVolume = cgData.ethereum.usd_24h_vol;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('CoinGecko price fetch failed:', e);
+                }
                 
-                // 두 API를 병렬로 호출
+                // ═══════════════════════════════════════════════════════════════════
+                // Binance에서 가격 가져오기 (CoinGecko 실패 시 fallback)
+                // ═══════════════════════════════════════════════════════════════════
                 const [tickerRes, ethbtcRes] = await Promise.all([
                     fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT'),
                     fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHBTC')
@@ -18848,9 +18882,18 @@
                 if (!tickerRes.ok) throw new Error('Binance ticker failed');
                 const ticker = await tickerRes.json();
                 
-                state.price = parseFloat(ticker.lastPrice);
-                state.volume24h = parseFloat(ticker.quoteVolume);
-                const change24h = parseFloat(ticker.priceChangePercent);
+                const binancePrice = parseFloat(ticker.lastPrice);
+                const binanceVolume = parseFloat(ticker.quoteVolume);
+                const binanceChange24h = parseFloat(ticker.priceChangePercent);
+                
+                // CoinGecko 우선, 없으면 Binance fallback
+                state.price = cgPrice || binancePrice;
+                state.volume24h = cgVolume || binanceVolume;
+                state.change24h = cgChange24h !== null ? cgChange24h : binanceChange24h;
+                
+                log(`   Price: $${state.price.toFixed(2)} (${cgPrice ? 'CoinGecko' : 'Binance'})`);
+                log(`   24h Change: ${state.change24h.toFixed(2)}% (${cgChange24h !== null ? 'CoinGecko' : 'Binance'})`);
+                log(`   Volume: $${(state.volume24h/1e9).toFixed(2)}B (${cgVolume ? 'CoinGecko' : 'Binance'})`);
                 
                 // 메인 가격 표시
                 document.getElementById('current-price').textContent = fmt.price(state.price);
@@ -18868,20 +18911,45 @@
                     summaryPriceEl.style.color = '';
                 }
                 
+                // 24h 변화율 UI 업데이트
                 const changeEl = document.getElementById('price-change');
-                document.getElementById('price-change-text').textContent = fmt.pct(change24h) + ' (24h)';
-                changeEl.className = 'price-change ' + (change24h >= 0 ? 'up' : 'down');
+                document.getElementById('price-change-text').textContent = fmt.pct(state.change24h) + ' (24h)';
+                changeEl.className = 'price-change ' + (state.change24h >= 0 ? 'up' : 'down');
                 
                 // ETH/BTC 비율
                 if (ethbtcRes.ok) {
                     const ethbtcTicker = await ethbtcRes.json();
                     state.ethBtcRatio = parseFloat(ethbtcTicker.lastPrice);
-                    log('   ETH/BTC ratio:', state.ethBtcRatio);
                 }
                 
-                log('   Binance price:', state.price);
-                // 주의: price-chart 소스는 여기서 설정하지 않음 (히스토리 소스와 분리)
-                // 차트 히스토리는 Supabase에서 올 수 있고, 현재 가격만 Binance에서 가져옴
+                // ═══════════════════════════════════════════════════════════════════
+                // 가격 히스토리 마지막 포인트도 실시간으로 업데이트
+                // ═══════════════════════════════════════════════════════════════════
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (state.priceHistory && state.priceHistory.length > 0) {
+                    const lastDateStr = state.priceHistory[state.priceHistory.length - 1].date.toISOString().split('T')[0];
+                    if (lastDateStr === todayStr) {
+                        state.priceHistory[state.priceHistory.length - 1].value = state.price;
+                    } else {
+                        state.priceHistory.push({ date: new Date(todayStr), value: state.price });
+                    }
+                }
+                if (state.volumeHistory && state.volumeHistory.length > 0) {
+                    const lastDateStr = state.volumeHistory[state.volumeHistory.length - 1].date.toISOString().split('T')[0];
+                    if (lastDateStr === todayStr) {
+                        state.volumeHistory[state.volumeHistory.length - 1].value = state.volume24h;
+                    } else {
+                        state.volumeHistory.push({ date: new Date(todayStr), value: state.volume24h });
+                    }
+                }
+                
+                // 차트 업데이트
+                const activeBtn = document.querySelector('.price-period-btn.active');
+                const currentDays = activeBtn ? parseInt(activeBtn.dataset.days) || 1095 : 1095;
+                if (typeof updateCombinedPriceVolumeChart === 'function') {
+                    updateCombinedPriceVolumeChart(currentDays);
+                }
+                
                 return true;
             } catch (e) {
                 console.error('Binance price error:', e);
@@ -19876,6 +19944,15 @@
                 // 시뮬레이터 마켓 프라이스도 업데이트
                 const simMarketPriceEl = document.getElementById('sim-market-price');
                 if (simMarketPriceEl) simMarketPriceEl.textContent = fmt.price(realtimePrice);
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 차트도 실시간 데이터로 다시 업데이트
+                // ═══════════════════════════════════════════════════════════════════
+                const activeBtn = document.querySelector('.price-period-btn.active');
+                const currentDays = activeBtn ? parseInt(activeBtn.dataset.days) || 1095 : 1095;
+                if (typeof updateCombinedPriceVolumeChart === 'function') {
+                    updateCombinedPriceVolumeChart(currentDays);
+                }
                 
             } catch (e) {
                 log('   Realtime update error:', e.message);
@@ -21072,6 +21149,7 @@
             // 볼륨 데이터가 없으면 0으로 채움
             const safeVolumeData = volumeData.length > 0 ? volumeData : priceData.map(() => 0);
             const maxVolume = safeVolumeData.length > 0 ? Math.max(...safeVolumeData) : 1;
+            const mobile = isMobile();
             
             priceChart = new Chart(ctx.getContext('2d'), {
                 type: 'bar',
@@ -21113,8 +21191,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    // 모바일에서 터치 이벤트 제한 - 스크롤 허용
+                    events: mobile ? ['click'] : ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
                     interaction: {
-                        mode: 'index',
+                        mode: mobile ? 'nearest' : 'index',
                         intersect: false
                     },
                     plugins: {
@@ -26942,13 +27022,17 @@ Check out ETHval 👇`;
                 historicalMainChart.destroy();
             }
             
+            const mobile = isMobile();
+            
             historicalMainChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: { labels, datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: isMobile() ? false : {
+                    // 모바일에서 터치 이벤트 제한 - 스크롤 허용
+                    events: mobile ? ['click'] : ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+                    animation: mobile ? false : {
                         duration: 400,
                         easing: 'easeOutQuart'
                     },
@@ -26960,7 +27044,7 @@ Check out ETHval 👇`;
                         }
                     },
                     interaction: {
-                        mode: 'index',
+                        mode: mobile ? 'nearest' : 'index',
                         intersect: false
                     },
                     plugins: {
