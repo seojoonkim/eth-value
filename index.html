@@ -1806,7 +1806,7 @@
         }
 
         .metrics-subgroup-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--primary);
             letter-spacing: 0.3px;
@@ -1845,6 +1845,9 @@
         .ai-commentary-text {
             color: var(--text);
             font-size: 14px;
+            columns: 2;
+            column-gap: 24px;
+            text-align: justify;
         }
         
         .ai-commentary-footer {
@@ -1875,6 +1878,15 @@
             font-style: italic;
         }
         
+        /* 태블릿 (768px-1024px): 2열 유지 */
+        @media (max-width: 1024px) {
+            .ai-commentary-text {
+                columns: 2;
+                column-gap: 20px;
+            }
+        }
+        
+        /* 모바일 (768px 이하): 1열 */
         @media (max-width: 768px) {
             .ai-commentary {
                 padding: 12px 14px;
@@ -1885,6 +1897,8 @@
             
             .ai-commentary-text {
                 font-size: 13px;
+                columns: 1;
+                text-align: left;
             }
         }
 
@@ -17701,6 +17715,11 @@
                     renderCommunitySection(modelId);
                 });
             }
+            
+            // Reload AI commentary with new language
+            if (typeof loadDailyCommentary === 'function') {
+                loadDailyCommentary();
+            }
         }
         
         // Update methodology diff labels for current language
@@ -18366,7 +18385,6 @@
             
             try {
                 const today = new Date().toISOString().split('T')[0];
-                const currentLang = state.lang || 'en';
                 const langSuffix = currentLang !== 'en' ? `_${currentLang}` : '';
                 
                 // 오늘 또는 최근 해설 가져오기
