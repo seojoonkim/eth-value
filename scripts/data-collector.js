@@ -469,11 +469,6 @@ async function generateAllCommentaries() {
     
     return { success, failed };
 }
-    console.log('\n' + '-'.repeat(40));
-    console.log(`📊 Commentary: ✅ ${success}/7  |  ❌ ${failed}/7`);
-    
-    return { success, failed };
-}
 
 // Dune Query IDs
 const DUNE_QUERIES = {
