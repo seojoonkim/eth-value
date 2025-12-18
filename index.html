@@ -1806,7 +1806,7 @@
         }
 
         .metrics-subgroup-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
             color: var(--primary);
             letter-spacing: 0.3px;
@@ -1817,29 +1817,22 @@
             display: none;
         }
 
-        /* AI Commentary Box */
+        /* AI Commentary Box - Section divider style */
         .ai-commentary {
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(139, 92, 246, 0.01) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-bottom: 2px solid var(--primary);
             border-radius: var(--radius-sm);
-            padding: 14px 16px;
-            margin-top: 12px;
-            margin-bottom: 8px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            margin-bottom: 32px;
             font-size: 14px;
             line-height: 1.7;
             color: var(--text-secondary);
         }
         
         .ai-commentary-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            display: none;
         }
         
         .ai-commentary-text {
@@ -1851,12 +1844,14 @@
         }
         
         .ai-commentary-footer {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
+            display: block;
+            margin-top: 16px;
             font-size: 11px;
+            color: var(--text-muted);
+            text-align: right;
+        }
+        
+        .ai-commentary-label {
             color: var(--text-muted);
         }
         
@@ -1889,10 +1884,10 @@
         /* 모바일 (768px 이하): 1열 */
         @media (max-width: 768px) {
             .ai-commentary {
-                padding: 12px 14px;
+                padding: 14px 16px;
                 font-size: 13px;
-                margin-top: 8px;
-                margin-bottom: 6px;
+                margin-top: 12px;
+                margin-bottom: 24px;
             }
             
             .ai-commentary-text {
@@ -11625,7 +11620,7 @@
                 <div class="metric-card" data-metric="feargreed">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Fear & Greed</h4>
+                            <h4 data-i18n="metric.feargreed">Fear & Greed</h4>
                             <div class="metric-value-large" id="fear-greed">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="feargreed">
@@ -11645,7 +11640,7 @@
                 <div class="metric-card" data-metric="funding">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Funding Rate</h4>
+                            <h4 data-i18n="metric.fundingRate">Funding Rate</h4>
                             <div class="metric-value-large" id="funding-rate">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="funding">
@@ -11666,7 +11661,7 @@
                 <div class="metric-card" data-metric="reserve">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Exchange ETH Reserve</h4>
+                            <h4 data-i18n="metric.exchangeReserve">Exchange ETH Reserve</h4>
                             <div class="metric-value-large" id="exchange-reserve">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="reserve">
@@ -11687,7 +11682,7 @@
                 <div class="metric-card" data-metric="whaleTx">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Whale Transactions</h4>
+                            <h4 data-i18n="metric.whaleTx">Whale Transactions</h4>
                             <div class="metric-value-large" id="whale-tx-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11718,7 +11713,7 @@
                 <div class="metric-card" data-metric="ethbtc">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>ETH/BTC Ratio</h4>
+                            <h4 data-i18n="metric.ethbtc">ETH/BTC Ratio</h4>
                             <div class="metric-value-large" id="eth-btc">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="ethbtc">
@@ -11739,7 +11734,7 @@
                 <div class="metric-card" data-metric="dominance">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>ETH Dominance</h4>
+                            <h4 data-i18n="metric.dominance">ETH Dominance</h4>
                             <div class="metric-value-large" id="eth-dominance">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="dominance">
@@ -11760,7 +11755,7 @@
                 <div class="metric-card" data-metric="stablecoin">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Stablecoin Mcap</h4>
+                            <h4 data-i18n="metric.stablecoinMcap">Stablecoin Mcap</h4>
                             <div class="metric-value-large" id="stablecoin-mcap">$--</div>
                         </div>
                         <div class="metric-tabs" data-chart="stablecoin">
@@ -11781,7 +11776,7 @@
                 <div class="metric-card" data-metric="volatility">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Volatility</h4>
+                            <h4 data-i18n="metric.volatility">Volatility</h4>
                             <div class="metric-value-large" id="volatility">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="volatility">
@@ -11802,7 +11797,7 @@
                 <div class="metric-card" data-metric="nvt">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>NVT Ratio</h4>
+                            <h4 data-i18n="metric.nvt">NVT Ratio</h4>
                             <div class="metric-value-large" id="nvt-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11833,7 +11828,7 @@
                 <div class="metric-card" data-metric="stakingApr">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Staking Yield (APR)</h4>
+                            <h4 data-i18n="metric.stakingYield">Staking Yield (APR)</h4>
                             <div class="metric-value-large" id="staking-yield-value">--%</div>
                         </div>
                         <div class="metric-tabs">
@@ -11853,7 +11848,7 @@
                 <div class="metric-card" data-metric="staking">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Staked ETH</h4>
+                            <h4 data-i18n="metric.stakedEth">Staked ETH</h4>
                             <div class="metric-value-large" id="staked-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -11873,7 +11868,7 @@
                 <div class="metric-card" data-metric="daily-burn">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>ETH Burned</h4>
+                            <h4 data-i18n="metric.ethBurned">ETH Burned</h4>
                             <div class="metric-value-large burn-color" id="daily-burn-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="daily-burn">
@@ -11893,7 +11888,7 @@
                 <div class="metric-card" data-metric="daily-issuance">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>ETH Issued</h4>
+                            <h4 data-i18n="metric.ethIssued">ETH Issued</h4>
                             <div class="metric-value-large issuance-color" id="daily-issuance-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="daily-issuance">
@@ -11913,7 +11908,7 @@
                 <div class="metric-card" data-metric="net-supply">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Net Supply</h4>
+                            <h4 data-i18n="metric.netSupply">Net Supply</h4>
                             <div class="metric-value-large" id="net-supply-change">--%/yr</div>
                         </div>
                         <div class="metric-tabs" data-chart="net-supply">
@@ -11933,7 +11928,7 @@
                 <div class="metric-card" data-metric="supply">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Effective Float</h4>
+                            <h4 data-i18n="metric.effectiveFloat">Effective Float</h4>
                             <div class="metric-value-large" id="float-pct">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="supply">
@@ -11970,7 +11965,7 @@
                 <div class="metric-card" data-metric="gasPrice">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Gas Price</h4>
+                            <h4 data-i18n="metric.gasPrice">Gas Price</h4>
                             <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
                         </div>
                         <div class="metric-tabs" data-chart="gasPrice">
@@ -11990,7 +11985,7 @@
                 <div class="metric-card" data-metric="gas-utilization">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Gas Utilization</h4>
+                            <h4 data-i18n="metric.gasUtil">Gas Utilization</h4>
                             <div class="metric-value-large" id="gas-utilization-value">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="gas-utilization">
@@ -12010,7 +12005,7 @@
                 <div class="metric-card" data-metric="fees">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Network Fees</h4>
+                            <h4 data-i18n="metric.networkFees">Network Fees</h4>
                             <div class="metric-value-large" id="fees-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12031,7 +12026,7 @@
                 <div class="metric-card" data-metric="blobFees">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Blob Fees</h4>
+                            <h4 data-i18n="metric.blobFees">Blob Fees</h4>
                             <div class="metric-value-large" id="blob-fees-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="blobFees">
@@ -12051,7 +12046,7 @@
                 <div class="metric-card" data-metric="blobCount">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Blob Count</h4>
+                            <h4 data-i18n="metric.blobCount">Blob Count</h4>
                             <div class="metric-value-large" id="blob-count-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="blobCount">
@@ -12082,7 +12077,7 @@
                 <div class="metric-card" data-metric="newAddresses">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>New Addresses</h4>
+                            <h4 data-i18n="metric.newAddresses">New Addresses</h4>
                             <div class="metric-value-large" id="new-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12102,7 +12097,7 @@
                 <div class="metric-card" data-metric="l1ActiveAddr">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L1 Active Addresses</h4>
+                            <h4 data-i18n="metric.l1ActiveAddr">L1 Active Addresses</h4>
                             <div class="metric-value-large" id="l1-active-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12122,7 +12117,7 @@
                 <div class="metric-card" data-metric="l2ActiveAddr">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L2 Active Addresses</h4>
+                            <h4 data-i18n="metric.l2ActiveAddr">L2 Active Addresses</h4>
                             <div class="metric-value-large" id="l2-active-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12142,7 +12137,7 @@
                 <div class="metric-card" data-metric="txEth">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L1 Transactions</h4>
+                            <h4 data-i18n="metric.l1Transactions">L1 Transactions</h4>
                             <div class="metric-value-large" id="tx-eth-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12162,7 +12157,7 @@
                 <div class="metric-card" data-metric="txTotal">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L2 Transactions</h4>
+                            <h4 data-i18n="metric.l2Transactions">L2 Transactions</h4>
                             <div class="metric-value-large" id="tx-total-value">--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12193,7 +12188,7 @@
                 <div class="metric-card" data-metric="tvl">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L1 Total Value Locked</h4>
+                            <h4 data-i18n="metric.l1Tvl">L1 Total Value Locked</h4>
                             <div class="metric-value-large" id="tvl-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12213,7 +12208,7 @@
                 <div class="metric-card" data-metric="l2">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L2 Total Value Locked</h4>
+                            <h4 data-i18n="metric.l2Tvl">L2 Total Value Locked</h4>
                             <div class="metric-value-large" id="l2-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12233,7 +12228,7 @@
                 <div class="metric-card" data-metric="lending">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>DeFi Lending TVL</h4>
+                            <h4 data-i18n="metric.lendingTvl">DeFi Lending TVL</h4>
                             <div class="metric-value-large" id="lending-tvl">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="lending">
@@ -12253,7 +12248,7 @@
                 <div class="metric-card" data-metric="stables">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L1 Stablecoin Supply</h4>
+                            <h4 data-i18n="metric.l1StablecoinSupply">L1 Stablecoin Supply</h4>
                             <div class="metric-value-large" id="stables-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12294,7 +12289,7 @@
                 <div class="metric-card" data-metric="appCapital">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>App Capital</h4>
+                            <h4 data-i18n="metric.appCapital">App Capital</h4>
                             <div class="metric-value-large" id="app-capital-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12326,7 +12321,7 @@
                 <div class="metric-card" data-metric="l1Volume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L1 TX Volume</h4>
+                            <h4 data-i18n="metric.l1Volume">L1 TX Volume</h4>
                             <div class="metric-value-large" id="l1-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12346,7 +12341,7 @@
                 <div class="metric-card" data-metric="l2Volume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>L2 TX Volume</h4>
+                            <h4 data-i18n="metric.l2Volume">L2 TX Volume</h4>
                             <div class="metric-value-large" id="l2-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12366,7 +12361,7 @@
                 <div class="metric-card" data-metric="bridgeVolume">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>Bridge Volume</h4>
+                            <h4 data-i18n="metric.bridgeVolume">Bridge Volume</h4>
                             <div class="metric-value-large" id="bridge-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -12426,7 +12421,7 @@
                 <div class="metric-card" data-metric="dex">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4>DEX Volume</h4>
+                            <h4 data-i18n="metric.dexVolume">DEX Volume</h4>
                             <div class="metric-value-large" id="dex-value">$--</div>
                         </div>
                         <div class="metric-tabs">
@@ -16236,10 +16231,12 @@
                 'nav.overview': 'Overview',
                 'nav.price': 'Price & Market',
                 'nav.onchain': 'On-Chain Metrics',
+                'nav.metrics': 'Market & Metrics',
                 'nav.valuation': 'Valuation',
                 'nav.historical': 'Historical',
                 'nav.methodology': 'Ratings & Discussion',
                 'nav.rankings': 'Leaderboard',
+                'section.metricsTitle': 'Market & Metrics',
                 'rankings.title': 'Leaderboard',
                 'rankings.badge': 'LEADERBOARD',
                 'rankings.loading': 'Loading rankings data...',
@@ -16586,6 +16583,35 @@
                 'metric.mvrvRatio': "MVRV Ratio",
                 'desc.mvrvRatio': "Market Value to Realized Value. Realized Price from Dune Analytics (VWAP of all ETH transfers since 2016). >3x = overheated, <1x = undervalued.",
                 'metric.newAddresses': "New Addresses (Daily)",
+                'metric.feargreed': "Fear & Greed",
+                'metric.fundingRate': "Funding Rate",
+                'metric.exchangeReserve': "Exchange ETH Reserve",
+                'metric.ethbtc': "ETH/BTC Ratio",
+                'metric.dominance': "ETH Dominance",
+                'metric.stablecoinMcap': "Stablecoin Mcap",
+                'metric.volatility': "Volatility",
+                'metric.nvt': "NVT Ratio",
+                'metric.stakingYield': "Staking Yield (APR)",
+                'metric.stakedEth': "Staked ETH",
+                'metric.ethBurned': "ETH Burned",
+                'metric.ethIssued': "ETH Issued",
+                'metric.netSupply': "Net Supply",
+                'metric.effectiveFloat': "Effective Float",
+                'metric.gasPrice': "Gas Price",
+                'metric.gasUtil': "Gas Utilization",
+                'metric.networkFees': "Network Fees",
+                'metric.blobFees': "Blob Fees",
+                'metric.blobCount': "Blob Count",
+                'metric.l1ActiveAddr': "L1 Active Addresses",
+                'metric.l2ActiveAddr': "L2 Active Addresses",
+                'metric.l1Transactions': "L1 Transactions",
+                'metric.l2Transactions': "L2 Transactions",
+                'metric.l1Tvl': "L1 Total Value Locked",
+                'metric.l2Tvl': "L2 Total Value Locked",
+                'metric.lendingTvl': "DeFi Lending TVL",
+                'metric.l1StablecoinSupply': "L1 Stablecoin Supply",
+                'metric.appCapital': "App Capital",
+                'metric.dexVolume': "DEX Volume",
                 'metrics.investorSentiment': "02.1 — Investor Sentiment",
                 'metrics.marketPosition': "02.2 — Market Position",
                 'metrics.supplyDynamics': "02.3 — Supply Dynamics",
@@ -16600,10 +16626,12 @@
                 'nav.overview': '개요',
                 'nav.price': '시세 & 시장',
                 'nav.onchain': '온체인 지표',
+                'nav.metrics': '시장 & 지표',
                 'nav.valuation': '밸류에이션',
                 'nav.historical': '히스토리',
                 'nav.methodology': '평가 & 토론',
                 'nav.rankings': '리더보드',
+                'section.metricsTitle': '시장 & 지표',
                 'rankings.title': '리더보드',
                 'rankings.badge': '리더보드',
                 'rankings.loading': '랭킹 데이터 로딩 중...',
@@ -16950,6 +16978,36 @@
                 'metric.mvrvRatio': "MVRV 비율",
                 'desc.mvrvRatio': "시장가치 대비 실현가치. 실현가격은 Dune Analytics에서 산출(2016년 이후 모든 ETH 이동의 거래량 가중 평균). >3x = 과열, <1x = 저평가.",
                 'metric.newAddresses': "신규 주소 (일일)",
+                'metric.feargreed': "공포 & 탐욕 지수",
+                'metric.fundingRate': "펀딩 비율",
+                'metric.exchangeReserve': "거래소 ETH 보유량",
+                'metric.whaleTx': "고래 거래",
+                'metric.ethbtc': "ETH/BTC 비율",
+                'metric.dominance': "ETH 도미넌스",
+                'metric.stablecoinMcap': "스테이블코인 시총",
+                'metric.volatility': "변동성",
+                'metric.nvt': "NVT 비율",
+                'metric.stakingYield': "스테이킹 수익률",
+                'metric.stakedEth': "스테이킹 ETH",
+                'metric.ethBurned': "ETH 소각량",
+                'metric.ethIssued': "ETH 발행량",
+                'metric.netSupply': "순 공급량",
+                'metric.effectiveFloat': "유효 유통량",
+                'metric.gasPrice': "가스 가격",
+                'metric.gasUtil': "가스 사용률",
+                'metric.networkFees': "네트워크 수수료",
+                'metric.blobFees': "블롭 수수료",
+                'metric.blobCount': "블롭 수",
+                'metric.l1ActiveAddr': "L1 활성 주소",
+                'metric.l2ActiveAddr': "L2 활성 주소",
+                'metric.l1Transactions': "L1 트랜잭션",
+                'metric.l2Transactions': "L2 트랜잭션",
+                'metric.l1Tvl': "L1 TVL",
+                'metric.l2Tvl': "L2 TVL",
+                'metric.lendingTvl': "DeFi 대출 TVL",
+                'metric.l1StablecoinSupply': "L1 스테이블코인 공급량",
+                'metric.appCapital': "앱 자본",
+                'metric.dexVolume': "DEX 볼륨",
                 'metrics.investorSentiment': "02.1 — 투자자 심리",
                 'metrics.marketPosition': "02.2 — 시장 포지션",
                 'metrics.supplyDynamics': "02.3 — 공급 역학",
@@ -16964,10 +17022,12 @@
                 'nav.overview': '概览',
                 'nav.price': '价格与市场',
                 'nav.onchain': '链上指标',
+                'nav.metrics': '市场与指标',
                 'nav.valuation': '估值',
                 'nav.historical': '历史分析',
                 'nav.methodology': '评分与讨论',
                 'nav.rankings': '排行榜',
+                'section.metricsTitle': '市场与指标',
                 'rankings.title': '排行榜',
                 'rankings.badge': '排名',
                 'rankings.loading': '加载排行榜数据...',
@@ -17301,6 +17361,39 @@
                 'metric.mvrvRatio': "MVRV比率",
                 'desc.mvrvRatio': "市值与实现价值之比。实现价格来自Dune Analytics(2016年以来所有ETH转账的成交量加权平均)。>3x = 过热，<1x = 低估。",
                 'metric.newAddresses': "新增地址 (日)",
+                'metric.feargreed': "恐惧与贪婪指数",
+                'metric.fundingRate': "资金费率",
+                'metric.exchangeReserve': "交易所ETH储备",
+                'metric.whaleTx': "巨鲸交易",
+                'metric.ethbtc': "ETH/BTC比率",
+                'metric.dominance': "ETH市场占比",
+                'metric.stablecoinMcap': "稳定币市值",
+                'metric.volatility': "波动率",
+                'metric.nvt': "NVT比率",
+                'metric.stakingYield': "质押收益率",
+                'metric.stakedEth': "质押ETH",
+                'metric.ethBurned': "ETH销毁量",
+                'metric.ethIssued': "ETH发行量",
+                'metric.netSupply': "净供应量",
+                'metric.effectiveFloat': "有效流通量",
+                'metric.gasPrice': "Gas价格",
+                'metric.gasUtil': "Gas使用率",
+                'metric.networkFees': "网络费用",
+                'metric.blobFees': "Blob费用",
+                'metric.blobCount': "Blob数量",
+                'metric.l1ActiveAddr': "L1活跃地址",
+                'metric.l2ActiveAddr': "L2活跃地址",
+                'metric.l1Transactions': "L1交易数",
+                'metric.l2Transactions': "L2交易数",
+                'metric.l1Tvl': "L1 TVL",
+                'metric.l2Tvl': "L2 TVL",
+                'metric.lendingTvl': "DeFi借贷TVL",
+                'metric.l1StablecoinSupply': "L1稳定币供应量",
+                'metric.appCapital': "应用资本",
+                'metric.dexVolume': "DEX交易量",
+                'metric.l1Volume': "L1交易量",
+                'metric.l2Volume': "L2交易量",
+                'metric.bridgeVolume': "桥接量",
                 'metrics.investorSentiment': "02.1 — 投资者情绪",
                 'metrics.marketPosition': "02.2 — 市场地位",
                 'metrics.supplyDynamics': "02.3 — 供应动态",
@@ -17315,10 +17408,12 @@
                 'nav.overview': 'がいよう',
                 'nav.price': 'かかく・マーケット',
                 'nav.onchain': 'オンチェーンしひょう',
+                'nav.metrics': '市場 & 指標',
                 'nav.valuation': 'バリュエーション',
                 'nav.historical': 'りれきぶんせき',
                 'nav.methodology': '評価 & 議論',
                 'nav.rankings': 'リーダーボード',
+                'section.metricsTitle': '市場 & 指標',
                 'rankings.title': 'リーダーボード',
                 'rankings.badge': 'リーダーボード',
                 'rankings.loading': 'ランキングデータを読み込み中...',
@@ -17652,6 +17747,36 @@
                 'metric.mvrvRatio': "MVRV比率",
                 'desc.mvrvRatio': "時価総額と実現価値の比率。実現価格はDune Analytics算出(2016年以降の全ETH移動の出来高加重平均)。>3x = 過熱、<1x = 割安。",
                 'metric.newAddresses': "新規アドレス (日次)",
+                'metric.feargreed': "恐怖＆貪欲指数",
+                'metric.fundingRate': "ファンディングレート",
+                'metric.exchangeReserve': "取引所ETH残高",
+                'metric.ethbtc': "ETH/BTC比率",
+                'metric.dominance': "ETHドミナンス",
+                'metric.stablecoinMcap': "ステーブルコイン時価総額",
+                'metric.volatility': "ボラティリティ",
+                'metric.nvt': "NVT比率",
+                'metric.stakingYield': "ステーキング利回り",
+                'metric.stakedEth': "ステーキングETH",
+                'metric.ethBurned': "ETH焼却量",
+                'metric.ethIssued': "ETH発行量",
+                'metric.netSupply': "純供給量",
+                'metric.effectiveFloat': "有効流通量",
+                'metric.gasPrice': "Gas価格",
+                'metric.gasUtil': "Gas使用率",
+                'metric.networkFees': "ネットワーク手数料",
+                'metric.blobFees': "Blob手数料",
+                'metric.blobCount': "Blob数",
+                'metric.l1ActiveAddr': "L1アクティブアドレス",
+                'metric.l2ActiveAddr': "L2アクティブアドレス",
+                'metric.l1Transactions': "L1トランザクション",
+                'metric.l2Transactions': "L2トランザクション",
+                'metric.l1Tvl': "L1 TVL",
+                'metric.l2Tvl': "L2 TVL",
+                'metric.lendingTvl': "DeFiレンディングTVL",
+                'metric.l1StablecoinSupply': "L1ステーブルコイン供給量",
+                'metric.appCapital': "アプリ資本",
+                'metric.dexVolume': "DEX取引量",
+                'metric.l1Volume': "L1取引量",
                 'metrics.investorSentiment': "02.1 — 投資家心理",
                 'metrics.marketPosition': "02.2 — 市場ポジション",
                 'metrics.supplyDynamics': "02.3 — 供給ダイナミクス",
@@ -18377,10 +18502,10 @@
             
             // 다국어 지원
             const commentaryI18n = {
-                en: { header: 'Daily Analysis', by: 'by' },
-                ko: { header: '일간 분석', by: 'by' },
-                zh: { header: '每日分析', by: 'by' },
-                ja: { header: '日次分析', by: 'by' }
+                en: { label: 'Daily Analysis', by: 'by', at: 'at' },
+                ko: { label: '일간 분석', by: 'by', at: '' },
+                zh: { label: '每日分析', by: 'by', at: '' },
+                ja: { label: '日次分析', by: 'by', at: '' }
             };
             
             try {
@@ -18428,18 +18553,20 @@
                         // 다국어 commentary 필드 확인 (commentary_ko, commentary_zh 등)
                         const localizedCommentary = commentary[`commentary${langSuffix}`] || commentary.commentary;
                         
-                        const dateStr = new Date(commentary.date).toLocaleDateString(
-                            currentLang === 'ko' ? 'ko-KR' : currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja-JP' : 'en-US', 
-                            { month: 'short', day: 'numeric' }
-                        );
+                        // 날짜 포맷
+                        const localeMap = { ko: 'ko-KR', zh: 'zh-CN', ja: 'ja-JP', en: 'en-US' };
+                        const locale = localeMap[currentLang] || 'en-US';
+                        
+                        // created_at에서 시간 추출 (사용자 로컬 시간대로 변환)
+                        const createdAt = new Date(commentary.created_at);
+                        const dateStr = createdAt.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+                        const timeStr = createdAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
                         
                         el.innerHTML = `
-                            <div class="ai-commentary-header">
-                                <span data-i18n="commentary.header">${i18nText.header}</span>
-                            </div>
+                            <div class="ai-commentary-header"></div>
                             <div class="ai-commentary-text">${localizedCommentary}</div>
                             <div class="ai-commentary-footer">
-                                <span class="ai-commentary-meta">${dateStr} · ${i18nText.by} Claude Haiku</span>
+                                ${i18nText.label} · ${dateStr} ${timeStr} · ${i18nText.by} Claude Haiku
                             </div>
                         `;
                         el.classList.remove('loading');
