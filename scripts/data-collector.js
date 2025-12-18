@@ -115,14 +115,54 @@ const cutoff3Y = () => Date.now() / 1000 - (1095 * 24 * 60 * 60);
 // 1. ETH Price (Binance)
 // ============================================================
 async function collect_eth_price() {
-    console.log('\n📈 [1/29] ETH Price...');
+    console.log('\n📈 [1/29] ETH Price (Binance) + Volume (CoinGecko)...');
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // Step 1: Fetch price data from Binance (OHLC - more accurate)
+    // ═══════════════════════════════════════════════════════════════════
     const data = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=1100');
     if (!data) return 0;
+    
     const records = data.map(k => ({
         date: new Date(k[0]).toISOString().split('T')[0],
         open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]),
-        close: parseFloat(k[4]), volume: parseFloat(k[5]), source: 'binance'
+        close: parseFloat(k[4]), volume: 0, source: 'binance'  // Volume will be from CoinGecko
     }));
+    
+    console.log(`  ✓ Binance price: ${records.length} days`);
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // Step 2: Fetch total market volume from CoinGecko
+    // ═══════════════════════════════════════════════════════════════════
+    try {
+        const cgData = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=1100&interval=daily');
+        
+        if (cgData && cgData.total_volumes) {
+            // Build date -> volume map
+            const volumeMap = new Map();
+            for (const [ts, vol] of cgData.total_volumes) {
+                const date = new Date(ts).toISOString().split('T')[0];
+                volumeMap.set(date, vol);
+            }
+            
+            console.log(`  ✓ CoinGecko volume: ${volumeMap.size} days`);
+            
+            // Merge volume into price records
+            let matched = 0;
+            for (const record of records) {
+                if (volumeMap.has(record.date)) {
+                    record.volume = volumeMap.get(record.date);
+                    matched++;
+                }
+            }
+            console.log(`  ✓ Volume matched: ${matched}/${records.length} days`);
+        } else {
+            console.warn('  ⚠️ CoinGecko volume fetch failed');
+        }
+    } catch (e) {
+        console.warn(`  ⚠️ CoinGecko error: ${e.message}`);
+    }
+    
     return await upsertBatch('historical_eth_price', records);
 }
 

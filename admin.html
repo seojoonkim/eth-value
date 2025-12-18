@@ -938,7 +938,7 @@
             // ═══════════════════════════════════════════════════════════════════
             // PHASE 1: 외부 API 직접 수집 (독립적)
             // ═══════════════════════════════════════════════════════════════════
-            eth_price: { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price', expectedDays: 1095, phase: 1, source: 'CoinGecko API' },
+            eth_price: { name: 'ETH Price + Volume', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price', expectedDays: 1095, phase: 1, source: 'Binance + CoinGecko', note: 'Price: Binance, Volume: CoinGecko total market' },
             ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: 'DefiLlama API' },
             staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth', expectedDays: 1095, phase: 1, source: 'DefiLlama (Lido)' },
             l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 6000, phase: 1, source: 'DefiLlama L2 API' },
@@ -1292,13 +1292,16 @@
         // COLLECTORS - Schema Aligned
         // ══════════════════════════════════════════════════════════════
         const collectors = {
-            // 1. ETH Price - NO source column, pagination for 3 years
+            // 1. ETH Price (Binance) + Total Market Volume (CoinGecko)
             async eth_price() {
                 const allRecords = [];
                 const now = Date.now();
                 const threeYearsAgo = now - (1095 * 24 * 60 * 60 * 1000);
                 
-                // Fetch in chunks (Binance limit is 1000)
+                // ═══════════════════════════════════════════════════════════════════
+                // Step 1: Fetch price data from Binance (OHLC - more accurate)
+                // ═══════════════════════════════════════════════════════════════════
+                log('  📈 Fetching price from Binance...');
                 let startTime = threeYearsAgo;
                 while (startTime < now) {
                     const url = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&startTime=${startTime}&limit=1000`;
@@ -1309,7 +1312,7 @@
                         date: new Date(k[0]).toISOString().split('T')[0],
                         timestamp: k[0],
                         open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]),
-                        close: parseFloat(k[4]), volume: parseFloat(k[5])
+                        close: parseFloat(k[4]), volume: 0  // Will be filled from CoinGecko
                     }));
                     allRecords.push(...records);
                     
@@ -1318,8 +1321,48 @@
                     await new Promise(r => setTimeout(r, 100));
                 }
                 
+                log(`  ✓ Binance price: ${allRecords.length} days`);
+                
                 if (allRecords.length === 0) return 0;
                 
+                // ═══════════════════════════════════════════════════════════════════
+                // Step 2: Fetch total market volume from CoinGecko
+                // ═══════════════════════════════════════════════════════════════════
+                log('  📊 Fetching total market volume from CoinGecko...');
+                try {
+                    // CoinGecko max gives ~2000 days of data
+                    const cgUrl = 'https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=max&interval=daily';
+                    const cgData = await fetchJSON(cgUrl);
+                    
+                    if (cgData && cgData.total_volumes) {
+                        // Build date -> volume map
+                        const volumeMap = new Map();
+                        for (const [ts, vol] of cgData.total_volumes) {
+                            const date = new Date(ts).toISOString().split('T')[0];
+                            volumeMap.set(date, vol);
+                        }
+                        
+                        log(`  ✓ CoinGecko volume: ${volumeMap.size} days`);
+                        
+                        // Merge volume into price records
+                        let matched = 0;
+                        for (const record of allRecords) {
+                            if (volumeMap.has(record.date)) {
+                                record.volume = volumeMap.get(record.date);
+                                matched++;
+                            }
+                        }
+                        log(`  ✓ Volume matched: ${matched}/${allRecords.length} days`);
+                    } else {
+                        log('  ⚠️ CoinGecko volume fetch failed, volume will be 0', 'warn');
+                    }
+                } catch (e) {
+                    log(`  ⚠️ CoinGecko error: ${e.message}`, 'warn');
+                }
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // Step 3: Upsert to Supabase
+                // ═══════════════════════════════════════════════════════════════════
                 const { error, count } = await batchUpsert('historical_eth_price', allRecords);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : count;

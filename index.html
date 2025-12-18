@@ -9102,14 +9102,14 @@
             background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 50px;
-            padding: 10px 18px;
+            padding: 8px 14px;
             box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            max-width: 300px;
+            max-width: 280px;
             animation: floatingBadgePulse 2s ease-in-out infinite, floatingBadgeGlow 2s ease-in-out infinite;
         }
         
@@ -9132,24 +9132,26 @@
         .floating-badge-content {
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 0;
         }
         
         .floating-badge-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: white;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            line-height: 1.3;
         }
         
         .floating-badge-subtitle {
-            font-size: 11px;
+            font-size: 10px;
             color: rgba(255, 255, 255, 0.85);
+            line-height: 1.3;
         }
         
         .floating-badge-arrow {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             color: white;
             flex-shrink: 0;
             opacity: 0.9;
@@ -9157,9 +9159,7 @@
         
         /* Progress indicator */
         .floating-badge-progress {
-            display: flex;
-            gap: 4px;
-            margin-top: 4px;
+            display: none !important;
         }
         
         .progress-dot {
@@ -9182,16 +9182,32 @@
         
         @media (max-width: 768px) {
             .floating-action-badge {
-                bottom: 16px;
-                left: 50%;
-                right: auto;
-                transform: translateX(-50%);
-                max-width: calc(100% - 32px);
+                bottom: 12px;
+                right: 12px;
+                left: auto;
+                transform: none;
+                max-width: none;
                 width: auto;
+                padding: 8px 12px;
+                gap: 6px;
+                border-radius: 24px;
             }
             
             .floating-action-badge:hover {
-                transform: translateX(-50%) translateY(-3px) scale(1.02);
+                transform: translateY(-2px) scale(1.01);
+            }
+            
+            .floating-badge-title {
+                font-size: 11px;
+            }
+            
+            .floating-badge-subtitle {
+                font-size: 9px;
+            }
+            
+            .floating-badge-arrow {
+                width: 12px;
+                height: 12px;
             }
         }
         
@@ -19694,7 +19710,23 @@
                 
                 if (hasEnoughSupabaseData) {
                     log(`   Using Supabase price data: ${state.supabasePriceHistory.length} points for ${days} days`);
-                    state.priceHistory = state.supabasePriceHistory;
+                    state.priceHistory = [...state.supabasePriceHistory];
+                    
+                    // ═══════════════════════════════════════════════════════════════════
+                    // Supabase volume 데이터도 함께 설정 (volume 컬럼이 있는 경우)
+                    // ═══════════════════════════════════════════════════════════════════
+                    if (state.supabasePriceHistory.some(d => d.volume > 0)) {
+                        state.volumeHistory = state.supabasePriceHistory
+                            .filter(d => d.volume > 0)
+                            .map(d => ({ date: d.date, value: d.volume }));
+                        log(`   Volume from Supabase: ${state.volumeHistory.length} points`);
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════════════
+                    // 마지막 날 데이터를 실시간 데이터로 업데이트
+                    // ═══════════════════════════════════════════════════════════════════
+                    await updateTodayWithRealtime();
+                    
                     updatePriceChart(days);
                     updateVolumeChart(days);
                     setDataSource('price-chart', 'supabase');
@@ -19740,6 +19772,9 @@
                 state.ethMarketCaps = data.market_caps;
                 state.ethPrices = data.prices;
                 
+                // 마지막 날 실시간 데이터로 업데이트
+                await updateTodayWithRealtime();
+                
                 updatePriceChart(days);
                 updateVolumeChart(days);
                 setDataSource('price-chart', 'api', 'CoinGecko');
@@ -19752,22 +19787,113 @@
                     updateVolumeChart(days);
                 }
             }
-            
-            // Always fetch volume from CoinGecko (total market volume, not exchange-specific)
-            await fetchVolumeFromCoinGecko(days);
         }
         
-        // Fetch total market volume from CoinGecko
+        // ═══════════════════════════════════════════════════════════════════
+        // 오늘 날짜 데이터를 실시간 API로 업데이트
+        // ═══════════════════════════════════════════════════════════════════
+        async function updateTodayWithRealtime() {
+            try {
+                // CoinGecko simple API로 현재 가격 및 24h 볼륨, 24h 변화율 가져오기
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true');
+                if (!res.ok) return;
+                
+                const data = await res.json();
+                if (!data.ethereum) return;
+                
+                const realtimePrice = data.ethereum.usd;
+                const realtimeVolume = data.ethereum.usd_24h_vol;
+                const change24h = data.ethereum.usd_24h_change || 0;
+                
+                // 오늘 날짜 (로컬 타임존 기준)
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+                
+                log(`   Realtime update: Price=$${realtimePrice.toFixed(2)}, Volume=$${(realtimeVolume/1e9).toFixed(2)}B, 24h=${change24h.toFixed(2)}%`);
+                
+                // 가격 히스토리 마지막 날 업데이트 또는 추가
+                if (state.priceHistory && state.priceHistory.length > 0) {
+                    const lastPrice = state.priceHistory[state.priceHistory.length - 1];
+                    const lastDateStr = lastPrice.date.toISOString().split('T')[0];
+                    
+                    log(`   Last price date: ${lastDateStr}, Today: ${todayStr}`);
+                    
+                    if (lastDateStr === todayStr) {
+                        // 오늘 데이터가 있으면 덮어쓰기
+                        state.priceHistory[state.priceHistory.length - 1].value = realtimePrice;
+                        log(`   Updated today's price in history`);
+                    } else {
+                        // 오늘 데이터가 없으면 추가
+                        state.priceHistory.push({ date: new Date(todayStr), value: realtimePrice });
+                        log(`   Added today's price to history`);
+                    }
+                } else {
+                    // priceHistory가 없으면 생성
+                    state.priceHistory = [{ date: new Date(todayStr), value: realtimePrice }];
+                }
+                
+                // 볼륨 히스토리 마지막 날 업데이트 또는 추가
+                if (state.volumeHistory && state.volumeHistory.length > 0) {
+                    const lastVol = state.volumeHistory[state.volumeHistory.length - 1];
+                    const lastDateStr = lastVol.date.toISOString().split('T')[0];
+                    
+                    if (lastDateStr === todayStr) {
+                        state.volumeHistory[state.volumeHistory.length - 1].value = realtimeVolume;
+                    } else {
+                        state.volumeHistory.push({ date: new Date(todayStr), value: realtimeVolume });
+                    }
+                } else if (realtimeVolume) {
+                    // volumeHistory가 없으면 생성
+                    state.volumeHistory = [{ date: new Date(todayStr), value: realtimeVolume }];
+                }
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 상태 및 UI 업데이트
+                // ═══════════════════════════════════════════════════════════════════
+                state.price = realtimePrice;
+                state.volume24h = realtimeVolume;
+                state.change24h = change24h;
+                
+                // 가격 UI 업데이트
+                const priceEl = document.getElementById('current-price');
+                if (priceEl) priceEl.textContent = fmt.price(realtimePrice);
+                
+                const summaryPriceEl = document.getElementById('summary-current-price');
+                if (summaryPriceEl) summaryPriceEl.textContent = fmt.price(realtimePrice);
+                
+                // 24h 변화율 UI 업데이트
+                const changeEl = document.getElementById('price-change');
+                const changeTextEl = document.getElementById('price-change-text');
+                if (changeEl && changeTextEl) {
+                    changeTextEl.textContent = fmt.pct(change24h) + ' (24h)';
+                    changeEl.className = 'price-change ' + (change24h >= 0 ? 'up' : 'down');
+                }
+                
+                // 24h 볼륨 UI 업데이트
+                const volEl = document.getElementById('volume-24h');
+                if (volEl) volEl.textContent = '$' + (realtimeVolume / 1e9).toFixed(1) + 'B';
+                
+                // 시뮬레이터 마켓 프라이스도 업데이트
+                const simMarketPriceEl = document.getElementById('sim-market-price');
+                if (simMarketPriceEl) simMarketPriceEl.textContent = fmt.price(realtimePrice);
+                
+            } catch (e) {
+                log('   Realtime update error:', e.message);
+            }
+        }
+        
+        // Fetch total market volume from CoinGecko (Supabase 데이터가 부족할 때만)
         async function fetchVolumeFromCoinGecko(days = 1095) {
-            // Skip if already have volume data
-            if (state.volumeHistory && state.volumeHistory.length > 100) {
-                log('Volume history already loaded:', state.volumeHistory.length, 'points');
+            // Supabase에서 충분한 volume 데이터가 있으면 스킵
+            if (state.volumeHistory && state.volumeHistory.length > days * 0.8) {
+                log('Volume history sufficient from Supabase:', state.volumeHistory.length, 'points');
                 return;
             }
             
             try {
-                log('Fetching volume from CoinGecko...');
-                const res = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=${days}&interval=daily`);
+                log('Fetching additional volume from CoinGecko...');
+                const apiDays = Math.min(days, 365); // CoinGecko는 365일 제한
+                const res = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=${apiDays}&interval=daily`);
                 
                 if (!res.ok) {
                     log('CoinGecko volume fetch failed:', res.status);
@@ -19777,14 +19903,33 @@
                 const data = await res.json();
                 
                 if (data.total_volumes && data.total_volumes.length > 0) {
-                    state.volumeHistory = data.total_volumes.map(v => ({ 
+                    const cgVolume = data.total_volumes.map(v => ({ 
                         date: new Date(v[0]), 
                         value: v[1] 
                     }));
-                    log('Volume data from CoinGecko:', state.volumeHistory.length, 'points');
                     
-                    // Update chart with new volume data
-                    updatePriceChart(days);
+                    // 기존 데이터와 병합 (CoinGecko 데이터로 빈 구간 채우기)
+                    if (state.volumeHistory && state.volumeHistory.length > 0) {
+                        // 기존 데이터의 날짜 범위 확인
+                        const existingDates = new Set(state.volumeHistory.map(d => 
+                            new Date(d.date).toDateString()
+                        ));
+                        
+                        // 없는 날짜만 추가
+                        for (const vol of cgVolume) {
+                            const dateStr = vol.date.toDateString();
+                            if (!existingDates.has(dateStr)) {
+                                state.volumeHistory.push(vol);
+                            }
+                        }
+                        
+                        // 날짜순 정렬
+                        state.volumeHistory.sort((a, b) => a.date - b.date);
+                        log('Volume merged:', state.volumeHistory.length, 'points');
+                    } else {
+                        state.volumeHistory = cgVolume;
+                        log('Volume data from CoinGecko:', state.volumeHistory.length, 'points');
+                    }
                 }
             } catch (e) {
                 console.warn('CoinGecko volume fetch error:', e);
@@ -20815,13 +20960,35 @@
             const sampleRate = Math.max(1, Math.ceil(filteredPrices.length / maxPoints));
             const sampledPrices = filteredPrices.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
+            // ═══════════════════════════════════════════════════════════════════
+            // 마지막 데이터 포인트를 실시간 데이터로 강제 업데이트
+            // ═══════════════════════════════════════════════════════════════════
+            const realtimePrice = state.price || sampledPrices[sampledPrices.length - 1]?.value;
+            const realtimeVolume = state.volume24h || 15000000000;
+            const today = new Date();
+            
+            if (sampledPrices.length > 0 && realtimePrice) {
+                // 마지막 포인트를 오늘 날짜 + 실시간 가격으로 업데이트
+                sampledPrices[sampledPrices.length - 1] = {
+                    date: today,
+                    value: realtimePrice
+                };
+                log(`   Chart last point updated: ${today.toISOString().split('T')[0]}, $${realtimePrice.toFixed(2)}`);
+            }
+            
             const priceData = sampledPrices.map(d => d.value);
             const labels = sampledPrices.map(d => fmt.chartLabel(d.date));
+            const dates = sampledPrices.map(d => d.date);
             
             // 볼륨 데이터: 가격 날짜에 맞춰 매핑
             let volumeData = [];
             if (state.volumeHistory && state.volumeHistory.length > 0) {
-                volumeData = sampledPrices.map(pricePoint => {
+                volumeData = sampledPrices.map((pricePoint, idx) => {
+                    // 마지막 포인트는 실시간 볼륨 사용
+                    if (idx === sampledPrices.length - 1) {
+                        return realtimeVolume;
+                    }
+                    
                     // 가장 가까운 날짜의 볼륨 찾기
                     const targetTime = pricePoint.date.getTime();
                     let closest = state.volumeHistory[0];
@@ -20843,6 +21010,8 @@
                 // Fallback: 24h 볼륨 기반으로 가상 볼륨 히스토리 생성
                 const baseVolume = state.volume24h || 15000000000; // 기본 $15B
                 volumeData = sampledPrices.map((_, i) => {
+                    // 마지막 포인트는 실시간 볼륨
+                    if (i === sampledPrices.length - 1) return realtimeVolume;
                     // 가격 변동과 연동하여 볼륨 시뮬레이션 (랜덤 변동 + 가격 기반)
                     const priceRatio = priceData[i] / (state.price || priceData[priceData.length - 1]);
                     const randomFactor = 0.5 + Math.random() * 1.0; // 0.5x ~ 1.5x
@@ -20858,7 +21027,7 @@
             // 가격 변화율 계산 및 표시 (선택된 기간에 맞춰)
             // ═══════════════════════════════════════════════════════════════════
             try {
-                const currentPrice = state.price || priceData[priceData.length - 1];
+                const currentPrice = realtimePrice;
                 const now = Date.now();
                 const sortedHistory = [...state.priceHistory].sort((a, b) => a.date - b.date);
                 
@@ -28514,7 +28683,7 @@ Check out ETHval 👇`;
             </div>
         </div>
         <svg class="floating-badge-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18l6-6-6-6"/>
+            <path d="M6 9l6 6 6-6"/>
         </svg>
     </div>
 
