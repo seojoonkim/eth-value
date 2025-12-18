@@ -1818,6 +1818,80 @@
             display: none;
         }
 
+        /* AI Commentary Box */
+        .ai-commentary {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            position: relative;
+        }
+        
+        .ai-commentary::before {
+            content: '🤖';
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-size: 14px;
+            opacity: 0.6;
+        }
+        
+        .ai-commentary-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .ai-commentary-date {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+        
+        .ai-commentary-text {
+            color: var(--text);
+        }
+        
+        .ai-commentary.loading {
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ai-commentary.loading::before {
+            content: '';
+        }
+        
+        .ai-commentary.loading .ai-commentary-text {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .ai-commentary {
+                padding: 10px 12px;
+                font-size: 11px;
+                margin-bottom: 12px;
+            }
+            
+            .ai-commentary::before {
+                top: 8px;
+                right: 10px;
+                font-size: 12px;
+            }
+        }
+
         .stat-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -11497,6 +11571,11 @@
                     <span class="metrics-subgroup-title" data-i18n="metrics.investorSentiment">Investor Sentiment</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
+                
+                <!-- AI Commentary: Investor Sentiment -->
+                <div class="ai-commentary loading" id="commentary-investor_sentiment" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <div class="metric-card" data-metric="realizedPrice">
                     <div class="metric-header">
@@ -11625,6 +11704,11 @@
                     <span class="metrics-subgroup-title" data-i18n="metrics.marketPosition">Market Position</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
+                
+                <!-- AI Commentary: Market Position -->
+                <div class="ai-commentary loading" id="commentary-market_position" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <div class="metric-card" data-metric="ethbtc">
                     <div class="metric-header">
@@ -11734,6 +11818,11 @@
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.supplyDynamics">Supply Dynamics</span>
                     <div class="metrics-subgroup-line"></div>
+                </div>
+                
+                <!-- AI Commentary: Supply Dynamics -->
+                <div class="ai-commentary loading" id="commentary-supply_dynamics" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="stakingApr">
@@ -11867,6 +11956,11 @@
                     <span class="metrics-subgroup-title" data-i18n="metrics.networkDemand">Network Demand</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
+                
+                <!-- AI Commentary: Network Demand -->
+                <div class="ai-commentary loading" id="commentary-network_demand" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <div class="metric-card" data-metric="gasPrice">
                     <div class="metric-header">
@@ -11974,6 +12068,11 @@
                     <span class="metrics-subgroup-title" data-i18n="metrics.userActivity">User Activity</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
+                
+                <!-- AI Commentary: User Activity -->
+                <div class="ai-commentary loading" id="commentary-user_activity" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <div class="metric-card" data-metric="newAddresses">
                     <div class="metric-header">
@@ -12079,6 +12178,11 @@
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.lockedCapital">Locked Capital</span>
                     <div class="metrics-subgroup-line"></div>
+                </div>
+                
+                <!-- AI Commentary: Locked Capital -->
+                <div class="ai-commentary loading" id="commentary-locked_capital" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="tvl">
@@ -12207,6 +12311,11 @@
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.settlementVolume">Settlement Volume</span>
                     <div class="metrics-subgroup-line"></div>
+                </div>
+                
+                <!-- AI Commentary: Settlement Volume -->
+                <div class="ai-commentary loading" id="commentary-settlement_volume" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="l1Volume">
@@ -18201,6 +18310,97 @@
             url: SUPABASE_URL,
             anonKey: SUPABASE_ANON_KEY
         };
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // AI Daily Commentary Loading
+        // ═══════════════════════════════════════════════════════════════════
+        const COMMENTARY_SECTIONS = [
+            'investor_sentiment',
+            'market_position', 
+            'supply_dynamics',
+            'network_demand',
+            'user_activity',
+            'locked_capital',
+            'settlement_volume'
+        ];
+        
+        async function loadDailyCommentary() {
+            if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
+                log('📝 Commentary: Supabase not configured');
+                return;
+            }
+            
+            log('📝 Loading daily commentary...');
+            
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                
+                // 오늘 또는 최근 해설 가져오기
+                const res = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=*&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
+                    headers: {
+                        'apikey': SUPABASE_CONFIG.anonKey,
+                        'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
+                    }
+                });
+                
+                if (!res.ok) {
+                    log('📝 Commentary fetch failed:', res.status);
+                    return;
+                }
+                
+                const data = await res.json();
+                log(`📝 Got ${data.length} commentary entries`);
+                
+                if (!data || data.length === 0) {
+                    // 해설이 없으면 표시하지 않음
+                    hideAllCommentary();
+                    return;
+                }
+                
+                // 섹션별로 최신 해설 찾기
+                const latestBySection = {};
+                for (const entry of data) {
+                    if (!latestBySection[entry.section_key] || entry.date > latestBySection[entry.section_key].date) {
+                        latestBySection[entry.section_key] = entry;
+                    }
+                }
+                
+                // 각 섹션에 해설 표시
+                for (const sectionKey of COMMENTARY_SECTIONS) {
+                    const commentary = latestBySection[sectionKey];
+                    const el = document.getElementById(`commentary-${sectionKey}`);
+                    
+                    if (el && commentary) {
+                        const dateStr = new Date(commentary.date).toLocaleDateString('en-US', { 
+                            month: 'short', day: 'numeric' 
+                        });
+                        
+                        el.innerHTML = `
+                            <div class="ai-commentary-header">
+                                <span>AI Daily Analysis</span>
+                                <span class="ai-commentary-date">${dateStr}</span>
+                            </div>
+                            <div class="ai-commentary-text">${commentary.commentary}</div>
+                        `;
+                        el.classList.remove('loading');
+                        el.style.display = 'block';
+                    } else if (el) {
+                        el.style.display = 'none';
+                    }
+                }
+                
+            } catch (e) {
+                log('📝 Commentary error:', e.message);
+                hideAllCommentary();
+            }
+        }
+        
+        function hideAllCommentary() {
+            for (const sectionKey of COMMENTARY_SECTIONS) {
+                const el = document.getElementById(`commentary-${sectionKey}`);
+                if (el) el.style.display = 'none';
+            }
+        }
         
         // Supabase에서 historical 데이터 로딩
         async function loadHistoricalFromSupabase() {
@@ -24879,6 +25079,11 @@
                 // STEP 3: 백그라운드에서 외부 API로 최신 데이터 업데이트
                 // ═══════════════════════════════════════════════════════════════════
                 loadDataInBackground();
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // STEP 4: AI 일간 해설 로드
+                // ═══════════════════════════════════════════════════════════════════
+                loadDailyCommentary();
                 
                 perf.end('fetchAll');
             } catch (e) {

@@ -1,6 +1,7 @@
 /**
- * ETHval Data Collector v7.0
+ * ETHval Data Collector v7.1
  * 39개 전체 데이터셋 수집 (Dune API 포함)
+ * + AI 일간 해설 생성 (Claude Haiku)
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -8,6 +9,7 @@ const { createClient } = require('@supabase/supabase-js');
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DUNE_API_KEY = process.env.DUNE_API_KEY;
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_KEY');
@@ -18,8 +20,428 @@ if (!DUNE_API_KEY) {
     console.warn('⚠️ Missing DUNE_API_KEY - Dune data collection will be skipped');
 }
 
+if (!ANTHROPIC_API_KEY) {
+    console.warn('⚠️ Missing ANTHROPIC_API_KEY - AI commentary will be skipped');
+}
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+// ============================================================
+// AI Commentary Section Definitions
+// ============================================================
+const COMMENTARY_SECTIONS = {
+    investor_sentiment: {
+        title: 'Investor Sentiment',
+        title_ko: '투자자 심리',
+        metrics: ['fear_greed', 'funding_rate', 'exchange_reserve', 'volatility'],
+        tables: {
+            fear_greed: 'historical_fear_greed',
+            funding_rate: 'historical_funding_rate',
+            exchange_reserve: 'historical_exchange_reserve',
+            volatility: 'historical_volatility'
+        }
+    },
+    market_position: {
+        title: 'Market Position',
+        title_ko: '시장 포지션',
+        metrics: ['eth_dominance', 'eth_btc', 'mvrv', 'realized_price'],
+        tables: {
+            eth_dominance: 'historical_eth_dominance',
+            eth_btc: 'historical_eth_btc',
+            mvrv: 'historical_mvrv'
+        }
+    },
+    supply_dynamics: {
+        title: 'Supply Dynamics',
+        title_ko: '공급 역학',
+        metrics: ['staking', 'eth_burned', 'eth_issued', 'net_supply', 'effective_float'],
+        tables: {
+            staking: 'historical_staking',
+            eth_supply: 'historical_eth_supply',
+            gas_burn: 'historical_gas_burn'
+        }
+    },
+    network_demand: {
+        title: 'Network Demand',
+        title_ko: '네트워크 수요',
+        metrics: ['gas_price', 'gas_utilization', 'blob_fees', 'transactions'],
+        tables: {
+            gas_burn: 'historical_gas_burn',
+            blob: 'historical_blob',
+            transactions: 'historical_transactions'
+        }
+    },
+    user_activity: {
+        title: 'User Activity',
+        title_ko: '사용자 활동',
+        metrics: ['active_addresses', 'new_addresses', 'l2_addresses', 'whale_tx'],
+        tables: {
+            active_addresses: 'historical_active_addresses',
+            l2_addresses: 'historical_l2_addresses',
+            new_addresses: 'historical_new_addresses',
+            whale_tx: 'historical_whale_transactions'
+        }
+    },
+    locked_capital: {
+        title: 'Locked Capital',
+        title_ko: '잠긴 자본',
+        metrics: ['ethereum_tvl', 'l2_tvl', 'stablecoins', 'lending_tvl', 'staked_eth'],
+        tables: {
+            ethereum_tvl: 'historical_ethereum_tvl',
+            l2_tvl: 'historical_l2_tvl',
+            stablecoins: 'historical_stablecoins',
+            lending_tvl: 'historical_lending_tvl',
+            staking: 'historical_staking'
+        }
+    },
+    settlement_volume: {
+        title: 'Settlement Volume',
+        title_ko: '결제량',
+        metrics: ['l1_volume', 'l2_volume', 'bridge_volume', 'dex_volume', 'stablecoin_volume'],
+        tables: {
+            l1_volume: 'historical_l1_volume',
+            l2_volume: 'historical_l2_volume',
+            bridge_volume: 'historical_bridge_volume',
+            dex_volume: 'historical_dex_volume',
+            stablecoin_volume: 'historical_stablecoin_volume'
+        }
+    }
+};
+
+// ============================================================
+// AI Commentary Generation Functions
+// ============================================================
+
+/**
+ * Fetch latest metrics data for a section
+ */
+async function fetchSectionMetrics(sectionKey) {
+    const section = COMMENTARY_SECTIONS[sectionKey];
+    if (!section) return null;
+    
+    const metricsData = {};
+    const today = new Date().toISOString().split('T')[0];
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    for (const [metricKey, tableName] of Object.entries(section.tables)) {
+        try {
+            // Get recent data (last 7 days)
+            const { data: recent } = await supabase
+                .from(tableName)
+                .select('*')
+                .gte('date', sevenDaysAgo)
+                .order('date', { ascending: false })
+                .limit(7);
+            
+            // Get 30-day ago data for comparison
+            const { data: older } = await supabase
+                .from(tableName)
+                .select('*')
+                .lte('date', thirtyDaysAgo)
+                .order('date', { ascending: false })
+                .limit(1);
+            
+            if (recent && recent.length > 0) {
+                metricsData[metricKey] = {
+                    latest: recent[0],
+                    recent: recent,
+                    thirtyDaysAgo: older?.[0] || null
+                };
+            }
+        } catch (e) {
+            console.error(`  Error fetching ${tableName}:`, e.message);
+        }
+    }
+    
+    // Also get current ETH price
+    try {
+        const { data: priceData } = await supabase
+            .from('historical_eth_price')
+            .select('*')
+            .order('date', { ascending: false })
+            .limit(2);
+        
+        if (priceData && priceData.length > 0) {
+            metricsData.eth_price = {
+                latest: priceData[0],
+                previous: priceData[1] || null
+            };
+        }
+    } catch (e) {
+        console.error('  Error fetching ETH price:', e.message);
+    }
+    
+    return metricsData;
+}
+
+/**
+ * Format metrics data for AI prompt
+ */
+function formatMetricsForPrompt(sectionKey, metricsData) {
+    const section = COMMENTARY_SECTIONS[sectionKey];
+    let prompt = `Section: ${section.title}\n\n`;
+    prompt += `Current ETH Price: $${metricsData.eth_price?.latest?.close?.toFixed(2) || 'N/A'}\n\n`;
+    prompt += `Key Metrics (Latest vs 30 days ago):\n`;
+    
+    for (const [key, data] of Object.entries(metricsData)) {
+        if (key === 'eth_price') continue;
+        if (!data?.latest) continue;
+        
+        const latest = data.latest;
+        const older = data.thirtyDaysAgo;
+        
+        // Extract numeric values based on table structure
+        let currentVal, oldVal, unit = '';
+        
+        if (latest.value !== undefined) {
+            currentVal = latest.value;
+            oldVal = older?.value;
+        } else if (latest.tvl !== undefined) {
+            currentVal = latest.tvl;
+            oldVal = older?.tvl;
+            unit = ' USD';
+        } else if (latest.index !== undefined) {
+            currentVal = latest.index;
+            oldVal = older?.index;
+        } else if (latest.rate !== undefined) {
+            currentVal = latest.rate;
+            oldVal = older?.rate;
+            unit = '%';
+        } else if (latest.staked_eth !== undefined) {
+            currentVal = latest.staked_eth;
+            oldVal = older?.staked_eth;
+            unit = ' ETH';
+        } else if (latest.dominance !== undefined) {
+            currentVal = latest.dominance;
+            oldVal = older?.dominance;
+            unit = '%';
+        } else if (latest.ratio !== undefined) {
+            currentVal = latest.ratio;
+            oldVal = older?.ratio;
+        } else if (latest.reserve !== undefined) {
+            currentVal = latest.reserve;
+            oldVal = older?.reserve;
+            unit = ' ETH';
+        } else if (latest.avg_gas_price_gwei !== undefined) {
+            currentVal = latest.avg_gas_price_gwei;
+            oldVal = older?.avg_gas_price_gwei;
+            unit = ' Gwei';
+        } else if (latest.mvrv_ratio !== undefined) {
+            currentVal = latest.mvrv_ratio;
+            oldVal = older?.mvrv_ratio;
+        } else if (latest.daily_volume !== undefined) {
+            currentVal = latest.daily_volume;
+            oldVal = older?.daily_volume;
+            unit = ' USD';
+        } else if (latest.blob_count !== undefined) {
+            currentVal = latest.blob_count;
+            oldVal = older?.blob_count;
+        } else if (latest.active_addresses !== undefined) {
+            currentVal = latest.active_addresses;
+            oldVal = older?.active_addresses;
+        } else if (latest.volatility !== undefined) {
+            currentVal = latest.volatility;
+            oldVal = older?.volatility;
+            unit = '%';
+        }
+        
+        if (currentVal !== undefined) {
+            const change = oldVal ? ((currentVal - oldVal) / oldVal * 100).toFixed(1) : 'N/A';
+            const changeStr = oldVal ? `(${change > 0 ? '+' : ''}${change}% vs 30d ago)` : '';
+            
+            // Format large numbers
+            let valStr;
+            if (typeof currentVal === 'number') {
+                if (currentVal >= 1e12) valStr = (currentVal / 1e12).toFixed(2) + 'T';
+                else if (currentVal >= 1e9) valStr = (currentVal / 1e9).toFixed(2) + 'B';
+                else if (currentVal >= 1e6) valStr = (currentVal / 1e6).toFixed(2) + 'M';
+                else if (currentVal >= 1e3) valStr = (currentVal / 1e3).toFixed(2) + 'K';
+                else valStr = currentVal.toFixed(2);
+            } else {
+                valStr = String(currentVal);
+            }
+            
+            prompt += `- ${key}: ${valStr}${unit} ${changeStr}\n`;
+        }
+    }
+    
+    // Add 7-day trend
+    prompt += `\n7-day trend:\n`;
+    for (const [key, data] of Object.entries(metricsData)) {
+        if (key === 'eth_price') continue;
+        if (!data?.recent || data.recent.length < 2) continue;
+        
+        const first = data.recent[data.recent.length - 1];
+        const last = data.recent[0];
+        
+        // Get comparable values
+        let firstVal, lastVal;
+        if (first.value !== undefined) { firstVal = first.value; lastVal = last.value; }
+        else if (first.tvl !== undefined) { firstVal = first.tvl; lastVal = last.tvl; }
+        else if (first.index !== undefined) { firstVal = first.index; lastVal = last.index; }
+        else if (first.rate !== undefined) { firstVal = first.rate; lastVal = last.rate; }
+        else if (first.dominance !== undefined) { firstVal = first.dominance; lastVal = last.dominance; }
+        else if (first.mvrv_ratio !== undefined) { firstVal = first.mvrv_ratio; lastVal = last.mvrv_ratio; }
+        
+        if (firstVal && lastVal) {
+            const weekChange = ((lastVal - firstVal) / firstVal * 100).toFixed(1);
+            const trend = weekChange > 1 ? '📈 Rising' : weekChange < -1 ? '📉 Falling' : '➡️ Stable';
+            prompt += `- ${key}: ${trend} (${weekChange > 0 ? '+' : ''}${weekChange}% this week)\n`;
+        }
+    }
+    
+    return prompt;
+}
+
+/**
+ * Call Claude Haiku API to generate commentary
+ */
+async function generateCommentary(sectionKey, metricsData) {
+    if (!ANTHROPIC_API_KEY) return null;
+    
+    const section = COMMENTARY_SECTIONS[sectionKey];
+    const metricsPrompt = formatMetricsForPrompt(sectionKey, metricsData);
+    
+    const systemPrompt = `You are an expert Ethereum market analyst providing daily commentary for the ETHval dashboard. 
+Your analysis should be:
+- Objective and data-driven
+- Concise (maximum 8 sentences)
+- Focus on what the metrics indicate about market conditions
+- Include brief outlook on potential price/valuation implications
+- No disclaimers or investment advice warnings
+- Write in a professional, analytical tone
+
+Format: Write 6-8 sentences as a single paragraph. Start with the current state, then trends, then implications.`;
+
+    const userPrompt = `Based on the following Ethereum ${section.title} metrics data, provide a brief daily analysis:
+
+${metricsPrompt}
+
+Write a 6-8 sentence analysis covering:
+1. Current state of these metrics
+2. Notable changes in the past 7-30 days  
+3. What this suggests for ETH price direction and valuation`;
+
+    try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: 'claude-3-5-haiku-20241022',
+                max_tokens: 500,
+                messages: [
+                    { role: 'user', content: userPrompt }
+                ],
+                system: systemPrompt
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`  Claude API error: ${response.status} - ${errorText}`);
+            return null;
+        }
+        
+        const result = await response.json();
+        return result.content?.[0]?.text || null;
+        
+    } catch (e) {
+        console.error(`  Claude API call failed:`, e.message);
+        return null;
+    }
+}
+
+/**
+ * Save commentary to Supabase
+ */
+async function saveCommentary(sectionKey, commentary, metricsSnapshot) {
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+        const { error } = await supabase
+            .from('daily_commentary')
+            .upsert({
+                date: today,
+                section_key: sectionKey,
+                commentary: commentary,
+                metrics_snapshot: metricsSnapshot,
+                created_at: new Date().toISOString()
+            }, { onConflict: 'date,section_key' });
+        
+        if (error) {
+            console.error(`  Error saving commentary for ${sectionKey}:`, error.message);
+            return false;
+        }
+        return true;
+    } catch (e) {
+        console.error(`  Error saving commentary:`, e.message);
+        return false;
+    }
+}
+
+/**
+ * Generate all section commentaries
+ */
+async function generateAllCommentaries() {
+    if (!ANTHROPIC_API_KEY) {
+        console.log('\n⏭️ Skipping AI commentary - No ANTHROPIC_API_KEY');
+        return { success: 0, failed: 0 };
+    }
+    
+    console.log('\n' + '='.repeat(60));
+    console.log('🤖 AI DAILY COMMENTARY GENERATION (Claude Haiku)');
+    console.log('='.repeat(60));
+    
+    let success = 0, failed = 0;
+    
+    for (const sectionKey of Object.keys(COMMENTARY_SECTIONS)) {
+        const section = COMMENTARY_SECTIONS[sectionKey];
+        console.log(`\n📝 [${sectionKey}] ${section.title}...`);
+        
+        // Fetch metrics
+        const metricsData = await fetchSectionMetrics(sectionKey);
+        if (!metricsData || Object.keys(metricsData).length === 0) {
+            console.log(`  ❌ No metrics data available`);
+            failed++;
+            continue;
+        }
+        
+        console.log(`  ✓ Fetched ${Object.keys(metricsData).length} metric groups`);
+        
+        // Generate commentary
+        const commentary = await generateCommentary(sectionKey, metricsData);
+        if (!commentary) {
+            console.log(`  ❌ Failed to generate commentary`);
+            failed++;
+            continue;
+        }
+        
+        console.log(`  ✓ Generated ${commentary.length} chars`);
+        
+        // Save to Supabase
+        const saved = await saveCommentary(sectionKey, commentary, metricsData);
+        if (saved) {
+            console.log(`  ✅ Saved to Supabase`);
+            success++;
+        } else {
+            failed++;
+        }
+        
+        // Rate limit: wait between API calls
+        await sleep(1500);
+    }
+    
+    console.log('\n' + '-'.repeat(40));
+    console.log(`📊 Commentary: ✅ ${success}/7  |  ❌ ${failed}/7`);
+    
+    return { success, failed };
+}
 
 // Dune Query IDs
 const DUNE_QUERIES = {
@@ -1287,6 +1709,11 @@ async function main() {
     console.log(`✅ Success: ${success}/39  |  ❌ Failed: ${failed}/39`);
     console.log('='.repeat(60));
     
+    // ============================================================
+    // AI Daily Commentary Generation
+    // ============================================================
+    const commentaryResults = await generateAllCommentaries();
+    
     // Save scheduler log to Supabase
     const endTime = Date.now();
     const duration = Math.round((endTime - startTime) / 1000);
@@ -1300,7 +1727,9 @@ async function main() {
             failed_count: failed,
             failed_datasets: JSON.stringify(failedDatasets),
             duration_seconds: duration,
-            total_datasets: 40
+            total_datasets: 40,
+            commentary_success: commentaryResults.success,
+            commentary_failed: commentaryResults.failed
         }, { onConflict: 'run_date' });
         
         if (error) console.error('Failed to save scheduler log:', error.message);
@@ -1308,6 +1737,11 @@ async function main() {
     } catch (e) {
         console.error('Failed to save scheduler log:', e.message);
     }
+    
+    console.log('\n' + '='.repeat(60));
+    console.log('🏁 COLLECTION COMPLETE');
+    console.log(`⏱️ Total duration: ${duration} seconds`);
+    console.log('='.repeat(60));
 }
 
 main().catch(e => { console.error('Fatal:', e); process.exit(1); });
