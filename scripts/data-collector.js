@@ -297,12 +297,20 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
 
 /**
  * Call Claude Haiku API to generate commentary
+ * @param {string} lang - Language code: 'en', 'ko', 'zh', 'ja'
  */
-async function generateCommentary(sectionKey, metricsData) {
+async function generateCommentary(sectionKey, metricsData, lang = 'en') {
     if (!ANTHROPIC_API_KEY) return null;
     
     const section = COMMENTARY_SECTIONS[sectionKey];
     const metricsPrompt = formatMetricsForPrompt(sectionKey, metricsData);
+    
+    const langInstructions = {
+        en: 'Write in English.',
+        ko: 'Write in Korean (한국어로 작성하세요).',
+        zh: 'Write in Simplified Chinese (用简体中文写).',
+        ja: 'Write in Japanese (日本語で書いてください).'
+    };
     
     const systemPrompt = `You are an expert Ethereum market analyst providing daily commentary for the ETHval dashboard. 
 Your analysis should be:
@@ -313,6 +321,8 @@ Your analysis should be:
 - No disclaimers or investment advice warnings
 - Write in a professional, analytical tone
 
+${langInstructions[lang] || langInstructions.en}
+
 Format: Write 6-8 sentences as a single paragraph. Start with the current state, then trends, then implications.`;
 
     const userPrompt = `Based on the following Ethereum ${section.title} metrics data, provide a brief daily analysis:
@@ -322,7 +332,9 @@ ${metricsPrompt}
 Write a 6-8 sentence analysis covering:
 1. Current state of these metrics
 2. Notable changes in the past 7-30 days  
-3. What this suggests for ETH price direction and valuation`;
+3. What this suggests for ETH price direction and valuation
+
+${langInstructions[lang] || ''}`;
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -358,9 +370,9 @@ Write a 6-8 sentence analysis covering:
 }
 
 /**
- * Save commentary to Supabase
+ * Save commentary to Supabase (with multilingual support)
  */
-async function saveCommentary(sectionKey, commentary, metricsSnapshot) {
+async function saveCommentary(sectionKey, commentaries, metricsSnapshot) {
     const today = new Date().toISOString().split('T')[0];
     
     try {
@@ -369,7 +381,10 @@ async function saveCommentary(sectionKey, commentary, metricsSnapshot) {
             .upsert({
                 date: today,
                 section_key: sectionKey,
-                commentary: commentary,
+                commentary: commentaries.en,
+                commentary_ko: commentaries.ko || null,
+                commentary_zh: commentaries.zh || null,
+                commentary_ja: commentaries.ja || null,
                 metrics_snapshot: metricsSnapshot,
                 created_at: new Date().toISOString()
             }, { onConflict: 'date,section_key' });
@@ -386,7 +401,7 @@ async function saveCommentary(sectionKey, commentary, metricsSnapshot) {
 }
 
 /**
- * Generate all section commentaries
+ * Generate all section commentaries (4 languages: EN, KO, ZH, JA)
  */
 async function generateAllCommentaries() {
     if (!ANTHROPIC_API_KEY) {
@@ -396,8 +411,10 @@ async function generateAllCommentaries() {
     
     console.log('\n' + '='.repeat(60));
     console.log('🤖 AI DAILY COMMENTARY GENERATION (Claude Haiku)');
+    console.log('   Generating 4 languages: EN, KO, ZH, JA');
     console.log('='.repeat(60));
     
+    const LANGUAGES = ['en', 'ko', 'zh', 'ja'];
     let success = 0, failed = 0;
     
     for (const sectionKey of Object.keys(COMMENTARY_SECTIONS)) {
@@ -414,29 +431,44 @@ async function generateAllCommentaries() {
         
         console.log(`  ✓ Fetched ${Object.keys(metricsData).length} metric groups`);
         
-        // Generate commentary
-        const commentary = await generateCommentary(sectionKey, metricsData);
-        if (!commentary) {
-            console.log(`  ❌ Failed to generate commentary`);
+        // Generate commentary for each language
+        const commentaries = {};
+        for (const lang of LANGUAGES) {
+            const commentary = await generateCommentary(sectionKey, metricsData, lang);
+            if (commentary) {
+                commentaries[lang] = commentary;
+                console.log(`  ✓ ${lang.toUpperCase()}: ${commentary.length} chars`);
+            } else {
+                console.log(`  ⚠️ ${lang.toUpperCase()}: Failed`);
+            }
+            await sleep(500); // Rate limit between API calls
+        }
+        
+        // Need at least English version
+        if (!commentaries.en) {
+            console.log(`  ❌ Failed to generate English commentary`);
             failed++;
             continue;
         }
         
-        console.log(`  ✓ Generated ${commentary.length} chars`);
-        
         // Save to Supabase
-        const saved = await saveCommentary(sectionKey, commentary, metricsData);
+        const saved = await saveCommentary(sectionKey, commentaries, metricsData);
         if (saved) {
-            console.log(`  ✅ Saved to Supabase`);
+            console.log(`  ✅ Saved to Supabase (${Object.keys(commentaries).length} languages)`);
             success++;
         } else {
             failed++;
         }
         
-        // Rate limit: wait between API calls
-        await sleep(1500);
+        // Rate limit: wait between sections
+        await sleep(1000);
     }
     
+    console.log('\n' + '-'.repeat(40));
+    console.log(`📊 Commentary: ✅ ${success}/7  |  ❌ ${failed}/7`);
+    
+    return { success, failed };
+}
     console.log('\n' + '-'.repeat(40));
     console.log(`📊 Commentary: ✅ ${success}/7  |  ❌ ${failed}/7`);
     
@@ -548,7 +580,7 @@ async function collect_eth_price() {
     const records = data.map(k => ({
         date: new Date(k[0]).toISOString().split('T')[0],
         open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]),
-        close: parseFloat(k[4]), volume: 0, source: 'binance'  // Volume will be from CoinGecko
+        close: parseFloat(k[4]), volume: 0  // Volume will be from CoinGecko
     }));
     
     console.log(`  ✓ Binance price: ${records.length} days`);
@@ -597,7 +629,7 @@ async function collect_ethereum_tvl() {
     if (!data) return 0;
     const records = data.filter(d => d.date > cutoff3Y() && d.tvl > 0).map(d => ({
         date: new Date(d.date * 1000).toISOString().split('T')[0],
-        tvl: parseFloat(d.tvl.toFixed(2)), source: 'defillama'
+        tvl: parseFloat(d.tvl.toFixed(2))
     }));
     return await upsertBatch('historical_ethereum_tvl', records);
 }
@@ -633,7 +665,7 @@ async function collect_protocol_fees() {
     if (!data?.totalDataChart) return 0;
     const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
         date: new Date(d[0] * 1000).toISOString().split('T')[0],
-        fees: parseFloat(d[1].toFixed(2)), source: 'defillama'
+        fees: parseFloat(d[1].toFixed(2))
     }));
     return await upsertBatch('historical_protocol_fees', records);
 }
@@ -679,8 +711,7 @@ async function collect_staking() {
                 date: date,
                 total_staked_eth: stakedEth,
                 total_validators: Math.floor(stakedEth / 32),
-                avg_apr: null,
-                source: 'beaconchain'
+                avg_apr: null
             });
             
             prevValue = stakedEth;
@@ -1173,9 +1204,7 @@ async function collect_nvt() {
             records.push({
                 date: p.date,
                 nvt_ratio: parseFloat(nvt.toFixed(2)),
-                market_cap: mcap,
-                tx_volume: p.volume * p.close,
-                source: 'calculated'
+                market_cap: mcap
             });
         }
     }
@@ -1362,10 +1391,8 @@ async function collect_network_stats() {
     const today = new Date().toISOString().split('T')[0];
     const records = [{
         date: today,
-        epoch: data.data.epoch,
         block_count: 7200, // ~7200 blocks/day
-        avg_block_time: 12,
-        source: 'beaconchain'
+        avg_block_time: 12
     }];
     return await upsertBatch('historical_network_stats', records);
 }
@@ -1677,7 +1704,7 @@ async function main() {
     console.log('='.repeat(60));
     
     results.dune_blob = await collect_dune_blob(); await sleep(1000);
-    results.dune_l1_volume = await collect_dune_l1_volume(); await sleep(1000);
+    // results.dune_l1_volume = await collect_dune_l1_volume(); await sleep(1000); // 테이블 없음 - 스킵
     results.dune_active_addr = await collect_dune_active_addr(); await sleep(1000);
     results.dune_l2_addr = await collect_dune_l2_addr(); await sleep(1000);
     results.dune_l2_volume = await collect_dune_l2_volume(); await sleep(1000);
@@ -1727,9 +1754,7 @@ async function main() {
             failed_count: failed,
             failed_datasets: JSON.stringify(failedDatasets),
             duration_seconds: duration,
-            total_datasets: 40,
-            commentary_success: commentaryResults.success,
-            commentary_failed: commentaryResults.failed
+            total_datasets: 39  // l1_volume 제외
         }, { onConflict: 'run_date' });
         
         if (error) console.error('Failed to save scheduler log:', error.message);
@@ -1741,6 +1766,7 @@ async function main() {
     console.log('\n' + '='.repeat(60));
     console.log('🏁 COLLECTION COMPLETE');
     console.log(`⏱️ Total duration: ${duration} seconds`);
+    console.log(`🤖 AI Commentary: ${commentaryResults.success}/7 generated`);
     console.log('='.repeat(60));
 }
 
