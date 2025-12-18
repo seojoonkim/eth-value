@@ -1823,28 +1823,19 @@
             background: var(--bg-subtle);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            margin-bottom: 16px;
+            padding: 14px 16px;
+            margin-top: 12px;
+            margin-bottom: 8px;
             font-size: 12px;
-            line-height: 1.6;
+            line-height: 1.7;
             color: var(--text-secondary);
-            position: relative;
-        }
-        
-        .ai-commentary::before {
-            content: '🤖';
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            font-size: 14px;
-            opacity: 0.6;
         }
         
         .ai-commentary-header {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 8px;
+            gap: 8px;
+            margin-bottom: 10px;
             font-size: 10px;
             font-weight: 600;
             color: var(--text-muted);
@@ -1852,14 +1843,24 @@
             letter-spacing: 0.5px;
         }
         
-        .ai-commentary-date {
-            font-weight: 400;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-        }
-        
         .ai-commentary-text {
             color: var(--text);
+            font-size: 12px;
+        }
+        
+        .ai-commentary-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        
+        .ai-commentary-meta {
+            font-family: var(--font-mono);
+            font-size: 9px;
         }
         
         .ai-commentary.loading {
@@ -1867,10 +1868,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        
-        .ai-commentary.loading::before {
-            content: '';
+            background: var(--bg-subtle);
         }
         
         .ai-commentary.loading .ai-commentary-text {
@@ -1880,15 +1878,14 @@
         
         @media (max-width: 768px) {
             .ai-commentary {
-                padding: 10px 12px;
+                padding: 12px 14px;
                 font-size: 11px;
-                margin-bottom: 12px;
+                margin-top: 8px;
+                margin-bottom: 6px;
             }
             
-            .ai-commentary::before {
-                top: 8px;
-                right: 10px;
-                font-size: 12px;
+            .ai-commentary-text {
+                font-size: 11px;
             }
         }
 
@@ -11571,11 +11568,6 @@
                     <span class="metrics-subgroup-title" data-i18n="metrics.investorSentiment">Investor Sentiment</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
-                
-                <!-- AI Commentary: Investor Sentiment -->
-                <div class="ai-commentary loading" id="commentary-investor_sentiment" style="grid-column: 1 / -1; display: none;">
-                    <div class="ai-commentary-text">Loading AI analysis...</div>
-                </div>
 
                 <div class="metric-card" data-metric="realizedPrice">
                     <div class="metric-header">
@@ -11698,16 +11690,16 @@
                         <div class="metric-desc" data-i18n="desc.whaleTx">Daily 1000+ ETH transactions. Large player activity indicator.</div>
                     </div>
                 </div>
+                
+                <!-- AI Commentary: Investor Sentiment -->
+                <div class="ai-commentary loading" id="commentary-investor_sentiment" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <!-- Market Position -->
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.marketPosition">Market Position</span>
                     <div class="metrics-subgroup-line"></div>
-                </div>
-                
-                <!-- AI Commentary: Market Position -->
-                <div class="ai-commentary loading" id="commentary-market_position" style="grid-column: 1 / -1; display: none;">
-                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="ethbtc">
@@ -11813,16 +11805,16 @@
                         <div class="metric-desc" data-i18n="desc.nvt">Market cap ÷ on-chain volume (7-day avg). Lower = undervalued.</div>
                     </div>
                 </div>
+                
+                <!-- AI Commentary: Market Position -->
+                <div class="ai-commentary loading" id="commentary-market_position" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <!-- Supply Dynamics -->
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.supplyDynamics">Supply Dynamics</span>
                     <div class="metrics-subgroup-line"></div>
-                </div>
-                
-                <!-- AI Commentary: Supply Dynamics -->
-                <div class="ai-commentary loading" id="commentary-supply_dynamics" style="grid-column: 1 / -1; display: none;">
-                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="stakingApr">
@@ -11950,16 +11942,16 @@
                         <div class="metric-desc" data-i18n="desc.supply">Liquid ETH available for trading. Others = L2 bridges, lost coins.</div>
                     </div>
                 </div>
+                
+                <!-- AI Commentary: Supply Dynamics -->
+                <div class="ai-commentary loading" id="commentary-supply_dynamics" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <!-- Network Demand -->
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.networkDemand">Network Demand</span>
                     <div class="metrics-subgroup-line"></div>
-                </div>
-                
-                <!-- AI Commentary: Network Demand -->
-                <div class="ai-commentary loading" id="commentary-network_demand" style="grid-column: 1 / -1; display: none;">
-                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="gasPrice">
@@ -12062,16 +12054,16 @@
                         <div class="metric-desc" data-i18n="desc.blobCount">Data blobs posted by L2s since Dencun (Mar 2024). More blobs = growing L2 adoption.</div>
                     </div>
                 </div>
+                
+                <!-- AI Commentary: Network Demand -->
+                <div class="ai-commentary loading" id="commentary-network_demand" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <!-- User Activity -->
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.userActivity">User Activity</span>
                     <div class="metrics-subgroup-line"></div>
-                </div>
-                
-                <!-- AI Commentary: User Activity -->
-                <div class="ai-commentary loading" id="commentary-user_activity" style="grid-column: 1 / -1; display: none;">
-                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="newAddresses">
@@ -12173,16 +12165,16 @@
                         <div class="metric-desc" data-i18n="desc.txTotal">Combined L1+L2 daily transactions. Full ecosystem activity measure.</div>
                     </div>
                 </div>
+                
+                <!-- AI Commentary: User Activity -->
+                <div class="ai-commentary loading" id="commentary-user_activity" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <!-- Locked Capital -->
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.lockedCapital">Locked Capital</span>
                     <div class="metrics-subgroup-line"></div>
-                </div>
-                
-                <!-- AI Commentary: Locked Capital -->
-                <div class="ai-commentary loading" id="commentary-locked_capital" style="grid-column: 1 / -1; display: none;">
-                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="tvl">
@@ -12306,16 +12298,16 @@
                         <div class="metric-desc" data-i18n="desc.appCapital">Capital deployed in Ethereum apps (DeFi, stables, etc.).</div>
                     </div>
                 </div>
+                
+                <!-- AI Commentary: Locked Capital -->
+                <div class="ai-commentary loading" id="commentary-locked_capital" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
+                </div>
 
                 <!-- Settlement Volume -->
                 <div class="metrics-subgroup">
                     <span class="metrics-subgroup-title" data-i18n="metrics.settlementVolume">Settlement Volume</span>
                     <div class="metrics-subgroup-line"></div>
-                </div>
-                
-                <!-- AI Commentary: Settlement Volume -->
-                <div class="ai-commentary loading" id="commentary-settlement_volume" style="grid-column: 1 / -1; display: none;">
-                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
                 <div class="metric-card" data-metric="l1Volume">
@@ -12437,6 +12429,11 @@
                         <span class="change" id="dex-change">--</span>
                         <div class="metric-desc" data-i18n="desc.dex">Weekly DEX trading volume. Key indicator of DeFi activity level.</div>
                     </div>
+                </div>
+                
+                <!-- AI Commentary: Settlement Volume -->
+                <div class="ai-commentary loading" id="commentary-settlement_volume" style="grid-column: 1 / -1; display: none;">
+                    <div class="ai-commentary-text">Loading AI analysis...</div>
                 </div>
 
             </div>
@@ -18332,8 +18329,18 @@
             
             log('📝 Loading daily commentary...');
             
+            // 다국어 지원
+            const commentaryI18n = {
+                en: { header: 'Daily Analysis', by: 'by' },
+                ko: { header: '일간 분석', by: 'by' },
+                zh: { header: '每日分析', by: 'by' },
+                ja: { header: '日次分析', by: 'by' }
+            };
+            
             try {
                 const today = new Date().toISOString().split('T')[0];
+                const currentLang = state.lang || 'en';
+                const langSuffix = currentLang !== 'en' ? `_${currentLang}` : '';
                 
                 // 오늘 또는 최근 해설 가져오기
                 const res = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=*&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
@@ -18365,22 +18372,30 @@
                     }
                 }
                 
+                const i18nText = commentaryI18n[currentLang] || commentaryI18n.en;
+                
                 // 각 섹션에 해설 표시
                 for (const sectionKey of COMMENTARY_SECTIONS) {
                     const commentary = latestBySection[sectionKey];
                     const el = document.getElementById(`commentary-${sectionKey}`);
                     
                     if (el && commentary) {
-                        const dateStr = new Date(commentary.date).toLocaleDateString('en-US', { 
-                            month: 'short', day: 'numeric' 
-                        });
+                        // 다국어 commentary 필드 확인 (commentary_ko, commentary_zh 등)
+                        const localizedCommentary = commentary[`commentary${langSuffix}`] || commentary.commentary;
+                        
+                        const dateStr = new Date(commentary.date).toLocaleDateString(
+                            currentLang === 'ko' ? 'ko-KR' : currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja-JP' : 'en-US', 
+                            { month: 'short', day: 'numeric' }
+                        );
                         
                         el.innerHTML = `
                             <div class="ai-commentary-header">
-                                <span>AI Daily Analysis</span>
-                                <span class="ai-commentary-date">${dateStr}</span>
+                                <span data-i18n="commentary.header">${i18nText.header}</span>
                             </div>
-                            <div class="ai-commentary-text">${commentary.commentary}</div>
+                            <div class="ai-commentary-text">${localizedCommentary}</div>
+                            <div class="ai-commentary-footer">
+                                <span class="ai-commentary-meta">${dateStr} · ${i18nText.by} Claude Haiku</span>
+                            </div>
                         `;
                         el.classList.remove('loading');
                         el.style.display = 'block';
