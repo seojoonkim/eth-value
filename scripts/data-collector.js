@@ -307,32 +307,50 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
     
     const langInstructions = {
         en: 'Write in English.',
-        ko: 'Write in Korean (한국어로 작성하세요).',
-        zh: 'Write in Simplified Chinese (用简体中文写).',
-        ja: 'Write in Japanese (日本語で書いてください).'
+        ko: 'Write in Korean (한국어로 작성하세요). Use natural Korean financial terminology.',
+        zh: 'Write in Simplified Chinese (用简体中文写). Use standard Chinese financial terms.',
+        ja: 'Write in Japanese (日本語で書いてください). Use appropriate Japanese financial terminology.'
     };
     
-    const systemPrompt = `You are an expert Ethereum market analyst providing daily commentary for the ETHval dashboard. 
+    const systemPrompt = `You are an expert Ethereum market analyst and educator providing daily commentary for the ETHval dashboard.
+
 Your analysis should be:
-- Objective and data-driven
-- Concise (maximum 8 sentences)
-- Focus on what the metrics indicate about market conditions
-- Include brief outlook on potential price/valuation implications
+- Objective and data-driven, but accessible to non-experts
+- Educational: Explain WHY each metric matters for understanding Ethereum's value
+- Analytical: Connect current readings to historical context and market implications
+- Forward-looking: Always conclude with valuation implications
 - No disclaimers or investment advice warnings
-- Write in a professional, analytical tone
+- Write in a professional yet approachable tone
 
 ${langInstructions[lang] || langInstructions.en}
 
-Format: Write 6-8 sentences as a single paragraph. Start with the current state, then trends, then implications.`;
+Structure your response in 3 paragraphs:
+1. CURRENT STATE & EDUCATION: What do these metrics measure and why are they important? What is the current reading telling us?
+2. TREND ANALYSIS & CONTEXT: How have these metrics changed recently (7d, 30d)? What historical patterns or comparable periods should we consider?
+3. VALUATION IMPLICATIONS: Based on current trends, how might this affect ETH's fair value going forward? What should investors watch for?
 
-    const userPrompt = `Based on the following Ethereum ${section.title} metrics data, provide a brief daily analysis:
+Write 12-16 sentences total (approximately 4-6 sentences per paragraph).`;
+
+    const userPrompt = `Based on the following Ethereum ${section.title} metrics data, provide a comprehensive daily analysis:
 
 ${metricsPrompt}
 
-Write a 6-8 sentence analysis covering:
-1. Current state of these metrics
-2. Notable changes in the past 7-30 days  
-3. What this suggests for ETH price direction and valuation
+Write a detailed 3-paragraph analysis (12-16 sentences total) covering:
+
+PARAGRAPH 1 - Current State & Education:
+- Explain what these metrics measure and why they matter for ETH valuation
+- Describe the current readings and what they indicate
+- Help non-experts understand the significance
+
+PARAGRAPH 2 - Trend Analysis & Context:
+- Analyze changes over the past 7-30 days with specific percentages
+- Compare to historical patterns or notable market periods
+- Identify any warning signs or positive signals
+
+PARAGRAPH 3 - Valuation Implications:
+- Connect the metric trends to potential ETH price/valuation impact
+- Explain what scenarios could unfold based on current trajectory
+- Conclude with specific factors investors should monitor
 
 ${langInstructions[lang] || ''}`;
 
@@ -346,7 +364,7 @@ ${langInstructions[lang] || ''}`;
             },
             body: JSON.stringify({
                 model: 'claude-3-5-haiku-20241022',
-                max_tokens: 500,
+                max_tokens: 1000,
                 messages: [
                     { role: 'user', content: userPrompt }
                 ],
