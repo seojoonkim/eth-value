@@ -2452,7 +2452,7 @@
         }
 
         .model-name {
-            font-size: var(--font-h2);
+            font-size: 14px;
             font-weight: 600;
             color: var(--text);
         }
@@ -3174,7 +3174,7 @@
 
         .method-name {
             font-weight: 600;
-            font-size: var(--font-h2);
+            font-size: 14px;
             color: var(--text);
         }
 
@@ -7588,7 +7588,26 @@
             }
 
             .summary-text {
-                font-size: 11px;
+                font-size: 14px;
+                line-height: 1.7;
+            }
+        }
+        
+        /* 모바일 본문 통일 스타일 */
+        @media (max-width: 768px) {
+            .summary-text,
+            .commentary-section-body,
+            .method-desc {
+                font-size: 14px;
+                line-height: 1.7;
+            }
+            
+            .commentary-section-body p {
+                margin-bottom: 8px;
+            }
+            
+            .commentary-section-body p:last-child {
+                margin-bottom: 0;
             }
         }
 
@@ -7826,7 +7845,7 @@
             }
 
             .section-title {
-                font-size: 20px;
+                font-size: 24px;
             }
 
             /* Price Card */
@@ -7949,7 +7968,7 @@
             }
 
             .model-name {
-                font-size: 11px;
+                font-size: 12px;
             }
 
             .model-formula {
@@ -8050,11 +8069,12 @@
             }
 
             .method-name {
-                font-size: 11px;
+                font-size: 12px;
             }
 
             .method-desc {
-                font-size: 10px;
+                font-size: 14px;
+                color: var(--text-body);
             }
             
             .method-chart-value {
