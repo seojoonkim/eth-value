@@ -2472,7 +2472,7 @@ async function main() {
     const duneStart = Date.now();
     
     if (DUNE_API_KEY) {
-        const [dune_blob, dune_active_addr, dune_l2_addr, dune_l2_volume, dune_bridge, dune_whale, dune_new_addr, dune_mvrv, dune_stablecoin_vol, dune_gas_price] = await Promise.all([
+        const [dune_blob, dune_active_addr, dune_l2_addr, dune_l2_volume, dune_bridge, dune_whale, dune_new_addr, dune_mvrv, dune_stablecoin_vol, dune_gas_price, dune_l1_volume] = await Promise.all([
             collect_dune_blob(),
             collect_dune_active_addr(),
             collect_dune_l2_addr(),
@@ -2482,7 +2482,8 @@ async function main() {
             collect_dune_new_addr(),
             collect_dune_mvrv(),
             collect_dune_stablecoin_vol(),
-            collect_dune_gas_price()
+            collect_dune_gas_price(),
+            collect_dune_l1_volume()
         ]);
         
         results.dune_blob = wrapResult(dune_blob, true);
@@ -2495,6 +2496,7 @@ async function main() {
         results.dune_mvrv = wrapResult(dune_mvrv, true);
         results.dune_stablecoin_vol = wrapResult(dune_stablecoin_vol, true);
         results.dune_gas_price = wrapResult(dune_gas_price, true);
+        results.dune_l1_volume = wrapResult(dune_l1_volume, true);
         
         console.log(`  ⏱️ Dune: ${((Date.now() - duneStart) / 1000).toFixed(1)}s`);
     } else {
@@ -2565,7 +2567,7 @@ async function main() {
             failed_count: failed,
             failed_datasets: JSON.stringify(failedDatasets),
             duration_seconds: duration,
-            total_datasets: 39  // l1_volume 제외
+            total_datasets: 40  // l1_volume 포함
         }, { onConflict: 'run_date' });
         
         if (error) console.error('Failed to save scheduler log:', error.message);
