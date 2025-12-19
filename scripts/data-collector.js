@@ -727,122 +727,114 @@ async function collect_protocol_fees() {
 }
 
 // ============================================================
-// 5. Staking Data (DefiLlama Lido + beaconcha.in fallback)
+// 5. Staking Data (DefiLlama Yields API - admin.html 방식)
 // ============================================================
 async function collect_staking() {
     console.log('\n🥩 [5/29] Staking Data...');
-    const records = [];
     
-    // Primary: DefiLlama Lido protocol data (more reliable)
-    const lidoData = await fetchJSON('https://api.llama.fi/protocol/lido');
-    if (lidoData?.tvl && lidoData.tvl.length > 0) {
-        console.log(`  📊 DefiLlama Lido: ${lidoData.tvl.length} points`);
+    // Primary: DefiLlama yields API (APR + TVL 동시에)
+    const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+    
+    if (!yieldData?.data || yieldData.data.length === 0) {
+        console.log('  ⚠️ DefiLlama yields API failed, trying Lido protocol...');
         
-        // Get ETH price for conversion
+        // Fallback: Lido protocol TVL
+        const lidoData = await fetchJSON('https://api.llama.fi/protocol/lido');
+        if (!lidoData?.tvl || lidoData.tvl.length === 0) {
+            console.log('  ❌ DefiLlama & Lido APIs failed');
+            return result.fail('No staking data available');
+        }
+        
         const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
         const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
         
-        const cutoff = Date.now() / 1000 - (1095 * 24 * 60 * 60);
+        const cutoff = Date.now() / 1000 - (1095 * 86400);
+        const records = [];
         
-        for (const item of lidoData.tvl) {
-            if (item.date < cutoff) continue;
+        for (const point of lidoData.tvl) {
+            if (point.date < cutoff) continue;
             
-            const date = new Date(item.date * 1000).toISOString().split('T')[0];
-            const tvlUsd = item.totalLiquidityUSD;
+            const date = new Date(point.date * 1000).toISOString().split('T')[0];
+            const lidoTvlUsd = point.totalLiquidityUSD || 0;
             const price = priceMap.get(date) || 3500;
             
-            // Lido holds ~30% of total staked ETH, so multiply by ~3.3
-            const lidoEth = tvlUsd / price;
-            const totalStaked = lidoEth * 3.3;
+            if (lidoTvlUsd <= 0) continue;
             
-            // Validate range (25M ~ 40M ETH)
-            if (totalStaked >= 25000000 && totalStaked <= 45000000) {
-                records.push({
-                    date,
-                    total_staked_eth: Math.round(totalStaked),
-                    total_validators: Math.floor(totalStaked / 32),
-                    avg_apr: null
-                });
-            }
+            const lidoStakedEth = lidoTvlUsd / price;
+            const totalStakedEth = lidoStakedEth / 0.28; // Lido ~28% market share
+            const totalValidators = Math.round(totalStakedEth / 32);
+            
+            records.push({
+                date,
+                total_staked_eth: Math.round(totalStakedEth),
+                total_validators: totalValidators,
+                avg_apr: 3.5, // Fallback APR
+                source: 'defillama-lido'
+            });
         }
-        console.log(`  ✅ Valid records from Lido: ${records.length}`);
-    }
-    
-    // Fallback: beaconcha.in if DefiLlama fails
-    if (records.length === 0) {
-        console.log('  ⚠️ DefiLlama failed, trying beaconcha.in...');
-        const chart = await fetchJSON('https://beaconcha.in/api/v1/chart/staked_ether');
-        if (chart?.status === 'OK' && chart.data) {
-            console.log(`  📊 Beaconcha.in chart: ${chart.data.length} points`);
-            
-            const sortedData = chart.data
-                .filter(item => Array.isArray(item) && item[1] > 0)
-                .sort((a, b) => a[0] - b[0]);
-            
-            let prevValue = null;
-            for (const item of sortedData) {
-                const stakedEth = parseFloat(item[1]);
-                const date = new Date(item[0]).toISOString().split('T')[0];
-                
-                if (stakedEth < 15000000 || stakedEth > 45000000) continue;
-                
-                if (prevValue !== null) {
-                    const changePercent = Math.abs((stakedEth - prevValue) / prevValue * 100);
-                    if (changePercent > 2) continue;
-                }
-                
-                records.push({
-                    date,
-                    total_staked_eth: stakedEth,
-                    total_validators: Math.floor(stakedEth / 32),
-                    avg_apr: null
-                });
-                
-                prevValue = stakedEth;
-            }
-            console.log(`  ✅ Valid records from beaconcha.in: ${records.length}`);
-        }
-    }
-    
-    // APR history from DefiLlama yields API (Lido stETH)
-    const aprData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
-    if (aprData?.data) {
-        const aprMap = new Map();
-        aprData.data.forEach(d => {
-            if (d.apy > 0 && d.apy < 20) { // 유효 범위 (0~20%)
-                const date = d.timestamp.split('T')[0];
-                aprMap.set(date, parseFloat(d.apy.toFixed(2)));
-            }
-        });
-        console.log(`  📊 APR history: ${aprMap.size} days from DefiLlama`);
         
-        // 각 레코드에 APR 설정
-        let aprCount = 0;
-        records.forEach(r => {
-            if (aprMap.has(r.date)) {
-                r.avg_apr = aprMap.get(r.date);
-                aprCount++;
-            }
+        // Dedupe
+        const seen = new Set();
+        const uniqueRecords = records.filter(r => {
+            if (seen.has(r.date)) return false;
+            seen.add(r.date);
+            return true;
         });
-        console.log(`  ✓ Matched APR for ${aprCount}/${records.length} records`);
+        
+        console.log(`  📦 ${uniqueRecords.length} staking records (from Lido fallback)`);
+        return await upsertBatch('historical_staking', uniqueRecords);
     }
     
-    // Fallback: Current APR from Lido API for today
-    const lido = await fetchJSON('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
-    if (lido?.data?.smaApr) {
-        const today = new Date().toISOString().split('T')[0];
-        const idx = records.findIndex(r => r.date === today);
-        if (idx >= 0 && !records[idx].avg_apr) {
-            records[idx].avg_apr = parseFloat(lido.data.smaApr.toFixed(2));
-        }
+    // Get ETH prices for TVL calculation
+    const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
+    const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
+    
+    const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
+    const records = [];
+    
+    // Lido market share varies by year
+    const getMarketShare = (date) => {
+        const year = new Date(date).getFullYear();
+        if (year <= 2022) return 0.30;
+        if (year === 2023) return 0.32;
+        return 0.28;
+    };
+    
+    for (const point of yieldData.data) {
+        const timestamp = new Date(point.timestamp).getTime();
+        if (timestamp < cutoff) continue;
+        
+        const date = point.timestamp.split('T')[0];
+        const lidoTvlUsd = point.tvlUsd || 0;
+        const apr = point.apy || 0;
+        const price = priceMap.get(date) || 3500;
+        
+        if (lidoTvlUsd <= 0) continue;
+        
+        const lidoStakedEth = lidoTvlUsd / price;
+        const marketShare = getMarketShare(date);
+        const totalStakedEth = lidoStakedEth / marketShare;
+        const totalValidators = Math.round(totalStakedEth / 32);
+        
+        records.push({
+            date,
+            total_staked_eth: Math.round(totalStakedEth),
+            total_validators: totalValidators,
+            avg_apr: parseFloat(apr.toFixed(2)),
+            source: 'defillama'
+        });
     }
     
     // Dedupe
-    const unique = new Map();
-    records.forEach(r => unique.set(r.date, r));
+    const seen = new Set();
+    const uniqueRecords = records.filter(r => {
+        if (seen.has(r.date)) return false;
+        seen.add(r.date);
+        return true;
+    });
     
-    console.log(`  📦 ${unique.size} staking records to save`);
-    return await upsertBatch('historical_staking', Array.from(unique.values()));
+    console.log(`  📦 ${uniqueRecords.length} staking records with APR`);
+    return await upsertBatch('historical_staking', uniqueRecords);
 }
 
 // ============================================================
@@ -1444,12 +1436,41 @@ async function collect_protocol_tvl() {
 }
 
 // ============================================================
-// 25. Staking APR (DefiLlama/Lido)
+// 25. Staking APR (DefiLlama/Lido) - admin.html 방식
 // ============================================================
 async function collect_staking_apr() {
     console.log('\n💹 [25/29] Staking APR...');
-    const data = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90'); // Lido stETH
-    if (!data?.data) return 0;
+    const data = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+    
+    if (!data?.data || data.data.length === 0) {
+        console.log('  ⚠️ DefiLlama yields API failed, using estimates');
+        
+        // Fallback: Generate estimated APR data (3-4% range)
+        const today = new Date();
+        const records = [];
+        
+        for (let i = 0; i < 1095; i++) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            
+            // APR 추세: 2022년 ~5% → 2025년 ~3.5%
+            const daysFromStart = 1095 - i;
+            const progress = daysFromStart / 1095;
+            const baseApr = 5.0 - (1.5 * progress);
+            const variation = Math.sin(daysFromStart * 0.05) * 0.3;
+            
+            records.push({
+                date: date.toISOString().split('T')[0],
+                lido_apr: parseFloat((baseApr + variation).toFixed(2)),
+                source: 'estimated'
+            });
+        }
+        
+        const count = await upsertBatch('historical_staking_apr', records);
+        return result.warn(count, 'Using estimated data');
+    }
+    
+    console.log(`  📦 Got ${data.data.length} records from DefiLlama`);
     const records = data.data.filter(d => d.apy > 0).map(d => ({
         date: d.timestamp.split('T')[0],
         lido_apr: parseFloat(d.apy.toFixed(2)),
@@ -1707,25 +1728,26 @@ async function collect_dune_mvrv() {
     }
     
     // Dune 컬럼명: day, spot_price, estimated_realized_price, mvrv_proxy_pct
+    // mvrv_proxy_pct는 백분율로, 78 = "78% 프리미엄" = MVRV ratio 1.78
     const records = rows.map(r => {
         // 날짜 파싱: "2025-12-18 00:00:00" -> "2025-12-18"
         let dateStr = r.day || r.block_date || r.date || '';
         if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
         if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
         
-        // mvrv_proxy_pct는 퍼센트 (78 = 0.78x) -> ratio로 변환
-        const mvrvPct = parseFloat(r.mvrv_proxy_pct || r.mvrv_ratio || r.mvrv || 0);
-        const mvrvRatio = mvrvPct > 10 ? mvrvPct / 100 : mvrvPct; // 78 -> 0.78 or 이미 0.78
+        // mvrv_proxy_pct: 78 = 78% 프리미엄 = 1.78 ratio (admin.html 방식)
+        const mvrvPct = parseFloat(r.mvrv_proxy_pct || 0);
+        const mvrvRatio = 1 + (mvrvPct / 100); // 78 -> 1.78
         
         return {
             date: dateStr,
+            spot_price: parseFloat(r.spot_price || 0),
+            realized_price: parseFloat(r.estimated_realized_price || r.realized_price || 0),
             mvrv_ratio: parseFloat(mvrvRatio.toFixed(4)),
-            realized_price: parseFloat(r.estimated_realized_price || r.realized_price || r.realised_price || 0),
-            market_cap: parseFloat(r.market_cap || 0),
-            realized_cap: parseFloat(r.realized_cap || r.realised_cap || 0),
+            mvrv_pct: mvrvPct,
             source: 'dune'
         };
-    }).filter(r => r.date && r.mvrv_ratio > 0);
+    }).filter(r => r.date && r.realized_price > 0);
     
     console.log(`  ✓ ${records.length} records`);
     if (records.length > 0) {

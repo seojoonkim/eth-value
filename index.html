@@ -13530,28 +13530,6 @@
         const { createClient } = supabase;
         let supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Supabase 클라이언트 재생성 함수
-        function recreateSupabaseClient() {
-            log('Recreating Supabase client...');
-            supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            return supabaseClient;
-        }
-        
-        // 탭이 다시 활성화되었을 때 Supabase 연결 확인 및 재연결
-        let lastVisibilityChange = Date.now();
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                const now = Date.now();
-                const elapsed = now - lastVisibilityChange;
-                // 5초 이상 비활성화되었다가 돌아오면 클라이언트 재생성
-                if (elapsed > 5000) {
-                    log(`Tab was hidden for ${elapsed}ms, recreating Supabase client`);
-                    recreateSupabaseClient();
-                }
-            }
-            lastVisibilityChange = Date.now();
-        });
-        
         // Current user state
         let currentUser = null;
         let isAdmin = false;
@@ -13582,28 +13560,64 @@
             log('Scroll unlocked, restored to', savedScrollY);
         }
         
-        // 강제 스크롤 복원 (비상용)
+        // 강제 스크롤 복원 (비상용) - 모든 인라인 스타일 초기화
         function forceUnlockScroll() {
             document.body.classList.remove('modal-open');
-            document.body.style.cssText = document.body.style.cssText.replace(/position:\s*fixed[^;]*;?/gi, '').replace(/top:\s*-?\d+px[^;]*;?/gi, '').replace(/overflow:\s*hidden[^;]*;?/gi, '');
+            // 모든 스크롤 차단 관련 인라인 스타일 제거
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.left = '';
+            document.body.style.right = '';
+            document.body.style.bottom = '';
+            document.body.style.width = '';
+            document.body.style.height = '';
+            document.body.style.overflow = '';
+            document.body.style.overflowX = '';
+            document.body.style.overflowY = '';
+            document.documentElement.style.overflow = '';
             log('Force scroll unlock executed');
         }
         
-        // 안전장치: 모달이 없는데 modal-open이 남아있으면 복구
-        setInterval(() => {
+        // 스크롤 가능 여부 확인 및 복구
+        function ensureScrollable() {
             const hasModal = document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay, .login-modal-overlay, .historical-modal-overlay');
-            if (!hasModal && document.body.classList.contains('modal-open')) {
-                console.warn('⚠️ Orphan modal-open detected, force unlocking scroll...');
+            
+            if (hasModal) {
+                // 모달이 있으면 스크롤 잠금 유지
+                return;
+            }
+            
+            // 모달이 없는데 스크롤 차단 상태면 복구
+            if (document.body.classList.contains('modal-open')) {
+                console.warn('⚠️ Orphan modal-open detected, fixing...');
                 forceUnlockScroll();
             }
-        }, 2000);
+            
+            // body에 스크롤 차단 인라인 스타일이 남아있으면 제거
+            const bodyStyle = document.body.style;
+            if (bodyStyle.position === 'fixed' || bodyStyle.overflow === 'hidden') {
+                console.warn('⚠️ Scroll-blocking styles detected, fixing...');
+                forceUnlockScroll();
+            }
+        }
+        
+        // 안전장치: 주기적으로 스크롤 상태 확인
+        setInterval(ensureScrollable, 3000);
+        
+        // 탭 전환 시 즉시 스크롤 상태 확인
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                log('Tab visible, checking scroll state...');
+                // 약간의 지연 후 확인 (브라우저가 상태 복원 완료 후)
+                setTimeout(ensureScrollable, 100);
+            }
+        });
         
         // 페이지 터치/클릭 시 스크롤 복구 확인
-        document.addEventListener('touchstart', () => {
-            if (!document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay') && document.body.classList.contains('modal-open')) {
-                console.warn('⚠️ Touch detected with orphan modal-open, fixing...');
-                forceUnlockScroll();
-            }
+        document.addEventListener('touchstart', ensureScrollable, { passive: true });
+        document.addEventListener('click', () => {
+            // 클릭 시에도 확인 (모달 외부 클릭 등)
+            setTimeout(ensureScrollable, 100);
         }, { passive: true });
         
         // Check if user is admin
@@ -14835,9 +14849,8 @@
                         2000
                     );
                 } catch (testErr) {
-                    log('Connection test failed, recreating client...', testErr);
-                    recreateSupabaseClient();
-                    // 재연결 후 잠시 대기
+                    log('Connection test failed, continuing anyway...', testErr);
+                    // 연결 테스트 실패해도 계속 진행 (Supabase가 자동 재연결함)
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
                 
@@ -26301,8 +26314,20 @@
                 if (!sourceSpan) return;
                 
                 // 기존 배지 제거
-                const existing = sourceSpan.querySelector('.data-source-badge');
+                const existing = sourceSpan.querySelector('.data-source-badge, .fake-data-badge');
                 if (existing) existing.remove();
+                
+                // 기존 est 표시도 제거
+                sourceSpan.innerHTML = sourceSpan.innerHTML.replace(/<span class="fake-data-badge"[^>]*>est<\/span>/g, '');
+                
+                // 가짜 데이터 표시: 소스 텍스트 끝에 보라색 est 추가
+                // fallback/estimate/generated = 가짜 데이터
+                const isFakeData = ['fallback', 'estimate', 'estimated', 'generated'].includes(source);
+                if (isFakeData) {
+                    const baseText = sourceSpan.textContent.trim();
+                    sourceSpan.innerHTML = `${baseText} <span class="fake-data-badge" style="color:#a78bfa;font-size:0.85em;font-weight:500;">est</span>`;
+                    return;
+                }
                 
                 // Synced sources = no badge (normal state, most data)
                 if (source === 'supabase' || source === 'dune' || source === 'beaconchain') {
@@ -26564,20 +26589,11 @@
                 initCommunity();
             });
             
-            // 브라우저 탭 전환 후 돌아왔을 때 모달 상태 복구 (Supabase 재연결은 상단에서 이미 처리)
+            // 브라우저 탭 전환 후 돌아왔을 때 (세션 확인만 - 스크롤은 상단에서 처리)
             document.addEventListener('visibilitychange', async () => {
                 if (document.visibilityState === 'visible') {
-                    log('Tab visible again, checking modal state...');
-                    
-                    // 모달이 열려있는지 확인하고 body overflow 상태 복구
-                    const existingModal = document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay');
-                    if (existingModal) {
-                        lockScroll();
-                        
-                    } else if (document.body.classList.contains('modal-open')) {
-                        unlockScroll();
-                        
-                    }
+                    // 스크롤 상태 즉시 확인
+                    ensureScrollable();
                     
                     // 세션은 비동기로 체크 (실패해도 무시)
                     setTimeout(async () => {
@@ -26601,25 +26617,14 @@
             // 페이지가 bfcache에서 복원될 때 (뒤로/앞으로 버튼)
             window.addEventListener('pageshow', (event) => {
                 if (event.persisted) {
-                    log('Page restored from bfcache, checking modal state...');
-                    const existingModal = document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay');
-                    if (!existingModal && document.body.classList.contains('modal-open')) {
-                        unlockScroll();
-                        
-                    }
+                    log('Page restored from bfcache');
+                    ensureScrollable();
                 }
             });
             
             // 윈도우 포커스 복귀 시 (다른 창에서 돌아왔을 때)
             window.addEventListener('focus', () => {
-                log('Window focused, checking modal state...');
-                setTimeout(() => {
-                    const existingModal = document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay');
-                    if (existingModal) {
-                        // 모달이 있으면 z-index 재확인
-                        existingModal.style.zIndex = '10000';
-                    }
-                }, 100);
+                setTimeout(ensureScrollable, 100);
             });
 
             // Language selector
