@@ -157,6 +157,19 @@
                     <button class="btn btn-secondary" onclick="loadTodayCommentary()" id="btn-view-today">
                         📋 View Today's Commentary
                     </button>
+                    <button class="btn" onclick="previewAllSectionsData()" id="btn-data-preview" style="background: #2d4a3e; border-color: #3d6a4e;">
+                        🔍 Data Preview (All Sections)
+                    </button>
+                </div>
+                
+                <!-- Data Preview Panel -->
+                <div id="data-preview-panel" style="display: none; margin-top: 16px; background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="font-weight: 600; font-size: 14px;">🔍 AI Commentary Data Preview</div>
+                        <button class="btn btn-sm" onclick="document.getElementById('data-preview-panel').style.display='none'" style="background: transparent; border: none; font-size: 16px;">✕</button>
+                    </div>
+                    <div id="data-preview-content" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; max-height: 600px; overflow-y: auto;">
+                    </div>
                 </div>
                 
                 <!-- Today's Commentary Viewer -->
@@ -3851,7 +3864,7 @@
                     fear_greed: 'historical_fear_greed',
                     funding_rate: 'historical_funding_rate',
                     exchange_reserve: 'historical_exchange_reserve',
-                    whale_tx: 'historical_whale_transactions'
+                    whale_tx: 'historical_whale_tx'
                 }
             },
             // 02.2 시장 포지션 - 5개 차트
@@ -3987,7 +4000,7 @@
                 'historical_bridge_volume': 'bridge_volume_eth',
                 'historical_stablecoin_volume': 'daily_volume',
                 'historical_l2_stablecoin_volume': 'daily_volume',
-                'historical_whale_transactions': 'whale_count',
+                'historical_whale_tx': 'whale_tx_count',
                 'historical_new_addresses': 'new_addresses',
                 'historical_active_addresses': 'active_addresses',
                 'historical_transactions': 'tx_count',
@@ -4123,6 +4136,183 @@
             }
             
             return metricsData;
+        }
+        
+        // ============================================================
+        // Data Preview Function - 모든 섹션 데이터 검증
+        // ============================================================
+        async function previewAllSectionsData() {
+            const btn = document.getElementById('btn-data-preview');
+            const panel = document.getElementById('data-preview-panel');
+            const content = document.getElementById('data-preview-content');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Loading...';
+            panel.style.display = 'block';
+            content.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">Loading all section data...</div>';
+            
+            const sections = Object.keys(COMMENTARY_SECTIONS);
+            let html = '';
+            
+            // 필드별 값 추출 함수
+            const extractValue = (latest) => {
+                if (!latest) return { field: 'N/A', value: null };
+                
+                const fieldMap = [
+                    { field: 'index', label: 'Fear & Greed' },
+                    { field: 'tvl', label: 'TVL' },
+                    { field: 'rate', label: 'Rate' },
+                    { field: 'funding_rate', label: 'Funding Rate' },
+                    { field: 'total_staked_eth', label: 'Staked ETH' },
+                    { field: 'apy', label: 'APY' },
+                    { field: 'dominance', label: 'Dominance' },
+                    { field: 'eth_dominance', label: 'ETH Dominance' },
+                    { field: 'ratio', label: 'Ratio' },
+                    { field: 'reserve', label: 'Reserve' },
+                    { field: 'avg_gas_price_gwei', label: 'Gas Price' },
+                    { field: 'gas_utilization', label: 'Gas Util' },
+                    { field: 'mvrv_ratio', label: 'MVRV Ratio' },
+                    { field: 'realized_price', label: 'Realized Price' },
+                    { field: 'spot_price', label: 'Spot Price' },
+                    { field: 'daily_volume', label: 'Daily Volume' },
+                    { field: 'tx_volume_usd', label: 'TX Volume USD' },
+                    { field: 'tx_volume_eth', label: 'TX Volume ETH' },
+                    { field: 'bridge_volume_eth', label: 'Bridge Volume' },
+                    { field: 'blob_count', label: 'Blob Count' },
+                    { field: 'blob_fee_eth', label: 'Blob Fee' },
+                    { field: 'active_addresses', label: 'Active Addr' },
+                    { field: 'new_addresses', label: 'New Addr' },
+                    { field: 'tx_count', label: 'TX Count' },
+                    { field: 'volatility', label: 'Volatility' },
+                    { field: 'daily_burn', label: 'Daily Burn' },
+                    { field: 'eth_burnt', label: 'ETH Burnt' },
+                    { field: 'burned', label: 'Burned' },
+                    { field: 'eth_supply', label: 'ETH Supply' },
+                    { field: 'circulating_supply', label: 'Circ. Supply' },
+                    { field: 'market_cap', label: 'Market Cap' },
+                    { field: 'fees', label: 'Fees' },
+                    { field: 'daily_fees', label: 'Daily Fees' },
+                    { field: 'whale_count', label: 'Whale Count' },
+                    { field: 'whale_tx_count', label: 'Whale TX' },
+                    { field: 'large_tx_count', label: 'Large TX' },
+                    { field: 'value', label: 'Value' },
+                ];
+                
+                for (const { field, label } of fieldMap) {
+                    if (latest[field] !== undefined && latest[field] !== null) {
+                        return { field, label, value: latest[field] };
+                    }
+                }
+                
+                // 발견된 모든 필드 나열
+                const foundFields = Object.keys(latest).filter(k => k !== 'date' && k !== 'source' && k !== 'id');
+                return { field: foundFields.join(', ') || 'unknown', value: null };
+            };
+            
+            // 값 포맷팅 함수
+            const formatVal = (v) => {
+                if (v === null || v === undefined) return '<span style="color: #f85149;">NULL</span>';
+                if (typeof v === 'number') {
+                    if (v >= 1e12) return (v / 1e12).toFixed(2) + 'T';
+                    if (v >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+                    if (v >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+                    if (v >= 1e3) return (v / 1e3).toFixed(2) + 'K';
+                    if (v < 1 && v > 0) return v.toFixed(4);
+                    return v.toFixed(2);
+                }
+                return String(v);
+            };
+            
+            for (const sectionKey of sections) {
+                const section = COMMENTARY_SECTIONS[sectionKey];
+                
+                try {
+                    const metricsData = await fetchSectionMetricsForCommentary(sectionKey);
+                    
+                    let tableRows = '';
+                    let successCount = 0;
+                    let totalCount = Object.keys(section.tables).length;
+                    
+                    for (const [metricKey, tableName] of Object.entries(section.tables)) {
+                        const data = metricsData[metricKey];
+                        const hasLatest = !!data?.latest;
+                        const hasRecent = data?.recent?.length > 0;
+                        const has30d = !!data?.thirtyDaysAgo;
+                        
+                        const extracted = extractValue(data?.latest);
+                        
+                        if (hasLatest && extracted.value !== null) successCount++;
+                        
+                        const statusColor = hasLatest && extracted.value !== null ? '#3fb950' : '#f85149';
+                        const statusIcon = hasLatest && extracted.value !== null ? '✓' : '✗';
+                        
+                        tableRows += `
+                            <tr style="border-bottom: 1px solid #21262d;">
+                                <td style="padding: 6px 8px; font-size: 11px; color: #8b949e;">${metricKey}</td>
+                                <td style="padding: 6px 8px; font-size: 10px; color: #6e7681; font-family: monospace;">${tableName}</td>
+                                <td style="padding: 6px 8px; text-align: center;">
+                                    <span style="color: ${statusColor}; font-weight: bold;">${statusIcon}</span>
+                                </td>
+                                <td style="padding: 6px 8px; font-size: 10px; color: #58a6ff;">${extracted.label || extracted.field}</td>
+                                <td style="padding: 6px 8px; font-size: 11px; font-family: monospace; color: ${extracted.value !== null ? '#e6edf3' : '#f85149'};">
+                                    ${formatVal(extracted.value)}
+                                </td>
+                                <td style="padding: 6px 8px; font-size: 10px; color: #8b949e;">
+                                    ${hasRecent ? data.recent.length + 'd' : '-'} / ${has30d ? '30d' : '-'}
+                                </td>
+                                <td style="padding: 6px 8px; font-size: 10px; color: #8b949e;">
+                                    ${data?.latest?.date || '-'}
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    const successRate = Math.round(successCount / totalCount * 100);
+                    const bgColor = successRate === 100 ? '#1a2e1a' : (successRate >= 50 ? '#2e2a1a' : '#2e1a1a');
+                    const headerColor = successRate === 100 ? '#3fb950' : (successRate >= 50 ? '#d29922' : '#f85149');
+                    
+                    html += `
+                        <div style="background: ${bgColor}; border: 1px solid #30363d; border-radius: 8px; overflow: hidden;">
+                            <div style="padding: 10px 12px; background: #161b22; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 600; font-size: 12px;">${section.title}</span>
+                                <span style="font-size: 11px; color: ${headerColor}; font-weight: bold;">
+                                    ${successCount}/${totalCount} (${successRate}%)
+                                </span>
+                            </div>
+                            <div style="padding: 4px; font-size: 10px; color: #8b949e; background: #0d1117;">
+                                Charts: ${section.charts.join(', ')}
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #161b22; font-size: 10px; color: #8b949e;">
+                                        <th style="padding: 6px 8px; text-align: left;">Metric</th>
+                                        <th style="padding: 6px 8px; text-align: left;">Table</th>
+                                        <th style="padding: 6px 8px; text-align: center;">OK</th>
+                                        <th style="padding: 6px 8px; text-align: left;">Field</th>
+                                        <th style="padding: 6px 8px; text-align: left;">Value</th>
+                                        <th style="padding: 6px 8px; text-align: left;">History</th>
+                                        <th style="padding: 6px 8px; text-align: left;">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } catch (e) {
+                    html += `
+                        <div style="background: #2e1a1a; border: 1px solid #f85149; border-radius: 8px; padding: 12px;">
+                            <div style="font-weight: 600; color: #f85149;">${section.title}</div>
+                            <div style="font-size: 11px; color: #8b949e; margin-top: 4px;">Error: ${e.message}</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            content.innerHTML = html;
+            btn.disabled = false;
+            btn.textContent = '🔍 Data Preview (All Sections)';
         }
         
         function formatMetricsForPrompt(sectionKey, metricsData) {
@@ -4285,6 +4475,11 @@
                     metricName = 'network_fees';
                 }
                 // Whale Transactions
+                else if (latest.whale_tx_count !== undefined) {
+                    currentVal = latest.whale_tx_count;
+                    oldVal = older?.whale_tx_count;
+                    metricName = 'whale_transactions';
+                }
                 else if (latest.whale_count !== undefined) {
                     currentVal = latest.whale_count;
                     oldVal = older?.whale_count;
