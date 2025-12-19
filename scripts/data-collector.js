@@ -804,12 +804,37 @@ async function collect_staking() {
         }
     }
     
-    // APR from Lido
+    // APR history from DefiLlama yields API (Lido stETH)
+    const aprData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+    if (aprData?.data) {
+        const aprMap = new Map();
+        aprData.data.forEach(d => {
+            if (d.apy > 0 && d.apy < 20) { // 유효 범위 (0~20%)
+                const date = d.timestamp.split('T')[0];
+                aprMap.set(date, parseFloat(d.apy.toFixed(2)));
+            }
+        });
+        console.log(`  📊 APR history: ${aprMap.size} days from DefiLlama`);
+        
+        // 각 레코드에 APR 설정
+        let aprCount = 0;
+        records.forEach(r => {
+            if (aprMap.has(r.date)) {
+                r.avg_apr = aprMap.get(r.date);
+                aprCount++;
+            }
+        });
+        console.log(`  ✓ Matched APR for ${aprCount}/${records.length} records`);
+    }
+    
+    // Fallback: Current APR from Lido API for today
     const lido = await fetchJSON('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
     if (lido?.data?.smaApr) {
         const today = new Date().toISOString().split('T')[0];
         const idx = records.findIndex(r => r.date === today);
-        if (idx >= 0) records[idx].avg_apr = parseFloat(lido.data.smaApr.toFixed(2));
+        if (idx >= 0 && !records[idx].avg_apr) {
+            records[idx].avg_apr = parseFloat(lido.data.smaApr.toFixed(2));
+        }
     }
     
     // Dedupe
