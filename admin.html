@@ -4421,14 +4421,17 @@ ${headers.insight}
 - Bullish/bearish signals and what to watch
 - 2-3 sentences
 
-STYLE:
+CRITICAL RULES:
 - ${langInstructions[lang]}
+- Start DIRECTLY with the first section header (${headers.status}). NO preamble, introduction, or "Here's the analysis" text.
+- If some data is missing or incomplete, analyze what IS available. NEVER refuse to analyze or ask for more data.
 - Be specific with numbers from the data provided
 - Sound confident but balanced
-- No disclaimers or generic statements
-- Professional analyst tone`;
+- No disclaimers, apologies, or generic statements
+- Professional analyst tone
+- NEVER ask questions back to the user`;
 
-            const userPrompt = `Analyze ALL the following metrics comprehensively and write the ${section.title} commentary:\n\n${metricsPrompt}`;
+            const userPrompt = `Analyze the following metrics and write the ${section.title} commentary. Start directly with "${headers.status}" - no introduction:\n\n${metricsPrompt}`;
             
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',

@@ -595,19 +595,24 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
     
     const config = langConfig[lang] || langConfig.en;
     
-    const systemPrompt = `You are an expert Ethereum market analyst and educator providing daily commentary for the ETHval dashboard.
+    const systemPrompt = `You are an expert Ethereum market analyst providing daily commentary for the ETHval dashboard.
 
 Your analysis should be:
 - Objective and data-driven, but accessible to non-experts
 - Educational: Explain WHY each metric matters for understanding Ethereum's value
 - Analytical: Connect current readings to historical context and market implications
 - Forward-looking: Always conclude with valuation implications
-- No disclaimers or investment advice warnings
-- Write in a professional yet approachable tone
 
 ${config.instruction}
 
-CRITICAL: You MUST structure your response with exactly these 3 section headers (include the emoji):
+CRITICAL RULES:
+1. Start DIRECTLY with the first section header (${config.headers.current}). NO preamble, introduction, or "Here's the analysis" text.
+2. If some data is missing or incomplete, analyze what IS available. NEVER refuse to analyze or ask for more data.
+3. NEVER ask questions back - always provide complete analysis with available data.
+4. No disclaimers, apologies, or investment advice warnings.
+5. Professional yet approachable tone.
+
+STRUCTURE (exactly 3 sections with these headers):
 
 ${config.headers.current}
 [3-4 sentences about current state]
@@ -616,32 +621,13 @@ ${config.headers.trend}
 [3-4 sentences about recent trends]
 
 ${config.headers.valuation}
-[3-4 sentences about valuation implications]
+[3-4 sentences about valuation implications]`;
 
-Each section header must be on its own line, followed by a blank line, then the content paragraph.`;
-
-    const userPrompt = `Based on the following Ethereum ${section.title} metrics data, provide a structured daily analysis:
+    const userPrompt = `Analyze the following Ethereum ${section.title} metrics. Start DIRECTLY with "${config.headers.current}" - no introduction or preamble:
 
 ${metricsPrompt}
 
-Write a structured analysis with EXACTLY these 3 sections:
-
-${config.headers.current}
-- Explain what these metrics measure and why they matter for ETH valuation
-- Describe the current readings and what they indicate
-(3-4 sentences, be concise)
-
-${config.headers.trend}
-- Analyze changes over the past 7-30 days with specific percentages
-- Identify any warning signs or positive signals
-(3-4 sentences, be concise)
-
-${config.headers.valuation}
-- Connect the metric trends to potential ETH price/valuation impact
-- Conclude with what investors should watch for
-(3-4 sentences, be concise)
-
-Remember: Include the section headers with emojis exactly as shown above. Keep each section focused and concise.`;
+Write exactly 3 sections. If any data is missing, work with what's available:`;
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -796,28 +782,44 @@ const DUNE_QUERIES = {
 // Helper Functions
 // ============================================================
 async function fetchJSON(url, retries = 3) {
+    const urlShort = url.split('?')[0].replace('https://', '').substring(0, 50);
+    
     for (let i = 0; i < retries; i++) {
         try {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 30000);
             const res = await fetch(url, {
                 signal: controller.signal,
-                headers: { 'User-Agent': 'ETHval/7.0', 'Accept': 'application/json' }
+                headers: { 'User-Agent': 'ETHval/7.2', 'Accept': 'application/json' }
             });
             clearTimeout(timeout);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            
+            if (!res.ok) {
+                console.error(`  ⚠️ HTTP ${res.status} from ${urlShort}`);
+                if (res.status === 429) {
+                    console.error(`  ⚠️ Rate limited! Waiting ${5 * (i + 1)}s...`);
+                    await sleep(5000 * (i + 1)); // Rate limit: 더 긴 대기
+                    continue;
+                }
+                throw new Error(`HTTP ${res.status}`);
+            }
             return await res.json();
         } catch (e) {
+            console.error(`  ⚠️ Fetch error (attempt ${i + 1}/${retries}): ${e.message}`);
             if (i < retries - 1) await sleep(2000 * (i + 1));
         }
     }
+    console.error(`  ❌ Failed after ${retries} attempts: ${urlShort}`);
     return null;
 }
 
 // Dune API helper - fetch all results with pagination
 // Note: Dune queries are scheduled to auto-refresh daily at 03:30-04:00 UTC
 async function fetchDuneResults(queryId, maxRows = 10000) {
-    if (!DUNE_API_KEY) return null;
+    if (!DUNE_API_KEY) {
+        console.log(`  ⚠️ No DUNE_API_KEY`);
+        return null;
+    }
     
     const allRows = [];
     const pageSize = 1000;
@@ -825,20 +827,37 @@ async function fetchDuneResults(queryId, maxRows = 10000) {
     
     try {
         while (offset < maxRows) {
-            const response = await fetch(
-                `https://api.dune.com/api/v1/query/${queryId}/results?limit=${pageSize}&offset=${offset}`,
-                { headers: { 'X-Dune-API-Key': DUNE_API_KEY } }
-            );
+            const url = `https://api.dune.com/api/v1/query/${queryId}/results?limit=${pageSize}&offset=${offset}`;
+            const response = await fetch(url, { 
+                headers: { 'X-Dune-API-Key': DUNE_API_KEY },
+                timeout: 30000
+            });
             
             if (!response.ok) {
-                console.error(`  Dune API error: ${response.status}`);
+                const errorText = await response.text().catch(() => 'no body');
+                console.error(`  ❌ Dune API error: ${response.status} - ${errorText.slice(0, 200)}`);
                 break;
             }
             
             const data = await response.json();
+            
+            // 상세 응답 구조 로깅
+            if (offset === 0) {
+                const state = data?.state || data?.execution_id ? 'has execution' : 'direct result';
+                console.log(`  📡 Query ${queryId}: state=${state}, has_result=${!!data?.result}`);
+                if (data?.result?.rows?.length > 0) {
+                    console.log(`  📋 Columns: ${Object.keys(data.result.rows[0]).join(', ')}`);
+                }
+            }
+            
             const rows = data?.result?.rows || [];
             
-            if (rows.length === 0) break;
+            if (rows.length === 0) {
+                if (offset === 0) {
+                    console.log(`  ⚠️ Query ${queryId} returned 0 rows (state: ${data?.state || 'unknown'})`);
+                }
+                break;
+            }
             
             allRows.push(...rows);
             offset += pageSize;
@@ -847,9 +866,10 @@ async function fetchDuneResults(queryId, maxRows = 10000) {
             await sleep(500); // Rate limit
         }
         
+        console.log(`  📊 Total rows fetched: ${allRows.length}`);
         return allRows;
     } catch (e) {
-        console.error(`  Dune fetch error: ${e.message}`);
+        console.error(`  ❌ Dune fetch error for query ${queryId}: ${e.message}`);
         return null;
     }
 }
@@ -868,52 +888,94 @@ async function upsertBatch(table, records, conflict = 'date') {
 const cutoff3Y = () => Date.now() / 1000 - (1095 * 24 * 60 * 60);
 
 // ============================================================
-// 1. ETH Price (CoinGecko - primary, Binance - fallback)
+// 1. ETH Price (Binance - primary, CoinGecko - fallback)
 // ============================================================
 async function collect_eth_price() {
-    console.log('\n📈 [1/29] ETH Price + Volume (CoinGecko)...');
+    console.log('\n📈 [1/29] ETH Price + Volume (Binance)...');
     
-    // CoinGecko API (primary)
-    const cgData = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=1100&interval=daily');
+    // Binance API (primary) - 무료, rate limit 관대
+    const endTime = Date.now();
+    const startTime = endTime - (1100 * 24 * 60 * 60 * 1000); // 1100일
+    const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&startTime=${startTime}&endTime=${endTime}&limit=1000`;
     
-    if (!cgData || !cgData.prices) {
-        return result.fail('CoinGecko API failed');
+    let records = [];
+    
+    try {
+        const binanceData = await fetchJSON(binanceUrl);
+        
+        if (binanceData && Array.isArray(binanceData) && binanceData.length > 0) {
+            console.log(`  ✓ Binance: ${binanceData.length} days`);
+            
+            records = binanceData.map(k => ({
+                date: new Date(k[0]).toISOString().split('T')[0],
+                open: parseFloat(k[1]),
+                high: parseFloat(k[2]),
+                low: parseFloat(k[3]),
+                close: parseFloat(k[4]),
+                volume: parseFloat(k[5]) * parseFloat(k[4]) // ETH volume * price = USD volume
+            }));
+            
+            // Binance는 최대 1000개만 반환하므로 추가 요청
+            if (binanceData.length === 1000) {
+                const lastTime = binanceData[binanceData.length - 1][0];
+                const moreUrl = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&startTime=${lastTime + 86400000}&endTime=${endTime}&limit=1000`;
+                const moreData = await fetchJSON(moreUrl);
+                if (moreData && Array.isArray(moreData)) {
+                    const moreRecords = moreData.map(k => ({
+                        date: new Date(k[0]).toISOString().split('T')[0],
+                        open: parseFloat(k[1]),
+                        high: parseFloat(k[2]),
+                        low: parseFloat(k[3]),
+                        close: parseFloat(k[4]),
+                        volume: parseFloat(k[5]) * parseFloat(k[4])
+                    }));
+                    records.push(...moreRecords);
+                    console.log(`  ✓ Binance (more): +${moreRecords.length} days`);
+                }
+            }
+        }
+    } catch (e) {
+        console.log(`  ⚠️ Binance API error: ${e.message}`);
     }
     
-    const records = [];
-    const priceMap = new Map();
-    const volumeMap = new Map();
-    
-    // Build price map
-    for (const [ts, price] of cgData.prices) {
-        const date = new Date(ts).toISOString().split('T')[0];
-        priceMap.set(date, price);
-    }
-    
-    // Build volume map
-    if (cgData.total_volumes) {
-        for (const [ts, vol] of cgData.total_volumes) {
-            const date = new Date(ts).toISOString().split('T')[0];
-            volumeMap.set(date, vol);
+    // Fallback: CoinGecko (if Binance failed)
+    if (records.length === 0) {
+        console.log('  🔄 Trying CoinGecko fallback...');
+        const cgData = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=1100&interval=daily');
+        
+        if (cgData?.prices) {
+            const priceMap = new Map();
+            const volumeMap = new Map();
+            
+            for (const [ts, price] of cgData.prices) {
+                priceMap.set(new Date(ts).toISOString().split('T')[0], price);
+            }
+            if (cgData.total_volumes) {
+                for (const [ts, vol] of cgData.total_volumes) {
+                    volumeMap.set(new Date(ts).toISOString().split('T')[0], vol);
+                }
+            }
+            
+            for (const [date, close] of priceMap) {
+                records.push({
+                    date,
+                    open: close,
+                    high: close,
+                    low: close,
+                    close: parseFloat(close.toFixed(2)),
+                    volume: volumeMap.get(date) || 0
+                });
+            }
+            console.log(`  ✓ CoinGecko fallback: ${records.length} days`);
         }
     }
     
-    // Create records
-    for (const [date, close] of priceMap) {
-        records.push({
-            date,
-            open: close,  // CoinGecko doesn't provide OHLC in this endpoint
-            high: close,
-            low: close,
-            close: parseFloat(close.toFixed(2)),
-            volume: volumeMap.get(date) || 0
-        });
+    if (records.length === 0) {
+        return result.fail('Both Binance and CoinGecko failed');
     }
     
-    // Sort by date
     records.sort((a, b) => a.date.localeCompare(b.date));
-    
-    console.log(`  ✓ ${records.length} days`);
+    console.log(`  📊 Total: ${records.length} days`);
     
     const saved = await upsertBatch('historical_eth_price', records);
     return result.ok(saved);
@@ -1355,20 +1417,61 @@ async function collect_stablecoins_eth() {
 // 13. ETH/BTC Ratio (CoinGecko)
 // ============================================================
 async function collect_eth_btc() {
-    console.log('\n₿ [13/29] ETH/BTC...');
+    console.log('\n₿ [13/29] ETH/BTC (Binance)...');
     
-    // CoinGecko - ETH price in BTC
-    const data = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=btc&days=1100&interval=daily');
-    if (!data || !data.prices) {
-        return result.fail('CoinGecko rate limited');
+    // Binance API (primary) - ETHBTC 쌍
+    const endTime = Date.now();
+    const startTime = endTime - (1100 * 24 * 60 * 60 * 1000);
+    const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&startTime=${startTime}&endTime=${endTime}&limit=1000`;
+    
+    let records = [];
+    
+    try {
+        const binanceData = await fetchJSON(binanceUrl);
+        
+        if (binanceData && Array.isArray(binanceData) && binanceData.length > 0) {
+            records = binanceData.map(k => ({
+                date: new Date(k[0]).toISOString().split('T')[0],
+                ratio: parseFloat(parseFloat(k[4]).toFixed(6)) // close price
+            }));
+            
+            // 추가 데이터 요청 (1000개 초과시)
+            if (binanceData.length === 1000) {
+                const lastTime = binanceData[binanceData.length - 1][0];
+                const moreUrl = `https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&startTime=${lastTime + 86400000}&endTime=${endTime}&limit=1000`;
+                const moreData = await fetchJSON(moreUrl);
+                if (moreData && Array.isArray(moreData)) {
+                    const moreRecords = moreData.map(k => ({
+                        date: new Date(k[0]).toISOString().split('T')[0],
+                        ratio: parseFloat(parseFloat(k[4]).toFixed(6))
+                    }));
+                    records.push(...moreRecords);
+                }
+            }
+            
+            console.log(`  ✓ Binance: ${records.length} days`);
+        }
+    } catch (e) {
+        console.log(`  ⚠️ Binance error: ${e.message}`);
     }
     
-    const records = data.prices.map(([ts, price]) => ({
-        date: new Date(ts).toISOString().split('T')[0],
-        ratio: parseFloat(price.toFixed(6))
-    }));
+    // Fallback: CoinGecko
+    if (records.length === 0) {
+        console.log('  🔄 Trying CoinGecko fallback...');
+        const data = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=btc&days=1100&interval=daily');
+        if (data?.prices) {
+            records = data.prices.map(([ts, price]) => ({
+                date: new Date(ts).toISOString().split('T')[0],
+                ratio: parseFloat(price.toFixed(6))
+            }));
+            console.log(`  ✓ CoinGecko fallback: ${records.length} days`);
+        }
+    }
     
-    console.log(`  ✓ ${records.length} days`);
+    if (records.length === 0) {
+        return result.fail('Both Binance and CoinGecko failed');
+    }
+    
     const saved = await upsertBatch('historical_eth_btc', records);
     return result.ok(saved);
 }
@@ -1472,23 +1575,62 @@ async function collect_exchange_reserve() {
 }
 
 // ============================================================
-// 16. ETH Dominance (CoinGecko)
+// 16. ETH Dominance (CoinCap primary, CoinGecko fallback)
 // ============================================================
 async function collect_eth_dominance() {
     console.log('\n👑 [16/29] ETH Dominance...');
-    const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
-    if (!data?.data?.market_cap_percentage?.eth) {
-        return result.fail('CoinGecko rate limited');
+    
+    let ethDominance = null;
+    let btcDominance = null;
+    let totalMcap = null;
+    
+    // Primary: CoinCap API (무료, rate limit 관대)
+    try {
+        const data = await fetchJSON('https://api.coincap.io/v2/assets?limit=100');
+        if (data?.data && Array.isArray(data.data)) {
+            const assets = data.data;
+            totalMcap = assets.reduce((sum, a) => sum + parseFloat(a.marketCapUsd || 0), 0);
+            
+            const eth = assets.find(a => a.id === 'ethereum');
+            const btc = assets.find(a => a.id === 'bitcoin');
+            
+            if (eth && totalMcap > 0) {
+                ethDominance = (parseFloat(eth.marketCapUsd) / totalMcap) * 100;
+                console.log(`  ✓ CoinCap ETH: ${ethDominance.toFixed(2)}%`);
+            }
+            if (btc && totalMcap > 0) {
+                btcDominance = (parseFloat(btc.marketCapUsd) / totalMcap) * 100;
+            }
+        }
+    } catch (e) {
+        console.log(`  ⚠️ CoinCap error: ${e.message}`);
     }
+    
+    // Fallback: CoinGecko
+    if (!ethDominance) {
+        console.log('  🔄 Trying CoinGecko fallback...');
+        const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
+        if (data?.data?.market_cap_percentage?.eth) {
+            ethDominance = data.data.market_cap_percentage.eth;
+            btcDominance = data.data.market_cap_percentage.btc;
+            totalMcap = data.data.total_market_cap.usd;
+            console.log(`  ✓ CoinGecko ETH: ${ethDominance.toFixed(2)}%`);
+        }
+    }
+    
+    if (!ethDominance) {
+        return result.fail('Both CoinCap and CoinGecko failed');
+    }
+    
     const today = new Date().toISOString().split('T')[0];
     const records = [{
         date: today,
-        eth_dominance: parseFloat(data.data.market_cap_percentage.eth.toFixed(2)),
-        btc_dominance: parseFloat(data.data.market_cap_percentage.btc.toFixed(2)),
-        total_mcap: data.data.total_market_cap.usd,
-        source: 'coingecko'
+        eth_dominance: parseFloat(ethDominance.toFixed(2)),
+        btc_dominance: btcDominance ? parseFloat(btcDominance.toFixed(2)) : null,
+        total_mcap: totalMcap,
+        source: 'coincap'
     }];
-    console.log(`  ✓ ETH: ${records[0].eth_dominance}%`);
+    
     const saved = await upsertBatch('historical_eth_dominance', records);
     return result.ok(saved);
 }
@@ -2233,17 +2375,17 @@ async function main() {
     console.log(`  ⏱️ DefiLlama: ${((Date.now() - defiLlamaStart) / 1000).toFixed(1)}s`);
     
     // ============================================================
-    // PHASE 2: CoinGecko APIs (순차 - rate limit 엄격, 분당 10-30요청)
+    // PHASE 2: Price APIs (Binance primary, CoinGecko fallback)
     // ============================================================
-    console.log('\n🦎 Phase 2: CoinGecko APIs (sequential, 3s delay)...');
-    const coinGeckoStart = Date.now();
+    console.log('\n💰 Phase 2: Price APIs (Binance primary)...');
+    const priceStart = Date.now();
     
-    results.eth_price = wrapResult(await collect_eth_price()); await sleep(3000);
-    results.eth_btc = wrapResult(await collect_eth_btc()); await sleep(3000);
-    results.eth_dominance = wrapResult(await collect_eth_dominance()); await sleep(3000);
+    results.eth_price = wrapResult(await collect_eth_price()); await sleep(500);
+    results.eth_btc = wrapResult(await collect_eth_btc()); await sleep(500);
+    results.eth_dominance = wrapResult(await collect_eth_dominance()); await sleep(500);
     results.global_mcap = wrapResult(await collect_global_mcap());
     
-    console.log(`  ⏱️ CoinGecko: ${((Date.now() - coinGeckoStart) / 1000).toFixed(1)}s`);
+    console.log(`  ⏱️ Price APIs: ${((Date.now() - priceStart) / 1000).toFixed(1)}s`);
     
     // ============================================================
     // PHASE 3: Other APIs (병렬)
