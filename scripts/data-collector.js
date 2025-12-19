@@ -304,7 +304,19 @@ async function fetchSectionMetrics(sectionKey) {
                         if (!byDate[r.date]) byDate[r.date] = 0;
                         byDate[r.date] += parseFloat(r.tx_volume_eth || 0);
                     }
-                    const dates = Object.keys(byDate).sort().reverse();
+                    let dates = Object.keys(byDate).sort().reverse();
+                    
+                    // 미취합 데이터 제외 (집계된 값 기준)
+                    if (dates.length >= 8) {
+                        const lastValue = byDate[dates[0]];
+                        const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
+                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
+                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                            console.log(`   ⚠️ l2_tx_volume: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
+                            dates = dates.slice(1);
+                        }
+                    }
+                    
                     const latestDate = dates[0];
                     
                     metricsData[metricKey] = {
@@ -332,7 +344,19 @@ async function fetchSectionMetrics(sectionKey) {
                         if (!byDate[r.date]) byDate[r.date] = 0;
                         byDate[r.date] += parseFloat(r.bridge_volume_eth || 0);
                     }
-                    const dates = Object.keys(byDate).sort().reverse();
+                    let dates = Object.keys(byDate).sort().reverse();
+                    
+                    // 미취합 데이터 제외 (집계된 값 기준)
+                    if (dates.length >= 8) {
+                        const lastValue = byDate[dates[0]];
+                        const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
+                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
+                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                            console.log(`   ⚠️ bridge_volume: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
+                            dates = dates.slice(1);
+                        }
+                    }
+                    
                     const latestDate = dates[0];
                     
                     metricsData[metricKey] = {
@@ -360,7 +384,19 @@ async function fetchSectionMetrics(sectionKey) {
                         if (!byDate[r.date]) byDate[r.date] = 0;
                         byDate[r.date] += parseFloat(r.tvl || 0);
                     }
-                    const dates = Object.keys(byDate).sort().reverse();
+                    let dates = Object.keys(byDate).sort().reverse();
+                    
+                    // 미취합 데이터 제외 (집계된 값 기준)
+                    if (dates.length >= 8) {
+                        const lastValue = byDate[dates[0]];
+                        const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
+                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
+                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                            console.log(`   ⚠️ l2_tvl: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
+                            dates = dates.slice(1);
+                        }
+                    }
+                    
                     const latestDate = dates[0];
                     
                     metricsData[metricKey] = {
