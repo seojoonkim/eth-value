@@ -4368,9 +4368,35 @@
                 ja: 'Write in Japanese (日本語で作成). Use natural Japanese financial terminology.'
             };
             
+            // 언어별 섹션 헤더
+            const formatHeaders = {
+                en: {
+                    status: '📊 Current Status',
+                    trend: '📈 Recent Trend',
+                    insight: '💡 Valuation Insight'
+                },
+                ko: {
+                    status: '📊 현재 상태',
+                    trend: '📈 최근 트렌드',
+                    insight: '💡 밸류에이션 시사점'
+                },
+                zh: {
+                    status: '📊 当前状态',
+                    trend: '📈 近期趋势',
+                    insight: '💡 估值启示'
+                },
+                ja: {
+                    status: '📊 現在の状況',
+                    trend: '📈 最近のトレンド',
+                    insight: '💡 バリュエーションの示唆'
+                }
+            };
+            
+            const headers = formatHeaders[lang] || formatHeaders.en;
+            
             const systemPrompt = `You are an expert Ethereum market analyst providing daily commentary for the ETHval valuation dashboard.
 
-Your task: Write a comprehensive analysis for the "${section.title}" (${section.title_ko}) section.
+Your task: Write a comprehensive analysis for the "${section.title}" section.
 
 This section contains ${section.charts.length} charts: ${section.charts.join(', ')}
 
@@ -4380,17 +4406,17 @@ CRITICAL INSTRUCTIONS:
 3. Explain how the different metrics relate to each other and what they collectively indicate
 4. Connect the metrics to Ethereum's valuation implications
 
-FORMAT (exactly 3 paragraphs):
-📊 현재 상태 (Current Status)
+FORMAT (exactly 3 paragraphs with these headers):
+${headers.status}
 - Summarize key current values across ALL metrics in this section
 - 2-3 sentences covering the full picture
 
-📈 최근 트렌드 (Recent Trend)  
+${headers.trend}
 - Analyze 7-day and 30-day changes across ALL metrics
 - Identify patterns, correlations, or divergences between metrics
 - 2-3 sentences
 
-💡 밸류에이션 시사점 (Valuation Insight)
+${headers.insight}
 - What do these metrics collectively suggest for ETH's fair value?
 - Bullish/bearish signals and what to watch
 - 2-3 sentences

@@ -1102,7 +1102,7 @@ async function collect_gas_burn() {
     
     if (startDate >= endDate) {
         console.log('  ✅ Already up to date');
-        return 0;
+        return result.skip('Already up to date');
     }
     
     const startStr = startDate.toISOString().split('T')[0];
@@ -1808,114 +1808,198 @@ async function collect_network_stats() {
 // 30. Blob Data (Dune)
 async function collect_dune_blob() {
     console.log('\n🫧 [30/39] Blob Data (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.BLOB, 1000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.BLOB);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
     
-    const records = rows.map(r => ({
-        date: r.block_date || r.date,
-        blob_count: parseInt(r.blob_count || r.blobs || 0),
-        blob_gas_used: parseFloat(r.blob_gas_used || 0),
-        blob_fee_eth: parseFloat(r.blob_fee_eth || 0),
-        source: 'dune'
-    })).filter(r => r.date && r.blob_count > 0);
+    const records = rows.map(r => {
+        let dateStr = r.block_date || r.date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            blob_count: parseInt(r.blob_count || r.blobs || 0),
+            blob_gas_used: parseFloat(r.blob_gas_used || 0),
+            blob_fee_eth: parseFloat(r.blob_fee_eth || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && r.blob_count > 0);
     
-    console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_blob_data', records);
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_blob_data', records);
+    return result.ok(saved);
 }
 
 // 31. L1 TX Volume (Dune)
 async function collect_dune_l1_volume() {
     console.log('\n💸 [31/39] L1 TX Volume (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.TX_VOLUME, 5000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.TX_VOLUME);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
     
-    const records = rows.map(r => ({
-        date: r.block_date || r.date,
-        tx_volume_eth: parseFloat(r.tx_volume_eth || r.volume_eth || 0),
-        tx_volume_usd: parseFloat(r.tx_volume_usd || r.volume_usd || 0),
-        source: 'dune'
-    })).filter(r => r.date && r.tx_volume_eth > 0);
+    const records = rows.map(r => {
+        let dateStr = r.block_date || r.date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            tx_volume_eth: parseFloat(r.tx_volume_eth || r.volume_eth || 0),
+            tx_volume_usd: parseFloat(r.tx_volume_usd || r.volume_usd || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && r.tx_volume_eth > 0);
     
-    console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_l1_volume', records);
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_l1_volume', records);
+    return result.ok(saved);
 }
 
 // 32. Active Addresses L1 (Dune)
 async function collect_dune_active_addr() {
     console.log('\n👥 [32/39] Active Addresses L1 (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.ACTIVE_ADDR, 5000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.ACTIVE_ADDR);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
     
-    const records = rows.map(r => ({
-        date: r.block_date || r.date,
-        active_addresses: parseInt(r.active_addresses || r.unique_addresses || 0)
-    })).filter(r => r.date && r.active_addresses > 0);
+    const records = rows.map(r => {
+        let dateStr = r.block_date || r.date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            active_addresses: parseInt(r.active_addresses || r.unique_addresses || 0)
+        };
+    }).filter(r => r.date && r.active_addresses > 0);
     
-    console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_active_addresses', records);
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_active_addresses', records);
+    return result.ok(saved);
 }
 
 // 33. L2 Active Addresses (Dune)
 async function collect_dune_l2_addr() {
     console.log('\n👤 [33/39] L2 Active Addresses (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.L2_ACTIVE_ADDR, 10000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.L2_ACTIVE_ADDR);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
     
-    const records = rows.map(r => ({
-        date: r.block_date || r.date,
-        chain: r.chain || r.l2_name || 'unknown',
-        active_addresses: parseInt(r.active_addresses || r.unique_addresses || 0),
-        source: 'dune'
-    })).filter(r => r.date && r.active_addresses > 0);
+    const records = rows.map(r => {
+        let dateStr = r.block_date || r.date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            chain: r.chain || r.l2_name || 'unknown',
+            active_addresses: parseInt(r.active_addresses || r.unique_addresses || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && r.active_addresses > 0);
     
-    console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_l2_addresses', records, 'date,chain');
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_l2_addresses', records, 'date,chain');
+    return result.ok(saved);
 }
 
 // 34. L2 TX Volume (Dune)
 async function collect_dune_l2_volume() {
     console.log('\n🔗 [34/39] L2 TX Volume (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.L2_TX_VOLUME, 10000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.L2_TX_VOLUME);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
     
-    const records = rows.map(r => ({
-        date: r.block_date || r.date,
-        chain: r.chain || r.l2_name || 'unknown',
-        tx_volume_eth: parseFloat(r.tx_volume_eth || r.volume_eth || 0),
-        source: 'dune'
-    })).filter(r => r.date && r.tx_volume_eth > 0);
+    const records = rows.map(r => {
+        let dateStr = r.block_date || r.date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            chain: r.chain || r.l2_name || 'unknown',
+            tx_volume_eth: parseFloat(r.tx_volume_eth || r.volume_eth || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && r.tx_volume_eth > 0);
     
-    console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_l2_tx_volume', records, 'date,chain');
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_l2_tx_volume', records, 'date,chain');
+    return result.ok(saved);
 }
 
 // 35. Bridge Volume (Dune)
 async function collect_dune_bridge() {
     console.log('\n🌉 [35/39] Bridge Volume (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.BRIDGE_VOLUME, 10000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.BRIDGE_VOLUME);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
     
-    const records = rows.map(r => ({
-        date: r.block_date || r.date,
-        chain: r.chain || r.l2_name || 'unknown',
-        bridge_volume_eth: parseFloat(r.bridge_volume_eth || r.volume_eth || 0),
-        source: 'dune'
-    })).filter(r => r.date && r.bridge_volume_eth > 0);
+    const records = rows.map(r => {
+        let dateStr = r.block_date || r.date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            chain: r.chain || r.l2_name || 'unknown',
+            bridge_volume_eth: parseFloat(r.bridge_volume_eth || r.volume_eth || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && r.bridge_volume_eth > 0);
     
-    console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_bridge_volume', records, 'date,chain');
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_bridge_volume', records, 'date,chain');
+    return result.ok(saved);
 }
 
 // 36. Whale Transactions (Dune)
@@ -2129,34 +2213,22 @@ async function main() {
     };
     
     // ============================================================
-    // PHASE 1: DefiLlama APIs (병렬 - 관대한 rate limit)
+    // PHASE 1: DefiLlama APIs (순차 처리 - rate limit 방지)
     // ============================================================
-    console.log('\n📦 Phase 1: DefiLlama APIs (parallel)...');
+    console.log('\n📦 Phase 1: DefiLlama APIs (sequential, 500ms delay)...');
     const defiLlamaStart = Date.now();
     
-    const [ethereum_tvl, l2_tvl, protocol_fees, lending_tvl, protocol_tvl, staking_apr, eth_in_defi, dex_volume, dex_by_protocol, staking] = await Promise.all([
-        collect_ethereum_tvl(),
-        collect_l2_tvl(),
-        collect_protocol_fees(),
-        collect_lending_tvl(),
-        collect_protocol_tvl(),
-        collect_staking_apr(),
-        collect_eth_in_defi(),
-        collect_dex_volume(),
-        collect_dex_by_protocol(),
-        collect_staking()
-    ]);
-    
-    results.ethereum_tvl = wrapResult(ethereum_tvl);
-    results.l2_tvl = wrapResult(l2_tvl);
-    results.protocol_fees = wrapResult(protocol_fees);
-    results.lending_tvl = wrapResult(lending_tvl);
-    results.protocol_tvl = wrapResult(protocol_tvl);
-    results.staking_apr = wrapResult(staking_apr);
-    results.eth_in_defi = wrapResult(eth_in_defi);
-    results.dex_volume = wrapResult(dex_volume);
-    results.dex_by_protocol = wrapResult(dex_by_protocol);
-    results.staking = wrapResult(staking);
+    // DefiLlama rate limit: 순차 처리 + 딜레이
+    results.ethereum_tvl = wrapResult(await collect_ethereum_tvl()); await sleep(500);
+    results.l2_tvl = wrapResult(await collect_l2_tvl()); await sleep(500);
+    results.protocol_fees = wrapResult(await collect_protocol_fees()); await sleep(500);
+    results.lending_tvl = wrapResult(await collect_lending_tvl()); await sleep(500);
+    results.protocol_tvl = wrapResult(await collect_protocol_tvl()); await sleep(500);
+    results.staking_apr = wrapResult(await collect_staking_apr()); await sleep(500);
+    results.eth_in_defi = wrapResult(await collect_eth_in_defi()); await sleep(500);
+    results.dex_volume = wrapResult(await collect_dex_volume()); await sleep(500);
+    results.dex_by_protocol = wrapResult(await collect_dex_by_protocol()); await sleep(500);
+    results.staking = wrapResult(await collect_staking());
     
     console.log(`  ⏱️ DefiLlama: ${((Date.now() - defiLlamaStart) / 1000).toFixed(1)}s`);
     
@@ -2261,6 +2333,7 @@ async function main() {
     console.log('='.repeat(60));
     
     let success = 0, warned = 0, failed = 0;
+    const failedDatasets = []; // 실패한 데이터셋 목록
     
     Object.entries(results).forEach(([key, res]) => {
         const { count, status, msg } = res;
@@ -2278,10 +2351,12 @@ async function main() {
             icon = '⚠️';
             display = `${count.toLocaleString()} (${msg})`;
             warned++;
+            failedDatasets.push(key); // warn도 실패 목록에 추가
         } else {
             icon = '❌';
             display = msg || 'failed';
             failed++;
+            failedDatasets.push(key);
         }
         
         console.log(`${icon} ${key.padEnd(22)} : ${display}`);
@@ -2289,6 +2364,9 @@ async function main() {
     
     console.log('='.repeat(60));
     console.log(`✅ OK: ${success}  |  ⚠️ Warn: ${warned}  |  ❌ Fail: ${failed}  |  ⏱️ ${totalTime}s`);
+    if (failedDatasets.length > 0) {
+        console.log(`❌ Failed: ${failedDatasets.join(', ')}`);
+    }
     console.log('='.repeat(60));
     
     // ============================================================
