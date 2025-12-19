@@ -18693,6 +18693,15 @@
                         const formatCommentary = (text) => {
                             if (!text) return '';
                             
+                            // 다국어 섹션 제목 (프론트엔드에서 직접 출력)
+                            const sectionHeaders = {
+                                en: ['📊 Current Status', '📈 30-Day Trend', '💡 Valuation Insight'],
+                                ko: ['📊 현재 상태', '📈 최근 30일 트렌드', '💡 밸류에이션 시사점'],
+                                zh: ['📊 当前状态', '📈 近30天趋势', '💡 估值启示'],
+                                ja: ['📊 現在の状況', '📈 過去30日のトレンド', '💡 バリュエーションの示唆']
+                            };
+                            const localHeaders = sectionHeaders[currentLang] || sectionHeaders.en;
+                            
                             // 단색 아이콘 (보라색 테마)
                             const icons = {
                                 '📊': '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; opacity: 0.7;"><path d="M3 3v18h18v-2H5V3H3zm4 14h2V9H7v8zm4 0h2V6h-2v11zm4 0h2v-5h-2v5zm4 0h2V9h-2v8z"/></svg>',
@@ -18700,27 +18709,52 @@
                                 '💡': '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; opacity: 0.7;"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6A4.997 4.997 0 017 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/></svg>'
                             };
                             
-                            // 줄바꿈으로 분리
+                            // 헤더에서 이모지를 SVG로 변환
+                            const parseHeader = (header) => {
+                                const match = header.match(/^(📊|📈|💡)\s*(.+)$/);
+                                if (match) {
+                                    return `${icons[match[1]]} ${match[2]}`;
+                                }
+                                return header;
+                            };
+                            
+                            // 새 형식: ||| 구분자로 3개 섹션 분리 (AI가 제목 없이 생성)
+                            if (text.includes('|||')) {
+                                const sections = text.split('|||').map(s => s.trim()).filter(s => s);
+                                let html = '';
+                                sections.forEach((content, i) => {
+                                    if (i < 3 && localHeaders[i]) {
+                                        const headerHtml = parseHeader(localHeaders[i]);
+                                        html += `<div class="commentary-section"><div class="commentary-section-header">${headerHtml}</div><div class="commentary-section-body">`;
+                                        content.split('\n').filter(l => l.trim()).forEach(line => {
+                                            html += `<p>${line.trim()}</p>`;
+                                        });
+                                        html += '</div></div>';
+                                    }
+                                });
+                                return html || `<p>${text}</p>`;
+                            }
+                            
+                            // 레거시 형식: 이모지 헤더로 섹션 분리 (기존 데이터 호환)
                             const lines = text.split('\n').filter(line => line.trim());
                             let html = '';
                             let currentSection = '';
+                            let sectionIndex = 0;
                             
                             for (const line of lines) {
                                 const headerMatch = line.match(/^(📊|📈|💡)\s*(.+)$/);
                                 if (headerMatch) {
-                                    // 이전 섹션 닫기 (section-body + section)
                                     if (currentSection) {
                                         html += '</div></div>';
                                     }
-                                    // 새 섹션 시작 - SVG 아이콘 사용
-                                    const icon = icons[headerMatch[1]] || headerMatch[1];
-                                    html += `<div class="commentary-section"><div class="commentary-section-header">${icon} ${headerMatch[2]}</div><div class="commentary-section-body">`;
+                                    // 프론트엔드 다국어 헤더 사용
+                                    const headerHtml = parseHeader(localHeaders[sectionIndex] || line);
+                                    html += `<div class="commentary-section"><div class="commentary-section-header">${headerHtml}</div><div class="commentary-section-body">`;
                                     currentSection = headerMatch[1];
+                                    sectionIndex++;
                                 } else if (currentSection) {
-                                    // 섹션 내용
                                     html += `<p>${line.trim()}</p>`;
                                 } else {
-                                    // 헤더 없이 시작하는 경우 (레거시 데이터) - 하나의 섹션으로 래핑
                                     if (!html.includes('commentary-section')) {
                                         html += '<div class="commentary-section" style="grid-column: span 3;"><div class="commentary-section-body">';
                                         currentSection = 'legacy';
@@ -18729,7 +18763,6 @@
                                 }
                             }
                             
-                            // 마지막 섹션 닫기
                             if (currentSection) {
                                 html += '</div></div>';
                             }

@@ -643,7 +643,7 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
             instruction: 'Write in English.',
             headers: {
                 current: '📊 Current State',
-                trend: '📈 Recent Trends', 
+                trend: '📈 30-Day Trend', 
                 valuation: '💡 Valuation Implications'
             }
         },
@@ -651,7 +651,7 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
             instruction: 'Write in Korean (한국어로 작성하세요). Use natural Korean financial terminology. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Korean translation first, then include the English term in parentheses. Example: 총 예치금(TVL), 시장가치 대 실현가치 비율(MVRV), 공포탐욕지수(Fear & Greed Index).',
             headers: {
                 current: '📊 현재 상태',
-                trend: '📈 최근 트렌드',
+                trend: '📈 최근 30일 트렌드',
                 valuation: '💡 밸류에이션 시사점'
             }
         },
@@ -659,7 +659,7 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
             instruction: 'Write in Simplified Chinese (用简体中文写). Use standard Chinese financial terms. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Chinese translation first, then include the English term in parentheses. Example: 总锁定价值(TVL), 市值与实现价值比率(MVRV), 恐惧贪婪指数(Fear & Greed Index).',
             headers: {
                 current: '📊 当前状态',
-                trend: '📈 近期趋势',
+                trend: '📈 近30天趋势',
                 valuation: '💡 估值影响'
             }
         },
@@ -667,7 +667,7 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
             instruction: 'Write in Japanese (日本語で書いてください). Use appropriate Japanese financial terminology. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Japanese translation first, then include the English term in parentheses. Example: 総預かり資産(TVL), 時価総額対実現価値比率(MVRV), 恐怖強欲指数(Fear & Greed Index).',
             headers: {
                 current: '📊 現在の状況',
-                trend: '📈 最近のトレンド',
+                trend: '📈 過去30日のトレンド',
                 valuation: '💡 バリュエーションへの示唆'
             }
         }
@@ -686,33 +686,32 @@ Your analysis should be:
 ${config.instruction}
 
 CRITICAL RULES:
-1. Start DIRECTLY with the first section header (${config.headers.current}). NO preamble, introduction, or "Here's the analysis" text.
-2. If some data is missing or incomplete, analyze what IS available. NEVER refuse to analyze or ask for more data.
-3. NEVER ask questions back - always provide complete analysis with available data.
-4. No disclaimers, apologies, or investment advice warnings.
-5. Professional yet approachable tone.
-6. IMPORTANT: The data provided represents recent 3-day averages, NOT the exact latest values shown in charts. To avoid confusion:
+1. DO NOT include any section headers or titles - just write the content paragraphs separated by |||
+2. Start DIRECTLY with the first paragraph content. NO preamble, introduction, or headers.
+3. If some data is missing or incomplete, analyze what IS available. NEVER refuse to analyze or ask for more data.
+4. NEVER ask questions back - always provide complete analysis with available data.
+5. No disclaimers, apologies, or investment advice warnings.
+6. Professional yet approachable tone.
+7. IMPORTANT: The data provided represents recent 3-day averages, NOT the exact latest values shown in charts. To avoid confusion:
    - Korean: "최근 3일 평균 약 X억 달러 수준" or "약 X억 달러 수준(최근 평균 기준)"
    - English: "averaging approximately $X billion recently" or "around $X billion (recent average)"
    - Chinese: "近期平均约X亿美元" or "约X亿美元(近期平均)"
    - Japanese: "直近平均で約X億ドル" or "約X億ドル(直近平均)"
 
-STRUCTURE (exactly 3 sections with these headers):
+FORMAT (exactly 3 sections separated by |||):
+Write 3 paragraphs, each 2-3 sentences, separated by "|||" on its own line.
 
-${config.headers.current}
-[3-4 sentences about current state]
+Section 1 (Current Status): [2-3 sentences about current state]
+|||
+Section 2 (30-Day Trend): [2-3 sentences about recent trends]
+|||
+Section 3 (Valuation Insight): [2-3 sentences about valuation implications]`;
 
-${config.headers.trend}
-[3-4 sentences about recent trends]
-
-${config.headers.valuation}
-[3-4 sentences about valuation implications]`;
-
-    const userPrompt = `Analyze the following Ethereum ${section.title} metrics. Start DIRECTLY with "${config.headers.current}" - no introduction or preamble:
+    const userPrompt = `Analyze the following Ethereum ${section.title} metrics. Write 3 paragraphs separated by ||| - no headers or titles:
 
 ${metricsPrompt}
 
-Write exactly 3 sections. If any data is missing, work with what's available:`;
+Write exactly 3 paragraphs separated by |||. If any data is missing, work with what's available:`;
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {

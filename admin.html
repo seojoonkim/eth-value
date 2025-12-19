@@ -4690,22 +4690,22 @@
             const formatHeaders = {
                 en: {
                     status: '📊 Current Status',
-                    trend: '📈 Recent Trend',
+                    trend: '📈 30-Day Trend',
                     insight: '💡 Valuation Insight'
                 },
                 ko: {
                     status: '📊 현재 상태',
-                    trend: '📈 최근 트렌드',
+                    trend: '📈 최근 30일 트렌드',
                     insight: '💡 밸류에이션 시사점'
                 },
                 zh: {
                     status: '📊 当前状态',
-                    trend: '📈 近期趋势',
+                    trend: '📈 近30天趋势',
                     insight: '💡 估值启示'
                 },
                 ja: {
                     status: '📊 現在の状況',
-                    trend: '📈 最近のトレンド',
+                    trend: '📈 過去30日のトレンド',
                     insight: '💡 バリュエーションの示唆'
                 }
             };
@@ -4724,24 +4724,28 @@ CRITICAL INSTRUCTIONS:
 3. Explain how the different metrics relate to each other and what they collectively indicate
 4. Connect the metrics to Ethereum's valuation implications
 
-FORMAT (exactly 3 paragraphs with these headers):
-${headers.status}
+FORMAT (exactly 3 sections separated by |||):
+Write 3 paragraphs, each 2-3 sentences, separated by "|||" on its own line.
+
+Section 1 (Current Status):
 - Summarize key current values across ALL metrics in this section
-- 2-3 sentences covering the full picture
 
-${headers.trend}
-- Analyze 7-day and 30-day changes across ALL metrics
+|||
+
+Section 2 (30-Day Trend):
+- Analyze 30-day changes across ALL metrics
 - Identify patterns, correlations, or divergences between metrics
-- 2-3 sentences
 
-${headers.insight}
+|||
+
+Section 3 (Valuation Insight):
 - What do these metrics collectively suggest for ETH's fair value?
 - Bullish/bearish signals and what to watch
-- 2-3 sentences
 
 CRITICAL RULES:
 - ${langInstructions[lang]}
-- Start DIRECTLY with the first section header (${headers.status}). NO preamble, introduction, or "Here's the analysis" text.
+- DO NOT include any section headers or titles - just write the content paragraphs separated by |||
+- Start DIRECTLY with the first paragraph content. NO preamble, introduction, or headers.
 - If some data is missing or incomplete, analyze what IS available. NEVER refuse to analyze or ask for more data.
 - IMPORTANT: The data provided represents recent 3-day averages, NOT the exact latest values shown in charts. To avoid confusion:
   * Korean: "최근 3일 평균 약 X억 달러 수준" or "약 X억 달러 수준(최근 평균 기준)"
@@ -4753,7 +4757,7 @@ CRITICAL RULES:
 - Professional analyst tone
 - NEVER ask questions back to the user`;
 
-            const userPrompt = `Analyze the following metrics and write the ${section.title} commentary. Start directly with "${headers.status}" - no introduction:\n\n${metricsPrompt}`;
+            const userPrompt = `Analyze the following metrics and write the ${section.title} commentary. Write 3 paragraphs separated by ||| - no headers or titles:\n\n${metricsPrompt}`;
             
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
