@@ -691,6 +691,11 @@ CRITICAL RULES:
 3. NEVER ask questions back - always provide complete analysis with available data.
 4. No disclaimers, apologies, or investment advice warnings.
 5. Professional yet approachable tone.
+6. IMPORTANT: The data provided represents recent 3-day averages, NOT the exact latest values shown in charts. To avoid confusion:
+   - Korean: "최근 3일 평균 약 X억 달러 수준" or "약 X억 달러 수준(최근 평균 기준)"
+   - English: "averaging approximately $X billion recently" or "around $X billion (recent average)"
+   - Chinese: "近期平均约X亿美元" or "约X亿美元(近期平均)"
+   - Japanese: "直近平均で約X億ドル" or "約X億ドル(直近平均)"
 
 STRUCTURE (exactly 3 sections with these headers):
 
