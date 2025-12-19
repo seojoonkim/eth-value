@@ -921,10 +921,19 @@
             counter-reset: section-counter;
         }
 
-        /* 모달 열렸을 때 스크롤 방지 */
+        /* 모달 열렸을 때 스크롤 방지 - iOS 호환 */
         body.modal-open {
-            overflow: hidden;
-            touch-action: none;
+            overflow: hidden !important;
+            height: 100vh;
+            height: 100dvh; /* iOS Safari dynamic viewport */
+        }
+        
+        /* iOS Safari에서 body가 fixed일 때 문제 방지 */
+        @supports (-webkit-touch-callout: none) {
+            body.modal-open {
+                position: fixed;
+                width: 100%;
+            }
         }
 
         /* ═══════════════════════════════════════════════════════════════════
@@ -1994,7 +2003,7 @@
         }
 
         .metric-info h4 {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text);
             margin-bottom: 2px;
@@ -2205,14 +2214,14 @@
             margin-top: 8px;
             padding-top: 8px;
             border-top: 1px solid var(--border);
-            font-size: var(--font-caption);
+            font-size: 10px;
             gap: 4px;
         }
         
         .metric-footer .metric-desc {
             width: 100%;
             color: var(--text-muted);
-            font-size: var(--font-caption);
+            font-size: 10px;
             line-height: 1.35;
             opacity: 0.85;
             margin-top: 4px;
@@ -3577,10 +3586,8 @@
             justify-content: center;
             z-index: 10000;
             padding: 20px;
-            overflow: hidden;
             overscroll-behavior: contain;
             animation: modalFadeIn 0.2s ease-out;
-            touch-action: none;
         }
 
         .review-modal {
@@ -13551,14 +13558,52 @@
         // 모달 열 때 스크롤 잠금
         let savedScrollY = 0;
         function lockScroll() {
+            // 이미 잠겨있으면 무시
+            if (document.body.classList.contains('modal-open')) return;
+            
             savedScrollY = window.scrollY;
+            document.body.style.top = `-${savedScrollY}px`;
             document.body.classList.add('modal-open');
+            log('Scroll locked at', savedScrollY);
         }
         
         // 모달 닫을 때 스크롤 복원
         function unlockScroll() {
+            if (!document.body.classList.contains('modal-open')) return;
+            
             document.body.classList.remove('modal-open');
+            document.body.style.top = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.height = '';
+            document.body.style.overflow = '';
+            window.scrollTo(0, savedScrollY);
+            log('Scroll unlocked, restored to', savedScrollY);
         }
+        
+        // 강제 스크롤 복원 (비상용)
+        function forceUnlockScroll() {
+            document.body.classList.remove('modal-open');
+            document.body.style.cssText = document.body.style.cssText.replace(/position:\s*fixed[^;]*;?/gi, '').replace(/top:\s*-?\d+px[^;]*;?/gi, '').replace(/overflow:\s*hidden[^;]*;?/gi, '');
+            log('Force scroll unlock executed');
+        }
+        
+        // 안전장치: 모달이 없는데 modal-open이 남아있으면 복구
+        setInterval(() => {
+            const hasModal = document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay, .login-modal-overlay, .historical-modal-overlay');
+            if (!hasModal && document.body.classList.contains('modal-open')) {
+                console.warn('⚠️ Orphan modal-open detected, force unlocking scroll...');
+                forceUnlockScroll();
+            }
+        }, 2000);
+        
+        // 페이지 터치/클릭 시 스크롤 복구 확인
+        document.addEventListener('touchstart', () => {
+            if (!document.querySelector('.review-modal-overlay, .likers-modal-overlay, .confirm-modal-overlay') && document.body.classList.contains('modal-open')) {
+                console.warn('⚠️ Touch detected with orphan modal-open, fixing...');
+                forceUnlockScroll();
+            }
+        }, { passive: true });
         
         // Check if user is admin
         async function checkAdmin(userId) {
