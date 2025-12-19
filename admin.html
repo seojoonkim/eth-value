@@ -154,12 +154,24 @@
                             🎯 Regenerate Selected
                         </button>
                     </div>
+                    <button class="btn btn-secondary" onclick="loadTodayCommentary()" id="btn-view-today">
+                        📋 View Today's Commentary
+                    </button>
                 </div>
                 
-                <!-- Commentary Preview -->
-                <div id="commentary-preview" style="display: none; margin-top: 16px;">
-                    <div style="font-weight: 600; margin-bottom: 8px; color: var(--text);">📝 Generated Commentary Preview:</div>
-                    <div id="commentary-preview-content" style="background: var(--bg-secondary); border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.6; max-height: 300px; overflow-y: auto; white-space: pre-wrap;"></div>
+                <!-- Today's Commentary Viewer -->
+                <div id="commentary-viewer" style="display: none; margin-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div style="font-weight: 600; color: var(--text);">📋 Today's Commentary (<span id="commentary-date">-</span>)</div>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn btn-sm" onclick="switchCommentaryLang('en')" id="lang-btn-en" style="background: var(--primary); color: white;">EN</button>
+                            <button class="btn btn-sm" onclick="switchCommentaryLang('ko')" id="lang-btn-ko">KO</button>
+                            <button class="btn btn-sm" onclick="switchCommentaryLang('zh')" id="lang-btn-zh">ZH</button>
+                            <button class="btn btn-sm" onclick="switchCommentaryLang('ja')" id="lang-btn-ja">JA</button>
+                        </div>
+                    </div>
+                    <div id="commentary-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 12px;">
+                    </div>
                 </div>
                 
                 <!-- Progress Log -->
@@ -4228,9 +4240,8 @@ Guidelines:
                     commentaryLog(`✅ Successfully saved ${sectionKey}!`, 'success');
                     setCommentaryStatus('Completed', '#3fb950');
                     
-                    // Show preview
-                    document.getElementById('commentary-preview').style.display = 'block';
-                    document.getElementById('commentary-preview-content').textContent = commentaries.en;
+                    // Auto-load today's commentary
+                    await loadTodayCommentary();
                 } else {
                     throw new Error('Failed to save to Supabase');
                 }
@@ -4242,6 +4253,108 @@ Guidelines:
                 btn.disabled = false;
                 btn.textContent = '🎯 Regenerate Selected';
             }
+        }
+        
+        // Store loaded commentary data for language switching
+        let loadedCommentaryData = [];
+        let currentCommentaryLang = 'en';
+        
+        async function loadTodayCommentary() {
+            const btn = document.getElementById('btn-view-today');
+            btn.disabled = true;
+            btn.textContent = '⏳ Loading...';
+            
+            try {
+                const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const today = new Date().toISOString().split('T')[0];
+                
+                const { data, error } = await client
+                    .from('daily_commentary')
+                    .select('*')
+                    .eq('date', today)
+                    .order('section_key');
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    alert('No commentary found for today. Generate some first!');
+                    return;
+                }
+                
+                loadedCommentaryData = data;
+                currentCommentaryLang = 'en';
+                
+                document.getElementById('commentary-date').textContent = today;
+                document.getElementById('commentary-viewer').style.display = 'block';
+                
+                renderCommentaryCards('en');
+                updateLangButtons('en');
+                
+                commentaryLog(`📋 Loaded ${data.length} commentaries for ${today}`, 'success');
+                
+            } catch (e) {
+                commentaryLog(`❌ Error loading commentary: ${e.message}`, 'error');
+                alert('Error loading commentary: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📋 View Today\'s Commentary';
+            }
+        }
+        
+        function switchCommentaryLang(lang) {
+            currentCommentaryLang = lang;
+            renderCommentaryCards(lang);
+            updateLangButtons(lang);
+        }
+        
+        function updateLangButtons(activeLang) {
+            ['en', 'ko', 'zh', 'ja'].forEach(lang => {
+                const btn = document.getElementById(`lang-btn-${lang}`);
+                if (lang === activeLang) {
+                    btn.style.background = 'var(--primary)';
+                    btn.style.color = 'white';
+                } else {
+                    btn.style.background = 'var(--bg-secondary)';
+                    btn.style.color = 'var(--text)';
+                }
+            });
+        }
+        
+        function renderCommentaryCards(lang) {
+            const container = document.getElementById('commentary-cards');
+            const langField = lang === 'en' ? 'commentary' : `commentary_${lang}`;
+            
+            const sectionNames = {
+                investor_sentiment: { icon: '😰', name: 'Investor Sentiment', name_ko: '투자자 심리' },
+                market_position: { icon: '📊', name: 'Market Position', name_ko: '시장 포지션' },
+                supply_dynamics: { icon: '⚡', name: 'Supply Dynamics', name_ko: '공급 동학' },
+                network_demand: { icon: '🔥', name: 'Network Demand', name_ko: '네트워크 수요' },
+                user_activity: { icon: '👥', name: 'User Activity', name_ko: '사용자 활동' },
+                locked_capital: { icon: '🔒', name: 'Locked Capital', name_ko: '예치 자본' },
+                settlement_volume: { icon: '💸', name: 'Settlement Volume', name_ko: '결제량' }
+            };
+            
+            container.innerHTML = loadedCommentaryData.map(item => {
+                const section = sectionNames[item.section_key] || { icon: '📝', name: item.section_key };
+                const content = item[langField] || item.commentary || '(No translation available)';
+                const charCount = content.length;
+                
+                return `
+                    <div style="background: var(--bg-secondary); border-radius: 8px; padding: 16px; border: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="font-weight: 600; color: var(--primary);">${section.icon} ${section.name}</div>
+                            <span style="font-size: 10px; color: var(--text-muted);">${charCount} chars</span>
+                        </div>
+                        <div style="font-size: 12px; line-height: 1.6; color: var(--text); max-height: 200px; overflow-y: auto; white-space: pre-wrap;">${escapeHtml(content)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         
         async function regenerateAllCommentary() {
@@ -4315,6 +4428,11 @@ Guidelines:
                 commentaryLog(`\n${'='.repeat(40)}`);
                 commentaryLog(`📊 Results: ✅ ${success}/${totalSections}  |  ❌ ${failed}/${totalSections}`, success === totalSections ? 'success' : 'warning');
                 setCommentaryStatus(`Done: ${success}/${totalSections}`, success === totalSections ? '#3fb950' : '#d29922');
+                
+                // Auto-load today's commentary after completion
+                if (success > 0) {
+                    await loadTodayCommentary();
+                }
                 
             } catch (e) {
                 commentaryLog(`❌ Fatal error: ${e.message}`, 'error');
