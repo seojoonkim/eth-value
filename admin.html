@@ -3859,12 +3859,12 @@
                 title_ko: '투자자 심리',
                 charts: ['Realized Price', 'MVRV Ratio', 'Fear & Greed', 'Funding Rate', 'Exchange ETH Reserve', 'Whale Transactions'],
                 tables: {
-                    realized_price: 'historical_realized_price',
-                    mvrv: 'historical_mvrv',
-                    fear_greed: 'historical_fear_greed',
-                    funding_rate: 'historical_funding_rate',
-                    exchange_reserve: 'historical_exchange_reserve',
-                    whale_tx: 'historical_whale_tx'
+                    // realized_price는 historical_mvrv에 realized_price 필드로 있음
+                    mvrv: 'historical_mvrv',  // mvrv_ratio + realized_price
+                    fear_greed: 'historical_fear_greed',  // value
+                    funding_rate: 'historical_funding_rate',  // funding_rate
+                    exchange_reserve: 'historical_exchange_reserve',  // reserve_eth
+                    whale_tx: 'historical_whale_tx'  // whale_tx_count
                 }
             },
             // 02.2 시장 포지션 - 5개 차트
@@ -3873,11 +3873,11 @@
                 title_ko: '시장 포지션',
                 charts: ['ETH/BTC Ratio', 'ETH Dominance', 'Stablecoin Mcap', 'Volatility', 'NVT Ratio'],
                 tables: {
-                    eth_btc: 'historical_eth_btc',
-                    eth_dominance: 'historical_eth_dominance',
-                    stablecoins: 'historical_stablecoins',
-                    volatility: 'historical_volatility',
-                    nvt: 'historical_nvt'
+                    eth_btc: 'historical_eth_btc',  // ratio
+                    eth_dominance: 'historical_eth_dominance',  // eth_dominance
+                    stablecoins: 'historical_stablecoins',  // total_mcap
+                    volatility: 'historical_volatility',  // volatility_30d
+                    nvt: 'historical_nvt'  // nvt_ratio
                 }
             },
             // 02.3 공급 역학 - 6개 차트
@@ -3886,9 +3886,10 @@
                 title_ko: '공급 역학',
                 charts: ['Staking Yield (APR)', 'Staked ETH', 'ETH Burned', 'ETH Issued', 'Net Supply', 'Effective Float'],
                 tables: {
-                    staking: 'historical_staking',
-                    eth_burned: 'historical_eth_burned',
-                    eth_supply: 'historical_eth_supply'
+                    staking: 'historical_staking',  // total_staked_eth
+                    staking_apr: 'historical_staking_apr',  // lido_apr
+                    gas_burn: 'historical_gas_burn',  // eth_burnt
+                    eth_supply: 'historical_eth_supply'  // eth_supply
                 }
             },
             // 02.4 네트워크 수요 - 5개 차트
@@ -3897,10 +3898,9 @@
                 title_ko: '네트워크 수요',
                 charts: ['Gas Price', 'Gas Utilization', 'Network Fees', 'Blob Fees', 'Blob Count'],
                 tables: {
-                    gas_price: 'historical_gas_price',
-                    gas_burn: 'historical_gas_burn',
-                    fees: 'historical_fees',
-                    blob: 'historical_blob'
+                    gas_burn: 'historical_gas_burn',  // avg_gas_price_gwei, eth_burnt
+                    fees: 'historical_protocol_fees',  // fees
+                    blob: 'historical_blob_data'  // blob_count, blob_fee_eth
                 }
             },
             // 02.5 사용자 활동 - 5개 차트
@@ -3909,11 +3909,11 @@
                 title_ko: '사용자 활동',
                 charts: ['New Addresses', 'L1 Active Addresses', 'L2 Active Addresses', 'L1 Transactions', 'L2 Transactions'],
                 tables: {
-                    new_addresses: 'historical_new_addresses',
-                    active_addresses: 'historical_active_addresses',
-                    l2_addresses: 'historical_l2_addresses',
-                    transactions: 'historical_transactions',
-                    l2_transactions: 'historical_l2_transactions'
+                    new_addresses: 'historical_new_addresses',  // new_addresses
+                    active_addresses: 'historical_active_addresses',  // active_addresses
+                    l2_addresses: 'historical_l2_addresses',  // active_addresses (aggregate)
+                    transactions: 'historical_transactions',  // tx_count
+                    l2_transactions: 'historical_l2_transactions'  // tx_count (aggregate)
                 }
             },
             // 02.6 예치 자본 - 6개 차트
@@ -3922,12 +3922,12 @@
                 title_ko: '예치 자본',
                 charts: ['L1 TVL', 'L2 TVL', 'DeFi Lending TVL', 'L1 Stablecoin Supply', 'L2 Stablecoin Supply', 'App Capital'],
                 tables: {
-                    ethereum_tvl: 'historical_ethereum_tvl',
-                    l2_tvl: 'historical_l2_tvl',
-                    lending_tvl: 'historical_lending_tvl',
-                    stablecoins: 'historical_stablecoins',
-                    l2_stablecoins: 'historical_l2_stablecoins',
-                    staking: 'historical_staking'
+                    ethereum_tvl: 'historical_ethereum_tvl',  // tvl
+                    l2_tvl: 'historical_l2_tvl',  // tvl (aggregate)
+                    lending_tvl: 'historical_lending_tvl',  // total_tvl
+                    stablecoins: 'historical_stablecoins',  // total_mcap (전체)
+                    stablecoins_eth: 'historical_stablecoins_eth',  // total_mcap (ETH only)
+                    staking: 'historical_staking'  // total_staked_eth
                 }
             },
             // 02.7 결제량 - 6개 차트
@@ -3936,12 +3936,11 @@
                 title_ko: '결제량',
                 charts: ['L1 TX Volume', 'L2 TX Volume', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
                 tables: {
-                    l1_volume: 'historical_l1_volume',
-                    l2_volume: 'historical_l2_volume',
-                    bridge_volume: 'historical_bridge_volume',
-                    stablecoin_volume: 'historical_stablecoin_volume',
-                    l2_stablecoin_volume: 'historical_l2_stablecoin_volume',
-                    dex_volume: 'historical_dex_volume'
+                    nvt: 'historical_nvt',  // tx_volume_usd (L1 volume)
+                    l2_volume: 'historical_l2_tx_volume',  // tx_volume_eth (aggregate)
+                    bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
+                    stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume
+                    dex_volume: 'historical_dex_volume'  // volume
                 }
             }
         };
@@ -3971,6 +3970,7 @@
             const today = new Date().toISOString().split('T')[0];
             const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            const thirtyFiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             
             const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             
@@ -3993,38 +3993,37 @@
                 return records;
             }
             
-            // 테이블별 값 필드 매핑
+            // 테이블별 값 필드 매핑 (DATASETS 기준 - 실제 DB 필드명)
             const valueFieldMap = {
-                'historical_nvt': 'tx_volume_usd',
-                'historical_l2_volume': 'tx_volume_eth',
-                'historical_bridge_volume': 'bridge_volume_eth',
-                'historical_stablecoin_volume': 'daily_volume',
-                'historical_l2_stablecoin_volume': 'daily_volume',
-                'historical_whale_tx': 'whale_tx_count',
-                'historical_new_addresses': 'new_addresses',
-                'historical_active_addresses': 'active_addresses',
-                'historical_transactions': 'tx_count',
-                'historical_l2_transactions': 'tx_count',
                 'historical_ethereum_tvl': 'tvl',
-                'historical_l2_tvl': 'tvl',
-                'historical_lending_tvl': 'tvl',
-                'historical_dex_volume': 'daily_volume',
-                'historical_dex_tvl': 'tvl',
-                'historical_fees': 'daily_fees',
-                'historical_stablecoins': 'market_cap',
-                'historical_l2_stablecoins': 'market_cap',
-                'historical_fear_greed': 'index',
-                'historical_funding_rate': 'rate',
-                'historical_exchange_reserve': 'reserve',
-                'historical_eth_dominance': 'dominance',
-                'historical_eth_btc': 'ratio',
-                'historical_volatility': 'volatility',
                 'historical_staking': 'total_staked_eth',
-                'historical_eth_burned': 'daily_burn',
-                'historical_gas_price': 'avg_gas_price_gwei',
-                'historical_blob': 'blob_count',
+                'historical_l2_tvl': 'tvl',
+                'historical_protocol_fees': 'fees',
+                'historical_dex_volume': 'volume',
+                'historical_stablecoins': 'total_mcap',
+                'historical_stablecoins_eth': 'total_mcap',
+                'historical_eth_btc': 'ratio',
+                'historical_funding_rate': 'funding_rate',
+                'historical_eth_dominance': 'eth_dominance',
+                'historical_lending_tvl': 'total_tvl',
+                'historical_staking_apr': 'lido_apr',
+                'historical_blob_data': 'blob_count',
+                'historical_l2_transactions': 'tx_count',
+                'historical_l2_tx_volume': 'tx_volume_eth',
+                'historical_bridge_volume': 'bridge_volume_eth',
+                'historical_whale_tx': 'whale_tx_count',
                 'historical_mvrv': 'mvrv_ratio',
-                'historical_realized_price': 'realized_price',
+                'historical_stablecoin_volume': 'daily_volume',
+                'historical_new_addresses': 'new_addresses',
+                'historical_gas_burn': 'avg_gas_price_gwei',
+                'historical_transactions': 'tx_count',
+                'historical_volatility': 'volatility_30d',
+                'historical_exchange_reserve': 'reserve_eth',
+                'historical_eth_supply': 'eth_supply',
+                'historical_l2_addresses': 'active_addresses',
+                'historical_active_addresses': 'active_addresses',
+                'historical_fear_greed': 'value',
+                'historical_nvt': 'nvt_ratio',
             };
             
             for (const [metricKey, tableName] of Object.entries(section.tables)) {
@@ -4034,14 +4033,7 @@
                         const { data: recent } = await client
                             .from(tableName)
                             .select('date, active_addresses')
-                            .gte('date', fourteenDaysAgo)
-                            .order('date', { ascending: false });
-                        
-                        const { data: older } = await client
-                            .from(tableName)
-                            .select('date, active_addresses')
-                            .lte('date', thirtyDaysAgo)
-                            .gte('date', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+                            .gte('date', thirtyFiveDaysAgo)
                             .order('date', { ascending: false });
                         
                         if (recent && recent.length > 0) {
@@ -4065,31 +4057,138 @@
                             
                             const latestDate = dates[0];
                             
-                            const olderByDate = {};
-                            if (older) {
-                                for (const r of older) {
-                                    if (!olderByDate[r.date]) olderByDate[r.date] = 0;
-                                    olderByDate[r.date] += parseInt(r.active_addresses || 0);
-                                }
-                            }
-                            const olderDates = Object.keys(olderByDate).sort().reverse();
-                            
                             metricsData[metricKey] = {
                                 latest: { date: latestDate, active_addresses: byDate[latestDate] },
-                                recent: dates.slice(0, 7).map(d => ({ date: d, active_addresses: byDate[d] })),
-                                thirtyDaysAgo: olderDates.length > 0 ? { date: olderDates[0], active_addresses: olderByDate[olderDates[0]] } : null
+                                all30d: dates.map(d => ({ date: d, active_addresses: byDate[d] })),
+                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], active_addresses: byDate[dates[30]] } : null
                             };
                         }
                         continue;
                     }
                     
-                    // 14일치 데이터 가져오기 (미취합 제외용)
+                    // Special handling for L2 Transactions (stored by chain)
+                    if (tableName === 'historical_l2_transactions') {
+                        const { data: recent } = await client
+                            .from(tableName)
+                            .select('date, tx_count')
+                            .gte('date', thirtyFiveDaysAgo)
+                            .order('date', { ascending: false });
+                        
+                        if (recent && recent.length > 0) {
+                            const byDate = {};
+                            for (const r of recent) {
+                                if (!byDate[r.date]) byDate[r.date] = 0;
+                                byDate[r.date] += parseInt(r.tx_count || 0);
+                            }
+                            let dates = Object.keys(byDate).sort().reverse();
+                            
+                            // 미취합 체크
+                            if (dates.length >= 8) {
+                                const lastValue = byDate[dates[0]];
+                                const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
+                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
+                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                    commentaryLog(`   ⚠️ l2_transactions: 마지막 날 미취합 제외`, 'warning');
+                                    dates = dates.slice(1);
+                                }
+                            }
+                            
+                            const latestDate = dates[0];
+                            
+                            metricsData[metricKey] = {
+                                latest: { date: latestDate, tx_count: byDate[latestDate] },
+                                all30d: dates.map(d => ({ date: d, tx_count: byDate[d] })),
+                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tx_count: byDate[dates[30]] } : null
+                            };
+                        }
+                        continue;
+                    }
+                    
+                    // Special handling for L2 TX Volume (stored by chain)
+                    if (tableName === 'historical_l2_tx_volume') {
+                        const { data: recent } = await client
+                            .from(tableName)
+                            .select('date, tx_volume_eth')
+                            .gte('date', thirtyFiveDaysAgo)
+                            .order('date', { ascending: false });
+                        
+                        if (recent && recent.length > 0) {
+                            const byDate = {};
+                            for (const r of recent) {
+                                if (!byDate[r.date]) byDate[r.date] = 0;
+                                byDate[r.date] += parseFloat(r.tx_volume_eth || 0);
+                            }
+                            const dates = Object.keys(byDate).sort().reverse();
+                            const latestDate = dates[0];
+                            
+                            metricsData[metricKey] = {
+                                latest: { date: latestDate, tx_volume_eth: byDate[latestDate] },
+                                all30d: dates.map(d => ({ date: d, tx_volume_eth: byDate[d] })),
+                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tx_volume_eth: byDate[dates[30]] } : null
+                            };
+                        }
+                        continue;
+                    }
+                    
+                    // Special handling for Bridge Volume (stored by chain)
+                    if (tableName === 'historical_bridge_volume') {
+                        const { data: recent } = await client
+                            .from(tableName)
+                            .select('date, bridge_volume_eth')
+                            .gte('date', thirtyFiveDaysAgo)
+                            .order('date', { ascending: false });
+                        
+                        if (recent && recent.length > 0) {
+                            const byDate = {};
+                            for (const r of recent) {
+                                if (!byDate[r.date]) byDate[r.date] = 0;
+                                byDate[r.date] += parseFloat(r.bridge_volume_eth || 0);
+                            }
+                            const dates = Object.keys(byDate).sort().reverse();
+                            const latestDate = dates[0];
+                            
+                            metricsData[metricKey] = {
+                                latest: { date: latestDate, bridge_volume_eth: byDate[latestDate] },
+                                all30d: dates.map(d => ({ date: d, bridge_volume_eth: byDate[d] })),
+                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], bridge_volume_eth: byDate[dates[30]] } : null
+                            };
+                        }
+                        continue;
+                    }
+                    
+                    // Special handling for L2 TVL (stored by chain)
+                    if (tableName === 'historical_l2_tvl') {
+                        const { data: recent } = await client
+                            .from(tableName)
+                            .select('date, tvl')
+                            .gte('date', thirtyFiveDaysAgo)
+                            .order('date', { ascending: false });
+                        
+                        if (recent && recent.length > 0) {
+                            const byDate = {};
+                            for (const r of recent) {
+                                if (!byDate[r.date]) byDate[r.date] = 0;
+                                byDate[r.date] += parseFloat(r.tvl || 0);
+                            }
+                            const dates = Object.keys(byDate).sort().reverse();
+                            const latestDate = dates[0];
+                            
+                            metricsData[metricKey] = {
+                                latest: { date: latestDate, tvl: byDate[latestDate] },
+                                all30d: dates.map(d => ({ date: d, tvl: byDate[d] })),
+                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tvl: byDate[dates[30]] } : null
+                            };
+                        }
+                        continue;
+                    }
+                    
+                    // 35일치 데이터 가져오기 (미취합 제외 + 30일 트렌드용)
                     const { data: recent } = await client
                         .from(tableName)
                         .select('*')
-                        .gte('date', fourteenDaysAgo)
+                        .gte('date', thirtyFiveDaysAgo)
                         .order('date', { ascending: false })
-                        .limit(14);
+                        .limit(35);
                     
                     const { data: older } = await client
                         .from(tableName)
@@ -4108,7 +4207,7 @@
                         
                         metricsData[metricKey] = {
                             latest: cleanedRecent[0],
-                            recent: cleanedRecent.slice(0, 7),
+                            all30d: cleanedRecent,  // 전체 30일+ 데이터 (종합 분석용)
                             thirtyDaysAgo: older?.[0] || null
                         };
                     }
@@ -4154,48 +4253,40 @@
             const sections = Object.keys(COMMENTARY_SECTIONS);
             let html = '';
             
-            // 필드별 값 추출 함수
+            // 필드별 값 추출 함수 (DATASETS 기준)
             const extractValue = (latest) => {
                 if (!latest) return { field: 'N/A', value: null };
                 
                 const fieldMap = [
-                    { field: 'index', label: 'Fear & Greed' },
+                    { field: 'value', label: 'Fear & Greed' },  // fear_greed
                     { field: 'tvl', label: 'TVL' },
-                    { field: 'rate', label: 'Rate' },
+                    { field: 'total_tvl', label: 'Total TVL' },  // lending_tvl
+                    { field: 'total_mcap', label: 'Total Mcap' },  // stablecoins
                     { field: 'funding_rate', label: 'Funding Rate' },
                     { field: 'total_staked_eth', label: 'Staked ETH' },
-                    { field: 'apy', label: 'APY' },
-                    { field: 'dominance', label: 'Dominance' },
+                    { field: 'lido_apr', label: 'Staking APR' },  // staking_apr
                     { field: 'eth_dominance', label: 'ETH Dominance' },
-                    { field: 'ratio', label: 'Ratio' },
-                    { field: 'reserve', label: 'Reserve' },
-                    { field: 'avg_gas_price_gwei', label: 'Gas Price' },
-                    { field: 'gas_utilization', label: 'Gas Util' },
+                    { field: 'ratio', label: 'Ratio' },  // eth_btc
+                    { field: 'reserve_eth', label: 'Reserve ETH' },  // exchange_reserve
+                    { field: 'avg_gas_price_gwei', label: 'Gas Price' },  // gas_burn
+                    { field: 'eth_burnt', label: 'ETH Burnt' },  // gas_burn
                     { field: 'mvrv_ratio', label: 'MVRV Ratio' },
-                    { field: 'realized_price', label: 'Realized Price' },
-                    { field: 'spot_price', label: 'Spot Price' },
-                    { field: 'daily_volume', label: 'Daily Volume' },
-                    { field: 'tx_volume_usd', label: 'TX Volume USD' },
-                    { field: 'tx_volume_eth', label: 'TX Volume ETH' },
-                    { field: 'bridge_volume_eth', label: 'Bridge Volume' },
-                    { field: 'blob_count', label: 'Blob Count' },
+                    { field: 'realized_price', label: 'Realized Price' },  // mvrv table
+                    { field: 'nvt_ratio', label: 'NVT Ratio' },  // nvt
+                    { field: 'tx_volume_usd', label: 'TX Volume USD' },  // nvt table
+                    { field: 'daily_volume', label: 'Daily Volume' },  // stablecoin_volume
+                    { field: 'volume', label: 'Volume' },  // dex_volume
+                    { field: 'tx_volume_eth', label: 'TX Volume ETH' },  // l2_tx_volume
+                    { field: 'bridge_volume_eth', label: 'Bridge Volume' },  // bridge_volume
+                    { field: 'blob_count', label: 'Blob Count' },  // blob_data
                     { field: 'blob_fee_eth', label: 'Blob Fee' },
                     { field: 'active_addresses', label: 'Active Addr' },
                     { field: 'new_addresses', label: 'New Addr' },
                     { field: 'tx_count', label: 'TX Count' },
-                    { field: 'volatility', label: 'Volatility' },
-                    { field: 'daily_burn', label: 'Daily Burn' },
-                    { field: 'eth_burnt', label: 'ETH Burnt' },
-                    { field: 'burned', label: 'Burned' },
+                    { field: 'volatility_30d', label: 'Volatility' },  // volatility
                     { field: 'eth_supply', label: 'ETH Supply' },
-                    { field: 'circulating_supply', label: 'Circ. Supply' },
-                    { field: 'market_cap', label: 'Market Cap' },
-                    { field: 'fees', label: 'Fees' },
-                    { field: 'daily_fees', label: 'Daily Fees' },
-                    { field: 'whale_count', label: 'Whale Count' },
+                    { field: 'fees', label: 'Fees' },  // protocol_fees
                     { field: 'whale_tx_count', label: 'Whale TX' },
-                    { field: 'large_tx_count', label: 'Large TX' },
-                    { field: 'value', label: 'Value' },
                 ];
                 
                 for (const { field, label } of fieldMap) {
@@ -4236,20 +4327,54 @@
                     for (const [metricKey, tableName] of Object.entries(section.tables)) {
                         const data = metricsData[metricKey];
                         const hasLatest = !!data?.latest;
-                        const hasRecent = data?.recent?.length > 0;
-                        const has30d = !!data?.thirtyDaysAgo;
+                        const all30d = data?.all30d || [];
+                        const dataCount = all30d.length;
                         
                         const extracted = extractValue(data?.latest);
+                        
+                        // 30일 변화율 및 트렌드 계산
+                        let change30d = null;
+                        let trend = '-';
+                        
+                        if (all30d.length >= 2) {
+                            const values = all30d.map(r => extractValue(r)?.value).filter(v => v !== null);
+                            if (values.length >= 2) {
+                                const latest = values[0];
+                                const oldest = values[values.length - 1];
+                                if (oldest !== 0) {
+                                    change30d = ((latest - oldest) / Math.abs(oldest) * 100).toFixed(1);
+                                }
+                                
+                                // 트렌드 판단
+                                if (values.length >= 5) {
+                                    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+                                    let numerator = 0, denominator = 0;
+                                    const xMean = (values.length - 1) / 2;
+                                    for (let i = 0; i < values.length; i++) {
+                                        numerator += (i - xMean) * (values[values.length - 1 - i] - avg);
+                                        denominator += (i - xMean) ** 2;
+                                    }
+                                    const slope = denominator !== 0 ? numerator / denominator : 0;
+                                    const normalizedSlope = avg !== 0 ? (slope / avg) * 100 : 0;
+                                    
+                                    if (normalizedSlope > 1) trend = '↑';
+                                    else if (normalizedSlope < -1) trend = '↓';
+                                    else trend = '→';
+                                }
+                            }
+                        }
                         
                         if (hasLatest && extracted.value !== null) successCount++;
                         
                         const statusColor = hasLatest && extracted.value !== null ? '#3fb950' : '#f85149';
                         const statusIcon = hasLatest && extracted.value !== null ? '✓' : '✗';
                         
+                        const historyColor = dataCount >= 25 ? '#3fb950' : (dataCount >= 7 ? '#d29922' : '#f85149');
+                        
                         tableRows += `
                             <tr style="border-bottom: 1px solid #21262d;">
                                 <td style="padding: 6px 8px; font-size: 11px; color: #8b949e;">${metricKey}</td>
-                                <td style="padding: 6px 8px; font-size: 10px; color: #6e7681; font-family: monospace;">${tableName}</td>
+                                <td style="padding: 6px 8px; font-size: 10px; color: #6e7681; font-family: monospace;">${tableName.replace('historical_', '')}</td>
                                 <td style="padding: 6px 8px; text-align: center;">
                                     <span style="color: ${statusColor}; font-weight: bold;">${statusIcon}</span>
                                 </td>
@@ -4257,11 +4382,14 @@
                                 <td style="padding: 6px 8px; font-size: 11px; font-family: monospace; color: ${extracted.value !== null ? '#e6edf3' : '#f85149'};">
                                     ${formatVal(extracted.value)}
                                 </td>
-                                <td style="padding: 6px 8px; font-size: 10px; color: #8b949e;">
-                                    ${hasRecent ? data.recent.length + 'd' : '-'} / ${has30d ? '30d' : '-'}
+                                <td style="padding: 6px 8px; font-size: 10px; font-family: monospace; color: ${historyColor};">
+                                    ${dataCount}d
                                 </td>
-                                <td style="padding: 6px 8px; font-size: 10px; color: #8b949e;">
-                                    ${data?.latest?.date || '-'}
+                                <td style="padding: 6px 8px; font-size: 10px; font-family: monospace;">
+                                    <span style="color: ${change30d !== null ? (change30d >= 0 ? '#3fb950' : '#f85149') : '#6e7681'};">
+                                        ${change30d !== null ? (change30d >= 0 ? '+' : '') + change30d + '%' : '-'}
+                                    </span>
+                                    <span style="margin-left: 4px; color: ${trend === '↑' ? '#3fb950' : trend === '↓' ? '#f85149' : '#8b949e'};">${trend}</span>
                                 </td>
                             </tr>
                         `;
@@ -4290,8 +4418,8 @@
                                         <th style="padding: 6px 8px; text-align: center;">OK</th>
                                         <th style="padding: 6px 8px; text-align: left;">Field</th>
                                         <th style="padding: 6px 8px; text-align: left;">Value</th>
-                                        <th style="padding: 6px 8px; text-align: left;">History</th>
-                                        <th style="padding: 6px 8px; text-align: left;">Date</th>
+                                        <th style="padding: 6px 8px; text-align: left;" title="Days of data available">Days</th>
+                                        <th style="padding: 6px 8px; text-align: left;" title="30-day change and trend">30d/Trend</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -4320,229 +4448,127 @@
             let prompt = `Section: ${section.title} (${section.title_ko})\n`;
             prompt += `Charts in this section: ${section.charts.join(', ')}\n\n`;
             prompt += `Current ETH Price: $${metricsData.eth_price?.latest?.close?.toFixed(2) || 'N/A'}\n\n`;
-            prompt += `Key Metrics (Latest values with 30-day changes):\n`;
+            
+            // 필드에서 값을 추출하는 헬퍼 함수 (DATASETS 기준)
+            const extractValue = (record) => {
+                if (!record) return null;
+                const fields = ['value', 'tvl', 'total_tvl', 'total_mcap', 'funding_rate', 'total_staked_eth', 
+                    'lido_apr', 'eth_dominance', 'ratio', 'reserve_eth', 'avg_gas_price_gwei', 'eth_burnt',
+                    'mvrv_ratio', 'realized_price', 'nvt_ratio', 'tx_volume_usd', 'daily_volume', 'volume',
+                    'tx_volume_eth', 'bridge_volume_eth', 'blob_count', 'blob_fee_eth',
+                    'active_addresses', 'new_addresses', 'tx_count', 'volatility_30d', 'eth_supply', 
+                    'fees', 'whale_tx_count'];
+                for (const f of fields) {
+                    if (record[f] !== undefined && record[f] !== null) {
+                        return { field: f, value: record[f] };
+                    }
+                }
+                return null;
+            };
+            
+            // 값 포맷팅 함수
+            const formatVal = (v, unit = '') => {
+                if (v === null || v === undefined) return 'N/A';
+                if (typeof v === 'number') {
+                    if (Math.abs(v) >= 1e12) return (v / 1e12).toFixed(2) + 'T' + unit;
+                    if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(2) + 'B' + unit;
+                    if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(2) + 'M' + unit;
+                    if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(2) + 'K' + unit;
+                    if (Math.abs(v) < 0.01 && v !== 0) return v.toFixed(4) + unit;
+                    return v.toFixed(2) + unit;
+                }
+                return String(v) + unit;
+            };
+            
+            // 단위 결정 함수 (DATASETS 기준)
+            const getUnit = (fieldName) => {
+                if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'total_mcap', 'fees'].includes(fieldName)) return ' USD';
+                if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'tx_volume_eth', 'bridge_volume_eth', 'blob_fee_eth'].includes(fieldName)) return ' ETH';
+                if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr'].includes(fieldName)) return '%';
+                if (fieldName === 'avg_gas_price_gwei') return ' Gwei';
+                return '';
+            };
+            
+            prompt += `═══════════════════════════════════════════════════════════════\n`;
+            prompt += `COMPREHENSIVE 30-DAY METRICS ANALYSIS\n`;
+            prompt += `═══════════════════════════════════════════════════════════════\n\n`;
             
             for (const [key, data] of Object.entries(metricsData)) {
                 if (key === 'eth_price') continue;
-                if (!data?.latest) continue;
+                if (!data?.latest || !data?.all30d || data.all30d.length === 0) continue;
                 
-                const latest = data.latest;
-                const older = data.thirtyDaysAgo;
+                const extracted = extractValue(data.latest);
+                if (!extracted) continue;
                 
-                let currentVal, oldVal, unit = '', metricName = key;
+                const fieldName = extracted.field;
+                const unit = getUnit(fieldName);
+                const all = data.all30d;
                 
-                // Fear & Greed Index
-                if (latest.index !== undefined) {
-                    currentVal = latest.index;
-                    oldVal = older?.index;
-                    metricName = 'fear_greed_index';
-                }
-                // TVL values
-                else if (latest.tvl !== undefined) {
-                    currentVal = latest.tvl;
-                    oldVal = older?.tvl;
-                    unit = ' USD';
-                }
-                // Funding rate
-                else if (latest.rate !== undefined) {
-                    currentVal = latest.rate;
-                    oldVal = older?.rate;
-                    unit = '%';
-                }
-                // Staking data - multiple fields
-                else if (latest.total_staked_eth !== undefined) {
-                    currentVal = latest.total_staked_eth;
-                    oldVal = older?.total_staked_eth;
-                    unit = ' ETH';
-                    metricName = 'staked_eth';
-                    if (latest.apy !== undefined) {
-                        prompt += `- staking_yield: ${latest.apy?.toFixed(2) || 'N/A'}%\n`;
+                // 모든 값 추출
+                const values = all.map(r => extractValue(r)?.value).filter(v => v !== null && v !== undefined);
+                if (values.length === 0) continue;
+                
+                // 기본 통계
+                const latest = values[0];
+                const oldest = values[values.length - 1];
+                const avg30d = values.reduce((a, b) => a + b, 0) / values.length;
+                const max30d = Math.max(...values);
+                const min30d = Math.min(...values);
+                
+                // 30일 변화율 계산
+                const change30d = oldest !== 0 ? ((latest - oldest) / Math.abs(oldest) * 100) : 0;
+                
+                // 추세 방향 판단 (선형 회귀 기울기)
+                let trendDirection = 'stable';
+                if (values.length >= 5) {
+                    const n = values.length;
+                    const xMean = (n - 1) / 2;
+                    const yMean = avg30d;
+                    let numerator = 0, denominator = 0;
+                    for (let i = 0; i < n; i++) {
+                        numerator += (i - xMean) * (values[n - 1 - i] - yMean);
+                        denominator += (i - xMean) ** 2;
                     }
-                }
-                // ETH Dominance
-                else if (latest.dominance !== undefined) {
-                    currentVal = latest.dominance;
-                    oldVal = older?.dominance;
-                    unit = '%';
-                }
-                // ETH/BTC Ratio
-                else if (latest.ratio !== undefined) {
-                    currentVal = latest.ratio;
-                    oldVal = older?.ratio;
-                }
-                // Exchange Reserve
-                else if (latest.reserve !== undefined) {
-                    currentVal = latest.reserve;
-                    oldVal = older?.reserve;
-                    unit = ' ETH';
-                }
-                // Gas Price
-                else if (latest.avg_gas_price_gwei !== undefined) {
-                    currentVal = latest.avg_gas_price_gwei;
-                    oldVal = older?.avg_gas_price_gwei;
-                    unit = ' Gwei';
-                    if (latest.gas_utilization !== undefined) {
-                        prompt += `- gas_utilization: ${(latest.gas_utilization * 100)?.toFixed(1) || 'N/A'}%\n`;
-                    }
-                }
-                // MVRV Ratio
-                else if (latest.mvrv_ratio !== undefined) {
-                    currentVal = latest.mvrv_ratio;
-                    oldVal = older?.mvrv_ratio;
-                    metricName = 'mvrv_ratio';
-                }
-                // Realized Price
-                else if (latest.realized_price !== undefined) {
-                    currentVal = latest.realized_price;
-                    oldVal = older?.realized_price;
-                    unit = ' USD';
-                    metricName = 'realized_price';
-                }
-                // Daily Volume
-                else if (latest.daily_volume !== undefined) {
-                    currentVal = latest.daily_volume;
-                    oldVal = older?.daily_volume;
-                    unit = ' USD';
-                }
-                // Blob data
-                else if (latest.blob_count !== undefined) {
-                    currentVal = latest.blob_count;
-                    oldVal = older?.blob_count;
-                    metricName = 'blob_count';
-                    if (latest.blob_fees !== undefined) {
-                        prompt += `- blob_fees: ${latest.blob_fees?.toFixed(4) || 'N/A'} ETH\n`;
-                    }
-                }
-                // Active Addresses
-                else if (latest.active_addresses !== undefined) {
-                    currentVal = latest.active_addresses;
-                    oldVal = older?.active_addresses;
-                }
-                // New Addresses
-                else if (latest.new_addresses !== undefined) {
-                    currentVal = latest.new_addresses;
-                    oldVal = older?.new_addresses;
-                }
-                // Transaction Count
-                else if (latest.tx_count !== undefined) {
-                    currentVal = latest.tx_count;
-                    oldVal = older?.tx_count;
-                    metricName = 'transactions';
-                }
-                // Volatility
-                else if (latest.volatility !== undefined) {
-                    currentVal = latest.volatility;
-                    oldVal = older?.volatility;
-                    unit = '%';
-                }
-                // ETH Burned
-                else if (latest.daily_burn !== undefined) {
-                    currentVal = latest.daily_burn;
-                    oldVal = older?.daily_burn;
-                    unit = ' ETH';
-                    metricName = 'eth_burned';
-                }
-                else if (latest.burned !== undefined) {
-                    currentVal = latest.burned;
-                    oldVal = older?.burned;
-                    unit = ' ETH';
-                    metricName = 'eth_burned';
-                }
-                // ETH Supply
-                else if (latest.eth_supply !== undefined) {
-                    currentVal = latest.eth_supply;
-                    oldVal = older?.eth_supply;
-                    unit = ' ETH';
-                }
-                // Stablecoin Market Cap
-                else if (latest.market_cap !== undefined) {
-                    currentVal = latest.market_cap;
-                    oldVal = older?.market_cap;
-                    unit = ' USD';
-                    metricName = 'stablecoin_mcap';
-                }
-                // Network Fees
-                else if (latest.fees !== undefined) {
-                    currentVal = latest.fees;
-                    oldVal = older?.fees;
-                    unit = ' USD';
-                    metricName = 'network_fees';
-                }
-                else if (latest.daily_fees !== undefined) {
-                    currentVal = latest.daily_fees;
-                    oldVal = older?.daily_fees;
-                    unit = ' USD';
-                    metricName = 'network_fees';
-                }
-                // Whale Transactions
-                else if (latest.whale_tx_count !== undefined) {
-                    currentVal = latest.whale_tx_count;
-                    oldVal = older?.whale_tx_count;
-                    metricName = 'whale_transactions';
-                }
-                else if (latest.whale_count !== undefined) {
-                    currentVal = latest.whale_count;
-                    oldVal = older?.whale_count;
-                    metricName = 'whale_transactions';
-                }
-                else if (latest.large_tx_count !== undefined) {
-                    currentVal = latest.large_tx_count;
-                    oldVal = older?.large_tx_count;
-                    metricName = 'whale_transactions';
-                }
-                // Generic value field
-                else if (latest.value !== undefined) {
-                    currentVal = latest.value;
-                    oldVal = older?.value;
-                }
-                
-                if (currentVal !== undefined) {
-                    const change = oldVal ? ((currentVal - oldVal) / oldVal * 100).toFixed(1) : 'N/A';
-                    const changeStr = oldVal ? `(${change > 0 ? '+' : ''}${change}% vs 30d ago)` : '';
+                    const slope = denominator !== 0 ? numerator / denominator : 0;
+                    const normalizedSlope = avg30d !== 0 ? (slope / avg30d) * 100 : 0;
                     
-                    let valStr;
-                    if (typeof currentVal === 'number') {
-                        if (currentVal >= 1e12) valStr = (currentVal / 1e12).toFixed(2) + 'T';
-                        else if (currentVal >= 1e9) valStr = (currentVal / 1e9).toFixed(2) + 'B';
-                        else if (currentVal >= 1e6) valStr = (currentVal / 1e6).toFixed(2) + 'M';
-                        else if (currentVal >= 1e3) valStr = (currentVal / 1e3).toFixed(2) + 'K';
-                        else valStr = currentVal.toFixed(2);
-                    } else {
-                        valStr = String(currentVal);
-                    }
-                    
-                    prompt += `- ${metricName}: ${valStr}${unit} ${changeStr}\n`;
+                    if (normalizedSlope > 1) trendDirection = 'uptrend';
+                    else if (normalizedSlope < -1) trendDirection = 'downtrend';
+                    else trendDirection = 'sideways';
                 }
-            }
-            
-            // 7-day trend
-            prompt += `\n7-Day Trend:\n`;
-            for (const [key, data] of Object.entries(metricsData)) {
-                if (key === 'eth_price' || !data?.recent || data.recent.length < 2) continue;
-                const vals = data.recent.map(d => {
-                    if (d.value !== undefined) return d.value;
-                    if (d.tvl !== undefined) return d.tvl;
-                    if (d.index !== undefined) return d.index;
-                    if (d.active_addresses !== undefined) return d.active_addresses;
-                    if (d.total_staked_eth !== undefined) return d.total_staked_eth;
-                    if (d.mvrv_ratio !== undefined) return d.mvrv_ratio;
-                    if (d.realized_price !== undefined) return d.realized_price;
-                    if (d.daily_volume !== undefined) return d.daily_volume;
-                    if (d.tx_count !== undefined) return d.tx_count;
-                    if (d.new_addresses !== undefined) return d.new_addresses;
-                    if (d.blob_count !== undefined) return d.blob_count;
-                    if (d.reserve !== undefined) return d.reserve;
-                    if (d.dominance !== undefined) return d.dominance;
-                    if (d.ratio !== undefined) return d.ratio;
-                    if (d.rate !== undefined) return d.rate;
-                    if (d.volatility !== undefined) return d.volatility;
-                    return null;
-                }).filter(v => v !== null);
                 
-                if (vals.length >= 2) {
-                    const change7d = ((vals[0] - vals[vals.length - 1]) / vals[vals.length - 1] * 100).toFixed(1);
-                    prompt += `- ${key}: ${change7d > 0 ? '+' : ''}${change7d}% (7d)\n`;
+                // 변동성 (표준편차 / 평균)
+                const variance = values.reduce((sum, v) => sum + Math.pow(v - avg30d, 2), 0) / values.length;
+                const stdDev = Math.sqrt(variance);
+                const volatility = avg30d !== 0 ? (stdDev / Math.abs(avg30d) * 100) : 0;
+                
+                // 현재 위치 (30일 범위 내)
+                const range = max30d - min30d;
+                const position = range !== 0 ? ((latest - min30d) / range * 100) : 50;
+                
+                prompt += `▶ ${key.toUpperCase()}\n`;
+                prompt += `  Current: ${formatVal(latest, unit)} (${all[0]?.date || 'today'})\n`;
+                prompt += `  30-Day Avg: ${formatVal(avg30d, unit)}\n`;
+                prompt += `  30-Day Range: ${formatVal(min30d, unit)} ~ ${formatVal(max30d, unit)}\n`;
+                prompt += `  Position in Range: ${position.toFixed(0)}% (0%=low, 100%=high)\n`;
+                prompt += `  30-Day Change: ${change30d > 0 ? '+' : ''}${change30d.toFixed(1)}%\n`;
+                prompt += `  Trend: ${trendDirection.toUpperCase()} | Volatility: ${volatility.toFixed(1)}%\n`;
+                
+                // 추가 필드
+                if (data.latest.apy !== undefined && fieldName !== 'apy') {
+                    prompt += `  └ Staking APY: ${data.latest.apy?.toFixed(2) || 'N/A'}%\n`;
                 }
+                if (data.latest.gas_utilization !== undefined) {
+                    prompt += `  └ Gas Utilization: ${(data.latest.gas_utilization * 100)?.toFixed(1) || 'N/A'}%\n`;
+                }
+                if (data.latest.blob_fee_eth !== undefined) {
+                    prompt += `  └ Blob Fees: ${data.latest.blob_fee_eth?.toFixed(4) || 'N/A'} ETH\n`;
+                }
+                if (data.latest.whale_volume_eth !== undefined) {
+                    prompt += `  └ Whale Volume: ${formatVal(data.latest.whale_volume_eth, ' ETH')}\n`;
+                }
+                
+                prompt += `\n`;
             }
             
             return prompt;
