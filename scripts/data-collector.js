@@ -137,6 +137,50 @@ async function fetchSectionMetrics(sectionKey) {
     
     for (const [metricKey, tableName] of Object.entries(section.tables)) {
         try {
+            // Special handling for L2 addresses (stored by chain)
+            if (tableName === 'historical_l2_addresses') {
+                // Get total L2 addresses by summing across all chains
+                const { data: recent } = await supabase
+                    .from(tableName)
+                    .select('date, active_addresses')
+                    .gte('date', sevenDaysAgo)
+                    .order('date', { ascending: false });
+                
+                const { data: older } = await supabase
+                    .from(tableName)
+                    .select('date, active_addresses')
+                    .lte('date', thirtyDaysAgo)
+                    .gte('date', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+                    .order('date', { ascending: false });
+                
+                if (recent && recent.length > 0) {
+                    // Group by date and sum
+                    const byDate = {};
+                    for (const r of recent) {
+                        if (!byDate[r.date]) byDate[r.date] = 0;
+                        byDate[r.date] += parseInt(r.active_addresses || 0);
+                    }
+                    const dates = Object.keys(byDate).sort().reverse();
+                    const latestDate = dates[0];
+                    
+                    const olderByDate = {};
+                    if (older) {
+                        for (const r of older) {
+                            if (!olderByDate[r.date]) olderByDate[r.date] = 0;
+                            olderByDate[r.date] += parseInt(r.active_addresses || 0);
+                        }
+                    }
+                    const olderDates = Object.keys(olderByDate).sort().reverse();
+                    
+                    metricsData[metricKey] = {
+                        latest: { date: latestDate, active_addresses: byDate[latestDate] },
+                        recent: dates.slice(0, 7).map(d => ({ date: d, active_addresses: byDate[d] })),
+                        thirtyDaysAgo: olderDates.length > 0 ? { date: olderDates[0], active_addresses: olderByDate[olderDates[0]] } : null
+                    };
+                }
+                continue;
+            }
+            
             // Get recent data (last 7 days)
             const { data: recent } = await supabase
                 .from(tableName)
