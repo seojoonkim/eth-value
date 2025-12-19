@@ -19074,12 +19074,15 @@
                         log(`   ✓ L1 Volume History: ${l1VolHistory.length} records`);
                     }
                     
-                    // Calculate dailySettlement from L1 TX Volume (stored in NVT table)
-                    const recentNvt = nvtData.filter(d => d.tx_volume_usd > 0).slice(0, 7);
-                    if (recentNvt.length > 0) {
-                        const avgL1Volume = recentNvt.reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / recentNvt.length;
-                        state.l1DailyVolume = avgL1Volume;
-                        log(`   ✓ L1 Daily Volume: $${(avgL1Volume / 1e9).toFixed(2)}B (7-day avg)`);
+                    // Use LATEST value (matches chart end point)
+                    const sortedL1 = nvtData.filter(d => d.tx_volume_usd > 0).sort((a, b) => b.date.localeCompare(a.date));
+                    if (sortedL1.length > 0) {
+                        state.l1DailyVolume = parseFloat(sortedL1[0].tx_volume_usd);
+                        log(`   ✓ L1 Daily Volume: $${(state.l1DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedL1[0].date})`);
+                        
+                        // Keep 7-day avg for calculations
+                        const recentNvt = sortedL1.slice(0, 7);
+                        state.l1DailyVolumeAvg = recentNvt.reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / recentNvt.length;
                     }
                 }
                 
@@ -19099,12 +19102,17 @@
                         .sort((a, b) => a.date - b.date);
                     log(`   ✓ L2 Volume History: ${state.l2VolumeHistory.length} records`);
                     
-                    // Get recent 7 days average
-                    const sortedDates = Object.keys(l2VolByDate).sort().reverse().slice(0, 7);
+                    // Use LATEST value (matches chart end point)
+                    const sortedDates = Object.keys(l2VolByDate).sort().reverse();
                     if (sortedDates.length > 0) {
-                        const avgL2VolumeEth = sortedDates.reduce((sum, date) => sum + l2VolByDate[date], 0) / sortedDates.length;
-                        state.l2DailyVolume = avgL2VolumeEth * ethPrice;
-                        log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (7-day avg)`);
+                        const latestL2VolumeEth = l2VolByDate[sortedDates[0]];
+                        state.l2DailyVolume = latestL2VolumeEth * ethPrice;
+                        log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedDates[0]})`);
+                        
+                        // Keep 7-day avg for calculations
+                        const recentDates = sortedDates.slice(0, 7);
+                        const avgL2VolumeEth = recentDates.reduce((sum, date) => sum + l2VolByDate[date], 0) / recentDates.length;
+                        state.l2DailyVolumeAvg = avgL2VolumeEth * ethPrice;
                     }
                 }
                 
@@ -19124,12 +19132,17 @@
                         .sort((a, b) => a.date - b.date);
                     log(`   ✓ Bridge Volume History: ${state.bridgeVolumeHistory.length} records`);
                     
-                    // Get recent 7 days average
-                    const sortedDates = Object.keys(bridgeByDate).sort().reverse().slice(0, 7);
+                    // Use LATEST value (matches chart end point)
+                    const sortedDates = Object.keys(bridgeByDate).sort().reverse();
                     if (sortedDates.length > 0) {
-                        const avgBridgeVolumeEth = sortedDates.reduce((sum, date) => sum + bridgeByDate[date], 0) / sortedDates.length;
-                        state.bridgeDailyVolume = avgBridgeVolumeEth * ethPrice;
-                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e9).toFixed(2)}B (7-day avg)`);
+                        const latestBridgeVolumeEth = bridgeByDate[sortedDates[0]];
+                        state.bridgeDailyVolume = latestBridgeVolumeEth * ethPrice;
+                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (latest: ${sortedDates[0]})`);
+                        
+                        // Keep 7-day avg for calculations
+                        const recentDates = sortedDates.slice(0, 7);
+                        const avgBridgeVolumeEth = recentDates.reduce((sum, date) => sum + bridgeByDate[date], 0) / recentDates.length;
+                        state.bridgeDailyVolumeAvg = avgBridgeVolumeEth * ethPrice;
                     }
                 }
                 
@@ -21109,32 +21122,41 @@
             
             updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees');
             
-            // Settlement Volume Charts
+            // Settlement Volume Charts - ★ 차트 끝값과 표시값 동기화
             if (state.l1VolumeHistory && state.l1VolumeHistory.length > 0) {
-                updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
-                document.getElementById('l1-volume-value').textContent = fmt.usd(state.l1DailyVolume);
-                if (state.l1VolumeHistory.length > 1) {
-                    const first = state.l1VolumeHistory[0].value, last = state.l1VolumeHistory[state.l1VolumeHistory.length - 1].value;
+                const result = updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l1-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.l1DailyVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l1-volume-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
-                updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
-                document.getElementById('l2-volume-value').textContent = fmt.usd(state.l2DailyVolume);
-                if (state.l2VolumeHistory.length > 1) {
-                    const first = state.l2VolumeHistory[0].value, last = state.l2VolumeHistory[state.l2VolumeHistory.length - 1].value;
+                const result = updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l2-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.l2DailyVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-volume-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.bridgeVolumeHistory && state.bridgeVolumeHistory.length > 0) {
-                updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume');
-                document.getElementById('bridge-volume-value').textContent = fmt.usd(state.bridgeDailyVolume);
-                if (state.bridgeVolumeHistory.length > 1) {
-                    const first = state.bridgeVolumeHistory[0].value, last = state.bridgeVolumeHistory[state.bridgeVolumeHistory.length - 1].value;
+                const result = updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('bridge-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.bridgeDailyVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('bridge-volume-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
@@ -21838,31 +21860,41 @@
 
         function updateVolumeChart(days = 1095) {
             // Settlement Volume Charts (L1, L2, Bridge)
+            // ★ 차트 끝값과 표시값을 동기화
             if (state.l1VolumeHistory && state.l1VolumeHistory.length > 0) {
-                updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
-                document.getElementById('l1-volume-value').textContent = fmt.usd(state.l1DailyVolume);
-                if (state.l1VolumeHistory.length > 1) {
-                    const first = state.l1VolumeHistory[0].value, last = state.l1VolumeHistory[state.l1VolumeHistory.length - 1].value;
+                const result = updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l1-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.l1DailyVolume = result.lastValue; // sync state
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l1-volume-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
-                updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
-                document.getElementById('l2-volume-value').textContent = fmt.usd(state.l2DailyVolume);
-                if (state.l2VolumeHistory.length > 1) {
-                    const first = state.l2VolumeHistory[0].value, last = state.l2VolumeHistory[state.l2VolumeHistory.length - 1].value;
+                const result = updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l2-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.l2DailyVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-volume-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.bridgeVolumeHistory && state.bridgeVolumeHistory.length > 0) {
-                updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume');
-                document.getElementById('bridge-volume-value').textContent = fmt.usd(state.bridgeDailyVolume);
-                if (state.bridgeVolumeHistory.length > 1) {
-                    const first = state.bridgeVolumeHistory[0].value, last = state.bridgeVolumeHistory[state.bridgeVolumeHistory.length - 1].value;
+                const result = updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('bridge-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.bridgeDailyVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('bridge-volume-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
@@ -21870,10 +21902,13 @@
             }
             // Stablecoin Volume
             if (state.stablecoinVolumeHistory && state.stablecoinVolumeHistory.length > 0) {
-                updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, state.stablecoinVolumeHistory, '#eab308', 'stablecoinVol');
-                document.getElementById('stablecoin-vol-value').textContent = '$' + (state.stablecoinDailyVolume / 1e9).toFixed(2) + 'B';
-                if (state.stablecoinVolumeHistory.length > 1) {
-                    const first = state.stablecoinVolumeHistory[0].value, last = state.stablecoinVolumeHistory[state.stablecoinVolumeHistory.length - 1].value;
+                const result = updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, state.stablecoinVolumeHistory, '#eab308', 'stablecoinVol');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('stablecoin-vol-value').textContent = '$' + (result.lastValue / 1e9).toFixed(2) + 'B';
+                    state.stablecoinDailyVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('stablecoin-vol-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
@@ -21886,10 +21921,13 @@
                 cutoffDate.setDate(cutoffDate.getDate() - 1095);
                 const filteredHistory = state.l2StablecoinSupplyHistory.filter(d => d.date.getTime() > cutoffDate.getTime());
                 
-                updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, filteredHistory, '#22c55e', 'l2StablecoinSupply');
-                document.getElementById('l2-stablecoin-supply-value').textContent = '$' + (state.l2StablecoinSupply / 1e9).toFixed(2) + 'B';
-                if (filteredHistory.length > 1) {
-                    const first = filteredHistory[0].value, last = filteredHistory[filteredHistory.length - 1].value;
+                const result = updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, filteredHistory, '#22c55e', 'l2StablecoinSupply');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l2-stablecoin-supply-value').textContent = '$' + (result.lastValue / 1e9).toFixed(2) + 'B';
+                    state.l2StablecoinSupply = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-stablecoin-supply-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
@@ -21902,10 +21940,13 @@
                 cutoffDate.setDate(cutoffDate.getDate() - 1095);
                 const filteredHistory = state.l2StablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate.getTime());
                 
-                updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, filteredHistory, '#f59e0b', 'l2StablecoinVol');
-                document.getElementById('l2-stablecoin-vol-value').textContent = '$' + (state.l2StablecoinVolume / 1e9).toFixed(2) + 'B';
-                if (filteredHistory.length > 1) {
-                    const first = filteredHistory[0].value, last = filteredHistory[filteredHistory.length - 1].value;
+                const result = updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, filteredHistory, '#f59e0b', 'l2StablecoinVol');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l2-stablecoin-vol-value').textContent = '$' + (result.lastValue / 1e9).toFixed(2) + 'B';
+                    state.l2StablecoinVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-stablecoin-vol-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
@@ -21913,10 +21954,13 @@
             }
             // Whale Transactions
             if (state.whaleTxHistory && state.whaleTxHistory.length > 0) {
-                updateMetricChart('whale-tx-chart', whaleTxChart, state.whaleTxHistory, '#f59e0b', 'whaleTx');
-                document.getElementById('whale-tx-value').textContent = fmt.num(state.whaleTxCount) + ' txs';
-                if (state.whaleTxHistory.length > 1) {
-                    const first = state.whaleTxHistory[0].value, last = state.whaleTxHistory[state.whaleTxHistory.length - 1].value;
+                const result = updateMetricChart('whale-tx-chart', whaleTxChart, state.whaleTxHistory, '#f59e0b', 'whaleTx');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('whale-tx-value').textContent = fmt.num(result.lastValue) + ' txs';
+                    state.whaleTxCount = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('whale-tx-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
@@ -21932,11 +21976,13 @@
                     .map(d => ({ date: d.date, value: d.realizedPrice }));
                 
                 if (realizedPriceHistory.length > 0) {
-                    updateMetricChart('realized-price-chart', realizedPriceChart, realizedPriceHistory, '#10b981', 'realizedPrice');
-                    const latest = realizedPriceHistory[realizedPriceHistory.length - 1];
-                    document.getElementById('realized-price-value').textContent = '$' + fmt.num(latest.value);
-                    if (realizedPriceHistory.length > 1) {
-                        const first = realizedPriceHistory[0].value, last = latest.value;
+                    const result = updateMetricChart('realized-price-chart', realizedPriceChart, realizedPriceHistory, '#10b981', 'realizedPrice');
+                    if (result && result.lastValue !== null) {
+                        document.getElementById('realized-price-value').textContent = '$' + fmt.num(result.lastValue);
+                        state.realizedPrice = result.lastValue;
+                    }
+                    if (result && result.history && result.history.length > 1) {
+                        const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                         const change = ((last - first) / first) * 100;
                         const el = document.getElementById('realized-price-change');
                         if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
@@ -24134,7 +24180,7 @@
 
         function updateMetricChart(canvasId, chartInstance, history, color, key) {
             const ctx = document.getElementById(canvasId);
-            if (!ctx) return;
+            if (!ctx) return { lastValue: null, lastDate: null };
             
             // 3년(1095일) 필터 자동 적용 - 모든 차트에서 최대 3년까지만 표시
             const threeYearsAgo = new Date();
@@ -24144,52 +24190,72 @@
             }
             
             // ═══════════════════════════════════════════════════════════════════
-            // 급락 데이터 감지 및 제외 (불완전한 최근 데이터 처리)
-            // 마지막 데이터가 이전 7일 평균의 30% 미만이면 제외
+            // 마지막 날 미취합 데이터 제외 (화면 & AI 동일 로직)
+            // 조건: 마지막 값이 직전 7일 평균의 30% 미만이면 제외
             // ═══════════════════════════════════════════════════════════════════
-            if (history && history.length > 10) {
-                const removeIncompleteData = () => {
-                    let removed = 0;
-                    const maxRemove = 3; // 최대 3개까지만 제거
-                    
-                    while (removed < maxRemove && history.length > 10) {
-                        // 마지막 10일 데이터에서 baseline 계산 (최근 3일 제외)
-                        const recentData = history.slice(-10);
-                        const baselineData = recentData.slice(0, -3);
-                        const avgValue = baselineData.reduce((sum, d) => sum + d.value, 0) / baselineData.length;
-                        
-                        if (avgValue <= 0) break;
-                        
-                        // 마지막 데이터 포인트 확인
-                        const lastValue = history[history.length - 1].value;
-                        const lastDate = history[history.length - 1].date;
-                        const today = new Date();
-                        const daysDiff = Math.floor((today - lastDate) / (24 * 60 * 60 * 1000));
-                        
-                        // 마지막 데이터가 최근 7일 이내이고 평균의 30% 미만이면 제외
-                        // 또는 값이 0이거나 음수인 경우도 제외
-                        if (daysDiff <= 7 && (lastValue < avgValue * 0.3 || lastValue <= 0)) {
-                            log(`   ⚠️ ${canvasId}: Removing incomplete data point (${lastValue.toFixed(0)} < 30% of avg ${avgValue.toFixed(0)}, ${daysDiff}d ago)`);
-                            history = history.slice(0, -1);
-                            removed++;
-                        } else {
-                            break;
-                        }
-                    }
-                };
-                removeIncompleteData();
+            if (history && history.length > 7) {
+                const lastValue = history[history.length - 1].value;
+                const prev7Values = history.slice(-8, -1).map(d => d.value);
+                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
+                
+                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                    log(`   ⚠️ ${canvasId}: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
+                    history = history.slice(0, -1);
+                }
             }
             
             // 데이터 없으면 fallback 생성
             if (!history || history.length < 2) {
                 log(`${canvasId}: no data, generating fallback...`);
-                // Fallback 데이터 생성 (평평한 선)
                 history = [];
                 for (let i = 90; i >= 0; i--) {
                     history.push({
                         date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
                         value: 0
                     });
+                }
+            }
+            
+            // ★ 차트에 실제로 표시될 마지막 값 저장
+            const chartLastValue = history.length > 0 ? history[history.length - 1].value : null;
+            const chartLastDate = history.length > 0 ? history[history.length - 1].date : null;
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // ★★★ 차트 끝값으로 UI 값 자동 동기화 ★★★
+            // ═══════════════════════════════════════════════════════════════════
+            if (chartLastValue !== null) {
+                const valueMapping = {
+                    'l1Volume': { el: 'l1-volume-value', fmt: v => fmt.usd(v), state: 'l1DailyVolume' },
+                    'l2Volume': { el: 'l2-volume-value', fmt: v => fmt.usd(v), state: 'l2DailyVolume' },
+                    'bridgeVolume': { el: 'bridge-volume-value', fmt: v => fmt.usd(v), state: 'bridgeDailyVolume' },
+                    'stablecoinVol': { el: 'stablecoin-vol-value', fmt: v => '$' + (v / 1e9).toFixed(2) + 'B', state: 'stablecoinDailyVolume' },
+                    'l2StablecoinVol': { el: 'l2-stablecoin-vol-value', fmt: v => '$' + (v / 1e9).toFixed(2) + 'B', state: 'l2StablecoinVolume' },
+                    'l2StablecoinSupply': { el: 'l2-stablecoin-supply-value', fmt: v => '$' + (v / 1e9).toFixed(2) + 'B', state: 'l2StablecoinSupply' },
+                    'whaleTx': { el: 'whale-tx-value', fmt: v => fmt.num(v) + ' txs', state: 'whaleTxCount' },
+                    'realizedPrice': { el: 'realized-price-value', fmt: v => '$' + fmt.num(v), state: 'realizedPrice' },
+                    'newAddresses': { el: 'new-addr-value', fmt: v => fmt.num(v), state: 'newAddresses' },
+                    'l1ActiveAddr': { el: 'l1-active-addr-value', fmt: v => fmt.num(v), state: 'l1ActiveAddresses' },
+                    'l2ActiveAddr': { el: 'l2-active-addr-value', fmt: v => fmt.num(v), state: 'l2ActiveAddresses' },
+                    'tvl': { el: 'tvl-value', fmt: v => fmt.usd(v), state: 'tvl' },
+                    'l2': { el: 'l2-value', fmt: v => fmt.usd(v), state: 'l2Tvl' },
+                    'staking': { el: 'staking-value', fmt: v => fmt.num(v) + ' ETH', state: 'stakedEth' },
+                    'dex': { el: 'dex-value', fmt: v => fmt.usd(v), state: 'dexVolume' },
+                    'fees': { el: 'fees-value', fmt: v => fmt.usd(v), state: 'dailyFees' },
+                    'stables': { el: 'stables-value', fmt: v => fmt.usd(v), state: 'stables' },
+                    'lending': { el: 'lending-tvl', fmt: v => fmt.usd(v), state: 'lendingTvl' },
+                    'nvt': { el: 'nvt-value', fmt: v => v.toFixed(1), state: 'nvtRatio' },
+                };
+                
+                const mapping = valueMapping[key];
+                if (mapping) {
+                    const el = document.getElementById(mapping.el);
+                    if (el) {
+                        el.textContent = mapping.fmt(chartLastValue);
+                    }
+                    // state 업데이트
+                    if (mapping.state && typeof state !== 'undefined') {
+                        state[mapping.state] = chartLastValue;
+                    }
                 }
             }
             
@@ -24272,6 +24338,9 @@
             
             // Remove loading spinner after chart is rendered
             setChartLoading(canvasId, false);
+            
+            // ★ 실제 차트에 표시된 마지막 값 반환
+            return { lastValue: chartLastValue, lastDate: chartLastDate, history: history };
         }
 
         // MVRV Ratio Chart with zone lines
