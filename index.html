@@ -171,6 +171,9 @@
             --text-secondary: #c8d4e0;
             --text-muted: #b0bcc8;
             
+            --primary: #a78bfa;
+            --primary-hover: #8b5cf6;
+            
             --scrollbar-thumb: rgba(255, 255, 255, 0.3);
             --scrollbar-thumb-hover: rgba(255, 255, 255, 0.5);
             
@@ -180,8 +183,8 @@
             
             --star-empty: #30363d;
             
-            --primary-light: rgba(124, 58, 237, 0.15);
-            --accent-bg: rgba(124, 58, 237, 0.15);
+            --primary-light: rgba(167, 139, 250, 0.15);
+            --accent-bg: rgba(167, 139, 250, 0.15);
             
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
             --shadow-md: 0 1px 3px rgba(0,0,0,0.3);
@@ -781,6 +784,10 @@
                 --font-caption: 9px;
             }
             
+            .metrics-subgroup-title {
+                font-size: 18px;
+            }
+            
             /* ═══════════════════════════════════════════════════════════════════
                MOBILE SCROLL PERFORMANCE OPTIMIZATIONS
                ═══════════════════════════════════════════════════════════════════ */
@@ -1275,7 +1282,7 @@
             background: var(--bg-subtle);
             border: none;
             border-radius: var(--radius-full);
-            color: #7c3aed;
+            color: var(--primary);
             font-family: var(--font-mono);
             white-space: nowrap;
             font-weight: 500;
@@ -1821,7 +1828,7 @@
         .ai-commentary {
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(139, 92, 246, 0.01) 100%);
             border: 1px solid rgba(139, 92, 246, 0.1);
-            border-bottom: 2px solid var(--primary);
+            border-bottom: 1px solid var(--primary);
             border-radius: var(--radius-sm);
             padding: 16px 20px;
             margin-top: 16px;
@@ -1849,12 +1856,11 @@
         }
         
         .commentary-section-header {
-            font-weight: 600;
-            font-size: 13px;
+            font-weight: 500;
+            font-size: 14px;
             color: var(--primary);
             margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+            letter-spacing: -0.3px;
         }
         
         .commentary-section-body {
@@ -1869,10 +1875,12 @@
         
         .ai-commentary-footer {
             display: block;
-            margin-top: 16px;
-            font-size: 14px;
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 11px;
             color: var(--text-muted);
             text-align: right;
+            opacity: 0.7;
         }
         
         .ai-commentary-label {
@@ -1921,7 +1929,7 @@
             }
             
             .ai-commentary-footer {
-                font-size: 13px;
+                font-size: 10px;
             }
         }
 
@@ -2142,7 +2150,7 @@
         
         body.dark .chart-loader .spinner {
             border-color: #30363d;
-            border-top-color: #7c3aed;
+            border-top-color: var(--primary);
         }
         
         body.dark .chart-loader .loading-text {
@@ -2175,7 +2183,7 @@
             width: 24px;
             height: 24px;
             border: 3px solid #e5e7eb;
-            border-top-color: #7c3aed;
+            border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -3095,7 +3103,7 @@
         .model-item[data-model="dcf"] .model-item-name { color: #65a30d; }
         .model-item[data-model="ps"] .model-item-name { color: #0d9488; }
         .model-item[data-model="revenueYield"] .model-item-name { color: #0891b2; }
-        .model-item[data-model="validatorEcon"] .model-item-name { color: #7c3aed; }
+        .model-item[data-model="validatorEcon"] .model-item-name { color: #8b5cf6; }
         .model-item[data-model="tvlMultiple"] .model-item-name { color: #dc2626; }
         .model-item[data-model="mctvl"] .model-item-name { color: #d97706; }
         .model-item[data-model="appCapital"] .model-item-name { color: #4f46e5; }
@@ -5541,7 +5549,7 @@
 
         .ig-post-btn:hover {
             opacity: 1;
-            color: #7c3aed;
+            color: var(--primary);
         }
 
         .ig-login-prompt {
@@ -6852,7 +6860,7 @@
         .community-stats-arrow {
             width: 18px;
             height: 18px;
-            color: #7c3aed;
+            color: var(--primary);
             margin-left: auto;
             flex-shrink: 0;
             transition: transform 0.2s ease;
@@ -6905,7 +6913,7 @@
         .community-stat-value {
             font-size: var(--font-h1);
             font-weight: 700;
-            color: #7c3aed;
+            color: var(--primary);
         }
 
         .community-stat-name {
@@ -6927,7 +6935,7 @@
         .recent-participants-label {
             font-size: var(--font-h2);
             font-weight: 700;
-            color: #7c3aed;
+            color: var(--primary);
             white-space: nowrap;
         }
 
@@ -6952,7 +6960,7 @@
 
         .recent-participants-more {
             margin-left: 6px;
-            color: #7c3aed;
+            color: var(--primary);
             font-size: var(--font-h1);
             font-weight: 700;
             letter-spacing: 1px;
@@ -18585,9 +18593,6 @@
                         const formatCommentary = (text) => {
                             if (!text) return '';
                             
-                            // 섹션 헤더 패턴 (📊, 📈, 💡로 시작하는 줄)
-                            const sectionPattern = /^(📊|📈|💡)\s*(.+)$/gm;
-                            
                             // 줄바꿈으로 분리
                             const lines = text.split('\n').filter(line => line.trim());
                             let html = '';
@@ -18596,9 +18601,9 @@
                             for (const line of lines) {
                                 const headerMatch = line.match(/^(📊|📈|💡)\s*(.+)$/);
                                 if (headerMatch) {
-                                    // 이전 섹션 닫기
+                                    // 이전 섹션 닫기 (section-body + section)
                                     if (currentSection) {
-                                        html += '</div>';
+                                        html += '</div></div>';
                                     }
                                     // 새 섹션 시작
                                     html += `<div class="commentary-section"><div class="commentary-section-header">${headerMatch[1]} ${headerMatch[2]}</div><div class="commentary-section-body">`;
@@ -18607,7 +18612,11 @@
                                     // 섹션 내용
                                     html += `<p>${line.trim()}</p>`;
                                 } else {
-                                    // 헤더 없이 시작하는 경우 (레거시 데이터)
+                                    // 헤더 없이 시작하는 경우 (레거시 데이터) - 하나의 섹션으로 래핑
+                                    if (!html.includes('commentary-section')) {
+                                        html += '<div class="commentary-section" style="grid-column: span 3;"><div class="commentary-section-body">';
+                                        currentSection = 'legacy';
+                                    }
                                     html += `<p>${line.trim()}</p>`;
                                 }
                             }

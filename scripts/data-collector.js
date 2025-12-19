@@ -1,7 +1,9 @@
 /**
- * ETHval Data Collector v7.1
+ * ETHval Data Collector v7.2
  * 39개 전체 데이터셋 수집 (Dune API 포함)
  * + AI 일간 해설 생성 (Claude Haiku)
+ * + 병렬 처리로 속도 개선
+ * + 명확한 로그 출력
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -26,6 +28,14 @@ if (!ANTHROPIC_API_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+// 결과 상태 헬퍼
+const result = {
+    ok: (count, msg = '') => ({ count, status: 'ok', msg }),
+    skip: (msg = 'Already up to date') => ({ count: 0, status: 'skip', msg }),
+    warn: (count, msg) => ({ count, status: 'warn', msg }),
+    fail: (msg) => ({ count: 0, status: 'fail', msg })
+};
 
 // ============================================================
 // AI Commentary Section Definitions
@@ -624,8 +634,7 @@ async function collect_eth_price() {
     const cgData = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=1100&interval=daily');
     
     if (!cgData || !cgData.prices) {
-        console.log('  ❌ CoinGecko API failed');
-        return 0;
+        return result.fail('CoinGecko API failed');
     }
     
     const records = [];
@@ -661,10 +670,10 @@ async function collect_eth_price() {
     // Sort by date
     records.sort((a, b) => a.date.localeCompare(b.date));
     
-    console.log(`  ✓ CoinGecko: ${records.length} days`);
-    console.log(`  ✓ Volume: ${volumeMap.size} days`);
+    console.log(`  ✓ ${records.length} days`);
     
-    return await upsertBatch('historical_eth_price', records);
+    const saved = await upsertBatch('historical_eth_price', records);
+    return result.ok(saved);
 }
 
 // ============================================================
@@ -908,12 +917,13 @@ async function collect_gas_burn() {
     }
     
     if (records.length === 0) {
-        console.log('  ✅ No new records to add');
-        return 0;
+        console.log('  ✅ Already up to date');
+        return result.skip('No new data needed');
     }
     
     console.log(`  📦 Saving ${records.length} records (${gasPriceMap.size} with gas price)`);
-    return await upsertBatch('historical_gas_burn', records);
+    const saved = await upsertBatch('historical_gas_burn', records);
+    return result.ok(saved);
 }
 
 // ============================================================
@@ -1090,8 +1100,7 @@ async function collect_eth_btc() {
     // CoinGecko - ETH price in BTC
     const data = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=btc&days=1100&interval=daily');
     if (!data || !data.prices) {
-        console.log('  ❌ CoinGecko API failed');
-        return 0;
+        return result.fail('CoinGecko rate limited');
     }
     
     const records = data.prices.map(([ts, price]) => ({
@@ -1099,8 +1108,9 @@ async function collect_eth_btc() {
         ratio: parseFloat(price.toFixed(6))
     }));
     
-    console.log(`  ✓ CoinGecko: ${records.length} days`);
-    return await upsertBatch('historical_eth_btc', records);
+    console.log(`  ✓ ${records.length} days`);
+    const saved = await upsertBatch('historical_eth_btc', records);
+    return result.ok(saved);
 }
 
 // ============================================================
@@ -1128,11 +1138,12 @@ async function collect_funding_rate() {
         });
         
         console.log(`  ✓ Binance Futures: ${records.length} days`);
-        return await upsertBatch('historical_funding_rate', records);
+        const saved = await upsertBatch('historical_funding_rate', records);
+        return result.ok(saved);
     }
     
     // Fallback: Generate estimated funding rate (neutral ~0.01%)
-    console.log('  ⚠️ Binance API failed, generating estimated data');
+    console.log('  ⚠️ Binance blocked, using estimated data');
     const records = [];
     const today = new Date();
     
@@ -1149,8 +1160,8 @@ async function collect_funding_rate() {
         });
     }
     
-    console.log(`  📊 Generated ${records.length} estimated records`);
-    return await upsertBatch('historical_funding_rate', records);
+    const saved = await upsertBatch('historical_funding_rate', records);
+    return result.warn(saved, 'estimated');
 }
 
 // ============================================================
@@ -1207,8 +1218,7 @@ async function collect_eth_dominance() {
     console.log('\n👑 [16/29] ETH Dominance...');
     const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
     if (!data?.data?.market_cap_percentage?.eth) {
-        console.log('  ⚠️ CoinGecko rate limited');
-        return 0;
+        return result.fail('CoinGecko rate limited');
     }
     const today = new Date().toISOString().split('T')[0];
     const records = [{
@@ -1218,7 +1228,9 @@ async function collect_eth_dominance() {
         total_mcap: data.data.total_market_cap.usd,
         source: 'coingecko'
     }];
-    return await upsertBatch('historical_eth_dominance', records);
+    console.log(`  ✓ ETH: ${records[0].eth_dominance}%`);
+    const saved = await upsertBatch('historical_eth_dominance', records);
+    return result.ok(saved);
 }
 
 // ============================================================
@@ -1229,11 +1241,10 @@ async function collect_blob_data() {
     // Limited API access - using existing or estimate
     const { data: existing } = await supabase.from('historical_blob_data').select('*').order('date', { ascending: false }).limit(1);
     if (existing && existing.length > 0) {
-        console.log('  Using existing data');
-        return existing.length;
+        console.log('  ✓ Using existing data');
+        return result.skip('Dune provides this');
     }
-    console.log('  ⚠️ No public API available');
-    return 0;
+    return result.fail('No public API');
 }
 
 // ============================================================
@@ -1658,41 +1669,83 @@ async function collect_dune_new_addr() {
 // 38. MVRV Ratio (Dune)
 async function collect_dune_mvrv() {
     console.log('\n📊 [38/39] MVRV Ratio (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.MVRV, 5000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        console.log('  ⚠️ Query returned null');
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty');
+        return result.warn(0, 'No data from Dune');
+    }
     
-    const records = rows.map(r => ({
-        date: r.block_date || r.date,
-        mvrv_ratio: parseFloat(r.mvrv_ratio || r.mvrv || 0),
-        realized_price: parseFloat(r.realized_price || r.realised_price || 0),
-        market_cap: parseFloat(r.market_cap || 0),
-        realized_cap: parseFloat(r.realized_cap || r.realised_cap || 0),
-        source: 'dune'
-    })).filter(r => r.date && r.mvrv_ratio > 0);
+    // Dune 컬럼명: day, spot_price, estimated_realized_price, mvrv_proxy_pct
+    const records = rows.map(r => {
+        // 날짜 파싱: "2025-12-18 00:00:00" -> "2025-12-18"
+        let dateStr = r.day || r.block_date || r.date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        
+        // mvrv_proxy_pct는 퍼센트 (78 = 0.78x) -> ratio로 변환
+        const mvrvPct = parseFloat(r.mvrv_proxy_pct || r.mvrv_ratio || r.mvrv || 0);
+        const mvrvRatio = mvrvPct > 10 ? mvrvPct / 100 : mvrvPct; // 78 -> 0.78 or 이미 0.78
+        
+        return {
+            date: dateStr,
+            mvrv_ratio: parseFloat(mvrvRatio.toFixed(4)),
+            realized_price: parseFloat(r.estimated_realized_price || r.realized_price || r.realised_price || 0),
+            market_cap: parseFloat(r.market_cap || 0),
+            realized_cap: parseFloat(r.realized_cap || r.realised_cap || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && r.mvrv_ratio > 0);
     
-    console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_mvrv', records);
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) {
+        console.log(`  📅 Latest: ${records[0].date} = ${records[0].mvrv_ratio}x (realized: $${records[0].realized_price.toFixed(2)})`);
+    }
+    const saved = await upsertBatch('historical_mvrv', records);
+    return result.ok(saved);
 }
 
 // 39. Stablecoin Volume (Dune)
 async function collect_dune_stablecoin_vol() {
     console.log('\n💵 [39/40] Stablecoin Volume (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.STABLECOIN_VOL, 5000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        console.log('  ⚠️ Query returned null');
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty');
+        return result.warn(0, 'No data from Dune');
+    }
     
-    const records = rows.map(r => ({
-        date: r.block_date || r.date,
-        daily_volume: parseFloat(r.daily_volume || r.volume || 0),
-        tx_count: parseInt(r.tx_count || 0),
-        source: 'dune'
-    })).filter(r => r.date && r.daily_volume > 0);
+    // Dune 컬럼명: block_date, daily_volume_usd
+    const records = rows.map(r => {
+        // 날짜 파싱: "2025-12-18 00:00:00" -> "2025-12-18"
+        let dateStr = r.block_date || r.date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        
+        return {
+            date: dateStr,
+            daily_volume: parseFloat(r.daily_volume_usd || r.daily_volume || r.volume || 0),
+            tx_count: parseInt(r.tx_count || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && r.daily_volume > 0);
     
-    console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_stablecoin_volume', records);
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) {
+        console.log(`  📅 Latest: ${records[0].date} = $${(records[0].daily_volume / 1e9).toFixed(2)}B`);
+    }
+    const saved = await upsertBatch('historical_stablecoin_volume', records);
+    return result.ok(saved);
 }
 
 // 40. Gas Price (Dune) - Daily average gas price
@@ -1760,10 +1813,10 @@ async function collect_dune_gas_price() {
 // Main
 // ============================================================
 async function main() {
-    console.log('🚀 ETHval Data Collector v7.0');
+    console.log('🚀 ETHval Data Collector v7.2');
     console.log(`📅 ${new Date().toISOString()}`);
     console.log('='.repeat(60));
-    console.log('Collecting 40 datasets (29 API + 11 Dune)...\n');
+    console.log('Collecting 40 datasets (29 API + 11 Dune)...');
     if (DUNE_API_KEY) {
         console.log('✅ Dune API Key detected');
         console.log('📌 Note: Dune queries auto-refresh daily at 03:30-04:00 UTC');
@@ -1774,73 +1827,178 @@ async function main() {
     const startTime = Date.now();
     const results = {};
     
-    // Collect API data
-    results.eth_price = await collect_eth_price(); await sleep(500);
-    results.ethereum_tvl = await collect_ethereum_tvl(); await sleep(500);
-    results.l2_tvl = await collect_l2_tvl(); await sleep(500);
-    results.protocol_fees = await collect_protocol_fees(); await sleep(500);
-    results.staking = await collect_staking(); await sleep(500);
-    results.gas_burn = await collect_gas_burn(); await sleep(500);
-    results.active_addresses = await collect_active_addresses(); await sleep(500);
-    results.eth_supply = await collect_eth_supply(); await sleep(500);
-    results.fear_greed = await collect_fear_greed(); await sleep(500);
-    results.dex_volume = await collect_dex_volume(); await sleep(500);
-    results.stablecoins = await collect_stablecoins(); await sleep(500);
-    results.stablecoins_eth = await collect_stablecoins_eth(); await sleep(500);
-    results.eth_btc = await collect_eth_btc(); await sleep(500);
-    results.funding_rate = await collect_funding_rate(); await sleep(500);
-    results.exchange_reserve = await collect_exchange_reserve(); await sleep(500);
-    results.eth_dominance = await collect_eth_dominance(); await sleep(2000); // CoinGecko rate limit
-    results.blob_data = await collect_blob_data(); await sleep(500);
-    results.lending_tvl = await collect_lending_tvl(); await sleep(500);
-    results.volatility = await collect_volatility(); await sleep(500);
-    results.nvt = await collect_nvt(); await sleep(500);
-    results.transactions = await collect_transactions(); await sleep(500);
-    results.l2_transactions = await collect_l2_transactions(); await sleep(500);
-    results.l2_addresses = await collect_l2_addresses(); await sleep(500);
-    results.protocol_tvl = await collect_protocol_tvl(); await sleep(500);
-    results.staking_apr = await collect_staking_apr(); await sleep(500);
-    results.eth_in_defi = await collect_eth_in_defi(); await sleep(500);
-    results.global_mcap = await collect_global_mcap(); await sleep(2000);
-    results.dex_by_protocol = await collect_dex_by_protocol(); await sleep(500);
-    results.network_stats = await collect_network_stats();
+    // 결과 래퍼 (기존 함수가 숫자를 반환하면 변환)
+    const wrapResult = (res, isDune = false) => {
+        if (typeof res === 'number') {
+            if (res > 0) return result.ok(res);
+            // Dune 쿼리는 0건이어도 warn (쿼리 확인 필요)
+            if (isDune) return result.warn(0, 'Check Dune query');
+            return result.fail('No data');
+        }
+        return res;
+    };
     
-    // Dune API Collections (fetch pre-scheduled results)
-    console.log('\n' + '='.repeat(60));
-    console.log('🔷 DUNE API COLLECTIONS (fetching scheduled results)');
-    console.log('='.repeat(60));
+    // ============================================================
+    // PHASE 1: DefiLlama APIs (병렬 - 관대한 rate limit)
+    // ============================================================
+    console.log('\n📦 Phase 1: DefiLlama APIs (parallel)...');
+    const defiLlamaStart = Date.now();
     
-    results.dune_blob = await collect_dune_blob(); await sleep(1000);
-    // results.dune_l1_volume = await collect_dune_l1_volume(); await sleep(1000); // 테이블 없음 - 스킵
-    results.dune_active_addr = await collect_dune_active_addr(); await sleep(1000);
-    results.dune_l2_addr = await collect_dune_l2_addr(); await sleep(1000);
-    results.dune_l2_volume = await collect_dune_l2_volume(); await sleep(1000);
-    results.dune_bridge = await collect_dune_bridge(); await sleep(1000);
-    results.dune_whale = await collect_dune_whale(); await sleep(1000);
-    results.dune_new_addr = await collect_dune_new_addr(); await sleep(1000);
-    results.dune_mvrv = await collect_dune_mvrv(); await sleep(1000);
-    results.dune_stablecoin_vol = await collect_dune_stablecoin_vol(); await sleep(1000);
-    results.dune_gas_price = await collect_dune_gas_price();
+    const [ethereum_tvl, l2_tvl, protocol_fees, lending_tvl, protocol_tvl, staking_apr, eth_in_defi, dex_volume, dex_by_protocol, staking] = await Promise.all([
+        collect_ethereum_tvl(),
+        collect_l2_tvl(),
+        collect_protocol_fees(),
+        collect_lending_tvl(),
+        collect_protocol_tvl(),
+        collect_staking_apr(),
+        collect_eth_in_defi(),
+        collect_dex_volume(),
+        collect_dex_by_protocol(),
+        collect_staking()
+    ]);
     
+    results.ethereum_tvl = wrapResult(ethereum_tvl);
+    results.l2_tvl = wrapResult(l2_tvl);
+    results.protocol_fees = wrapResult(protocol_fees);
+    results.lending_tvl = wrapResult(lending_tvl);
+    results.protocol_tvl = wrapResult(protocol_tvl);
+    results.staking_apr = wrapResult(staking_apr);
+    results.eth_in_defi = wrapResult(eth_in_defi);
+    results.dex_volume = wrapResult(dex_volume);
+    results.dex_by_protocol = wrapResult(dex_by_protocol);
+    results.staking = wrapResult(staking);
+    
+    console.log(`  ⏱️ DefiLlama: ${((Date.now() - defiLlamaStart) / 1000).toFixed(1)}s`);
+    
+    // ============================================================
+    // PHASE 2: CoinGecko APIs (순차 - rate limit 엄격, 분당 10-30요청)
+    // ============================================================
+    console.log('\n🦎 Phase 2: CoinGecko APIs (sequential, 3s delay)...');
+    const coinGeckoStart = Date.now();
+    
+    results.eth_price = wrapResult(await collect_eth_price()); await sleep(3000);
+    results.eth_btc = wrapResult(await collect_eth_btc()); await sleep(3000);
+    results.eth_dominance = wrapResult(await collect_eth_dominance()); await sleep(3000);
+    results.global_mcap = wrapResult(await collect_global_mcap());
+    
+    console.log(`  ⏱️ CoinGecko: ${((Date.now() - coinGeckoStart) / 1000).toFixed(1)}s`);
+    
+    // ============================================================
+    // PHASE 3: Other APIs (병렬)
+    // ============================================================
+    console.log('\n🔗 Phase 3: Other APIs (parallel)...');
+    const otherStart = Date.now();
+    
+    const [stablecoins, stablecoins_eth, fear_greed, eth_supply, volatility, nvt, transactions, l2_transactions, l2_addresses, funding_rate, exchange_reserve, blob_data, active_addresses, network_stats, gas_burn] = await Promise.all([
+        collect_stablecoins(),
+        collect_stablecoins_eth(),
+        collect_fear_greed(),
+        collect_eth_supply(),
+        collect_volatility(),
+        collect_nvt(),
+        collect_transactions(),
+        collect_l2_transactions(),
+        collect_l2_addresses(),
+        collect_funding_rate(),
+        collect_exchange_reserve(),
+        collect_blob_data(),
+        collect_active_addresses(),
+        collect_network_stats(),
+        collect_gas_burn()
+    ]);
+    
+    results.stablecoins = wrapResult(stablecoins);
+    results.stablecoins_eth = wrapResult(stablecoins_eth);
+    results.fear_greed = wrapResult(fear_greed);
+    results.eth_supply = wrapResult(eth_supply);
+    results.volatility = wrapResult(volatility);
+    results.nvt = wrapResult(nvt);
+    results.transactions = wrapResult(transactions);
+    results.l2_transactions = wrapResult(l2_transactions);
+    results.l2_addresses = wrapResult(l2_addresses);
+    results.funding_rate = wrapResult(funding_rate);
+    results.exchange_reserve = wrapResult(exchange_reserve);
+    results.blob_data = wrapResult(blob_data);
+    results.active_addresses = wrapResult(active_addresses);
+    results.network_stats = wrapResult(network_stats);
+    results.gas_burn = wrapResult(gas_burn);
+    
+    console.log(`  ⏱️ Other APIs: ${((Date.now() - otherStart) / 1000).toFixed(1)}s`);
+    
+    // ============================================================
+    // PHASE 4: Dune APIs (병렬)
+    // ============================================================
+    console.log('\n🔷 Phase 4: Dune APIs (parallel)...');
+    const duneStart = Date.now();
+    
+    if (DUNE_API_KEY) {
+        const [dune_blob, dune_active_addr, dune_l2_addr, dune_l2_volume, dune_bridge, dune_whale, dune_new_addr, dune_mvrv, dune_stablecoin_vol, dune_gas_price] = await Promise.all([
+            collect_dune_blob(),
+            collect_dune_active_addr(),
+            collect_dune_l2_addr(),
+            collect_dune_l2_volume(),
+            collect_dune_bridge(),
+            collect_dune_whale(),
+            collect_dune_new_addr(),
+            collect_dune_mvrv(),
+            collect_dune_stablecoin_vol(),
+            collect_dune_gas_price()
+        ]);
+        
+        results.dune_blob = wrapResult(dune_blob, true);
+        results.dune_active_addr = wrapResult(dune_active_addr, true);
+        results.dune_l2_addr = wrapResult(dune_l2_addr, true);
+        results.dune_l2_volume = wrapResult(dune_l2_volume, true);
+        results.dune_bridge = wrapResult(dune_bridge, true);
+        results.dune_whale = wrapResult(dune_whale, true);
+        results.dune_new_addr = wrapResult(dune_new_addr, true);
+        results.dune_mvrv = wrapResult(dune_mvrv, true);
+        results.dune_stablecoin_vol = wrapResult(dune_stablecoin_vol, true);
+        results.dune_gas_price = wrapResult(dune_gas_price, true);
+        
+        console.log(`  ⏱️ Dune: ${((Date.now() - duneStart) / 1000).toFixed(1)}s`);
+    } else {
+        console.log('  ⏭️ Skipped (no API key)');
+    }
+    
+    // ============================================================
     // Summary
+    // ============================================================
+    const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+    
     console.log('\n' + '='.repeat(60));
     console.log('📊 COLLECTION SUMMARY:');
     console.log('='.repeat(60));
     
-    let success = 0, failed = 0;
-    const failedDatasets = [];
-    Object.entries(results).forEach(([key, count]) => {
-        const status = count > 0 ? '✅' : '❌';
-        console.log(`${status} ${key.padEnd(20)} : ${count}`);
-        if (count > 0) success++; 
-        else {
+    let success = 0, warned = 0, failed = 0;
+    
+    Object.entries(results).forEach(([key, res]) => {
+        const { count, status, msg } = res;
+        let icon, display;
+        
+        if (status === 'ok') {
+            icon = '✅';
+            display = count.toLocaleString();
+            success++;
+        } else if (status === 'skip') {
+            icon = '⏭️';
+            display = 'up-to-date';
+            success++; // skip도 성공으로 카운트
+        } else if (status === 'warn') {
+            icon = '⚠️';
+            display = `${count.toLocaleString()} (${msg})`;
+            warned++;
+        } else {
+            icon = '❌';
+            display = msg || 'failed';
             failed++;
-            failedDatasets.push(key);
         }
+        
+        console.log(`${icon} ${key.padEnd(22)} : ${display}`);
     });
     
     console.log('='.repeat(60));
-    console.log(`✅ Success: ${success}/39  |  ❌ Failed: ${failed}/39`);
+    console.log(`✅ OK: ${success}  |  ⚠️ Warn: ${warned}  |  ❌ Fail: ${failed}  |  ⏱️ ${totalTime}s`);
     console.log('='.repeat(60));
     
     // ============================================================
