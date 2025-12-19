@@ -129,7 +129,7 @@ const COMMENTARY_SECTIONS = {
         title_ko: '결제량',
         charts: ['L1 TX Volume', 'L2 TX Volume', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
         tables: {
-            l1_volume: 'historical_l1_volume',  // tx_volume_eth (L1 TX Volume)
+            l1_volume: 'historical_nvt',  // tx_volume_usd (L1 TX Volume - from NVT table)
             l2_volume: 'historical_l2_tx_volume',  // tx_volume_eth (aggregate)
             bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
             stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume
@@ -210,6 +210,39 @@ async function fetchSectionMetrics(sectionKey) {
     
     for (const [metricKey, tableName] of Object.entries(section.tables)) {
         try {
+            // Special handling for L1 Volume (uses tx_volume_usd from nvt table)
+            if (metricKey === 'l1_volume' && tableName === 'historical_nvt') {
+                const { data: recent } = await supabase
+                    .from(tableName)
+                    .select('date, tx_volume_usd')
+                    .gte('date', thirtyFiveDaysAgo)
+                    .order('date', { ascending: false })
+                    .limit(35);
+                
+                if (recent && recent.length > 0) {
+                    // 미취합 데이터 제외
+                    let cleaned = recent.filter(r => r.tx_volume_usd > 0);
+                    if (cleaned.length >= 8) {
+                        const lastValue = cleaned[0].tx_volume_usd;
+                        const prev7Values = cleaned.slice(1, 8).map(r => r.tx_volume_usd);
+                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
+                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                            console.log(`   ⚠️ l1_volume: 마지막 날 미취합 제외`);
+                            cleaned = cleaned.slice(1);
+                        }
+                    }
+                    
+                    metricsData[metricKey] = {
+                        latest: cleaned[0],
+                        recent3d: cleaned.slice(0, 3),
+                        recent7d: cleaned.slice(0, 7),
+                        around30d: cleaned.slice(27, 34),
+                        thirtyDaysAgo: cleaned.length > 30 ? cleaned[30] : null
+                    };
+                }
+                continue;
+            }
+            
             // Special handling for L2 addresses (stored by chain)
             if (tableName === 'historical_l2_addresses') {
                 const { data: recent } = await supabase
