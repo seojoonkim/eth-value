@@ -305,12 +305,42 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
     const section = COMMENTARY_SECTIONS[sectionKey];
     const metricsPrompt = formatMetricsForPrompt(sectionKey, metricsData);
     
-    const langInstructions = {
-        en: 'Write in English.',
-        ko: 'Write in Korean (한국어로 작성하세요). Use natural Korean financial terminology.',
-        zh: 'Write in Simplified Chinese (用简体中文写). Use standard Chinese financial terms.',
-        ja: 'Write in Japanese (日本語で書いてください). Use appropriate Japanese financial terminology.'
+    const langConfig = {
+        en: {
+            instruction: 'Write in English.',
+            headers: {
+                current: '📊 Current State',
+                trend: '📈 Recent Trends', 
+                valuation: '💡 Valuation Implications'
+            }
+        },
+        ko: {
+            instruction: 'Write in Korean (한국어로 작성하세요). Use natural Korean financial terminology. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Korean translation first, then include the English term in parentheses. Example: 총 예치금(TVL), 시장가치 대 실현가치 비율(MVRV), 공포탐욕지수(Fear & Greed Index).',
+            headers: {
+                current: '📊 현재 상태',
+                trend: '📈 최근 트렌드',
+                valuation: '💡 밸류에이션 시사점'
+            }
+        },
+        zh: {
+            instruction: 'Write in Simplified Chinese (用简体中文写). Use standard Chinese financial terms. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Chinese translation first, then include the English term in parentheses. Example: 总锁定价值(TVL), 市值与实现价值比率(MVRV), 恐惧贪婪指数(Fear & Greed Index).',
+            headers: {
+                current: '📊 当前状态',
+                trend: '📈 近期趋势',
+                valuation: '💡 估值影响'
+            }
+        },
+        ja: {
+            instruction: 'Write in Japanese (日本語で書いてください). Use appropriate Japanese financial terminology. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Japanese translation first, then include the English term in parentheses. Example: 総預かり資産(TVL), 時価総額対実現価値比率(MVRV), 恐怖強欲指数(Fear & Greed Index).',
+            headers: {
+                current: '📊 現在の状況',
+                trend: '📈 最近のトレンド',
+                valuation: '💡 バリュエーションへの示唆'
+            }
+        }
     };
+    
+    const config = langConfig[lang] || langConfig.en;
     
     const systemPrompt = `You are an expert Ethereum market analyst and educator providing daily commentary for the ETHval dashboard.
 
@@ -322,37 +352,43 @@ Your analysis should be:
 - No disclaimers or investment advice warnings
 - Write in a professional yet approachable tone
 
-${langInstructions[lang] || langInstructions.en}
+${config.instruction}
 
-Structure your response in 3 paragraphs:
-1. CURRENT STATE & EDUCATION: What do these metrics measure and why are they important? What is the current reading telling us?
-2. TREND ANALYSIS & CONTEXT: How have these metrics changed recently (7d, 30d)? What historical patterns or comparable periods should we consider?
-3. VALUATION IMPLICATIONS: Based on current trends, how might this affect ETH's fair value going forward? What should investors watch for?
+CRITICAL: You MUST structure your response with exactly these 3 section headers (include the emoji):
 
-Write 12-16 sentences total (approximately 4-6 sentences per paragraph).`;
+${config.headers.current}
+[3-4 sentences about current state]
 
-    const userPrompt = `Based on the following Ethereum ${section.title} metrics data, provide a comprehensive daily analysis:
+${config.headers.trend}
+[3-4 sentences about recent trends]
+
+${config.headers.valuation}
+[3-4 sentences about valuation implications]
+
+Each section header must be on its own line, followed by a blank line, then the content paragraph.`;
+
+    const userPrompt = `Based on the following Ethereum ${section.title} metrics data, provide a structured daily analysis:
 
 ${metricsPrompt}
 
-Write a detailed 3-paragraph analysis (12-16 sentences total) covering:
+Write a structured analysis with EXACTLY these 3 sections:
 
-PARAGRAPH 1 - Current State & Education:
+${config.headers.current}
 - Explain what these metrics measure and why they matter for ETH valuation
 - Describe the current readings and what they indicate
-- Help non-experts understand the significance
+(3-4 sentences, be concise)
 
-PARAGRAPH 2 - Trend Analysis & Context:
+${config.headers.trend}
 - Analyze changes over the past 7-30 days with specific percentages
-- Compare to historical patterns or notable market periods
 - Identify any warning signs or positive signals
+(3-4 sentences, be concise)
 
-PARAGRAPH 3 - Valuation Implications:
+${config.headers.valuation}
 - Connect the metric trends to potential ETH price/valuation impact
-- Explain what scenarios could unfold based on current trajectory
-- Conclude with specific factors investors should monitor
+- Conclude with what investors should watch for
+(3-4 sentences, be concise)
 
-${langInstructions[lang] || ''}`;
+Remember: Include the section headers with emojis exactly as shown above. Keep each section focused and concise.`;
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -364,7 +400,7 @@ ${langInstructions[lang] || ''}`;
             },
             body: JSON.stringify({
                 model: 'claude-3-5-haiku-20241022',
-                max_tokens: 1000,
+                max_tokens: 800,
                 messages: [
                     { role: 'user', content: userPrompt }
                 ],

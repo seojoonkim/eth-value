@@ -1838,9 +1838,33 @@
         .ai-commentary-text {
             color: var(--text);
             font-size: 14px;
-            columns: 2;
-            column-gap: 24px;
-            text-align: justify;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        /* 구조화된 섹션 스타일 */
+        .commentary-section {
+            padding: 0;
+        }
+        
+        .commentary-section-header {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+        }
+        
+        .commentary-section-body {
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .commentary-section-body p {
+            margin: 0;
         }
         
         .ai-commentary-footer {
@@ -1873,15 +1897,7 @@
             font-style: italic;
         }
         
-        /* 태블릿 (768px-1024px): 2열 유지 */
-        @media (max-width: 1024px) {
-            .ai-commentary-text {
-                columns: 2;
-                column-gap: 20px;
-            }
-        }
-        
-        /* 모바일 (768px 이하): 1열 */
+        /* 모바일 (768px 이하) */
         @media (max-width: 768px) {
             .ai-commentary {
                 padding: 14px 16px;
@@ -1892,8 +1908,16 @@
             
             .ai-commentary-text {
                 font-size: 13px;
-                columns: 1;
-                text-align: left;
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .commentary-section-header {
+                font-size: 12px;
+            }
+            
+            .commentary-section-body {
+                font-size: 13px;
             }
             
             .ai-commentary-footer {
@@ -18557,6 +18581,47 @@
                         // 다국어 commentary 필드 확인 (commentary_ko, commentary_zh 등)
                         const localizedCommentary = commentary[`commentary${langSuffix}`] || commentary.commentary;
                         
+                        // 텍스트를 구조화된 HTML로 변환
+                        const formatCommentary = (text) => {
+                            if (!text) return '';
+                            
+                            // 섹션 헤더 패턴 (📊, 📈, 💡로 시작하는 줄)
+                            const sectionPattern = /^(📊|📈|💡)\s*(.+)$/gm;
+                            
+                            // 줄바꿈으로 분리
+                            const lines = text.split('\n').filter(line => line.trim());
+                            let html = '';
+                            let currentSection = '';
+                            
+                            for (const line of lines) {
+                                const headerMatch = line.match(/^(📊|📈|💡)\s*(.+)$/);
+                                if (headerMatch) {
+                                    // 이전 섹션 닫기
+                                    if (currentSection) {
+                                        html += '</div>';
+                                    }
+                                    // 새 섹션 시작
+                                    html += `<div class="commentary-section"><div class="commentary-section-header">${headerMatch[1]} ${headerMatch[2]}</div><div class="commentary-section-body">`;
+                                    currentSection = headerMatch[1];
+                                } else if (currentSection) {
+                                    // 섹션 내용
+                                    html += `<p>${line.trim()}</p>`;
+                                } else {
+                                    // 헤더 없이 시작하는 경우 (레거시 데이터)
+                                    html += `<p>${line.trim()}</p>`;
+                                }
+                            }
+                            
+                            // 마지막 섹션 닫기
+                            if (currentSection) {
+                                html += '</div></div>';
+                            }
+                            
+                            return html || `<p>${text}</p>`;
+                        };
+                        
+                        const formattedCommentary = formatCommentary(localizedCommentary);
+                        
                         // 날짜 포맷
                         const localeMap = { ko: 'ko-KR', zh: 'zh-CN', ja: 'ja-JP', en: 'en-US' };
                         const locale = localeMap[currentLang] || 'en-US';
@@ -18568,7 +18633,7 @@
                         
                         el.innerHTML = `
                             <div class="ai-commentary-header"></div>
-                            <div class="ai-commentary-text">${localizedCommentary}</div>
+                            <div class="ai-commentary-text">${formattedCommentary}</div>
                             <div class="ai-commentary-footer">
                                 ${i18nText.label} · ${dateStr} ${timeStr} · ${i18nText.by} Claude Haiku
                             </div>
