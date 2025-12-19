@@ -3854,12 +3854,12 @@
         
         const COMMENTARY_SECTIONS = {
             // 02.1 투자자 심리 - 6개 차트
+            // Charts: Realized Price, MVRV Ratio, Fear & Greed, Funding Rate, Exchange ETH Reserve, Whale Transactions
             investor_sentiment: {
                 title: 'Investor Sentiment',
                 title_ko: '투자자 심리',
                 charts: ['Realized Price', 'MVRV Ratio', 'Fear & Greed', 'Funding Rate', 'Exchange ETH Reserve', 'Whale Transactions'],
                 tables: {
-                    // realized_price는 historical_mvrv에 realized_price 필드로 있음
                     mvrv: 'historical_mvrv',  // mvrv_ratio + realized_price
                     fear_greed: 'historical_fear_greed',  // value
                     funding_rate: 'historical_funding_rate',  // funding_rate
@@ -3868,6 +3868,7 @@
                 }
             },
             // 02.2 시장 포지션 - 5개 차트
+            // Charts: ETH/BTC Ratio, ETH Dominance, Stablecoin Mcap, Volatility, NVT Ratio
             market_position: {
                 title: 'Market Position',
                 title_ko: '시장 포지션',
@@ -3875,35 +3876,38 @@
                 tables: {
                     eth_btc: 'historical_eth_btc',  // ratio
                     eth_dominance: 'historical_eth_dominance',  // eth_dominance
-                    stablecoins: 'historical_stablecoins',  // total_mcap
+                    stablecoins: 'historical_stablecoins',  // total_mcap (전체 스테이블코인)
                     volatility: 'historical_volatility',  // volatility_30d
                     nvt: 'historical_nvt'  // nvt_ratio
                 }
             },
             // 02.3 공급 역학 - 6개 차트
+            // Charts: Staking Yield (APR), Staked ETH, ETH Burned, ETH Issued, Net Supply, Effective Float
             supply_dynamics: {
                 title: 'Supply Dynamics',
                 title_ko: '공급 역학',
                 charts: ['Staking Yield (APR)', 'Staked ETH', 'ETH Burned', 'ETH Issued', 'Net Supply', 'Effective Float'],
                 tables: {
-                    staking: 'historical_staking',  // total_staked_eth
                     staking_apr: 'historical_staking_apr',  // lido_apr
+                    staking: 'historical_staking',  // total_staked_eth
                     gas_burn: 'historical_gas_burn',  // eth_burnt
                     eth_supply: 'historical_eth_supply'  // eth_supply
                 }
             },
             // 02.4 네트워크 수요 - 5개 차트
+            // Charts: Gas Price, Gas Utilization, Network Fees, Blob Fees, Blob Count
             network_demand: {
                 title: 'Network Demand',
                 title_ko: '네트워크 수요',
                 charts: ['Gas Price', 'Gas Utilization', 'Network Fees', 'Blob Fees', 'Blob Count'],
                 tables: {
-                    gas_burn: 'historical_gas_burn',  // avg_gas_price_gwei, eth_burnt
+                    gas_burn: 'historical_gas_burn',  // avg_gas_price_gwei, gas_utilization
                     fees: 'historical_protocol_fees',  // fees
                     blob: 'historical_blob_data'  // blob_count, blob_fee_eth
                 }
             },
             // 02.5 사용자 활동 - 5개 차트
+            // Charts: New Addresses, L1 Active Addresses, L2 Active Addresses, L1 Transactions, L2 Transactions
             user_activity: {
                 title: 'User Activity',
                 title_ko: '사용자 활동',
@@ -3917,6 +3921,7 @@
                 }
             },
             // 02.6 예치 자본 - 6개 차트
+            // Charts: L1 TVL, L2 TVL, DeFi Lending TVL, L1 Stablecoin Supply, L2 Stablecoin Supply, App Capital
             locked_capital: {
                 title: 'Locked Capital',
                 title_ko: '예치 자본',
@@ -3925,18 +3930,18 @@
                     ethereum_tvl: 'historical_ethereum_tvl',  // tvl
                     l2_tvl: 'historical_l2_tvl',  // tvl (aggregate)
                     lending_tvl: 'historical_lending_tvl',  // total_tvl
-                    stablecoins: 'historical_stablecoins',  // total_mcap (전체)
-                    stablecoins_eth: 'historical_stablecoins_eth',  // total_mcap (ETH only)
-                    staking: 'historical_staking'  // total_staked_eth
+                    stablecoins_eth: 'historical_stablecoins_eth',  // total_mcap (L1 ETH 체인 스테이블코인)
+                    staking: 'historical_staking'  // total_staked_eth (App Capital용)
                 }
             },
             // 02.7 결제량 - 6개 차트
+            // Charts: L1 TX Volume, L2 TX Volume, Bridge Volume, L1 Stablecoin Volume, L2 Stablecoin Volume, DEX Volume
             settlement_volume: {
                 title: 'Settlement Volume',
                 title_ko: '결제량',
                 charts: ['L1 TX Volume', 'L2 TX Volume', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
                 tables: {
-                    nvt: 'historical_nvt',  // tx_volume_usd (L1 volume)
+                    l1_volume: 'historical_l1_volume',  // tx_volume_eth (L1 TX Volume)
                     l2_volume: 'historical_l2_tx_volume',  // tx_volume_eth (aggregate)
                     bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
                     stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume
@@ -4024,6 +4029,7 @@
                 'historical_active_addresses': 'active_addresses',
                 'historical_fear_greed': 'value',
                 'historical_nvt': 'nvt_ratio',
+                'historical_l1_volume': 'tx_volume_eth',  // L1 TX Volume
             };
             
             for (const [metricKey, tableName] of Object.entries(section.tables)) {
@@ -4254,39 +4260,42 @@
             let html = '';
             
             // 필드별 값 추출 함수 (DATASETS 기준)
+            // 순서 중요: 구체적인 필드명이 먼저 와야 함
             const extractValue = (latest) => {
                 if (!latest) return { field: 'N/A', value: null };
                 
                 const fieldMap = [
+                    // 구체적인 필드명 먼저 (이 필드들은 해당 테이블에만 존재)
                     { field: 'value', label: 'Fear & Greed' },  // fear_greed
-                    { field: 'tvl', label: 'TVL' },
-                    { field: 'total_tvl', label: 'Total TVL' },  // lending_tvl
-                    { field: 'total_mcap', label: 'Total Mcap' },  // stablecoins
                     { field: 'funding_rate', label: 'Funding Rate' },
-                    { field: 'total_staked_eth', label: 'Staked ETH' },
                     { field: 'lido_apr', label: 'Staking APR' },  // staking_apr
                     { field: 'eth_dominance', label: 'ETH Dominance' },
                     { field: 'ratio', label: 'Ratio' },  // eth_btc
                     { field: 'reserve_eth', label: 'Reserve ETH' },  // exchange_reserve
-                    { field: 'avg_gas_price_gwei', label: 'Gas Price' },  // gas_burn
-                    { field: 'eth_burnt', label: 'ETH Burnt' },  // gas_burn
                     { field: 'mvrv_ratio', label: 'MVRV Ratio' },
                     { field: 'realized_price', label: 'Realized Price' },  // mvrv table
                     { field: 'nvt_ratio', label: 'NVT Ratio' },  // nvt
-                    { field: 'tx_volume_usd', label: 'TX Volume USD' },  // nvt table
-                    { field: 'daily_volume', label: 'Daily Volume' },  // stablecoin_volume
-                    { field: 'volume', label: 'Volume' },  // dex_volume
-                    { field: 'tx_volume_eth', label: 'TX Volume ETH' },  // l2_tx_volume
-                    { field: 'bridge_volume_eth', label: 'Bridge Volume' },  // bridge_volume
+                    { field: 'volatility_30d', label: 'Volatility' },  // volatility
+                    { field: 'whale_tx_count', label: 'Whale TX' },
                     { field: 'blob_count', label: 'Blob Count' },  // blob_data
                     { field: 'blob_fee_eth', label: 'Blob Fee' },
-                    { field: 'active_addresses', label: 'Active Addr' },
                     { field: 'new_addresses', label: 'New Addr' },
+                    { field: 'active_addresses', label: 'Active Addr' },
                     { field: 'tx_count', label: 'TX Count' },
-                    { field: 'volatility_30d', label: 'Volatility' },  // volatility
                     { field: 'eth_supply', label: 'ETH Supply' },
+                    { field: 'total_staked_eth', label: 'Staked ETH' },
+                    { field: 'avg_gas_price_gwei', label: 'Gas Price' },  // gas_burn
+                    { field: 'eth_burnt', label: 'ETH Burnt' },  // gas_burn
+                    { field: 'tx_volume_usd', label: 'TX Volume USD' },  // nvt table
+                    { field: 'daily_volume', label: 'Daily Volume' },  // stablecoin_volume
+                    { field: 'tx_volume_eth', label: 'TX Volume ETH' },  // l2_tx_volume, l1_volume
+                    { field: 'bridge_volume_eth', label: 'Bridge Volume' },  // bridge_volume
+                    // 일반적인 필드명 (여러 테이블에서 공유)
+                    { field: 'volume', label: 'Volume' },  // dex_volume
                     { field: 'fees', label: 'Fees' },  // protocol_fees
-                    { field: 'whale_tx_count', label: 'Whale TX' },
+                    { field: 'tvl', label: 'TVL' },
+                    { field: 'total_tvl', label: 'Total TVL' },  // lending_tvl
+                    { field: 'total_mcap', label: 'Total Mcap' },  // stablecoins
                 ];
                 
                 for (const { field, label } of fieldMap) {
@@ -4387,7 +4396,7 @@
                                 </td>
                                 <td style="padding: 6px 8px; font-size: 10px; font-family: monospace;">
                                     <span style="color: ${change30d !== null ? (change30d >= 0 ? '#3fb950' : '#f85149') : '#6e7681'};">
-                                        ${change30d !== null ? (change30d >= 0 ? '+' : '') + change30d + '%' : '-'}
+                                        ${change30d !== null ? '~' + (change30d >= 0 ? '+' : '') + change30d + '%' : '-'}
                                     </span>
                                     <span style="margin-left: 4px; color: ${trend === '↑' ? '#3fb950' : trend === '↓' ? '#f85149' : '#8b949e'};">${trend}</span>
                                 </td>
@@ -4419,7 +4428,7 @@
                                         <th style="padding: 6px 8px; text-align: left;">Field</th>
                                         <th style="padding: 6px 8px; text-align: left;">Value</th>
                                         <th style="padding: 6px 8px; text-align: left;" title="Days of data available">Days</th>
-                                        <th style="padding: 6px 8px; text-align: left;" title="30-day change and trend">30d/Trend</th>
+                                        <th style="padding: 6px 8px; text-align: left;" title="Approximate 30-day change (based on recent data average)">~30d</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -4547,11 +4556,11 @@
                 const position = range !== 0 ? ((latest - min30d) / range * 100) : 50;
                 
                 prompt += `▶ ${key.toUpperCase()}\n`;
-                prompt += `  Current: ${formatVal(latest, unit)} (${all[0]?.date || 'today'})\n`;
+                prompt += `  Current: ~${formatVal(latest, unit)} (around ${all[0]?.date || 'today'})\n`;
                 prompt += `  30-Day Avg: ${formatVal(avg30d, unit)}\n`;
                 prompt += `  30-Day Range: ${formatVal(min30d, unit)} ~ ${formatVal(max30d, unit)}\n`;
                 prompt += `  Position in Range: ${position.toFixed(0)}% (0%=low, 100%=high)\n`;
-                prompt += `  30-Day Change: ${change30d > 0 ? '+' : ''}${change30d.toFixed(1)}%\n`;
+                prompt += `  30-Day Change: ~${change30d > 0 ? '+' : ''}${change30d.toFixed(1)}%\n`;
                 prompt += `  Trend: ${trendDirection.toUpperCase()} | Volatility: ${volatility.toFixed(1)}%\n`;
                 
                 // 추가 필드
