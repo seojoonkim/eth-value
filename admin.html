@@ -4527,9 +4527,11 @@
         
         function formatMetricsForPrompt(sectionKey, metricsData) {
             const section = COMMENTARY_SECTIONS[sectionKey];
+            const ethPrice = metricsData.eth_price?.latest?.close || 3900;  // fallback price
+            
             let prompt = `Section: ${section.title} (${section.title_ko})\n`;
             prompt += `Charts in this section: ${section.charts.join(', ')}\n\n`;
-            prompt += `Current ETH Price: $${metricsData.eth_price?.latest?.close?.toFixed(2) || 'N/A'}\n\n`;
+            prompt += `Current ETH Price: $${ethPrice.toFixed(2)}\n\n`;
             
             // 필드에서 값을 추출하는 헬퍼 함수 (DATASETS 기준)
             const extractValue = (record) => {
@@ -4548,6 +4550,9 @@
                 return null;
             };
             
+            // 차트에서 USD로 표시하는 ETH 볼륨 필드들 (ETH→USD 변환 필요)
+            const ethToUsdFields = ['tx_volume_eth', 'bridge_volume_eth'];
+            
             // 값 포맷팅 함수
             const formatVal = (v, unit = '') => {
                 if (v === null || v === undefined) return 'N/A';
@@ -4562,10 +4567,14 @@
                 return String(v) + unit;
             };
             
-            // 단위 결정 함수 (DATASETS 기준)
+            // 단위 결정 함수 (차트 표시 단위 기준)
             const getUnit = (fieldName) => {
+                // 차트에서 USD로 표시하는 필드들
                 if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'total_mcap', 'fees'].includes(fieldName)) return ' USD';
-                if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'tx_volume_eth', 'bridge_volume_eth', 'blob_fee_eth'].includes(fieldName)) return ' ETH';
+                // ETH 볼륨 → 차트에서 USD로 표시하므로 USD
+                if (ethToUsdFields.includes(fieldName)) return ' USD';
+                // 차트에서 ETH로 표시하는 필드들
+                if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'blob_fee_eth'].includes(fieldName)) return ' ETH';
                 if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr'].includes(fieldName)) return '%';
                 if (fieldName === 'avg_gas_price_gwei') return ' Gwei';
                 return '';
@@ -4586,8 +4595,15 @@
                 const unit = getUnit(fieldName);
                 const all = data.all30d;
                 
-                // 모든 값 추출
-                const values = all.map(r => extractValue(r)?.value).filter(v => v !== null && v !== undefined);
+                // ETH→USD 변환 여부
+                const needsUsdConversion = ethToUsdFields.includes(fieldName);
+                const multiplier = needsUsdConversion ? ethPrice : 1;
+                
+                // 모든 값 추출 (ETH 볼륨은 USD로 변환)
+                const values = all.map(r => {
+                    const v = extractValue(r)?.value;
+                    return (v !== null && v !== undefined) ? v * multiplier : null;
+                }).filter(v => v !== null);
                 if (values.length === 0) continue;
                 
                 // 기본 통계

@@ -512,9 +512,11 @@ async function fetchSectionMetrics(sectionKey) {
  */
 function formatMetricsForPrompt(sectionKey, metricsData) {
     const section = COMMENTARY_SECTIONS[sectionKey];
+    const ethPrice = metricsData.eth_price?.latest?.close || 3900;  // fallback price
+    
     let prompt = `Section: ${section.title} (${section.title_ko})\n`;
     prompt += `Charts in this section: ${section.charts.join(', ')}\n\n`;
-    prompt += `Current ETH Price: $${metricsData.eth_price?.latest?.close?.toFixed(2) || 'N/A'}\n\n`;
+    prompt += `Current ETH Price: $${ethPrice.toFixed(2)}\n\n`;
     prompt += `Key Metrics (3-day avg vs 30-day ago 3-day avg):\n`;
     
     // 필드에서 값을 추출하는 헬퍼 함수 (DATASETS 기준)
@@ -535,12 +537,16 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         return null;
     };
     
-    // 배열의 평균값 계산
-    const calcAvg = (records) => {
+    // 차트에서 USD로 표시하는 ETH 볼륨 필드들 (ETH→USD 변환 필요)
+    const ethToUsdFields = ['tx_volume_eth', 'bridge_volume_eth'];
+    
+    // 배열의 평균값 계산 (ETH 볼륨은 USD로 변환)
+    const calcAvg = (records, fieldName) => {
         if (!records || records.length === 0) return null;
+        const multiplier = ethToUsdFields.includes(fieldName) ? ethPrice : 1;
         const values = records.map(r => extractValue(r)?.value).filter(v => v !== null && v !== undefined);
         if (values.length === 0) return null;
-        return values.reduce((a, b) => a + b, 0) / values.length;
+        return (values.reduce((a, b) => a + b, 0) / values.length) * multiplier;
     };
     
     for (const [key, data] of Object.entries(metricsData)) {
@@ -550,17 +556,22 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         const extracted = extractValue(data.latest);
         if (!extracted) continue;
         
-        const currentVal = extracted.value;
         const fieldName = extracted.field;
         
-        // 3일 평균 계산
-        const recent3dAvg = calcAvg(data.recent3d);
-        const around30dAvg = calcAvg(data.around30d);
+        // ETH→USD 변환 여부
+        const needsUsdConversion = ethToUsdFields.includes(fieldName);
+        const multiplier = needsUsdConversion ? ethPrice : 1;
+        const currentVal = extracted.value * multiplier;
         
-        // 단위 결정 (DATASETS 기준)
+        // 3일 평균 계산
+        const recent3dAvg = calcAvg(data.recent3d, fieldName);
+        const around30dAvg = calcAvg(data.around30d, fieldName);
+        
+        // 단위 결정 (차트 표시 단위 기준)
         let unit = '';
         if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'total_mcap', 'fees'].includes(fieldName)) unit = ' USD';
-        else if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'tx_volume_eth', 'bridge_volume_eth', 'blob_fee_eth'].includes(fieldName)) unit = ' ETH';
+        else if (ethToUsdFields.includes(fieldName)) unit = ' USD';  // ETH 볼륨 → 차트에서 USD로 표시
+        else if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'blob_fee_eth'].includes(fieldName)) unit = ' ETH';
         else if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr'].includes(fieldName)) unit = '%';
         else if (fieldName === 'avg_gas_price_gwei') unit = ' Gwei';
         
