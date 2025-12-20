@@ -4860,7 +4860,7 @@ RULES:
 - ${langInstructions[lang]}
 - Write ONLY the 3 paragraphs with ||| separators between them
 - NO headers, NO titles, NO section labels
-- Each paragraph should be 2-3 sentences
+- Each paragraph should be exactly 4 sentences for detailed analysis
 - The separator ||| must be on its own line between paragraphs
 - Focus on 30-DAY trends (not 7-day)
 - Be specific with numbers from the data provided
@@ -4905,6 +4905,7 @@ Remember: Output format must be:
         async function saveCommentaryToSupabase(sectionKey, commentaries, metricsData) {
             const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             const today = new Date().toISOString().split('T')[0];
+            const now = new Date().toISOString();
             
             try {
                 const { error } = await client
@@ -4916,7 +4917,8 @@ Remember: Output format must be:
                         commentary_ko: commentaries.ko || null,
                         commentary_zh: commentaries.zh || null,
                         commentary_ja: commentaries.ja || null,
-                        metrics_snapshot: metricsData
+                        metrics_snapshot: metricsData,
+                        updated_at: now
                     }, { onConflict: 'date,section_key' });
                 
                 if (error) throw error;

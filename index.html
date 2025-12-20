@@ -18722,11 +18722,28 @@
                             };
                             
                             // 새 형식: ||| 구분자로 3개 섹션 분리 (AI가 제목 없이 생성)
+                            // 또는 이중 공백/줄바꿈으로 구분된 경우도 처리
+                            let sections = [];
+                            
                             if (text.includes('|||')) {
-                                const sections = text.split('|||').map(s => s.trim()).filter(s => s);
+                                sections = text.split('|||').map(s => s.trim()).filter(s => s);
+                            }
+                            
+                            // ||| 구분자가 없거나 3개 미만이면 이중 줄바꿈으로 시도
+                            if (sections.length < 3 && text.includes('\n\n')) {
+                                sections = text.split('\n\n').map(s => s.trim()).filter(s => s);
+                            }
+                            
+                            // 이중 공백(문단 구분)으로도 시도
+                            if (sections.length < 3 && text.includes('  ')) {
+                                sections = text.split(/\s{2,}/).map(s => s.trim()).filter(s => s.length > 50);
+                            }
+                            
+                            // 3개 섹션이 있으면 3컬럼으로 표시
+                            if (sections.length >= 3) {
                                 let html = '';
-                                sections.forEach((content, i) => {
-                                    if (i < 3 && localHeaders[i]) {
+                                sections.slice(0, 3).forEach((content, i) => {
+                                    if (localHeaders[i]) {
                                         const headerHtml = parseHeader(localHeaders[i]);
                                         html += `<div class="commentary-section"><div class="commentary-section-header">${headerHtml}</div><div class="commentary-section-body">`;
                                         content.split('\n').filter(l => l.trim()).forEach(line => {
@@ -18735,7 +18752,7 @@
                                         html += '</div></div>';
                                     }
                                 });
-                                return html || `<p>${text}</p>`;
+                                if (html) return html;
                             }
                             
                             // 레거시 형식: 이모지 헤더로 섹션 분리 (기존 데이터 호환)
@@ -18803,10 +18820,20 @@
                         const localeMap = { ko: 'ko-KR', zh: 'zh-CN', ja: 'ja-JP', en: 'en-US' };
                         const locale = localeMap[currentLang] || 'en-US';
                         
-                        // created_at에서 시간 추출 (사용자 로컬 시간대로 변환)
-                        const createdAt = new Date(commentary.created_at);
-                        const dateStr = createdAt.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
-                        const timeStr = createdAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
+                        // updated_at 사용 (재생성 시 업데이트됨), 없으면 created_at 사용
+                        const timestamp = commentary.updated_at || commentary.created_at;
+                        const commentDate = new Date(timestamp);
+                        
+                        // 사용자 로컬 시간대로 표시
+                        const dateStr = commentDate.toLocaleDateString(locale, { 
+                            month: 'numeric', 
+                            day: 'numeric'
+                        });
+                        const timeStr = commentDate.toLocaleTimeString(locale, { 
+                            hour: '2-digit', 
+                            minute: '2-digit', 
+                            hour12: false 
+                        });
                         
                         el.innerHTML = `
                             <div class="ai-commentary-header"></div>
