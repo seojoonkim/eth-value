@@ -19325,28 +19325,15 @@
                         .map(d => ({ date: new Date(d.date), value: parseFloat(d.total_volume_usd) }))
                         .sort((a, b) => a.date - b.date);
                     
-                    // Filter incomplete data
-                    if (l1TotalHistory.length >= 8) {
-                        const lastVal = l1TotalHistory[l1TotalHistory.length - 1].value;
-                        const prev7Avg = l1TotalHistory.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
-                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
-                            log(`   ⚠️ Filtering incomplete L1 Total history`);
-                            l1TotalHistory = l1TotalHistory.slice(0, -1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (l1TotalHistory.length > 2) {
+                        l1TotalHistory = l1TotalHistory.slice(0, -1);
                     }
                     
                     if (l1TotalHistory.length > 0) {
                         state.l1TotalVolumeHistory = l1TotalHistory;
-                        log(`   ✓ L1 Total Volume History: ${l1TotalHistory.length} records`);
-                    }
-                    
-                    const sortedL1Total = l1TotalVolumeData
-                        .filter(d => d.total_volume_usd > 0)
-                        .sort((a, b) => b.date.localeCompare(a.date));
-                    
-                    if (sortedL1Total.length > 0) {
-                        state.l1TotalVolume = parseFloat(sortedL1Total[0].total_volume_usd);
-                        log(`   ✓ L1 Total Volume: $${(state.l1TotalVolume / 1e9).toFixed(2)}B`);
+                        state.l1TotalVolume = l1TotalHistory[l1TotalHistory.length - 1].value;
+                        log(`   ✓ L1 Total Volume: $${(state.l1TotalVolume / 1e9).toFixed(2)}B (${l1TotalHistory.length} records)`);
                     }
                 }
                 
@@ -19363,25 +19350,15 @@
                         .map(([date, usd]) => ({ date: new Date(date), value: usd }))
                         .sort((a, b) => a.date - b.date);
                     
-                    // Filter incomplete data
-                    if (l2TotalHistory.length >= 8) {
-                        const lastVal = l2TotalHistory[l2TotalHistory.length - 1].value;
-                        const prev7Avg = l2TotalHistory.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
-                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
-                            log(`   ⚠️ Filtering incomplete L2 Total history`);
-                            l2TotalHistory = l2TotalHistory.slice(0, -1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (l2TotalHistory.length > 2) {
+                        l2TotalHistory = l2TotalHistory.slice(0, -1);
                     }
                     
                     if (l2TotalHistory.length > 0) {
                         state.l2TotalVolumeHistory = l2TotalHistory;
-                        log(`   ✓ L2 Total Volume History: ${l2TotalHistory.length} records`);
-                    }
-                    
-                    const sortedDates = Object.keys(l2TotalByDate).sort().reverse();
-                    if (sortedDates.length > 0) {
-                        state.l2TotalVolume = l2TotalByDate[sortedDates[0]];
-                        log(`   ✓ L2 Total Volume: $${(state.l2TotalVolume / 1e9).toFixed(2)}B`);
+                        state.l2TotalVolume = l2TotalHistory[l2TotalHistory.length - 1].value;
+                        log(`   ✓ L2 Total Volume: $${(state.l2TotalVolume / 1e9).toFixed(2)}B (${l2TotalHistory.length} records)`);
                     }
                 }
                 
@@ -24536,18 +24513,10 @@
             }
             
             // ═══════════════════════════════════════════════════════════════════
-            // 마지막 날 미취합 데이터 제외 (화면 & AI 동일 로직)
-            // 조건: 마지막 값이 직전 7일 평균의 30% 미만이면 제외
+            // 미취합 데이터 제외: 마지막 날짜는 항상 제외 (수집 중일 수 있음)
             // ═══════════════════════════════════════════════════════════════════
-            if (history && history.length > 7) {
-                const lastValue = history[history.length - 1].value;
-                const prev7Values = history.slice(-8, -1).map(d => d.value);
-                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                
-                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                    log(`   ⚠️ ${canvasId}: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
-                    history = history.slice(0, -1);
-                }
+            if (history && history.length > 2) {
+                history = history.slice(0, -1);
             }
             
             // 데이터 없으면 fallback 생성
@@ -25610,106 +25579,107 @@
                 
                 log(`Tab clicked: ${metric}, period: ${period}, useDaily: ${useDaily}`);
                 
+                let result;
                 if (metric === 'tvl') {
                     const hasDaily = state.tvlHistoryDaily && state.tvlHistoryDaily.length > 0;
                     log(`TVL - hasDaily: ${hasDaily}, dailyLen: ${state.tvlHistoryDaily?.length}, weeklyLen: ${state.tvlHistory?.length}`);
                     const sourceData = useDaily && hasDaily ? state.tvlHistoryDaily : state.tvlHistory;
                     history = sourceData.filter(d => d.date.getTime() > cutoffDate);
                     log(`TVL - filtered points: ${history.length}`);
-                    updateMetricChart('tvl-chart', tvlChart, history, '#10b981', 'tvl');
+                    result = updateMetricChart('tvl-chart', tvlChart, history, '#10b981', 'tvl');
                     changeElId = 'tvl-change';
                 } else if (metric === 'staking') {
                     history = state.stakingHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('staking-chart', stakingChart, history, '#6366f1', 'staking');
+                    result = updateMetricChart('staking-chart', stakingChart, history, '#6366f1', 'staking');
                     changeElId = 'staking-change';
                 } else if (metric === 'l2') {
                     const sourceData = useDaily && state.l2HistoryDaily && state.l2HistoryDaily.length > 0 
                         ? state.l2HistoryDaily : state.l2History;
                     history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l2-chart', l2Chart, history, '#7c3aed', 'l2');
+                    result = updateMetricChart('l2-chart', l2Chart, history, '#7c3aed', 'l2');
                     changeElId = 'l2-change';
                 } else if (metric === 'dex') {
                     const sourceData = useDaily && state.dexHistoryDaily && state.dexHistoryDaily.length > 0 
                         ? state.dexHistoryDaily : state.dexHistory;
                     history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('dex-chart', dexChart, history, '#06b6d4', 'dex');
+                    result = updateMetricChart('dex-chart', dexChart, history, '#06b6d4', 'dex');
                     changeElId = 'dex-change';
                 } else if (metric === 'fees') {
                     const sourceData = useDaily && state.feesHistoryDaily && state.feesHistoryDaily.length > 0 
                         ? state.feesHistoryDaily : state.feesHistory;
                     history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('fees-chart', feesChart, history, '#f97316', 'fees');
+                    result = updateMetricChart('fees-chart', feesChart, history, '#f97316', 'fees');
                     changeElId = 'fees-change';
                 } else if (metric === 'stables') {
                     history = state.stablesHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('stables-chart', stablesChart, history, '#eab308', 'stables');
+                    result = updateMetricChart('stables-chart', stablesChart, history, '#eab308', 'stables');
                     changeElId = 'stables-change';
                 } else if (metric === 'txEth') {
                     history = state.txEthHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('tx-eth-chart', txEthChart, history, '#14b8a6', 'txEth');
+                    result = updateMetricChart('tx-eth-chart', txEthChart, history, '#14b8a6', 'txEth');
                     changeElId = 'tx-eth-change';
                 } else if (metric === 'txTotal') {
                     history = state.txTotalHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('tx-total-chart', txTotalChart, history, '#6366f1', 'txTotal');
+                    result = updateMetricChart('tx-total-chart', txTotalChart, history, '#6366f1', 'txTotal');
                     changeElId = 'tx-total-change';
                 } else if (metric === 'nvt') {
                     history = state.nvtHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('nvt-chart', nvtChart, history, '#be123c', 'nvt');
+                    result = updateMetricChart('nvt-chart', nvtChart, history, '#be123c', 'nvt');
                     changeElId = 'nvt-change';
                 } else if (metric === 'activeAddr') {
                     history = state.activeAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('active-addr-chart', activeAddrChart, history, '#a855f7', 'activeAddr');
+                    result = updateMetricChart('active-addr-chart', activeAddrChart, history, '#a855f7', 'activeAddr');
                     changeElId = 'active-addr-change';
                 } else if (metric === 'ethInDefi') {
                     history = state.ethInDefiHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('eth-defi-chart', ethDefiChart, history, '#06b6d4', 'ethInDefi');
+                    result = updateMetricChart('eth-defi-chart', ethDefiChart, history, '#06b6d4', 'ethInDefi');
                     changeElId = 'eth-defi-change';
                 } else if (metric === 'commitmentRatio') {
                     history = state.commitmentRatioHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('commitment-ratio-chart', commitmentRatioChart, history, '#f59e0b', 'commitmentRatio');
+                    result = updateMetricChart('commitment-ratio-chart', commitmentRatioChart, history, '#f59e0b', 'commitmentRatio');
                     changeElId = 'commitment-ratio-change';
                 } else if (metric === 'appCapital') {
                     history = state.appCapitalHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('app-capital-chart', appCapitalChart, history, '#ec4899', 'appCapital');
+                    result = updateMetricChart('app-capital-chart', appCapitalChart, history, '#ec4899', 'appCapital');
                     changeElId = 'app-capital-change';
                 } else if (metric === 'stakingApr') {
                     history = state.stakingAprHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('staking-yield-chart', stakingAprChart, history, '#10b981', 'stakingApr');
+                    result = updateMetricChart('staking-yield-chart', stakingAprChart, history, '#10b981', 'stakingApr');
                     changeElId = 'staking-yield-change';
                 } else if (metric === 'l1Volume') {
                     history = state.l1VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l1-volume-chart', l1VolumeChart, history, '#3b82f6', 'l1Volume');
+                    result = updateMetricChart('l1-volume-chart', l1VolumeChart, history, '#3b82f6', 'l1Volume');
                     changeElId = 'l1-volume-change';
                 } else if (metric === 'l1TotalVolume') {
                     history = state.l1TotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, history, '#06b6d4', 'l1TotalVolume');
+                    result = updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, history, '#06b6d4', 'l1TotalVolume');
                     changeElId = 'l1-total-volume-change';
                 } else if (metric === 'l2Volume') {
                     history = state.l2VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l2-volume-chart', l2VolumeChart, history, '#8b5cf6', 'l2Volume');
+                    result = updateMetricChart('l2-volume-chart', l2VolumeChart, history, '#8b5cf6', 'l2Volume');
                     changeElId = 'l2-volume-change';
                 } else if (metric === 'l2TotalVolume') {
                     history = state.l2TotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, history, '#f59e0b', 'l2TotalVolume');
+                    result = updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, history, '#f59e0b', 'l2TotalVolume');
                     changeElId = 'l2-total-volume-change';
                 } else if (metric === 'bridgeVolume') {
                     history = state.bridgeVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('bridge-volume-chart', bridgeVolumeChart, history, '#06b6d4', 'bridgeVolume');
+                    result = updateMetricChart('bridge-volume-chart', bridgeVolumeChart, history, '#06b6d4', 'bridgeVolume');
                     changeElId = 'bridge-volume-change';
                 } else if (metric === 'stablecoinVol') {
                     history = state.stablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, history, '#eab308', 'stablecoinVol');
+                    result = updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, history, '#eab308', 'stablecoinVol');
                     changeElId = 'stablecoin-vol-change';
                 } else if (metric === 'whaleTx') {
                     history = state.whaleTxHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('whale-tx-chart', whaleTxChart, history, '#f59e0b', 'whaleTx');
+                    result = updateMetricChart('whale-tx-chart', whaleTxChart, history, '#f59e0b', 'whaleTx');
                     changeElId = 'whale-tx-change';
                 } else if (metric === 'realizedPrice') {
                     const realizedPriceHistory = state.mvrvHistory
                         .filter(d => d.realizedPrice > 0 && d.date.getTime() > cutoffDate)
                         .map(d => ({ date: d.date, value: d.realizedPrice }));
                     history = realizedPriceHistory;
-                    updateMetricChart('realized-price-chart', realizedPriceChart, history, '#10b981', 'realizedPrice');
+                    result = updateMetricChart('realized-price-chart', realizedPriceChart, history, '#10b981', 'realizedPrice');
                     changeElId = 'realized-price-change';
                 } else if (metric === 'mvrvRatio') {
                     history = state.mvrvHistory.filter(d => d.date.getTime() > cutoffDate);
@@ -25717,30 +25687,38 @@
                     changeElId = 'mvrv-ratio-change';
                 } else if (metric === 'newAddresses') {
                     history = state.newAddressesHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('new-addr-chart', newAddrChart, history, '#22c55e', 'newAddresses');
+                    result = updateMetricChart('new-addr-chart', newAddrChart, history, '#22c55e', 'newAddresses');
                     changeElId = 'new-addr-change';
                 } else if (metric === 'l1ActiveAddr') {
                     history = state.l1ActiveAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, history, '#a855f7', 'l1ActiveAddr');
+                    result = updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, history, '#a855f7', 'l1ActiveAddr');
                     changeElId = 'l1-active-addr-change';
                 } else if (metric === 'l2ActiveAddr') {
                     history = state.l2ActiveAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, history, '#ec4899', 'l2ActiveAddr');
+                    result = updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, history, '#ec4899', 'l2ActiveAddr');
                     changeElId = 'l2-active-addr-change';
                 } else if (metric === 'l2StablecoinSupply') {
                     history = state.l2StablecoinSupplyHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, history, '#22c55e', 'l2StablecoinSupply');
+                    result = updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, history, '#22c55e', 'l2StablecoinSupply');
                     changeElId = 'l2-stablecoin-supply-change';
                 } else if (metric === 'l2StablecoinVol') {
                     history = state.l2StablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, history, '#f59e0b', 'l2StablecoinVol');
+                    result = updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, history, '#f59e0b', 'l2StablecoinVol');
                     changeElId = 'l2-stablecoin-vol-change';
                 }
                 
+                // Use chart's actual history (after filtering incomplete data)
+                if (result && result.history) history = result.history;
+                
                 // Update change percentage based on selected period
+                // Use 7-day average to reduce outlier impact
                 if (history && history.length > 1 && changeElId) {
-                    const first = history[0].value;
-                    const last = history[history.length - 1].value;
+                    const windowSize = Math.max(1, Math.min(7, Math.floor(history.length / 4)));
+                    const firstWindow = history.slice(0, windowSize);
+                    const lastWindow = history.slice(-windowSize);
+                    const first = firstWindow.reduce((sum, d) => sum + d.value, 0) / firstWindow.length;
+                    const last = lastWindow.reduce((sum, d) => sum + d.value, 0) / lastWindow.length;
+                    
                     // For stakingApr, show change in percentage points (pp)
                     if (metric === 'stakingApr' || metric === 'commitmentRatio') {
                         const change = last - first;
@@ -25750,7 +25728,7 @@
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                         }
                     } else {
-                        const change = ((last - first) / first) * 100;
+                        const change = first !== 0 ? ((last - first) / Math.abs(first)) * 100 : 0;
                         const changeEl = document.getElementById(changeElId);
                         if (changeEl) {
                             changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
@@ -25902,17 +25880,21 @@
                 const setEl = (id, text) => { try { const el = document.getElementById(id); if (el) el.textContent = text; } catch(e){} };
                 const safeCall = (fn, name) => { try { fn(); } catch(e) { console.error(name + ' error:', e); } };
                 
-                // 증감률 계산 헬퍼 함수
+                // 증감률 계산 헬퍼 함수 (7일 평균 사용)
                 const setChange = (elementId, history, options = {}) => {
                     try {
                         const el = document.getElementById(elementId);
                         if (!el || !history || history.length < 2) return;
                         
-                        const first = history[0].value;
-                        const last = history[history.length - 1].value;
-                        if (first === 0 || first === null || first === undefined) return;
+                        const windowSize = Math.max(1, Math.min(7, Math.floor(history.length / 4)));
+                        const firstWindow = history.slice(0, windowSize);
+                        const lastWindow = history.slice(-windowSize);
+                        const first = firstWindow.reduce((sum, d) => sum + d.value, 0) / firstWindow.length;
+                        const last = lastWindow.reduce((sum, d) => sum + d.value, 0) / lastWindow.length;
                         
-                        const change = ((last - first) / first) * 100;
+                        if (first === 0 || first === null || first === undefined || isNaN(first)) return;
+                        
+                        const change = ((last - first) / Math.abs(first)) * 100;
                         const label = options.label || '3Y';
                         const suffix = options.suffix || '';
                         const isPercentagePoint = options.pp || false;
