@@ -125,11 +125,11 @@ const COMMENTARY_SECTIONS = {
     // 02.7 결제량 - 6개 차트
     // NOTE: L1/L2 Volume은 네이티브 토큰 전송만 포함 (ETH, MNT 등)
     // ERC-20 토큰 전송, DEX 스왑 등은 별도 지표로 측정
-    // Charts: L1 Total Volume, L1 Stablecoin Volume, L1 ETH Transfer, L2 Total Volume, L2 Stablecoin Volume, L2 Native Transfer, DEX Volume, Bridge Volume
+    // Charts: L1 Total Volume, L1 Stablecoin Volume, L1 ETH Transfer, L2 Total Volume, L2 Stablecoin Volume, L2 Native Transfer, L1 DEX Volume, Bridge Volume
     settlement_volume: {
         title: 'Settlement Volume',
         title_ko: '결제량',
-        charts: ['L1 Total Volume', 'L1 Stablecoin Volume', 'L1 ETH Transfer', 'L2 Total Volume', 'L2 Stablecoin Volume', 'L2 Native Transfer', 'DEX Volume', 'Bridge Volume'],
+        charts: ['L1 Total Volume', 'L1 Stablecoin Volume', 'L1 ETH Transfer', 'L2 Total Volume', 'L2 Stablecoin Volume', 'L2 Native Transfer', 'L1 DEX Volume', 'Bridge Volume'],
         // AI에게 전달할 컨텍스트: 각 지표의 정확한 정의
         context: `CRITICAL NAMING RULES - YOU MUST FOLLOW THESE EXACTLY:
 
@@ -148,7 +148,7 @@ METRIC DEFINITIONS (in hierarchy order):
 - L2 Native Transfer (~$300M/day): ONLY native tokens (ETH/MNT). A SUBSET of L2 Total Volume.
 - L1 Stablecoin Volume (~$83B/day): ERC-20 stablecoins only. A SUBSET of L1 Total Volume.
 - L2 Stablecoin Volume (~$77B/day): L2 stablecoins. A SUBSET of L2 Total Volume.
-- DEX Volume (~$2B/day): DEX trading volume.
+- L1 DEX Volume (~$2B/day): L1 Ethereum DEX trading volume.
 
 HIERARCHY:
 L1 Total Volume > L1 ETH Transfer + L1 Token Transfers (including Stablecoins)
