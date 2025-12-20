@@ -123,14 +123,23 @@ const COMMENTARY_SECTIONS = {
         }
     },
     // 02.7 결제량 - 6개 차트
-    // Charts: L1 TX Volume, L2 TX Volume, Bridge Volume, L1 Stablecoin Volume, L2 Stablecoin Volume, DEX Volume
+    // NOTE: L1/L2 Volume은 네이티브 토큰 전송만 포함 (ETH, MNT 등)
+    // ERC-20 토큰 전송, DEX 스왑 등은 별도 지표로 측정
+    // Charts: L1 ETH Transfer, L2 Native Transfer, Bridge Volume, L1 Stablecoin Volume, L2 Stablecoin Volume, DEX Volume
     settlement_volume: {
         title: 'Settlement Volume',
         title_ko: '결제량',
-        charts: ['L1 TX Volume', 'L2 TX Volume', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
+        charts: ['L1 ETH Transfer', 'L2 Native Transfer', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
+        // AI에게 전달할 컨텍스트: 각 지표의 정확한 정의
+        context: `IMPORTANT METRIC DEFINITIONS:
+- L1 ETH Transfer: Native ETH transfers only on Ethereum mainnet. Does NOT include ERC-20 token transfers.
+- L2 Native Transfer: Native token transfers on L2s (ETH on Arbitrum/Base/Optimism/etc, MNT on Mantle). Does NOT include token transfers.
+- L1/L2 Stablecoin Volume: ERC-20 stablecoin transfers (USDT, USDC, DAI, etc). This is SEPARATE from native transfers.
+- DEX Volume: Decentralized exchange trading volume.
+- These metrics are NOT supersets of each other. Native transfers and token transfers are measured separately.`,
         tables: {
-            l1_volume: 'historical_nvt',  // tx_volume_usd (L1 TX Volume - from NVT table)
-            l2_volume: 'historical_l2_tx_volume',  // tx_volume_usd (aggregate)
+            l1_volume: 'historical_nvt',  // tx_volume_usd (L1 ETH Transfer - native ETH only)
+            l2_volume: 'historical_l2_tx_volume',  // tx_volume_usd (L2 Native Transfer - ETH/MNT only)
             bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
             stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume
             dex_volume: 'historical_dex_volume'  // volume
@@ -205,12 +214,13 @@ async function fetchSectionMetrics(sectionKey) {
         'historical_active_addresses': 'active_addresses',
         'historical_fear_greed': 'value',
         'historical_nvt': 'nvt_ratio',
-        'historical_l1_volume': 'tx_volume_eth',  // L1 TX Volume
+        'historical_l1_volume': 'tx_volume_eth',  // L1 ETH Transfer (native ETH only)
     };
     
     for (const [metricKey, tableName] of Object.entries(section.tables)) {
         try {
-            // Special handling for L1 Volume (uses tx_volume_usd from nvt table)
+            // Special handling for L1 ETH Transfer (uses tx_volume_usd from nvt table)
+            // NOTE: This is NATIVE ETH transfers only, not total on-chain volume
             if (metricKey === 'l1_volume' && tableName === 'historical_nvt') {
                 const { data: recent } = await supabase
                     .from(tableName)
@@ -323,7 +333,9 @@ async function fetchSectionMetrics(sectionKey) {
                 continue;
             }
             
-            // Special handling for L2 TX Volume (stored by chain, now in USD)
+            // Special handling for L2 Native Transfer (stored by chain, now in USD)
+            // NOTE: This is NATIVE token transfers only (ETH on most L2s, MNT on Mantle)
+            // Does NOT include ERC-20 token transfers
             if (tableName === 'historical_l2_tx_volume') {
                 const { data: recent } = await supabase
                     .from(tableName)
@@ -345,7 +357,7 @@ async function fetchSectionMetrics(sectionKey) {
                         const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                         const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
                         if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                            console.log(`   ⚠️ l2_tx_volume: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
+                            console.log(`   ⚠️ l2_native_transfer: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
                             dates = dates.slice(1);
                         }
                     }
@@ -686,7 +698,7 @@ CRITICAL RULES:
 
     const userPrompt = `Analyze these ${section.title} metrics. Output exactly 3 paragraphs separated by |||
 
-${metricsPrompt}
+${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
 IMPORTANT: Each paragraph MUST contain exactly 4 sentences. This is a strict requirement.
 
