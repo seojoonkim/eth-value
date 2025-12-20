@@ -125,11 +125,11 @@ const COMMENTARY_SECTIONS = {
     // 02.7 결제량 - 6개 차트
     // NOTE: L1/L2 Volume은 네이티브 토큰 전송만 포함 (ETH, MNT 등)
     // ERC-20 토큰 전송, DEX 스왑 등은 별도 지표로 측정
-    // Charts: L1 ETH Transfer, L1 Total Volume, L2 Native Transfer, L2 Total Volume, Bridge Volume, L1 Stablecoin Volume, L2 Stablecoin Volume, DEX Volume
+    // Charts: L1 Total Volume, L1 Stablecoin Volume, L1 ETH Transfer, L2 Total Volume, L2 Stablecoin Volume, L2 Native Transfer, DEX Volume, Bridge Volume
     settlement_volume: {
         title: 'Settlement Volume',
         title_ko: '결제량',
-        charts: ['L1 ETH Transfer', 'L1 Total Volume', 'L2 Native Transfer', 'L2 Total Volume', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
+        charts: ['L1 Total Volume', 'L1 Stablecoin Volume', 'L1 ETH Transfer', 'L2 Total Volume', 'L2 Stablecoin Volume', 'L2 Native Transfer', 'DEX Volume', 'Bridge Volume'],
         // AI에게 전달할 컨텍스트: 각 지표의 정확한 정의
         context: `CRITICAL NAMING RULES - YOU MUST FOLLOW THESE EXACTLY:
 

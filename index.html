@@ -12383,26 +12383,6 @@
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
-                <div class="metric-card" data-metric="l1Volume">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4 data-i18n="metric.l1Volume">L1 ETH Transfer</h4>
-                            <div class="metric-value-large" id="l1-volume-value">$--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-volume-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="l1-volume-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.l1Volume">Daily ETH transfers on mainnet. Native token settlement only.</div>
-                    </div>
-                </div>
-
                 <div class="metric-card" data-metric="l1TotalVolume">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -12423,11 +12403,11 @@
                     </div>
                 </div>
 
-                <div class="metric-card" data-metric="l2Volume">
+                <div class="metric-card" data-metric="stablecoinVol">
                     <div class="metric-header">
                         <div class="metric-info">
-                            <h4 data-i18n="metric.l2Volume">L2 Native Transfer</h4>
-                            <div class="metric-value-large" id="l2-volume-value">$--</div>
+                            <h4 data-i18n="metric.stablecoinVol">L1 Stablecoin Volume</h4>
+                            <div class="metric-value-large" id="stablecoin-vol-value">--</div>
                         </div>
                         <div class="metric-tabs">
                             <button class="metric-tab" data-period="90">90D</button>
@@ -12435,11 +12415,31 @@
                             <button class="metric-tab active" data-period="1095">3Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-volume-chart"></canvas></div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-vol-chart"></canvas></div>
                     <div class="metric-footer">
                         <span>Dune</span>
-                        <span class="change" id="l2-volume-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.l2Volume">Daily native token transfers on L2s (ETH, MNT, etc). Excludes token transfers.</div>
+                        <span class="change" id="stablecoin-vol-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.stablecoinVol">Stablecoin transfer volume on L1 (USDT, USDC, DAI, USDe, FDUSD).</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="l1Volume">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.l1Volume">L1 ETH Transfer</h4>
+                            <div class="metric-value-large" id="l1-volume-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-volume-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l1-volume-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l1Volume">ETH transfers on mainnet. Native token settlement only.</div>
                     </div>
                 </div>
 
@@ -12463,46 +12463,6 @@
                     </div>
                 </div>
 
-                <div class="metric-card" data-metric="bridgeVolume">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4 data-i18n="metric.bridgeVolume">Bridge Volume</h4>
-                            <div class="metric-value-large" id="bridge-volume-value">$--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="bridge-volume-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="bridge-volume-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.bridgeVolume">Daily ETH bridged to L2s. Cross-chain capital flow indicator.</div>
-                    </div>
-                </div>
-
-                <div class="metric-card" data-metric="stablecoinVol">
-                    <div class="metric-header">
-                        <div class="metric-info">
-                            <h4 data-i18n="metric.stablecoinVol">L1 Stablecoin Volume</h4>
-                            <div class="metric-value-large" id="stablecoin-vol-value">--</div>
-                        </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-                        </div>
-                    </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-vol-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>Dune</span>
-                        <span class="change" id="stablecoin-vol-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.stablecoinVol">Daily stablecoin transfer volume on L1 (USDT, USDC, DAI, USDe, FDUSD).</div>
-                    </div>
-                </div>
-
                 <div class="metric-card" data-metric="l2StablecoinVol">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -12519,7 +12479,27 @@
                     <div class="metric-footer">
                         <span>Dune</span>
                         <span class="change" id="l2-stablecoin-vol-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.l2StablecoinVol">Daily stablecoin transfer volume on L2s (Arbitrum, Base, Optimism, Polygon, zkSync, Linea, Scroll).</div>
+                        <div class="metric-desc" data-i18n="desc.l2StablecoinVol">Stablecoin transfer volume on L2s (Arbitrum, Base, Optimism, Polygon, zkSync, Linea, Scroll).</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="l2Volume">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.l2Volume">L2 Native Transfer</h4>
+                            <div class="metric-value-large" id="l2-volume-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-volume-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l2-volume-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l2Volume">Native token transfers on L2s (ETH, MNT, etc). Excludes token transfers.</div>
                     </div>
                 </div>
 
@@ -12541,6 +12521,26 @@
                         <span>DefiLlama</span>
                         <span class="change" id="dex-change">--</span>
                         <div class="metric-desc" data-i18n="desc.dex">Weekly DEX trading volume. Key indicator of DeFi activity level.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="bridgeVolume">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.bridgeVolume">Bridge Volume</h4>
+                            <div class="metric-value-large" id="bridge-volume-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="bridge-volume-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="bridge-volume-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.bridgeVolume">ETH bridged to L2s. Cross-chain capital flow indicator.</div>
                     </div>
                 </div>
                 
@@ -16725,13 +16725,13 @@
                 'desc.newAddresses': "Daily first-time transacting addresses on L1. Mainnet growth indicator.",
                 'desc.l1ActiveAddr': "Daily unique addresses on Ethereum mainnet.",
                 'desc.l2ActiveAddr': "Daily unique addresses on L2s (Arbitrum, Optimism, Base, etc).",
-                'metric.l1Volume': "L1 ETH Transfer (Daily)",
-                'metric.l1TotalVolume': "L1 Total Volume (Daily)",
+                'metric.l1Volume': "L1 ETH Transfer",
+                'metric.l1TotalVolume': "L1 Total Volume",
                 'desc.l1TotalVolume': "Total on-chain volume (ETH + all ERC-20 tokens). Complete L1 settlement.",
-                'metric.l2Volume': "L2 Native Transfer (Daily)",
-                'metric.l2TotalVolume': "L2 Total Volume (Daily)",
+                'metric.l2Volume': "L2 Native Transfer",
+                'metric.l2TotalVolume': "L2 Total Volume",
                 'desc.l2TotalVolume': "Total on-chain volume across 8 L2s (Native + all tokens). Complete L2 settlement.",
-                'metric.bridgeVolume': "Bridge Volume (Daily)",
+                'metric.bridgeVolume': "Bridge Volume",
                 'metric.whaleTx': "Whale Transactions",
                 'metric.stablecoinVol': "L1 Stablecoin Volume",
                 'metric.l2StablecoinSupply': "L2 Stablecoin Supply",
@@ -17124,13 +17124,13 @@
                 'desc.newAddresses': "L1 일일 신규 지갑 주소 수. 네트워크 성장 지표.",
                 'desc.l1ActiveAddr': "이더리움 메인넷 일일 활성 주소 수.",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base 등) 일일 활성 주소 수.",
-                'metric.l1Volume': "L1 ETH 전송 (일일)",
-                'metric.l1TotalVolume': "L1 전체 볼륨 (일일)",
+                'metric.l1Volume': "L1 ETH 전송",
+                'metric.l1TotalVolume': "L1 전체 볼륨",
                 'desc.l1TotalVolume': "전체 온체인 볼륨 (ETH + 모든 ERC-20 토큰). L1 총 결제량.",
-                'metric.l2Volume': "L2 네이티브 전송 (일일)",
-                'metric.l2TotalVolume': "L2 전체 볼륨 (일일)",
+                'metric.l2Volume': "L2 네이티브 전송",
+                'metric.l2TotalVolume': "L2 전체 볼륨",
                 'desc.l2TotalVolume': "8개 L2의 전체 온체인 볼륨 (네이티브 + 모든 토큰). L2 총 결제량.",
-                'metric.bridgeVolume': "브릿지 볼륨 (일일)",
+                'metric.bridgeVolume': "브릿지 볼륨",
                 'metric.whaleTx': "고래 거래",
                 'metric.stablecoinVol': "L1 스테이블코인 볼륨",
                 'metric.l2StablecoinSupply': "L2 스테이블코인 공급량",
@@ -17511,13 +17511,13 @@
                 'desc.newAddresses': "L1每日新增钱包地址数。网络增长指标。",
                 'desc.l1ActiveAddr': "以太坊主网每日活跃地址数。",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base等) 每日活跃地址数。",
-                'metric.l1Volume': "L1 ETH转账 (日)",
-                'metric.l1TotalVolume': "L1总交易量 (日)",
+                'metric.l1Volume': "L1 ETH转账",
+                'metric.l1TotalVolume': "L1总交易量",
                 'desc.l1TotalVolume': "总链上交易量 (ETH + 所有ERC-20代币)。L1总结算量。",
-                'metric.l2Volume': "L2原生转账 (日)",
-                'metric.l2TotalVolume': "L2总交易量 (日)",
+                'metric.l2Volume': "L2原生转账",
+                'metric.l2TotalVolume': "L2总交易量",
                 'desc.l2TotalVolume': "8个L2的总链上交易量 (原生 + 所有代币)。L2总结算量。",
-                'metric.bridgeVolume': "桥接量 (日)",
+                'metric.bridgeVolume': "桥接量",
                 'metric.whaleTx': "巨鲸交易",
                 'metric.stablecoinVol': "L1稳定币交易量",
                 'metric.l2StablecoinSupply': "L2稳定币供应量",
@@ -17901,13 +17901,13 @@
                 'desc.newAddresses': "L1日次新規ウォレット数。ネットワーク成長指標。",
                 'desc.l1ActiveAddr': "イーサリアムメインネット日次アクティブアドレス数。",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base等) 日次アクティブアドレス数。",
-                'metric.l1Volume': "L1 ETH送金 (日次)",
-                'metric.l1TotalVolume': "L1総取引量 (日次)",
+                'metric.l1Volume': "L1 ETH送金",
+                'metric.l1TotalVolume': "L1総取引量",
                 'desc.l1TotalVolume': "総オンチェーン取引量 (ETH + 全ERC-20トークン)。L1総決済量。",
-                'metric.l2Volume': "L2ネイティブ送金 (日次)",
-                'metric.l2TotalVolume': "L2総取引量 (日次)",
+                'metric.l2Volume': "L2ネイティブ送金",
+                'metric.l2TotalVolume': "L2総取引量",
                 'desc.l2TotalVolume': "8つのL2の総オンチェーン取引量 (ネイティブ + 全トークン)。L2総決済量。",
-                'metric.bridgeVolume': "ブリッジ量 (日次)",
+                'metric.bridgeVolume': "ブリッジ量",
                 'metric.whaleTx': "クジラ取引",
                 'metric.stablecoinVol': "L1ステーブルコイン取引量",
                 'metric.l2StablecoinSupply': "L2ステーブルコイン供給量",
@@ -22194,6 +22194,19 @@
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
+            if (state.l1TotalVolumeHistory && state.l1TotalVolumeHistory.length > 0) {
+                const result = updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, state.l1TotalVolumeHistory, '#06b6d4', 'l1TotalVolume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l1-total-volume-value').textContent = '$' + (result.lastValue / 1e9).toFixed(1) + 'B';
+                    state.l1TotalVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l1-total-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
             if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
                 const result = updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
                 if (result && result.lastValue !== null) {
@@ -22204,6 +22217,19 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            if (state.l2TotalVolumeHistory && state.l2TotalVolumeHistory.length > 0) {
+                const result = updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, state.l2TotalVolumeHistory, '#f59e0b', 'l2TotalVolume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l2-total-volume-value').textContent = '$' + (result.lastValue / 1e9).toFixed(1) + 'B';
+                    state.l2TotalVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l2-total-volume-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
@@ -25650,10 +25676,18 @@
                     history = state.l1VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('l1-volume-chart', l1VolumeChart, history, '#3b82f6', 'l1Volume');
                     changeElId = 'l1-volume-change';
+                } else if (metric === 'l1TotalVolume') {
+                    history = state.l1TotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, history, '#06b6d4', 'l1TotalVolume');
+                    changeElId = 'l1-total-volume-change';
                 } else if (metric === 'l2Volume') {
                     history = state.l2VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('l2-volume-chart', l2VolumeChart, history, '#8b5cf6', 'l2Volume');
                     changeElId = 'l2-volume-change';
+                } else if (metric === 'l2TotalVolume') {
+                    history = state.l2TotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
+                    updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, history, '#f59e0b', 'l2TotalVolume');
+                    changeElId = 'l2-total-volume-change';
                 } else if (metric === 'bridgeVolume') {
                     history = state.bridgeVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
                     updateMetricChart('bridge-volume-chart', bridgeVolumeChart, history, '#06b6d4', 'bridgeVolume');
