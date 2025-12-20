@@ -19109,13 +19109,27 @@
                     
                     // Use LATEST value (matches chart end point)
                     const sortedL1 = nvtData.filter(d => d.tx_volume_usd > 0).sort((a, b) => b.date.localeCompare(a.date));
-                    if (sortedL1.length > 0) {
+                    if (sortedL1.length >= 8) {
+                        // Filter incomplete data: if latest day's volume < 30% of 7-day avg, skip it
+                        const latestVol = parseFloat(sortedL1[0].tx_volume_usd);
+                        const prev7Avg = sortedL1.slice(1, 8).reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / 7;
+                        
+                        let startIdx = 0;
+                        if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
+                            log(`   ⚠️ Skipping incomplete L1 data: ${sortedL1[0].date} ($${(latestVol/1e9).toFixed(2)}B < 30% of avg $${(prev7Avg/1e9).toFixed(2)}B)`);
+                            startIdx = 1; // Skip incomplete day
+                        }
+                        
+                        state.l1DailyVolume = parseFloat(sortedL1[startIdx].tx_volume_usd);
+                        log(`   ✓ L1 Daily Volume: $${(state.l1DailyVolume / 1e9).toFixed(2)}B (${sortedL1[startIdx].date})`);
+                        
+                        // Keep 7-day avg for calculations (excluding incomplete)
+                        const recentNvt = sortedL1.slice(startIdx, startIdx + 7);
+                        state.l1DailyVolumeAvg = recentNvt.reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / recentNvt.length;
+                    } else if (sortedL1.length > 0) {
                         state.l1DailyVolume = parseFloat(sortedL1[0].tx_volume_usd);
                         log(`   ✓ L1 Daily Volume: $${(state.l1DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedL1[0].date})`);
-                        
-                        // Keep 7-day avg for calculations
-                        const recentNvt = sortedL1.slice(0, 7);
-                        state.l1DailyVolumeAvg = recentNvt.reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / recentNvt.length;
+                        state.l1DailyVolumeAvg = sortedL1.reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / sortedL1.length;
                     }
                 }
                 
@@ -21160,7 +21174,8 @@
                 const result = updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
                 if (result && result.lastValue !== null) {
                     document.getElementById('l1-volume-value').textContent = fmt.usd(result.lastValue);
-                    state.l1DailyVolume = result.lastValue;
+                    // Note: l1DailyVolume is set during data load with incomplete data filtering
+                    // Don't override here to preserve valuation accuracy
                 }
                 if (result && result.history && result.history.length > 1) {
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
@@ -21898,7 +21913,8 @@
                 const result = updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
                 if (result && result.lastValue !== null) {
                     document.getElementById('l1-volume-value').textContent = fmt.usd(result.lastValue);
-                    state.l1DailyVolume = result.lastValue; // sync state
+                    // Note: l1DailyVolume is set during data load with incomplete data filtering
+                    // Don't override here to preserve valuation accuracy
                 }
                 if (result && result.history && result.history.length > 1) {
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
