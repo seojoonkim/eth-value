@@ -4280,7 +4280,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 const prev7Values = records.slice(1, 8).map(r => getValue(r));
                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
                 
-                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                if (dates.length > 2) {
                     commentaryLog(`   ⚠️ ${valueField}: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`, 'warning');
                     return records.slice(1); // 첫 번째(최신) 제외
                 }
@@ -4346,7 +4346,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                 const lastValue = cleaned[0].tx_volume_usd;
                                 const prev7Values = cleaned.slice(1, 8).map(r => r.tx_volume_usd);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                if (dates.length > 2) {
                                     console.log(`   ⚠️ l1_eth_transfer: 마지막 날 미취합 제외`);
                                     cleaned = cleaned.slice(1);
                                 }
@@ -4382,7 +4382,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                 const lastValue = byDate[dates[0]];
                                 const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                if (dates.length > 2) {
                                     commentaryLog(`   ⚠️ l2_addresses: 마지막 날 미취합 제외`, 'warning');
                                     dates = dates.slice(1);
                                 }
@@ -4420,7 +4420,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                 const lastValue = byDate[dates[0]];
                                 const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                if (dates.length > 2) {
                                     commentaryLog(`   ⚠️ l2_transactions: 마지막 날 미취합 제외`, 'warning');
                                     dates = dates.slice(1);
                                 }
@@ -4462,7 +4462,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                 const lastValue = byDate[dates[0]];
                                 const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                if (dates.length > 2) {
                                     console.log(`   ⚠️ l2_native_transfer: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
                                     dates = dates.slice(1);
                                 }
@@ -4500,7 +4500,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                 const lastValue = byDate[dates[0]];
                                 const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                if (dates.length > 2) {
                                     console.log(`   ⚠️ bridge_volume: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
                                     dates = dates.slice(1);
                                 }
@@ -4540,7 +4540,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                 const lastValue = byDate[dates[0]];
                                 const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                if (dates.length > 2) {
                                     console.log(`   ⚠️ l2_total_volume: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
                                     dates = dates.slice(1);
                                 }
@@ -4612,7 +4612,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                 const lastValue = byDate[dates[0]];
                                 const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                if (dates.length > 2) {
                                     console.log(`   ⚠️ l2_tvl: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
                                     dates = dates.slice(1);
                                 }

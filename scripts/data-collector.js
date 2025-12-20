@@ -131,41 +131,47 @@ const COMMENTARY_SECTIONS = {
         title_ko: '결제량',
         charts: ['L1 Total Volume', 'L1 Stablecoin Volume', 'L1 ETH Transfer', 'L2 Total Volume', 'L2 Stablecoin Volume', 'L2 Native Transfer', 'L1 DEX Volume', 'Bridge Volume'],
         // AI에게 전달할 컨텍스트: 각 지표의 정확한 정의
-        context: `CRITICAL NAMING RULES - YOU MUST FOLLOW THESE EXACTLY:
+        context: `⚠️ CRITICAL: 8 DIFFERENT METRICS - DO NOT CONFUSE ⚠️
 
-⚠️ NEVER say "L1 트랜잭션 볼륨", "L1 Transaction Volume", "L1 TX Volume", or "L1 거래량"
-⚠️ NEVER say "L2 트랜잭션 볼륨", "L2 Transaction Volume", "L2 TX Volume", or "L2 거래량"
+=== SIZE REFERENCE (biggest to smallest) ===
+1. L1 전체 볼륨 (L1 Total Volume): $100-600B/day ← BIGGEST
+2. L2 전체 볼륨 (L2 Total Volume): $50-300B/day
+3. L1 스테이블코인 볼륨: $80-200B/day
+4. L2 스테이블코인 볼륨: $70-100B/day
+5. L1 ETH 전송량 (L1 ETH Transfer): $5-10B/day ← MUCH SMALLER!
+6. L1 DEX 볼륨: $1-3B/day
+7. L2 네이티브 전송량: $200-500M/day
+8. 브릿지 볼륨: $10-50M/day
 
-✅ ALWAYS say "L1 ETH 전송량" or "L1 ETH Transfer" for native ETH only
-✅ ALWAYS say "L2 네이티브 전송량" or "L2 Native Transfer" for native tokens only
-✅ ALWAYS say "L1 전체 볼륨" or "L1 Total Volume" for complete L1 on-chain volume
-✅ ALWAYS say "L2 전체 볼륨" or "L2 Total Volume" for complete L2 on-chain volume
+=== THE KEY DISTINCTION ===
+❌ WRONG: "L1 전체 볼륨이 $7B" (X)
+✅ RIGHT: "L1 ETH 전송량이 $7B, L1 전체 볼륨은 $200B+" (O)
 
-METRIC DEFINITIONS (in hierarchy order):
-- L1 Total Volume (~$100-600B/day): ALL on-chain transfers (ETH + ALL ERC-20 tokens). This is the COMPLETE L1 settlement.
-- L2 Total Volume (~$50-100B/day): ALL on-chain transfers on 8 L2s (Native + ALL tokens). This is the COMPLETE L2 settlement.
-- L1 ETH Transfer (~$7B/day): ONLY native ETH transfers. A SUBSET of L1 Total Volume.
-- L2 Native Transfer (~$300M/day): ONLY native tokens (ETH/MNT). A SUBSET of L2 Total Volume.
-- L1 Stablecoin Volume (~$83B/day): ERC-20 stablecoins only. A SUBSET of L1 Total Volume.
-- L2 Stablecoin Volume (~$77B/day): L2 stablecoins. A SUBSET of L2 Total Volume.
-- L1 DEX Volume (~$2B/day): L1 Ethereum DEX trading volume.
+• "L1 전체 볼륨" = ETH + 모든 토큰 = $100B+ (큰 숫자)
+• "L1 ETH 전송량" = 네이티브 ETH만 = $5-10B (작은 숫자)
 
-HIERARCHY:
-L1 Total Volume > L1 ETH Transfer + L1 Token Transfers (including Stablecoins)
-L2 Total Volume > L2 Native Transfer + L2 Token Transfers (including Stablecoins)
+이 두 지표의 차이는 10배~50배입니다!
 
-WHY TOTAL VOLUME MATTERS:
-- Total Volume shows COMPLETE on-chain economic activity
-- Native Transfer only shows a small portion of actual settlement
-- Use Total Volume for accurate settlement layer valuation`,
+=== WHAT EACH METRIC MEASURES ===
+• L1 Total Volume: L1의 모든 온체인 전송 (ETH + 모든 ERC-20)
+• L1 ETH Transfer: L1의 네이티브 ETH 전송만 (토큰 제외)
+• L1 Stablecoin Volume: L1의 스테이블코인 전송만
+• L2 Total Volume: L2 8개 체인의 모든 전송
+• L2 Native Transfer: L2의 네이티브 토큰만 (ETH/MNT)
+• L2 Stablecoin Volume: L2의 스테이블코인만
+• L1 DEX Volume: L1 DEX 거래량 (주간 데이터)
+• Bridge Volume: 브릿지 전송량
+
+When you see data, check the VALUE RANGE to identify which metric it is!`,
         tables: {
-            l1_volume: 'historical_nvt',
-            l1_total_volume: 'historical_l1_total_volume',
-            l2_volume: 'historical_l2_tx_volume',
-            l2_total_volume: 'historical_l2_total_volume',
-            bridge_volume: 'historical_bridge_volume',
-            stablecoin_volume: 'historical_stablecoin_volume',
-            dex_volume: 'historical_dex_volume'
+            l1_eth_transfer: 'historical_nvt',  // tx_volume_usd (L1 ETH Transfer - native ETH only, ~$7B)
+            l1_total_volume: 'historical_l1_total_volume',  // total_volume_usd (ETH + all tokens, ~$200B)
+            l2_native_transfer: 'historical_l2_tx_volume',  // tx_volume_usd (L2 Native Transfer - ETH/MNT only, ~$300M)
+            l2_total_volume: 'historical_l2_total_volume',  // total_volume_usd (Native + all tokens, ~$100B)
+            bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
+            stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume (~$80B)
+            l2_stablecoin_volume: 'historical_l2_stablecoin_volume',  // total_volume (~$77B)
+            dex_volume: 'historical_dex_volume'  // volume (~$2B weekly)
         }
     }
 };
@@ -189,21 +195,14 @@ async function fetchSectionMetrics(sectionKey) {
     
     // ═══════════════════════════════════════════════════════════════════
     // 마지막 날 미취합 데이터 제외 함수 (화면과 동일 로직)
-    // 조건: 마지막 값이 직전 7일 평균의 30% 미만이면 제외
+    // ═══════════════════════════════════════════════════════════════════
+    // 미취합 데이터 제외: 마지막 데이터 항상 제외 (수집 중일 수 있음)
     // ═══════════════════════════════════════════════════════════════════
     function checkAndRemoveIncomplete(records, valueField) {
-        if (!records || records.length < 8) return records;
+        if (!records || records.length < 3) return records;
         
-        const getValue = (r) => parseFloat(r[valueField]) || 0;
-        const lastValue = getValue(records[0]); // records는 desc 정렬
-        const prev7Values = records.slice(1, 8).map(r => getValue(r));
-        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-        
-        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-            console.log(`   ⚠️ ${valueField}: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
-            return records.slice(1); // 첫 번째(최신) 제외
-        }
-        return records;
+        // 마지막 데이터 항상 제외
+        return records.slice(1);
     }
     
     // 테이블별 값 필드 매핑 (DATASETS 기준 - 실제 DB 필드명)
@@ -227,6 +226,7 @@ async function fetchSectionMetrics(sectionKey) {
         'historical_whale_tx': 'whale_tx_count',
         'historical_mvrv': 'mvrv_ratio',
         'historical_stablecoin_volume': 'daily_volume',
+        'historical_l2_stablecoin_volume': 'total_volume',
         'historical_new_addresses': 'new_addresses',
         'historical_gas_burn': 'avg_gas_price_gwei',
         'historical_transactions': 'tx_count',
@@ -237,14 +237,15 @@ async function fetchSectionMetrics(sectionKey) {
         'historical_active_addresses': 'active_addresses',
         'historical_fear_greed': 'value',
         'historical_nvt': 'nvt_ratio',
-        'historical_l1_volume': 'tx_volume_eth',  // L1 ETH Transfer (native ETH only)
+        'historical_l1_total_volume': 'total_volume_usd',
+        'historical_l2_total_volume': 'total_volume_usd',
     };
     
     for (const [metricKey, tableName] of Object.entries(section.tables)) {
         try {
             // Special handling for L1 ETH Transfer (uses tx_volume_usd from nvt table)
             // NOTE: This is NATIVE ETH transfers only, not total on-chain volume
-            if (metricKey === 'l1_volume' && tableName === 'historical_nvt') {
+            if (metricKey === 'l1_eth_transfer' && tableName === 'historical_nvt') {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select('date, tx_volume_usd')
@@ -253,16 +254,37 @@ async function fetchSectionMetrics(sectionKey) {
                     .limit(35);
                 
                 if (recent && recent.length > 0) {
-                    // 미취합 데이터 제외
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
                     let cleaned = recent.filter(r => r.tx_volume_usd > 0);
-                    if (cleaned.length >= 8) {
-                        const lastValue = cleaned[0].tx_volume_usd;
-                        const prev7Values = cleaned.slice(1, 8).map(r => r.tx_volume_usd);
-                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                            console.log(`   ⚠️ l1_volume: 마지막 날 미취합 제외`);
-                            cleaned = cleaned.slice(1);
-                        }
+                    if (cleaned.length > 2) {
+                        cleaned = cleaned.slice(1);
+                    }
+                    
+                    metricsData[metricKey] = {
+                        latest: cleaned[0],
+                        recent3d: cleaned.slice(0, 3),
+                        recent7d: cleaned.slice(0, 7),
+                        around30d: cleaned.slice(27, 34),
+                        thirtyDaysAgo: cleaned.length > 30 ? cleaned[30] : null
+                    };
+                }
+                continue;
+            }
+            
+            // Special handling for L1 Total Volume (ETH + all ERC-20 tokens)
+            if (tableName === 'historical_l1_total_volume') {
+                const { data: recent } = await supabase
+                    .from(tableName)
+                    .select('date, total_volume_usd')
+                    .gte('date', thirtyFiveDaysAgo)
+                    .order('date', { ascending: false })
+                    .limit(35);
+                
+                if (recent && recent.length > 0) {
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    let cleaned = recent.filter(r => r.total_volume_usd > 0);
+                    if (cleaned.length > 2) {
+                        cleaned = cleaned.slice(1);
                     }
                     
                     metricsData[metricKey] = {
@@ -292,15 +314,9 @@ async function fetchSectionMetrics(sectionKey) {
                     }
                     let dates = Object.keys(byDate).sort().reverse();
                     
-                    // 미취합 체크 (집계된 값 기준)
-                    if (dates.length >= 8) {
-                        const lastValue = byDate[dates[0]];
-                        const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                            console.log(`   ⚠️ l2_addresses: 마지막 날 미취합 제외`);
-                            dates = dates.slice(1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (dates.length > 2) {
+                        dates = dates.slice(1);
                     }
                     
                     const latestDate = dates[0];
@@ -332,15 +348,9 @@ async function fetchSectionMetrics(sectionKey) {
                     }
                     let dates = Object.keys(byDate).sort().reverse();
                     
-                    // 미취합 체크
-                    if (dates.length >= 8) {
-                        const lastValue = byDate[dates[0]];
-                        const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                            console.log(`   ⚠️ l2_transactions: 마지막 날 미취합 제외`);
-                            dates = dates.slice(1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (dates.length > 2) {
+                        dates = dates.slice(1);
                     }
                     
                     const latestDate = dates[0];
@@ -374,15 +384,9 @@ async function fetchSectionMetrics(sectionKey) {
                     }
                     let dates = Object.keys(byDate).sort().reverse();
                     
-                    // 미취합 데이터 제외 (집계된 값 기준)
-                    if (dates.length >= 8) {
-                        const lastValue = byDate[dates[0]];
-                        const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                            console.log(`   ⚠️ l2_native_transfer: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
-                            dates = dates.slice(1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (dates.length > 2) {
+                        dates = dates.slice(1);
                     }
                     
                     const latestDate = dates[0];
@@ -414,15 +418,9 @@ async function fetchSectionMetrics(sectionKey) {
                     }
                     let dates = Object.keys(byDate).sort().reverse();
                     
-                    // 미취합 데이터 제외 (집계된 값 기준)
-                    if (dates.length >= 8) {
-                        const lastValue = byDate[dates[0]];
-                        const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                            console.log(`   ⚠️ bridge_volume: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
-                            dates = dates.slice(1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (dates.length > 2) {
+                        dates = dates.slice(1);
                     }
                     
                     const latestDate = dates[0];
@@ -454,15 +452,9 @@ async function fetchSectionMetrics(sectionKey) {
                     }
                     let dates = Object.keys(byDate).sort().reverse();
                     
-                    // 미취합 데이터 제외 (집계된 값 기준)
-                    if (dates.length >= 8) {
-                        const lastValue = byDate[dates[0]];
-                        const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                        const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                        if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                            console.log(`   ⚠️ l2_tvl: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
-                            dates = dates.slice(1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (dates.length > 2) {
+                        dates = dates.slice(1);
                     }
                     
                     const latestDate = dates[0];
@@ -473,6 +465,74 @@ async function fetchSectionMetrics(sectionKey) {
                         recent7d: dates.slice(0, 7).map(d => ({ date: d, tvl: byDate[d] })),
                         around30d: dates.slice(27, 34).map(d => ({ date: d, tvl: byDate[d] })),
                         thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tvl: byDate[dates[30]] } : null
+                    };
+                }
+                continue;
+            }
+            
+            // Special handling for L2 Total Volume (stored by chain)
+            if (tableName === 'historical_l2_total_volume') {
+                const { data: recent } = await supabase
+                    .from(tableName)
+                    .select('date, total_volume_usd')
+                    .gte('date', thirtyFiveDaysAgo)
+                    .order('date', { ascending: false });
+                
+                if (recent && recent.length > 0) {
+                    const byDate = {};
+                    for (const r of recent) {
+                        if (!byDate[r.date]) byDate[r.date] = 0;
+                        byDate[r.date] += parseFloat(r.total_volume_usd || 0);
+                    }
+                    let dates = Object.keys(byDate).sort().reverse();
+                    
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (dates.length > 2) {
+                        dates = dates.slice(1);
+                    }
+                    
+                    const latestDate = dates[0];
+                    
+                    metricsData[metricKey] = {
+                        latest: { date: latestDate, total_volume_usd: byDate[latestDate] },
+                        recent3d: dates.slice(0, 3).map(d => ({ date: d, total_volume_usd: byDate[d] })),
+                        recent7d: dates.slice(0, 7).map(d => ({ date: d, total_volume_usd: byDate[d] })),
+                        around30d: dates.slice(27, 34).map(d => ({ date: d, total_volume_usd: byDate[d] })),
+                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], total_volume_usd: byDate[dates[30]] } : null
+                    };
+                }
+                continue;
+            }
+            
+            // Special handling for L2 Stablecoin Volume (stored by chain)
+            if (tableName === 'historical_l2_stablecoin_volume') {
+                const { data: recent } = await supabase
+                    .from(tableName)
+                    .select('date, total_volume')
+                    .gte('date', thirtyFiveDaysAgo)
+                    .order('date', { ascending: false });
+                
+                if (recent && recent.length > 0) {
+                    const byDate = {};
+                    for (const r of recent) {
+                        if (!byDate[r.date]) byDate[r.date] = 0;
+                        byDate[r.date] += parseFloat(r.total_volume || 0);
+                    }
+                    let dates = Object.keys(byDate).sort().reverse();
+                    
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (dates.length > 2) {
+                        dates = dates.slice(1);
+                    }
+                    
+                    const latestDate = dates[0];
+                    
+                    metricsData[metricKey] = {
+                        latest: { date: latestDate, total_volume: byDate[latestDate] },
+                        recent3d: dates.slice(0, 3).map(d => ({ date: d, total_volume: byDate[d] })),
+                        recent7d: dates.slice(0, 7).map(d => ({ date: d, total_volume: byDate[d] })),
+                        around30d: dates.slice(27, 34).map(d => ({ date: d, total_volume: byDate[d] })),
+                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], total_volume: byDate[dates[30]] } : null
                     };
                 }
                 continue;
