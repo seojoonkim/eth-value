@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHval Admin v7.5 - Schema Aligned</title>
+    <title>ETHval Admin v7.6 - UI Refactored</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -73,7 +73,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚡ ETHval Admin <span class="badge">v7.5</span></h1>
+            <h1>⚡ ETHval Admin <span class="badge">v7.6</span></h1>
             <div class="header-actions">
                 <div class="connection-status" id="connStatus" onclick="showConfig()">
                     <span>●</span>
@@ -194,8 +194,30 @@
         </div>
         
         <div class="table-container">
-            <div class="section-title"><span>📊 Datasets</span><span class="mono" id="lastUpdate">-</span></div>
-            <table><thead><tr><th>#</th><th>Dataset</th><th>Source</th><th>Table</th><th>Records</th><th>Date Range</th><th>Value</th><th>Coverage</th><th>Status</th><th>Actions</th></tr></thead><tbody id="dataTable"></tbody></table>
+            <div class="section-title">
+                <span>📊 Datasets</span>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <span class="mono" style="font-size:11px;color:var(--text-muted);">Last: <span id="lastUpdate">-</span></span>
+                    <button class="btn btn-sm" onclick="loadDataStatus()" style="padding:4px 8px;">🔄 Refresh</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:30px;">#</th>
+                        <th>Dataset</th>
+                        <th>Source</th>
+                        <th>Table</th>
+                        <th style="text-align:right;">Records</th>
+                        <th>Date Range</th>
+                        <th>Latest Value</th>
+                        <th style="width:100px;">Coverage</th>
+                        <th style="text-align:center;">Status</th>
+                        <th style="text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable"></tbody>
+            </table>
         </div>
         <!-- CSV Upload Section (Collapsible) -->
         <div class="table-container" style="margin-bottom: 24px;">
@@ -961,22 +983,20 @@
             location.reload();
         }
 
-        // 36 DATASETS - Schema Aligned with expected days
-        // 논리적 순서: Phase 1 (외부 API) → Phase 2 (1차 계산) → Phase 3 (2차 계산)
-        // source: 데이터 출처 (dune=Dune API, api=외부 API, calc=계산, est=추정)
+        // ═══════════════════════════════════════════════════════════════════
+        // DATASETS - Phase별로 정렬 (1 → 2 → 3 → 4)
+        // ═══════════════════════════════════════════════════════════════════
         const DATASETS = {
             // ═══════════════════════════════════════════════════════════════════
-            // PHASE 1: 외부 API 직접 수집 (독립적)
-            // ═══════════════════════════════════════════════════════════════════
-            // PHASE 1: External APIs (Real-time data sources)
+            // 🔵 PHASE 1: External APIs (Independent - No Dependencies)
             // ═══════════════════════════════════════════════════════════════════
             
-            // --- Binance API ---
+            // --- 🟡 Binance ---
             eth_price: { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price', expectedDays: 1095, phase: 1, source: '🟡 Binance' },
             eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio', expectedDays: 1095, phase: 1, source: '🟡 Binance' },
             funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8', expectedDays: 1095, phase: 1, source: '🟡 Binance' },
             
-            // --- DefiLlama API ---
+            // --- 🦙 DefiLlama ---
             ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 6000, phase: 1, source: '🦙 DefiLlama' },
@@ -987,10 +1007,10 @@
             lending_tvl: { name: 'Lending TVL', icon: '🏦', table: 'historical_lending_tvl', valueField: 'total_tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             staking_apr: { name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', valueField: 'lido_apr', format: 'percent', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             
-            // --- CoinGecko API ---
+            // --- 🦎 CoinGecko ---
             eth_dominance: { name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', valueField: 'eth_dominance', format: 'percent', expectedDays: 365, phase: 1, source: '🦎 CoinGecko' },
             
-            // --- Dune Analytics API ---
+            // --- 🔶 Dune Analytics ---
             blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, phase: 1, source: '🔶 Dune' },
             l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
             bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
@@ -999,27 +1019,33 @@
             stablecoin_volume: { name: 'Stablecoin Vol', icon: '💵', table: 'historical_stablecoin_volume', valueField: 'daily_volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
             new_addresses: { name: 'New Addresses', icon: '🆕', table: 'historical_new_addresses', valueField: 'new_addresses', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
             gas_price: { name: 'Gas Price', icon: '⛽', table: 'historical_gas_burn', valueField: 'avg_gas_price_gwei', format: 'gwei', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
-            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
-            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
-            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true, expectedDays: 3000, phase: 2, source: '🔶 Dune' },
             
-            // --- growthepie API ---
+            // --- 🥧 growthepie ---
             l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true, expectedDays: 3000, phase: 1, source: '🥧 growthepie' },
-            transactions: { name: 'Transactions', icon: '📝', table: 'historical_transactions', valueField: 'tx_count', format: 'number', expectedDays: 1095, phase: 2, source: '🥧 growthepie' },
-            
-            // --- Other APIs ---
-            fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, source: '📊 alternative.me' },
-            global_mcap: { name: 'Global Mcap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl', expectedDays: 365, phase: 4, source: '🦎 CoinGecko' },
             
             // ═══════════════════════════════════════════════════════════════════
-            // PHASE 2-4: Calculated / Dependent data
+            // 🟡 PHASE 2: First-order Calculations (Depends on Phase 1)
             // ═══════════════════════════════════════════════════════════════════
-            volatility: { name: 'Volatility', icon: '📉', table: 'historical_volatility', valueField: 'volatility_30d', format: 'percent', expectedDays: 1065, phase: 2, source: '📊 Calculated' },
+            volatility: { name: 'Volatility', icon: '📉', table: 'historical_volatility', valueField: 'volatility_30d', format: 'percent', expectedDays: 1065, phase: 2, source: '📊 Calculated', depends: ['eth_price'] },
+            transactions: { name: 'L1 Transactions', icon: '📝', table: 'historical_transactions', valueField: 'tx_count', format: 'number', expectedDays: 1095, phase: 2, source: '🥧 growthepie' },
+            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true, expectedDays: 3000, phase: 2, source: '🔶 Dune' },
             exchange_reserve: { name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', valueField: 'reserve_eth', format: 'eth', expectedDays: 1095, phase: 2, source: '⚠️ Estimated' },
             eth_supply: { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', format: 'eth', expectedDays: 1095, phase: 2, source: '📄 CSV Required' },
             daily_issuance: { name: 'Daily Issuance', icon: '🪙', table: 'historical_daily_issuance', valueField: 'daily_issuance', format: 'eth', expectedDays: 30, phase: 2, source: '📊 Calculated' },
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // 🟠 PHASE 3: Second-order Calculations (Depends on Phase 2)
+            // ═══════════════════════════════════════════════════════════════════
+            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune', depends: ['eth_price', 'transactions'] },
+            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
             gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔶 Dune', noCollect: true },
-            eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth', expectedDays: 1095, phase: 4, source: '📊 Calculated' },
+            fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, source: '📊 alternative.me' },
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // ⚪ PHASE 4: Final Aggregations (Depends on Phase 3)
+            // ═══════════════════════════════════════════════════════════════════
+            global_mcap: { name: 'Global Mcap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl', expectedDays: 365, phase: 4, source: '🦎 CoinGecko' },
+            eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth', expectedDays: 1095, phase: 4, source: '📊 Calculated', depends: ['ethereum_tvl', 'eth_price'] },
             protocol_tvl: { name: 'Protocol TVL', icon: '📊', table: 'historical_protocol_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 5000, phase: 4, source: '🦙 DefiLlama' },
             dex_by_protocol: { name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', valueField: 'volume', format: 'tvl', aggregate: true, expectedDays: 3000, phase: 4, source: '🦙 DefiLlama' },
             network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number', expectedDays: 1, phase: 4, source: '🔗 Etherscan' }
@@ -1307,10 +1333,17 @@
             let currentPhase = 0;
             
             const phaseNames = {
-                1: '🔵 Phase 1: External API (Independent)',
-                2: '🟡 Phase 2: First-order Calculation',
-                3: '🟠 Phase 3: Second-order Calculation',
-                4: '⚪ Phase 4: Miscellaneous'
+                1: '🔵 Phase 1: External APIs (Independent)',
+                2: '🟡 Phase 2: First-order Calculations',
+                3: '🟠 Phase 3: Second-order Calculations',
+                4: '⚪ Phase 4: Final Aggregations'
+            };
+            
+            const phaseDescriptions = {
+                1: 'Binance, DefiLlama, CoinGecko, Dune, growthepie',
+                2: 'Depends on Phase 1 data',
+                3: 'Depends on Phase 2 data',
+                4: 'Final computations'
             };
             
             // 오늘 날짜 계산 (로컬 시간 기준)
@@ -1331,13 +1364,29 @@
                 String(threeDaysAgo.getMonth() + 1).padStart(2, '0') + '-' + 
                 String(threeDaysAgo.getDate()).padStart(2, '0');
             
+            // Phase별 데이터셋 카운트
+            const phaseCounts = {};
+            for (const [key, ds] of Object.entries(DATASETS)) {
+                phaseCounts[ds.phase] = (phaseCounts[ds.phase] || 0) + 1;
+            }
+            
             for (const [key, ds] of Object.entries(DATASETS)) {
                 // Phase 헤더 추가
                 if (ds.phase && ds.phase !== currentPhase) {
                     currentPhase = ds.phase;
                     const headerRow = document.createElement('tr');
                     headerRow.className = 'phase-header';
-                    headerRow.innerHTML = `<td colspan="10" style="background:var(--surface);padding:12px;font-weight:600;border-top:2px solid var(--border);">${phaseNames[currentPhase] || 'Other'} <button class="btn btn-sm" style="float:right;font-size:11px" onclick="collectPhase(${currentPhase})">📥 Collect Phase ${currentPhase}</button></td>`;
+                    headerRow.innerHTML = `
+                        <td colspan="11" style="background:linear-gradient(90deg, var(--surface) 0%, transparent 100%);padding:14px 16px;border-top:2px solid var(--primary);border-bottom:1px solid var(--border);">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div>
+                                    <span style="font-weight:600;font-size:14px;">${phaseNames[currentPhase] || 'Other'}</span>
+                                    <span style="font-size:11px;color:var(--text-muted);margin-left:12px;">${phaseDescriptions[currentPhase] || ''}</span>
+                                    <span style="font-size:11px;color:var(--text-muted);margin-left:8px;">(${phaseCounts[currentPhase]} items)</span>
+                                </div>
+                                <button class="btn btn-sm" style="font-size:11px;padding:4px 10px;" onclick="collectPhase(${currentPhase})">📥 Collect Phase ${currentPhase}</button>
+                            </div>
+                        </td>`;
                     tbody.appendChild(headerRow);
                 }
                 
@@ -1361,7 +1410,7 @@
                 
                 // Depends 표시
                 const dependsText = ds.depends?.length > 0 
-                    ? `<span style="color:var(--warning);font-size:10px;margin-left:4px" title="Depends on: ${ds.depends.join(', ')}">⚠️</span>` 
+                    ? `<span style="color:var(--warning);font-size:10px;margin-left:4px" title="Depends on: ${ds.depends.join(', ')}">⚡</span>` 
                     : '';
                 
                 // 마지막 수집 결과 표시
@@ -1369,37 +1418,128 @@
                 let collectStatus = '';
                 if (lastResult) {
                     if (lastResult.error) {
-                        collectStatus = `<span style="color:var(--error);font-size:10px" title="${lastResult.error}">❌ Error</span>`;
+                        collectStatus = `<span style="color:var(--error);font-size:10px" title="${lastResult.error}">❌</span>`;
                     } else if (lastResult.count === 0) {
-                        collectStatus = `<span style="color:var(--error);font-size:10px">❌ 0</span>`;
+                        collectStatus = `<span style="color:var(--error);font-size:10px">❌</span>`;
                     } else if (lastResult.ratio < 0.1) {
-                        collectStatus = `<span style="color:var(--warning);font-size:10px" title="Only ${(lastResult.ratio*100).toFixed(1)}% of expected">⚠️ ${lastResult.count}</span>`;
+                        collectStatus = `<span style="color:var(--warning);font-size:10px" title="Only ${(lastResult.ratio*100).toFixed(1)}%">⚠️</span>`;
                     } else {
-                        collectStatus = `<span style="color:var(--success);font-size:10px">✅ ${lastResult.count}</span>`;
+                        collectStatus = `<span style="color:var(--success);font-size:10px">✓${lastResult.count}</span>`;
                     }
                 }
                 
                 const row = document.createElement('tr');
-                if (isStale) row.style.background = 'rgba(239, 68, 68, 0.1)';
+                if (isStale) row.style.background = 'rgba(239, 68, 68, 0.08)';
                 
                 // 소스별 색상 스타일
                 let sourceStyle = '';
-                if (ds.source?.includes('Dune')) sourceStyle = 'color:#f97316;font-weight:500';        // 오렌지
-                else if (ds.source?.includes('Binance')) sourceStyle = 'color:#f0b90b;font-weight:500'; // 바이낸스 옐로
-                else if (ds.source?.includes('DefiLlama')) sourceStyle = 'color:#8b5cf6;font-weight:500'; // 퍼플
-                else if (ds.source?.includes('CoinGecko')) sourceStyle = 'color:#22c55e;font-weight:500'; // 그린
-                else if (ds.source?.includes('growthepie')) sourceStyle = 'color:#ec4899;font-weight:500'; // 핑크
+                if (ds.source?.includes('Dune')) sourceStyle = 'color:#f97316;font-weight:500';
+                else if (ds.source?.includes('Binance')) sourceStyle = 'color:#f0b90b;font-weight:500';
+                else if (ds.source?.includes('DefiLlama')) sourceStyle = 'color:#8b5cf6;font-weight:500';
+                else if (ds.source?.includes('CoinGecko')) sourceStyle = 'color:#22c55e;font-weight:500';
+                else if (ds.source?.includes('growthepie')) sourceStyle = 'color:#ec4899;font-weight:500';
                 else if (ds.source?.includes('Calculated')) sourceStyle = 'color:var(--text-muted)';
                 else if (ds.source?.includes('Estimated')) sourceStyle = 'color:var(--warning)';
-                else if (ds.source?.includes('CSV')) sourceStyle = 'color:#06b6d4;font-weight:500';     // 시안
+                else if (ds.source?.includes('CSV')) sourceStyle = 'color:#06b6d4;font-weight:500';
                 
                 const collectBtn = ds.noCollect 
-                    ? `<button class="btn btn-secondary btn-sm" disabled title="Collected via Gas Price">-</button>`
-                    : `<button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button>`;
-                const noteText = ds.note ? ` <span style="font-size:10px;color:var(--text-muted)" title="${ds.note}">ℹ️</span>` : '';
-                row.innerHTML = `<td class="mono">${idx}</td><td>${ds.icon} ${ds.name}${dependsText}${noteText}</td><td style="font-size:11px;${sourceStyle}">${ds.source || '-'}</td><td><span class="table-name">${ds.table}</span></td><td class="mono">${s.count?.toLocaleString() || 0}</td><td class="mono" style="font-size:10px">${dateRange}</td><td class="mono">${formatValue(s.value, ds.format)}</td><td><div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div><span class="mono" style="font-size:10px">${coverage}%</span></td><td><span class="status ${statusClass}">${statusText}</span>${collectStatus ? '<br>'+collectStatus : ''}</td><td>${collectBtn}</td>`;
+                    ? `<span style="color:var(--text-muted);font-size:10px;">-</span>`
+                    : `<button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')" title="Collect ${ds.name}" style="padding:2px 6px;">📥</button>`;
+                
+                const previewBtn = `<button class="btn btn-sm" onclick="previewData('${key}')" title="Preview recent 10 records" style="padding:2px 6px;background:transparent;border:1px solid var(--border);">👁️</button>`;
+                
+                row.innerHTML = `
+                    <td class="mono" style="width:30px;text-align:center;color:var(--text-muted);">${idx}</td>
+                    <td style="white-space:nowrap;">${ds.icon} ${ds.name}${dependsText}</td>
+                    <td style="font-size:11px;${sourceStyle}">${ds.source?.replace(/^[🟡🦙🦎🔶🥧📊⚠️📄🔗]\s*/, '') || '-'}</td>
+                    <td><span class="table-name" style="font-size:10px;">${ds.table}</span></td>
+                    <td class="mono" style="text-align:right;">${s.count?.toLocaleString() || 0}</td>
+                    <td class="mono" style="font-size:10px;">${dateRange}</td>
+                    <td class="mono" style="font-size:11px;">${formatValue(s.value, ds.format)}</td>
+                    <td style="width:100px;">
+                        <div class="progress" style="height:6px;"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div>
+                        <span class="mono" style="font-size:9px;color:var(--text-muted);">${coverage}%</span>
+                    </td>
+                    <td style="text-align:center;"><span class="status ${statusClass}" style="font-size:10px;padding:2px 6px;">${statusText}</span>${collectStatus ? ' '+collectStatus : ''}</td>
+                    <td style="white-space:nowrap;text-align:center;">${previewBtn} ${collectBtn}</td>`;
                 tbody.appendChild(row);
                 idx++;
+            }
+        }
+        
+        // 데이터 미리보기 모달
+        async function previewData(key) {
+            const ds = DATASETS[key];
+            if (!ds) return;
+            
+            // 모달 생성 또는 업데이트
+            let modal = document.getElementById('preview-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'preview-modal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width:700px;max-height:80vh;overflow:auto;">
+                        <div class="modal-header">
+                            <span id="preview-title">Data Preview</span>
+                            <button class="btn btn-sm" onclick="document.getElementById('preview-modal').style.display='none'" style="background:transparent;border:none;font-size:18px;">✕</button>
+                        </div>
+                        <div id="preview-body" style="padding:16px;">Loading...</div>
+                    </div>`;
+                document.body.appendChild(modal);
+            }
+            
+            document.getElementById('preview-title').textContent = `${ds.icon} ${ds.name} - Recent 10 Records`;
+            document.getElementById('preview-body').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">⏳ Loading...</div>';
+            modal.style.display = 'flex';
+            
+            try {
+                const { data, error } = await sb
+                    .from(ds.table)
+                    .select('*')
+                    .order('date', { ascending: false })
+                    .limit(10);
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    document.getElementById('preview-body').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">No data found</div>';
+                    return;
+                }
+                
+                // 테이블 생성
+                const columns = Object.keys(data[0]).filter(k => !k.startsWith('_'));
+                let html = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Table: <code>${ds.table}</code> | Records: ${data.length} | Value Field: <code>${ds.valueField}</code></div>`;
+                html += '<table style="width:100%;font-size:11px;"><thead><tr>';
+                for (const col of columns) {
+                    const isValueField = col === ds.valueField;
+                    html += `<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);${isValueField ? 'background:rgba(124,58,237,0.1);' : ''}">${col}</th>`;
+                }
+                html += '</tr></thead><tbody>';
+                
+                for (const row of data) {
+                    html += '<tr>';
+                    for (const col of columns) {
+                        const isValueField = col === ds.valueField;
+                        let val = row[col];
+                        // 숫자 포맷팅
+                        if (typeof val === 'number') {
+                            if (Math.abs(val) >= 1e9) val = (val / 1e9).toFixed(2) + 'B';
+                            else if (Math.abs(val) >= 1e6) val = (val / 1e6).toFixed(2) + 'M';
+                            else if (Math.abs(val) >= 1e3) val = (val / 1e3).toFixed(2) + 'K';
+                            else if (Math.abs(val) < 0.01 && val !== 0) val = val.toFixed(6);
+                            else val = val.toLocaleString(undefined, { maximumFractionDigits: 4 });
+                        }
+                        html += `<td style="padding:6px 8px;border-bottom:1px solid var(--border);${isValueField ? 'background:rgba(124,58,237,0.1);font-weight:600;' : ''}">${val ?? '-'}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                html += '</tbody></table>';
+                
+                document.getElementById('preview-body').innerHTML = html;
+                
+            } catch (e) {
+                document.getElementById('preview-body').innerHTML = `<div style="color:var(--error);padding:20px;">Error: ${e.message}</div>`;
             }
         }
         
