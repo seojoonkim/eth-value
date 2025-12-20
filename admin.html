@@ -1507,17 +1507,17 @@
                 modal.id = 'preview-modal';
                 modal.className = 'modal';
                 modal.innerHTML = `
-                    <div class="modal-content" style="max-width:700px;max-height:80vh;overflow:auto;">
+                    <div class="modal-content" style="max-width:95vw;width:auto;max-height:85vh;overflow:auto;">
                         <div class="modal-header">
                             <span id="preview-title">Data Preview</span>
                             <button class="btn btn-sm" onclick="document.getElementById('preview-modal').style.display='none'" style="background:transparent;border:none;font-size:18px;">✕</button>
                         </div>
-                        <div id="preview-body" style="padding:16px;">Loading...</div>
+                        <div id="preview-body" style="padding:16px;overflow-x:auto;">Loading...</div>
                     </div>`;
                 document.body.appendChild(modal);
             }
             
-            document.getElementById('preview-title').textContent = `${ds.icon} ${ds.name} - Recent 10 Records`;
+            document.getElementById('preview-title').textContent = `${ds.icon} ${ds.name} - Recent 20 Records`;
             document.getElementById('preview-body').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">⏳ Loading...</div>';
             modal.style.display = 'flex';
             
@@ -1526,7 +1526,7 @@
                     .from(ds.table)
                     .select('*')
                     .order('date', { ascending: false })
-                    .limit(10);
+                    .limit(20);
                 
                 if (error) throw error;
                 
@@ -1538,10 +1538,10 @@
                 // 테이블 생성
                 const columns = Object.keys(data[0]).filter(k => !k.startsWith('_'));
                 let html = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Table: <code>${ds.table}</code> | Records: ${data.length} | Value Field: <code>${ds.valueField}</code></div>`;
-                html += '<table style="width:100%;font-size:11px;"><thead><tr>';
+                html += '<table style="width:max-content;font-size:11px;border-collapse:collapse;"><thead><tr>';
                 for (const col of columns) {
                     const isValueField = col === ds.valueField;
-                    html += `<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);${isValueField ? 'background:rgba(124,58,237,0.1);' : ''}">${col}</th>`;
+                    html += `<th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;${isValueField ? 'background:rgba(124,58,237,0.1);' : ''}">${col.toUpperCase()}</th>`;
                 }
                 html += '</tr></thead><tbody>';
                 
@@ -1558,7 +1558,7 @@
                             else if (Math.abs(val) < 0.01 && val !== 0) val = val.toFixed(6);
                             else val = val.toLocaleString(undefined, { maximumFractionDigits: 4 });
                         }
-                        html += `<td style="padding:6px 8px;border-bottom:1px solid var(--border);${isValueField ? 'background:rgba(124,58,237,0.1);font-weight:600;' : ''}">${val ?? '-'}</td>`;
+                        html += `<td style="padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;${isValueField ? 'background:rgba(124,58,237,0.1);font-weight:600;' : ''}">${val ?? '-'}</td>`;
                     }
                     html += '</tr>';
                 }
