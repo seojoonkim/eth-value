@@ -517,7 +517,7 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
     let prompt = `Section: ${section.title} (${section.title_ko})\n`;
     prompt += `Charts in this section: ${section.charts.join(', ')}\n\n`;
     prompt += `Current ETH Price: $${ethPrice.toFixed(2)}\n\n`;
-    prompt += `Key Metrics (3-day avg vs 30-day ago 3-day avg):\n`;
+    prompt += `Key Metrics (Current = latest complete day, 30-Day Change = vs 3-day avg from 30 days ago):\n`;
     
     // 필드에서 값을 추출하는 헬퍼 함수 (DATASETS 기준)
     // 순서 중요: 구체적인 필드명이 먼저 와야 함
@@ -561,10 +561,9 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         // ETH→USD 변환 여부
         const needsUsdConversion = ethToUsdFields.includes(fieldName);
         const multiplier = needsUsdConversion ? ethPrice : 1;
-        const currentVal = extracted.value * multiplier;
+        const currentVal = extracted.value * multiplier;  // 최신 완전한 날의 값 (차트와 동일)
         
-        // 3일 평균 계산
-        const recent3dAvg = calcAvg(data.recent3d, fieldName);
+        // 30일 전 3일 평균
         const around30dAvg = calcAvg(data.around30d, fieldName);
         
         // 단위 결정 (차트 표시 단위 기준)
@@ -575,11 +574,11 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         else if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr'].includes(fieldName)) unit = '%';
         else if (fieldName === 'avg_gas_price_gwei') unit = ' Gwei';
         
-        // 30일 변화율 계산 (3일 평균 기준)
+        // 30일 변화율 계산 (현재값 vs 30일 전 3일 평균)
         let changeStr = '';
-        if (recent3dAvg !== null && around30dAvg !== null && around30dAvg !== 0) {
-            const change = ((recent3dAvg - around30dAvg) / around30dAvg * 100).toFixed(1);
-            changeStr = `(~${change > 0 ? '+' : ''}${change}% vs 30d ago)`;
+        if (around30dAvg !== null && around30dAvg !== 0) {
+            const change = ((currentVal - around30dAvg) / around30dAvg * 100).toFixed(1);
+            changeStr = `(${change > 0 ? '+' : ''}${change}% vs 30d ago)`;
         }
         
         // 값 포맷팅
@@ -594,7 +593,7 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
             valStr = String(currentVal);
         }
         
-        prompt += `- ${key}: ~${valStr}${unit} ${changeStr}\n`;
+        prompt += `- ${key}: ${valStr}${unit} ${changeStr}\n`;
         
         // 추가 필드 (staking APR, gas utilization 등)
         if (data.latest.lido_apr !== undefined) {
@@ -608,20 +607,6 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         }
         if (data.latest.realized_price !== undefined && key !== 'mvrv') {
             prompt += `  └ realized_price: $${data.latest.realized_price?.toFixed(2) || 'N/A'}\n`;
-        }
-    }
-    
-    // 7-day trend (최근 7일 데이터 기반)
-    prompt += `\n7-Day Trend:\n`;
-    for (const [key, data] of Object.entries(metricsData)) {
-        if (key === 'eth_price' || !data?.recent7d || data.recent7d.length < 2) continue;
-        
-        const first = extractValue(data.recent7d[0]);
-        const last = extractValue(data.recent7d[data.recent7d.length - 1]);
-        
-        if (first && last && last.value !== 0) {
-            const change7d = ((first.value - last.value) / last.value * 100).toFixed(1);
-            prompt += `- ${key}: ~${change7d > 0 ? '+' : ''}${change7d}%\n`;
         }
     }
     
@@ -692,18 +677,15 @@ CRITICAL RULES:
 4. NEVER ask questions back - always provide complete analysis with available data.
 5. No disclaimers, apologies, or investment advice warnings.
 6. Professional yet approachable tone.
-7. IMPORTANT: The data provided represents recent 3-day averages, NOT the exact latest values shown in charts. To avoid confusion:
-   - Korean: "최근 3일 평균 약 X억 달러 수준" or "약 X억 달러 수준(최근 평균 기준)"
-   - English: "averaging approximately $X billion recently" or "around $X billion (recent average)"
-   - Chinese: "近期平均约X亿美元" or "约X亿美元(近期平均)"
-   - Japanese: "直近平均で約X億ドル" or "約X億ドル(直近平均)"
+7. IMPORTANT: The "Current" values shown are the latest complete day's data (matching chart values). The "30-Day Change" percentages compare this to the 3-day average from 30 days ago.
+8. When discussing trends, ALWAYS refer to "30-day" changes. NEVER mention "7-day" unless explicitly provided.
 
 FORMAT (exactly 3 sections separated by |||):
 Write 3 paragraphs, each 2-3 sentences, separated by "|||" on its own line.
 
 Section 1 (Current Status): [2-3 sentences about current state]
 |||
-Section 2 (30-Day Trend): [2-3 sentences about recent trends]
+Section 2 (30-Day Trend): [2-3 sentences about 30-day trends - focus on the 30-day change percentages]
 |||
 Section 3 (Valuation Insight): [2-3 sentences about valuation implications]`;
 

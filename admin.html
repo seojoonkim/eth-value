@@ -4641,22 +4641,50 @@
                 const needsUsdConversion = ethToUsdFields.includes(fieldName);
                 const multiplier = needsUsdConversion ? ethPrice : 1;
                 
-                // 모든 값 추출 (ETH 볼륨은 USD로 변환)
-                const values = all.map(r => {
+                // 날짜와 값을 함께 추출
+                const dataWithDates = all.map(r => {
                     const v = extractValue(r)?.value;
-                    return (v !== null && v !== undefined) ? v * multiplier : null;
-                }).filter(v => v !== null);
-                if (values.length === 0) continue;
+                    return {
+                        date: r.date,
+                        value: (v !== null && v !== undefined) ? v * multiplier : null
+                    };
+                }).filter(d => d.value !== null);
                 
-                // 기본 통계
-                const latest = values[0];
-                const oldest = values[values.length - 1];
+                if (dataWithDates.length === 0) continue;
+                
+                // 현재값: 미완성 제외 마지막 날 (차트와 동일)
+                const latest = dataWithDates[0].value;
+                const latestDate = new Date(dataWithDates[0].date);
+                
+                // 30일 전 날짜 계산 (±1일 = 29~31일 전)
+                const target30dAgo = new Date(latestDate);
+                target30dAgo.setDate(target30dAgo.getDate() - 30);
+                
+                // 30일 전 ±1일 범위의 데이터 찾기 (3일 평균)
+                const day29Ago = new Date(latestDate); day29Ago.setDate(day29Ago.getDate() - 29);
+                const day31Ago = new Date(latestDate); day31Ago.setDate(day31Ago.getDate() - 31);
+                
+                const around30dAgoData = dataWithDates.filter(d => {
+                    const date = new Date(d.date);
+                    return date >= day31Ago && date <= day29Ago;
+                });
+                
+                // 30일 전 3일 평균 계산
+                let avg30dAgo = null;
+                if (around30dAgoData.length > 0) {
+                    avg30dAgo = around30dAgoData.reduce((sum, d) => sum + d.value, 0) / around30dAgoData.length;
+                }
+                
+                // 30일 변화율: (현재 - 30일전평균) / 30일전평균 * 100
+                const change30d = avg30dAgo && avg30dAgo !== 0 
+                    ? ((latest - avg30dAgo) / Math.abs(avg30dAgo) * 100) 
+                    : null;
+                
+                // 전체 30일 통계
+                const values = dataWithDates.map(d => d.value);
                 const avg30d = values.reduce((a, b) => a + b, 0) / values.length;
                 const max30d = Math.max(...values);
                 const min30d = Math.min(...values);
-                
-                // 30일 변화율 계산
-                const change30d = oldest !== 0 ? ((latest - oldest) / Math.abs(oldest) * 100) : 0;
                 
                 // 추세 방향 판단 (선형 회귀 기울기)
                 let trendDirection = 'stable';
@@ -4682,15 +4710,13 @@
                 const stdDev = Math.sqrt(variance);
                 const volatility = avg30d !== 0 ? (stdDev / Math.abs(avg30d) * 100) : 0;
                 
-                // 현재 위치 (30일 범위 내)
-                const range = max30d - min30d;
-                const position = range !== 0 ? ((latest - min30d) / range * 100) : 50;
-                
                 prompt += `▶ ${key.toUpperCase()}\n`;
-                prompt += `  Current: ~${formatVal(latest, unit)} (around ${all[0]?.date || 'today'})\n`;
-                prompt += `  30-Day Avg: ${formatVal(avg30d, unit)}\n`;
+                prompt += `  Current (${dataWithDates[0].date}): ${formatVal(latest, unit)}\n`;
+                if (avg30dAgo !== null) {
+                    prompt += `  30 Days Ago (3-day avg): ${formatVal(avg30dAgo, unit)}\n`;
+                    prompt += `  30-Day Change: ${change30d > 0 ? '+' : ''}${change30d.toFixed(1)}%\n`;
+                }
                 prompt += `  30-Day Range: ${formatVal(min30d, unit)} ~ ${formatVal(max30d, unit)}\n`;
-                prompt += `  30-Day Change: ~${change30d > 0 ? '+' : ''}${change30d.toFixed(1)}%\n`;
                 prompt += `  Trend: ${trendDirection.toUpperCase()} | Volatility: ${volatility.toFixed(1)}%\n`;
                 
                 // 추가 필드
@@ -4775,7 +4801,8 @@ Section 1 (Current Status):
 |||
 
 Section 2 (30-Day Trend):
-- Analyze 30-day changes across ALL metrics
+- Focus on the 30-DAY CHANGE percentages provided in the data (NOT 7-day)
+- Analyze how metrics have changed over the PAST 30 DAYS
 - Identify patterns, correlations, or divergences between metrics
 
 |||
@@ -4789,11 +4816,8 @@ CRITICAL RULES:
 - DO NOT include any section headers or titles - just write the content paragraphs separated by |||
 - Start DIRECTLY with the first paragraph content. NO preamble, introduction, or headers.
 - If some data is missing or incomplete, analyze what IS available. NEVER refuse to analyze or ask for more data.
-- IMPORTANT: The data provided represents recent 3-day averages, NOT the exact latest values shown in charts. To avoid confusion:
-  * Korean: "최근 3일 평균 약 X억 달러 수준" or "약 X억 달러 수준(최근 평균 기준)"
-  * English: "averaging approximately $X billion recently" or "around $X billion (recent average)"
-  * Chinese: "近期平均约X亿美元" or "约X亿美元(近期平均)"
-  * Japanese: "直近平均で約X億ドル" or "約X億ドル(直近平均)"
+- IMPORTANT: The "Current" values shown are recent averages (for stability), but all CHANGE percentages are based on 30-day comparisons.
+- When discussing trends, ALWAYS refer to "30-day" changes, NEVER mention "7-day" unless that data is explicitly provided.
 - Sound confident but balanced
 - No disclaimers, apologies, or generic statements
 - Professional analyst tone
