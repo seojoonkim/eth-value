@@ -4313,6 +4313,8 @@ WHY TOTAL VOLUME MATTERS:
                 'historical_fear_greed': 'value',
                 'historical_nvt': 'nvt_ratio',
                 'historical_l1_volume': 'tx_volume_eth',  // L1 TX Volume
+                'historical_l1_total_volume': 'total_volume_usd',  // L1 Total Volume
+                'historical_l2_total_volume': 'total_volume_usd',  // L2 Total Volume (aggregated)
             };
             
             // 메트릭 키별 필드 오버라이드 (같은 테이블에서 다른 필드 사용 시)
@@ -4509,6 +4511,46 @@ WHY TOTAL VOLUME MATTERS:
                         continue;
                     }
                     
+                    // Special handling for L2 Total Volume (stored by chain)
+                    if (tableName === 'historical_l2_total_volume') {
+                        const { data: recent } = await client
+                            .from(tableName)
+                            .select('date, total_volume_usd')
+                            .gte('date', thirtyFiveDaysAgo)
+                            .order('date', { ascending: false });
+                        
+                        if (recent && recent.length > 0) {
+                            const byDate = {};
+                            for (const r of recent) {
+                                if (!byDate[r.date]) byDate[r.date] = 0;
+                                byDate[r.date] += parseFloat(r.total_volume_usd || 0);
+                            }
+                            let dates = Object.keys(byDate).sort().reverse();
+                            
+                            console.log(`📊 L2 Total Volume aggregated: ${dates.length} dates, latest=$${(byDate[dates[0]]/1e9)?.toFixed(2)}B`);
+                            
+                            // 미취합 데이터 제외 (집계된 값 기준)
+                            if (dates.length >= 8) {
+                                const lastValue = byDate[dates[0]];
+                                const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
+                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
+                                if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
+                                    console.log(`   ⚠️ l2_total_volume: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
+                                    dates = dates.slice(1);
+                                }
+                            }
+                            
+                            const latestDate = dates[0];
+                            
+                            metricsData[metricKey] = {
+                                latest: { date: latestDate, total_volume_usd: byDate[latestDate] },
+                                all30d: dates.map(d => ({ date: d, total_volume_usd: byDate[d] })),
+                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], total_volume_usd: byDate[dates[30]] } : null
+                            };
+                        }
+                        continue;
+                    }
+                    
                     // Special handling for L2 TVL (stored by chain)
                     if (tableName === 'historical_l2_tvl') {
                         const { data: recent } = await client
@@ -4646,6 +4688,7 @@ WHY TOTAL VOLUME MATTERS:
                     { field: 'avg_gas_price_gwei', label: 'Gas Price' },  // gas_burn
                     { field: 'eth_burnt', label: 'ETH Burnt' },  // gas_burn
                     { field: 'tx_volume_usd', label: 'TX Volume USD' },  // nvt table
+                    { field: 'total_volume_usd', label: 'Total Volume USD' },  // l1/l2_total_volume
                     { field: 'daily_volume', label: 'Daily Volume' },  // stablecoin_volume
                     { field: 'tx_volume_usd', label: 'TX Volume USD' },  // l2_tx_volume
                     { field: 'bridge_volume_eth', label: 'Bridge Volume' },  // bridge_volume
