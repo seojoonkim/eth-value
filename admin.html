@@ -3,77 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHval Admin v7.6 - UI Refactored</title>
+    <title>ETHval Admin v7.7 - Compact</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg: #0a0a0f; --bg-card: #12121a; --bg-hover: #1a1a25; --border: #2a2a3a; --text: #e5e5e5; --text-muted: #888; --primary: #8b5cf6; --success: #22c55e; --warning: #f59e0b; --error: #ef4444; }
+        :root { --bg: #0a0a0f; --bg-card: #12121a; --bg-hover: #1a1a25; --border: #2a2a3a; --text: #e5e5e5; --text-muted: #888; --primary: #8b5cf6; --success: #22c55e; --warning: #f59e0b; --error: #ef4444; --surface: #1a1a2e; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 16px; }
         .container { max-width: 1600px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 16px; }
-        .header h1 { font-size: 24px; font-weight: 700; }
-        .badge { background: var(--primary); color: white; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: 600; margin-left: 12px; }
-        .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+        .header h1 { font-size: 20px; font-weight: 700; }
+        .badge { background: var(--primary); color: white; font-size: 9px; padding: 3px 6px; border-radius: 4px; font-weight: 600; margin-left: 8px; }
+        .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .btn { padding: 8px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: #7c3aed; }
         .btn-success { background: var(--success); color: white; }
         .btn-warning { background: var(--warning); color: black; }
         .btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
-        .connection-status { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; background: var(--bg-card); border: 1px solid var(--border); cursor: pointer; }
+        .btn-sm { padding: 4px 8px; font-size: 10px; }
+        .connection-status { display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 16px; font-size: 11px; background: var(--bg-card); border: 1px solid var(--border); cursor: pointer; }
         .connection-status.connected { border-color: var(--success); color: var(--success); }
         .connection-status.disconnected { border-color: var(--error); color: var(--error); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
-        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
-        .stat-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .stat-card .value { font-size: 28px; font-weight: 700; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 16px; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; }
+        .stat-card .label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+        .stat-card .value { font-size: 22px; font-weight: 700; }
         .stat-card .value.success { color: var(--success); }
         .stat-card .value.warning { color: var(--warning); }
         .stat-card .value.error { color: var(--error); }
-        .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
-        .section-title { font-size: 16px; font-weight: 600; padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+        .section-title { font-size: 14px; font-weight: 600; padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { background: var(--bg); font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+        th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg); font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding: 8px 10px; }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: var(--bg-hover); }
-        .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-        .table-name { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
-        .status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .table-name { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-muted); }
+        .status { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; }
         .status.ok { background: rgba(34, 197, 94, 0.15); color: var(--success); }
         .status.warn { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
         .status.fail { background: rgba(239, 68, 68, 0.15); color: var(--error); }
-        .progress { width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
-        .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-        .log-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-        .log { font-family: 'JetBrains Mono', monospace; font-size: 12px; height: 300px; overflow-y: auto; white-space: pre-wrap; background: var(--bg); padding: 12px; border-radius: 8px; }
+        .progress { width: 100%; height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        .log-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+        .log { font-family: 'JetBrains Mono', monospace; font-size: 11px; height: 250px; overflow-y: auto; white-space: pre-wrap; background: var(--bg); padding: 10px; border-radius: 8px; }
         .log .success { color: var(--success); }
         .log .error { color: var(--error); }
         .log .warn { color: var(--warning); }
         .log .info { color: var(--primary); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal.show { display: flex; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-        .modal-header h2 { font-size: 18px; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .modal-header h2 { font-size: 16px; }
         .modal-close { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
-        .verify-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .verify-table th, .verify-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        .verify-table th { background: var(--bg); font-size: 11px; text-transform: uppercase; color: var(--text-muted); }
+        .verify-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .verify-table th, .verify-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+        .verify-table th { background: var(--bg); font-size: 10px; text-transform: uppercase; color: var(--text-muted); }
         .verify-match { color: var(--success); }
         .verify-mismatch { color: var(--error); }
         .verify-skip { color: var(--text-muted); }
         .diff-good { color: var(--success); }
         .diff-warn { color: var(--warning); }
         .diff-bad { color: var(--error); }
+        .action-btns { display: flex; gap: 4px; align-items: center; }
+        .action-btn { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; font-size: 10px; border-radius: 4px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-muted); transition: all 0.15s; }
+        .action-btn:hover { background: var(--bg-hover); color: var(--text); border-color: var(--primary); }
+        .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .action-btn svg { width: 12px; height: 12px; }
+        .stale-reason { font-size: 9px; color: var(--warning); margin-left: 4px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚡ ETHval Admin <span class="badge">v7.6</span></h1>
+            <h1>⚡ ETHval Admin <span class="badge">v7.7</span></h1>
             <div class="header-actions">
                 <div class="connection-status" id="connStatus" onclick="showConfig()">
                     <span>●</span>
@@ -196,24 +202,24 @@
         <div class="table-container">
             <div class="section-title">
                 <span>📊 Datasets</span>
-                <div style="display:flex;gap:8px;align-items:center;">
-                    <span class="mono" style="font-size:11px;color:var(--text-muted);">Last: <span id="lastUpdate">-</span></span>
-                    <button class="btn btn-sm" onclick="loadDataStatus()" style="padding:4px 8px;">🔄 Refresh</button>
+                <div style="display:flex;gap:6px;align-items:center;">
+                    <span class="mono" style="font-size:10px;color:var(--text-muted);">Last: <span id="lastUpdate">-</span></span>
+                    <button class="btn btn-sm" onclick="loadDataStatus()">🔄</button>
                 </div>
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th style="width:30px;">#</th>
+                        <th style="width:24px;">#</th>
                         <th>Dataset</th>
                         <th>Source</th>
                         <th>Table</th>
-                        <th style="text-align:right;">Records</th>
+                        <th style="text-align:right;">Rows</th>
                         <th>Date Range</th>
-                        <th>Latest Value</th>
-                        <th style="width:100px;">Coverage</th>
+                        <th>Value</th>
+                        <th style="width:80px;">Cover</th>
                         <th style="text-align:center;">Status</th>
-                        <th style="text-align:center;">Actions</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="dataTable"></tbody>
@@ -1377,14 +1383,14 @@
                     const headerRow = document.createElement('tr');
                     headerRow.className = 'phase-header';
                     headerRow.innerHTML = `
-                        <td colspan="11" style="background:linear-gradient(90deg, var(--surface) 0%, transparent 100%);padding:14px 16px;border-top:2px solid var(--primary);border-bottom:1px solid var(--border);">
+                        <td colspan="11" style="background:linear-gradient(90deg, var(--surface) 0%, transparent 100%);padding:8px 10px;border-top:2px solid var(--primary);border-bottom:1px solid var(--border);">
                             <div style="display:flex;justify-content:space-between;align-items:center;">
                                 <div>
-                                    <span style="font-weight:600;font-size:14px;">${phaseNames[currentPhase] || 'Other'}</span>
-                                    <span style="font-size:11px;color:var(--text-muted);margin-left:12px;">${phaseDescriptions[currentPhase] || ''}</span>
-                                    <span style="font-size:11px;color:var(--text-muted);margin-left:8px;">(${phaseCounts[currentPhase]} items)</span>
+                                    <span style="font-weight:600;font-size:12px;">${phaseNames[currentPhase] || 'Other'}</span>
+                                    <span style="font-size:10px;color:var(--text-muted);margin-left:8px;">${phaseDescriptions[currentPhase] || ''}</span>
+                                    <span style="font-size:10px;color:var(--text-muted);margin-left:6px;">(${phaseCounts[currentPhase]})</span>
                                 </div>
-                                <button class="btn btn-sm" style="font-size:11px;padding:4px 10px;" onclick="collectPhase(${currentPhase})">📥 Collect Phase ${currentPhase}</button>
+                                <button class="btn btn-sm" style="font-size:10px;padding:3px 8px;" onclick="collectPhase(${currentPhase})">📥 Phase ${currentPhase}</button>
                             </div>
                         </td>`;
                     tbody.appendChild(headerRow);
@@ -1401,16 +1407,32 @@
                 const isStale = s.latest && s.latest <= threeDaysAgoStr;
                 const isFresh = s.latest && (s.latest >= twoDaysAgoStr);
                 const dateStyle = isStale ? 'color:var(--error);font-weight:600' : isFresh ? 'color:var(--success)' : '';
-                const staleIcon = isStale ? ' ⚠️' : isFresh ? ' ✓' : '';
+                const staleIcon = isStale ? ' ⚠️' : isFresh ? '' : '';
+                
+                // Stale 이유 추정
+                let staleReason = '';
+                if (isStale) {
+                    if (ds.source?.includes('Dune')) {
+                        staleReason = '<span class="stale-reason" title="Dune query cache expired - run Collect to refresh">(Dune cache)</span>';
+                    } else if (ds.source?.includes('CSV')) {
+                        staleReason = '<span class="stale-reason" title="CSV upload required">(CSV needed)</span>';
+                    } else if (ds.source?.includes('Calculated')) {
+                        staleReason = '<span class="stale-reason" title="Depends on other data">(depends)</span>';
+                    } else if (ds.source?.includes('CoinGecko')) {
+                        staleReason = '<span class="stale-reason" title="CoinGecko API rate limit">(rate limit)</span>';
+                    } else {
+                        staleReason = '<span class="stale-reason" title="API delay or incomplete data">(API delay)</span>';
+                    }
+                }
                 
                 // Format date range
                 const dateRange = s.oldest && s.latest 
-                    ? `${s.oldest} → <span style="${dateStyle}">${s.latest}${staleIcon}</span>` 
-                    : (s.latest ? `<span style="${dateStyle}">${s.latest}${staleIcon}</span>` : '-');
+                    ? `${s.oldest.slice(5)} → <span style="${dateStyle}">${s.latest.slice(5)}${staleIcon}</span>${staleReason}` 
+                    : (s.latest ? `<span style="${dateStyle}">${s.latest.slice(5)}${staleIcon}</span>${staleReason}` : '-');
                 
                 // Depends 표시
                 const dependsText = ds.depends?.length > 0 
-                    ? `<span style="color:var(--warning);font-size:10px;margin-left:4px" title="Depends on: ${ds.depends.join(', ')}">⚡</span>` 
+                    ? `<span style="color:var(--warning);font-size:9px;margin-left:3px" title="Depends on: ${ds.depends.join(', ')}">⚡</span>` 
                     : '';
                 
                 // 마지막 수집 결과 표시
@@ -1418,50 +1440,56 @@
                 let collectStatus = '';
                 if (lastResult) {
                     if (lastResult.error) {
-                        collectStatus = `<span style="color:var(--error);font-size:10px" title="${lastResult.error}">❌</span>`;
+                        collectStatus = `<span style="color:var(--error);font-size:9px" title="${lastResult.error}">❌</span>`;
                     } else if (lastResult.count === 0) {
-                        collectStatus = `<span style="color:var(--error);font-size:10px">❌</span>`;
+                        collectStatus = `<span style="color:var(--error);font-size:9px">❌</span>`;
                     } else if (lastResult.ratio < 0.1) {
-                        collectStatus = `<span style="color:var(--warning);font-size:10px" title="Only ${(lastResult.ratio*100).toFixed(1)}%">⚠️</span>`;
+                        collectStatus = `<span style="color:var(--warning);font-size:9px" title="Only ${(lastResult.ratio*100).toFixed(1)}%">⚠️</span>`;
                     } else {
-                        collectStatus = `<span style="color:var(--success);font-size:10px">✓${lastResult.count}</span>`;
+                        collectStatus = `<span style="color:var(--success);font-size:9px">✓</span>`;
                     }
                 }
                 
                 const row = document.createElement('tr');
-                if (isStale) row.style.background = 'rgba(239, 68, 68, 0.08)';
+                if (isStale) row.style.background = 'rgba(239, 68, 68, 0.06)';
                 
                 // 소스별 색상 스타일
-                let sourceStyle = '';
-                if (ds.source?.includes('Dune')) sourceStyle = 'color:#f97316;font-weight:500';
-                else if (ds.source?.includes('Binance')) sourceStyle = 'color:#f0b90b;font-weight:500';
-                else if (ds.source?.includes('DefiLlama')) sourceStyle = 'color:#8b5cf6;font-weight:500';
-                else if (ds.source?.includes('CoinGecko')) sourceStyle = 'color:#22c55e;font-weight:500';
-                else if (ds.source?.includes('growthepie')) sourceStyle = 'color:#ec4899;font-weight:500';
-                else if (ds.source?.includes('Calculated')) sourceStyle = 'color:var(--text-muted)';
-                else if (ds.source?.includes('Estimated')) sourceStyle = 'color:var(--warning)';
-                else if (ds.source?.includes('CSV')) sourceStyle = 'color:#06b6d4;font-weight:500';
+                let sourceStyle = 'font-size:10px;';
+                if (ds.source?.includes('Dune')) sourceStyle += 'color:#f97316;';
+                else if (ds.source?.includes('Binance')) sourceStyle += 'color:#f0b90b;';
+                else if (ds.source?.includes('DefiLlama')) sourceStyle += 'color:#8b5cf6;';
+                else if (ds.source?.includes('CoinGecko')) sourceStyle += 'color:#22c55e;';
+                else if (ds.source?.includes('growthepie')) sourceStyle += 'color:#ec4899;';
+                else if (ds.source?.includes('Calculated')) sourceStyle += 'color:var(--text-muted);';
+                else if (ds.source?.includes('Estimated')) sourceStyle += 'color:var(--warning);';
+                else if (ds.source?.includes('CSV')) sourceStyle += 'color:#06b6d4;';
                 
                 const collectBtn = ds.noCollect 
-                    ? `<span style="color:var(--text-muted);font-size:10px;">-</span>`
-                    : `<button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')" title="Collect ${ds.name}" style="padding:2px 6px;">📥</button>`;
+                    ? ``
+                    : `<button class="action-btn" onclick="collectOne('${key}')" title="Collect ${ds.name}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        collect
+                       </button>`;
                 
-                const previewBtn = `<button class="btn btn-sm" onclick="previewData('${key}')" title="Preview recent 10 records" style="padding:2px 6px;background:transparent;border:1px solid var(--border);">👁️</button>`;
+                const previewBtn = `<button class="action-btn" onclick="previewData('${key}')" title="Preview recent 10 records">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    view
+                </button>`;
                 
                 row.innerHTML = `
-                    <td class="mono" style="width:30px;text-align:center;color:var(--text-muted);">${idx}</td>
-                    <td style="white-space:nowrap;">${ds.icon} ${ds.name}${dependsText}</td>
-                    <td style="font-size:11px;${sourceStyle}">${ds.source?.replace(/^[🟡🦙🦎🔶🥧📊⚠️📄🔗]\s*/, '') || '-'}</td>
-                    <td><span class="table-name" style="font-size:10px;">${ds.table}</span></td>
-                    <td class="mono" style="text-align:right;">${s.count?.toLocaleString() || 0}</td>
-                    <td class="mono" style="font-size:10px;">${dateRange}</td>
-                    <td class="mono" style="font-size:11px;">${formatValue(s.value, ds.format)}</td>
-                    <td style="width:100px;">
-                        <div class="progress" style="height:6px;"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div>
-                        <span class="mono" style="font-size:9px;color:var(--text-muted);">${coverage}%</span>
+                    <td class="mono" style="width:24px;text-align:center;color:var(--text-muted);font-size:10px;">${idx}</td>
+                    <td style="white-space:nowrap;font-size:12px;">${ds.icon} ${ds.name}${dependsText}</td>
+                    <td style="${sourceStyle}">${ds.source?.replace(/^[🟡🦙🦎🔶🥧📊⚠️📄🔗]\s*/, '') || '-'}</td>
+                    <td><span class="table-name">${ds.table}</span></td>
+                    <td class="mono" style="text-align:right;font-size:11px;">${s.count?.toLocaleString() || 0}</td>
+                    <td class="mono" style="font-size:9px;">${dateRange}</td>
+                    <td class="mono" style="font-size:10px;">${formatValue(s.value, ds.format)}</td>
+                    <td style="width:80px;">
+                        <div class="progress"><div class="progress-fill" style="width:${coverage}%;background:${coverage>=90?'var(--success)':coverage>=30?'var(--warning)':'var(--error)'}"></div></div>
+                        <span class="mono" style="font-size:8px;color:var(--text-muted);">${coverage}%</span>
                     </td>
-                    <td style="text-align:center;"><span class="status ${statusClass}" style="font-size:10px;padding:2px 6px;">${statusText}</span>${collectStatus ? ' '+collectStatus : ''}</td>
-                    <td style="white-space:nowrap;text-align:center;">${previewBtn} ${collectBtn}</td>`;
+                    <td style="text-align:center;"><span class="status ${statusClass}">${statusText}</span>${collectStatus ? ' '+collectStatus : ''}</td>
+                    <td><div class="action-btns">${previewBtn}${collectBtn}</div></td>`;
                 tbody.appendChild(row);
                 idx++;
             }
