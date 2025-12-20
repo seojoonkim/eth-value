@@ -666,32 +666,35 @@ STRICT OUTPUT FORMAT:
 You must write exactly 3 paragraphs separated by ||| (three pipe characters).
 
 Example output structure:
-First paragraph about current status here. More sentences about current values.
+First sentence about current status. Second sentence with specific data point. Third sentence with comparison or context. Fourth sentence with interpretation or significance.
 |||
-Second paragraph about 30-day trends here. Analysis of changes over past month.
+First sentence about 30-day trends. Second sentence with percentage changes. Third sentence analyzing the trend direction. Fourth sentence explaining what this means.
 |||
-Third paragraph about valuation implications here. What this means for ETH value.
+First sentence about valuation implications. Second sentence connecting metrics to value. Third sentence with outlook or prediction. Fourth sentence with investor guidance.
 
-RULES:
+CRITICAL RULES:
 - ${config.instruction}
 - Write ONLY the 3 paragraphs with ||| separators between them
 - NO headers, NO titles, NO section labels
-- Each paragraph should be 2-3 sentences
+- EACH PARAGRAPH MUST HAVE EXACTLY 4 SENTENCES - this is mandatory, count them
 - The separator ||| must be on its own line between paragraphs
 - Focus on 30-DAY trends (not 7-day)
 - Be specific with numbers from the data provided
-- Professional analyst tone`;
+- Professional analyst tone
+- Minimum 150 words per paragraph`;
 
     const userPrompt = `Analyze these ${section.title} metrics. Output exactly 3 paragraphs separated by |||
 
 ${metricsPrompt}
 
-Remember: Output format must be:
-[Paragraph 1 - current status]
+IMPORTANT: Each paragraph MUST contain exactly 4 sentences. This is a strict requirement.
+
+Output format:
+[Paragraph 1 - current status - 4 sentences]
 |||
-[Paragraph 2 - 30-day trends]  
+[Paragraph 2 - 30-day trends - 4 sentences]  
 |||
-[Paragraph 3 - valuation insight]`;
+[Paragraph 3 - valuation insight - 4 sentences]`;
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -703,7 +706,7 @@ Remember: Output format must be:
             },
             body: JSON.stringify({
                 model: 'claude-3-5-haiku-20241022',
-                max_tokens: 800,
+                max_tokens: 2500,
                 messages: [
                     { role: 'user', content: userPrompt }
                 ],
