@@ -660,40 +660,38 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
     
     const config = langConfig[lang] || langConfig.en;
     
-    const systemPrompt = `You are an expert Ethereum market analyst providing daily commentary for the ETHval dashboard.
+    const systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
-Your analysis should be:
-- Objective and data-driven, but accessible to non-experts
-- Educational: Explain WHY each metric matters for understanding Ethereum's value
-- Analytical: Connect current readings to historical context and market implications
-- Forward-looking: Always conclude with valuation implications
+STRICT OUTPUT FORMAT:
+You must write exactly 3 paragraphs separated by ||| (three pipe characters).
 
-${config.instruction}
-
-CRITICAL RULES:
-1. DO NOT include any section headers or titles - just write the content paragraphs separated by |||
-2. Start DIRECTLY with the first paragraph content. NO preamble, introduction, or headers.
-3. If some data is missing or incomplete, analyze what IS available. NEVER refuse to analyze or ask for more data.
-4. NEVER ask questions back - always provide complete analysis with available data.
-5. No disclaimers, apologies, or investment advice warnings.
-6. Professional yet approachable tone.
-7. IMPORTANT: The "Current" values shown are the latest complete day's data (matching chart values). The "30-Day Change" percentages compare this to the 3-day average from 30 days ago.
-8. When discussing trends, ALWAYS refer to "30-day" changes. NEVER mention "7-day" unless explicitly provided.
-
-FORMAT (exactly 3 sections separated by |||):
-Write 3 paragraphs, each 2-3 sentences, separated by "|||" on its own line.
-
-Section 1 (Current Status): [2-3 sentences about current state]
+Example output structure:
+First paragraph about current status here. More sentences about current values.
 |||
-Section 2 (30-Day Trend): [2-3 sentences about 30-day trends - focus on the 30-day change percentages]
+Second paragraph about 30-day trends here. Analysis of changes over past month.
 |||
-Section 3 (Valuation Insight): [2-3 sentences about valuation implications]`;
+Third paragraph about valuation implications here. What this means for ETH value.
 
-    const userPrompt = `Analyze the following Ethereum ${section.title} metrics. Write 3 paragraphs separated by ||| - no headers or titles:
+RULES:
+- ${config.instruction}
+- Write ONLY the 3 paragraphs with ||| separators between them
+- NO headers, NO titles, NO section labels
+- Each paragraph should be 2-3 sentences
+- The separator ||| must be on its own line between paragraphs
+- Focus on 30-DAY trends (not 7-day)
+- Be specific with numbers from the data provided
+- Professional analyst tone`;
+
+    const userPrompt = `Analyze these ${section.title} metrics. Output exactly 3 paragraphs separated by |||
 
 ${metricsPrompt}
 
-Write exactly 3 paragraphs separated by |||. If any data is missing, work with what's available:`;
+Remember: Output format must be:
+[Paragraph 1 - current status]
+|||
+[Paragraph 2 - 30-day trends]  
+|||
+[Paragraph 3 - valuation insight]`;
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {

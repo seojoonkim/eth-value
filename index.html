@@ -18767,6 +18767,30 @@
                                 html += '</div></div>';
                             }
                             
+                            // 레거시 형식이고 섹션이 1개뿐이면 (구분자 없는 긴 텍스트)
+                            // 문장 단위로 3등분하여 3열로 표시
+                            if (sectionIndex === 0 && text.length > 100) {
+                                // 문장 분리 (마침표, 물음표, 느낌표 뒤에 공백)
+                                const sentences = text.split(/(?<=[.!?。])\s+/).filter(s => s.trim());
+                                if (sentences.length >= 3) {
+                                    const chunkSize = Math.ceil(sentences.length / 3);
+                                    const chunks = [
+                                        sentences.slice(0, chunkSize).join(' '),
+                                        sentences.slice(chunkSize, chunkSize * 2).join(' '),
+                                        sentences.slice(chunkSize * 2).join(' ')
+                                    ];
+                                    
+                                    html = '';
+                                    chunks.forEach((content, i) => {
+                                        if (content.trim() && localHeaders[i]) {
+                                            const headerHtml = parseHeader(localHeaders[i]);
+                                            html += `<div class="commentary-section"><div class="commentary-section-header">${headerHtml}</div><div class="commentary-section-body"><p>${content.trim()}</p></div></div>`;
+                                        }
+                                    });
+                                    return html;
+                                }
+                            }
+                            
                             return html || `<p>${text}</p>`;
                         };
                         

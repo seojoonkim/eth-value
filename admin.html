@@ -4754,76 +4754,38 @@
                 ja: 'Write in Japanese (日本語で作成). Use natural Japanese financial terminology.'
             };
             
-            // 언어별 섹션 헤더
-            const formatHeaders = {
-                en: {
-                    status: '📊 Current Status',
-                    trend: '📈 30-Day Trend',
-                    insight: '💡 Valuation Insight'
-                },
-                ko: {
-                    status: '📊 현재 상태',
-                    trend: '📈 최근 30일 트렌드',
-                    insight: '💡 밸류에이션 시사점'
-                },
-                zh: {
-                    status: '📊 当前状态',
-                    trend: '📈 近30天趋势',
-                    insight: '💡 估值启示'
-                },
-                ja: {
-                    status: '📊 現在の状況',
-                    trend: '📈 過去30日のトレンド',
-                    insight: '💡 バリュエーションの示唆'
-                }
-            };
-            
-            const headers = formatHeaders[lang] || formatHeaders.en;
-            
-            const systemPrompt = `You are an expert Ethereum market analyst providing daily commentary for the ETHval valuation dashboard.
+            const systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
-Your task: Write a comprehensive analysis for the "${section.title}" section.
+STRICT OUTPUT FORMAT:
+You must write exactly 3 paragraphs separated by ||| (three pipe characters).
 
-This section contains ${section.charts.length} charts: ${section.charts.join(', ')}
-
-CRITICAL INSTRUCTIONS:
-1. You MUST analyze ALL charts listed above - do not focus on just one or two metrics
-2. Synthesize the data across all metrics to provide a holistic view
-3. Explain how the different metrics relate to each other and what they collectively indicate
-4. Connect the metrics to Ethereum's valuation implications
-
-FORMAT (exactly 3 sections separated by |||):
-Write 3 paragraphs, each 2-3 sentences, separated by "|||" on its own line.
-
-Section 1 (Current Status):
-- Summarize key current values across ALL metrics in this section
-
+Example output structure:
+First paragraph about current status here. More sentences about current values.
 |||
-
-Section 2 (30-Day Trend):
-- Focus on the 30-DAY CHANGE percentages provided in the data (NOT 7-day)
-- Analyze how metrics have changed over the PAST 30 DAYS
-- Identify patterns, correlations, or divergences between metrics
-
+Second paragraph about 30-day trends here. Analysis of changes over past month.
 |||
+Third paragraph about valuation implications here. What this means for ETH value.
 
-Section 3 (Valuation Insight):
-- What do these metrics collectively suggest for ETH's fair value?
-- Bullish/bearish signals and what to watch
-
-CRITICAL RULES:
+RULES:
 - ${langInstructions[lang]}
-- DO NOT include any section headers or titles - just write the content paragraphs separated by |||
-- Start DIRECTLY with the first paragraph content. NO preamble, introduction, or headers.
-- If some data is missing or incomplete, analyze what IS available. NEVER refuse to analyze or ask for more data.
-- IMPORTANT: The "Current" values shown are recent averages (for stability), but all CHANGE percentages are based on 30-day comparisons.
-- When discussing trends, ALWAYS refer to "30-day" changes, NEVER mention "7-day" unless that data is explicitly provided.
-- Sound confident but balanced
-- No disclaimers, apologies, or generic statements
-- Professional analyst tone
-- NEVER ask questions back to the user`;
+- Write ONLY the 3 paragraphs with ||| separators between them
+- NO headers, NO titles, NO section labels
+- Each paragraph should be 2-3 sentences
+- The separator ||| must be on its own line between paragraphs
+- Focus on 30-DAY trends (not 7-day)
+- Be specific with numbers from the data provided
+- Professional analyst tone`;
 
-            const userPrompt = `Analyze the following metrics and write the ${section.title} commentary. Write 3 paragraphs separated by ||| - no headers or titles:\n\n${metricsPrompt}`;
+            const userPrompt = `Analyze these ${section.title} metrics. Output exactly 3 paragraphs separated by |||
+
+${metricsPrompt}
+
+Remember: Output format must be:
+[Paragraph 1 - current status]
+|||
+[Paragraph 2 - 30-day trends]  
+|||
+[Paragraph 3 - valuation insight]`;
             
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
@@ -4908,7 +4870,13 @@ CRITICAL RULES:
                     const commentary = await generateCommentaryWithClaude(sectionKey, metricsData, lang);
                     if (commentary) {
                         commentaries[lang] = commentary;
-                        commentaryLog(`  ✓ ${lang.toUpperCase()}: ${commentary.length} chars`, 'success');
+                        // ||| 구분자 확인
+                        const hasDelimiter = commentary.includes('|||');
+                        const sectionCount = hasDelimiter ? commentary.split('|||').length : 1;
+                        commentaryLog(`  ✓ ${lang.toUpperCase()}: ${commentary.length} chars, ${sectionCount} sections ${hasDelimiter ? '✓' : '⚠️ NO |||'}`, hasDelimiter ? 'success' : 'warning');
+                        if (!hasDelimiter) {
+                            commentaryLog(`    Preview: ${commentary.substring(0, 100)}...`, 'warning');
+                        }
                     } else {
                         commentaryLog(`  ⚠️ ${lang.toUpperCase()}: Failed`, 'warning');
                     }
