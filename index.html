@@ -19098,10 +19098,21 @@
                     log(`   ✓ NVT: ${state.supabaseNvtHistory.length} records (7-day MA)`);
                     
                     // L1 Volume History (from NVT table tx_volume_usd)
-                    const l1VolHistory = nvtData
+                    let l1VolHistory = nvtData
                         .filter(d => d.tx_volume_usd > 0)
                         .map(d => ({ date: new Date(d.date), value: parseFloat(d.tx_volume_usd) }))
-                        .reverse();
+                        .sort((a, b) => a.date - b.date);
+                    
+                    // Filter incomplete data from history (for accurate chart % change)
+                    if (l1VolHistory.length >= 8) {
+                        const lastVal = l1VolHistory[l1VolHistory.length - 1].value;
+                        const prev7Avg = l1VolHistory.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
+                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
+                            log(`   ⚠️ Filtering incomplete L1 history: last day ${(lastVal/1e9).toFixed(2)}B < 30% of avg`);
+                            l1VolHistory = l1VolHistory.slice(0, -1); // Remove last incomplete day
+                        }
+                    }
+                    
                     if (l1VolHistory.length > 0) {
                         state.l1VolumeHistory = l1VolHistory;
                         log(`   ✓ L1 Volume History: ${l1VolHistory.length} records`);
@@ -19144,22 +19155,45 @@
                     
                     // Build history (ETH → USD)
                     const ethPrice = state.price || 3500;
-                    state.l2VolumeHistory = Object.entries(l2VolByDate)
+                    let l2History = Object.entries(l2VolByDate)
                         .map(([date, eth]) => ({ date: new Date(date), value: eth * ethPrice }))
                         .sort((a, b) => a.date - b.date);
+                    
+                    // Filter incomplete data from history (for accurate chart % change)
+                    if (l2History.length >= 8) {
+                        const lastVal = l2History[l2History.length - 1].value;
+                        const prev7Avg = l2History.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
+                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
+                            log(`   ⚠️ Filtering incomplete L2 history: last day ${(lastVal/1e9).toFixed(2)}B < 30% of avg`);
+                            l2History = l2History.slice(0, -1);
+                        }
+                    }
+                    
+                    state.l2VolumeHistory = l2History;
                     log(`   ✓ L2 Volume History: ${state.l2VolumeHistory.length} records`);
                     
-                    // Use LATEST value (matches chart end point)
+                    // Use LATEST valid value (matches chart end point)
                     const sortedDates = Object.keys(l2VolByDate).sort().reverse();
-                    if (sortedDates.length > 0) {
-                        const latestL2VolumeEth = l2VolByDate[sortedDates[0]];
-                        state.l2DailyVolume = latestL2VolumeEth * ethPrice;
-                        log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedDates[0]})`);
+                    if (sortedDates.length >= 8) {
+                        const latestVol = l2VolByDate[sortedDates[0]] * ethPrice;
+                        const prev7Avg = sortedDates.slice(1, 8).reduce((sum, d) => sum + l2VolByDate[d], 0) / 7 * ethPrice;
+                        
+                        let startIdx = 0;
+                        if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
+                            log(`   ⚠️ Skipping incomplete L2 data: ${sortedDates[0]}`);
+                            startIdx = 1;
+                        }
+                        
+                        state.l2DailyVolume = l2VolByDate[sortedDates[startIdx]] * ethPrice;
+                        log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (${sortedDates[startIdx]})`);
                         
                         // Keep 7-day avg for calculations
-                        const recentDates = sortedDates.slice(0, 7);
+                        const recentDates = sortedDates.slice(startIdx, startIdx + 7);
                         const avgL2VolumeEth = recentDates.reduce((sum, date) => sum + l2VolByDate[date], 0) / recentDates.length;
                         state.l2DailyVolumeAvg = avgL2VolumeEth * ethPrice;
+                    } else if (sortedDates.length > 0) {
+                        state.l2DailyVolume = l2VolByDate[sortedDates[0]] * ethPrice;
+                        log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedDates[0]})`);
                     }
                 }
                 
@@ -19174,22 +19208,45 @@
                     
                     // Build history (ETH → USD)
                     const ethPrice = state.price || 3500;
-                    state.bridgeVolumeHistory = Object.entries(bridgeByDate)
+                    let bridgeHistory = Object.entries(bridgeByDate)
                         .map(([date, eth]) => ({ date: new Date(date), value: eth * ethPrice }))
                         .sort((a, b) => a.date - b.date);
+                    
+                    // Filter incomplete data from history (for accurate chart % change)
+                    if (bridgeHistory.length >= 8) {
+                        const lastVal = bridgeHistory[bridgeHistory.length - 1].value;
+                        const prev7Avg = bridgeHistory.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
+                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
+                            log(`   ⚠️ Filtering incomplete Bridge history: last day ${(lastVal/1e6).toFixed(2)}M < 30% of avg`);
+                            bridgeHistory = bridgeHistory.slice(0, -1);
+                        }
+                    }
+                    
+                    state.bridgeVolumeHistory = bridgeHistory;
                     log(`   ✓ Bridge Volume History: ${state.bridgeVolumeHistory.length} records`);
                     
-                    // Use LATEST value (matches chart end point)
+                    // Use LATEST valid value (matches chart end point)
                     const sortedDates = Object.keys(bridgeByDate).sort().reverse();
-                    if (sortedDates.length > 0) {
-                        const latestBridgeVolumeEth = bridgeByDate[sortedDates[0]];
-                        state.bridgeDailyVolume = latestBridgeVolumeEth * ethPrice;
-                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (latest: ${sortedDates[0]})`);
+                    if (sortedDates.length >= 8) {
+                        const latestVol = bridgeByDate[sortedDates[0]] * ethPrice;
+                        const prev7Avg = sortedDates.slice(1, 8).reduce((sum, d) => sum + bridgeByDate[d], 0) / 7 * ethPrice;
+                        
+                        let startIdx = 0;
+                        if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
+                            log(`   ⚠️ Skipping incomplete Bridge data: ${sortedDates[0]}`);
+                            startIdx = 1;
+                        }
+                        
+                        state.bridgeDailyVolume = bridgeByDate[sortedDates[startIdx]] * ethPrice;
+                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (${sortedDates[startIdx]})`);
                         
                         // Keep 7-day avg for calculations
-                        const recentDates = sortedDates.slice(0, 7);
+                        const recentDates = sortedDates.slice(startIdx, startIdx + 7);
                         const avgBridgeVolumeEth = recentDates.reduce((sum, date) => sum + bridgeByDate[date], 0) / recentDates.length;
                         state.bridgeDailyVolumeAvg = avgBridgeVolumeEth * ethPrice;
+                    } else if (sortedDates.length > 0) {
+                        state.bridgeDailyVolume = bridgeByDate[sortedDates[0]] * ethPrice;
+                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (latest: ${sortedDates[0]})`);
                     }
                 }
                 
