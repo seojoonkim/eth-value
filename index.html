@@ -152,8 +152,8 @@
             --space-xl: 20px;
             
             /* Transitions */
-            --transition-fast: 0.15s ease;
-            --transition-normal: 0.2s ease;
+            --transition-fast: 0s;
+            --transition-normal: 0s;
         }
         
         /* Dark Mode */
@@ -758,23 +758,13 @@
             color: #f87171;
         }
         
-        /* Data Flash Animation - 실시간 느낌 */
-        @keyframes dataFlashUp {
-            0% { background-color: rgba(16, 185, 129, 0.2); }
-            100% { background-color: transparent; }
-        }
-        
-        @keyframes dataFlashDown {
-            0% { background-color: rgba(239, 68, 68, 0.2); }
-            100% { background-color: transparent; }
-        }
-        
+        /* Data Flash Animation - 비활성화 */
         .flash-up {
-            animation: dataFlashUp 0.8s ease-out;
+            /* animation disabled */
         }
         
         .flash-down {
-            animation: dataFlashDown 0.8s ease-out;
+            /* animation disabled */
         }
         
         /* Typography - Mobile */
@@ -865,7 +855,6 @@
         /* 얇고 반투명한 오버레이 스크롤바 */
         html {
             overflow-x: hidden;
-            scroll-behavior: smooth;
             scrollbar-width: thin;
             scrollbar-color: var(--scrollbar-thumb) transparent;
         }
@@ -1034,7 +1023,6 @@
         
         .status-dot.live {
             background: var(--up);
-            animation: pulse 2s infinite;
         }
         
         .status-dot.synced {
@@ -1043,11 +1031,6 @@
         
         .status-dot.warn {
             background: var(--warn);
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
         }
         
         /* Section Headers */
@@ -1063,16 +1046,6 @@
             position: relative;
             flex-wrap: wrap;
             gap: var(--space-sm);
-        }
-        
-        .section-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--accent) 0%, transparent 25%);
         }
         
         .section-header h2 {
@@ -1475,7 +1448,7 @@
         /* Section 1: Price Card */
         .price-card {
             display: grid;
-            grid-template-columns: minmax(180px, 220px) 1fr;
+            grid-template-columns: 1fr 2fr;
             gap: 12px;
             margin-bottom: 14px;
             background: var(--bg-card);
@@ -1624,7 +1597,7 @@
         /* 큰 화면에서 통계 정보 확대 */
         @media (min-width: 1200px) {
             .price-card {
-                grid-template-columns: minmax(220px, 260px) 1fr;
+                grid-template-columns: 1fr 2fr;
                 gap: 24px;
                 padding: 20px;
             }
@@ -1666,7 +1639,7 @@
 
         @media (min-width: 1600px) {
             .price-card {
-                grid-template-columns: minmax(250px, 300px) 1fr;
+                grid-template-columns: 1fr 2fr;
             }
             
             .price-value {
@@ -3590,7 +3563,7 @@
             z-index: 10000;
             padding: 20px;
             overscroll-behavior: contain;
-            animation: modalFadeIn 0.2s ease-out;
+            
         }
 
         .review-modal {
@@ -3603,7 +3576,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: modalSlideUp 0.25s ease-out;
+            
             position: relative;
         }
         
@@ -4373,7 +4346,7 @@
             color: white;
             font-size: var(--font-h2);
             font-weight: 700;
-            animation: popIn 0.3s ease-out;
+            
         }
         
         @keyframes popIn {
@@ -4393,7 +4366,7 @@
         /* 새 댓글 하이라이트 애니메이션 */
         .modal-review.new-comment,
         .modal-reply.new-comment {
-            animation: highlightNew 1.5s ease-out;
+            
         }
         
         @keyframes highlightNew {
@@ -4512,7 +4485,7 @@
             align-items: center;
             justify-content: center;
             z-index: 10001;
-            animation: modalFadeIn 0.2s ease-out;
+            
         }
 
         .likers-modal {
@@ -4523,7 +4496,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            animation: modalSlideUp 0.25s ease-out;
+            
         }
 
         .likers-header {
@@ -4611,7 +4584,7 @@
             align-items: center;
             justify-content: center;
             z-index: 10002;
-            animation: modalFadeIn 0.2s ease-out;
+            
         }
 
         .confirm-modal {
@@ -4621,7 +4594,7 @@
             max-width: 90%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
             overflow: hidden;
-            animation: modalSlideUp 0.25s ease-out;
+            
         }
 
         .confirm-modal.alert-modal {
@@ -5108,7 +5081,7 @@
             color: white;
             font-size: 11px;
             font-weight: 700;
-            animation: popIn 0.3s ease-out;
+            
         }
 
         /* 별 아이콘 스타일 */
@@ -6897,6 +6870,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            text-align: center;
             gap: 4px;
             flex-shrink: 0;
             width: 70px;
@@ -11542,7 +11516,7 @@
                     <p class="summary-text" data-i18n="summary.proofOfRating">
                         <svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; opacity: 0.6;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg> <strong>Proof of Rating:</strong> This dashboard is completely free — no subscriptions, no hidden fees. Log in with 𝕏 and rate just 2 models to unlock 3Y historical data & the What-If Simulator. Your ratings help refine the valuation framework — think of it as staking your opinion to earn access. Let's build better data together!
                     </p>
-                    <div class="community-stats-box" onclick="document.getElementById('section-methodology').scrollIntoView({behavior: 'smooth'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelector('.nav-item[href=\'#section-methodology\']').classList.add('active');" style="cursor: pointer;">
+                    <div class="community-stats-box" onclick="document.getElementById('section-methodology').scrollIntoView({behavior: 'instant'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelector('.nav-item[href=\'#section-methodology\']').classList.add('active');" style="cursor: pointer;">
                         <span class="community-stats-label">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                 <!-- 왼쪽 말풍선 (텍스트) -->
@@ -13949,7 +13923,7 @@
                 floatingBadge.classList.remove('hidden');
                 floatingBadge.classList.remove('login-mode');
                 floatingBadge.classList.add('rate-mode');
-                floatingBadge.onclick = () => document.getElementById('section-methodology')?.scrollIntoView({behavior: 'smooth'});
+                floatingBadge.onclick = () => document.getElementById('section-methodology')?.scrollIntoView({behavior: 'instant'});
                 floatingBadgeIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
                 floatingBadgeTitle.textContent = gt('gated.rateTitle', 'Just {n} more to unlock!').replace('{n}', remaining);
                 floatingBadgeSubtitle.textContent = gt('gated.rateSubtitle', 'Rate to access 3Y data & simulator');
@@ -13990,7 +13964,7 @@
                 floatingBadge.classList.remove('hidden');
                 floatingBadge.classList.remove('login-mode');
                 floatingBadge.classList.add('rate-mode');
-                floatingBadge.onclick = () => document.getElementById('section-methodology')?.scrollIntoView({behavior: 'smooth'});
+                floatingBadge.onclick = () => document.getElementById('section-methodology')?.scrollIntoView({behavior: 'instant'});
                 floatingBadgeIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
                 floatingBadgeTitle.textContent = gt('gated.rateRemaining', '{n} models left to rate').replace('{n}', remainingModels);
                 floatingBadgeSubtitle.textContent = gt('gated.contributeSubtitle', 'Your ratings help build better valuation data');
@@ -26849,7 +26823,7 @@
             document.addEventListener('focus', function(e) {
                 if (e.target.tagName === 'TEXTAREA' && e.target.closest('.review-modal')) {
                     setTimeout(() => {
-                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        e.target.scrollIntoView({ behavior: 'instant', block: 'center' });
                     }, 300);
                 }
             }, true);
@@ -26923,7 +26897,7 @@
                     if (targetSection) {
                         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
                         this.classList.add('active');
-                        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        targetSection.scrollIntoView({ behavior: 'instant', block: 'start' });
                     }
                 });
             });
@@ -29256,7 +29230,7 @@ Check out ETHval 👇`;
                 
                 const section = document.getElementById('section-methodology');
                 if (section) {
-                    section.scrollIntoView({ behavior: 'smooth' });
+                    section.scrollIntoView({ behavior: 'instant' });
                     
                     // Update nav
                     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -29278,7 +29252,7 @@ Check out ETHval 👇`;
                                  document.querySelector(`.valuation-card[onclick*="${unratedModel}"]`);
                     
                     if (card) {
-                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        card.scrollIntoView({ behavior: 'instant', block: 'center' });
                         setTimeout(() => {
                             card.click();
                         }, 500);
@@ -29286,7 +29260,7 @@ Check out ETHval 👇`;
                         // Fallback: scroll to valuation section
                         const section = document.getElementById('section-valuation');
                         if (section) {
-                            section.scrollIntoView({ behavior: 'smooth' });
+                            section.scrollIntoView({ behavior: 'instant' });
                         }
                     }
                 } else {
