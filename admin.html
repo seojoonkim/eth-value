@@ -360,6 +360,8 @@
         const DUNE_MVRV_QUERY_ID = 6354057;
         const DUNE_STABLECOIN_VOL_QUERY_ID = 6353868;
         const DUNE_GAS_PRICE_QUERY_ID = 6354506;
+        const DUNE_L1_TOTAL_VOLUME_QUERY_ID = 6386589;
+        const DUNE_L2_TOTAL_VOLUME_QUERY_ID = 6386591;
         let sb;
         
         // CSV Data Storage
@@ -1018,7 +1020,9 @@
             
             // --- 🔶 Dune Analytics ---
             blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, phase: 1, source: '🔶 Dune' },
-            l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
+            l2_native_transfer: { name: 'L2 Native Transfer', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Native token transfers only (ETH/MNT). Excludes ERC-20 tokens.' },
+            l1_total_volume: { name: 'L1 Total Volume', icon: '📊', table: 'historical_l1_total_volume', valueField: 'total_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (ETH + all ERC-20 tokens)' },
+            l2_total_volume: { name: 'L2 Total Volume', icon: '📈', table: 'historical_l2_total_volume', valueField: 'total_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (Native + all tokens) across 8 L2s' },
             bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
             whale_tx: { name: 'Whale TX', icon: '🐋', table: 'historical_whale_tx', valueField: 'whale_tx_count', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
             mvrv_ratio: { name: 'MVRV Ratio', icon: '📊', table: 'historical_mvrv', valueField: 'mvrv_ratio', format: 'ratio', expectedDays: 2878, phase: 1, source: '🔶 Dune' },
@@ -3151,9 +3155,9 @@
                 return error ? 0 : 1;
             },
 
-            // L2 TX Volume - Dune API (Settlement Layer 계산용)
-            async l2_tx_volume() {
-                log('  🔍 Fetching L2 TX Volume...', 'info');
+            // L2 Native Transfer - Dune API (네이티브 토큰 전송만, ERC-20 제외)
+            async l2_native_transfer() {
+                log('  🔍 Fetching L2 Native Transfer (ETH/MNT only, excludes ERC-20)...', 'info');
                 
                 if (!DUNE_API_KEY) {
                     log('  ⚠️ No Dune API key', 'warn');
@@ -3188,7 +3192,7 @@
                     }
                     
                     if (allRows.length > 0) {
-                        log(`  📊 Got ${allRows.length} L2 TX Volume records from Dune`, 'info');
+                        log(`  📊 Got ${allRows.length} L2 Native Transfer records from Dune`, 'info');
                         
                         const records = allRows.map(row => {
                             let dateStr = row.date;
@@ -3215,7 +3219,121 @@
                             return 0;
                         }
                         
-                        log(`  ✅ L2 TX Volume: ${records.length} records saved from Dune`, 'success');
+                        log(`  ✅ L2 Native Transfer: ${records.length} records saved from Dune`, 'success');
+                        return records.length;
+                    }
+                    
+                    log('  ⚠️ No data from Dune', 'warn');
+                    return 0;
+                } catch (e) {
+                    log(`  ❌ Dune API error: ${e.message}`, 'error');
+                    return 0;
+                }
+            },
+
+            // L1 Total Volume - Dune API (ETH + all ERC-20 tokens)
+            async l1_total_volume() {
+                log('  🔍 Fetching L1 Total Volume (ETH + all tokens)...', 'info');
+                log(`  📡 Query ID: ${DUNE_L1_TOTAL_VOLUME_QUERY_ID}`, 'info');
+                
+                if (!DUNE_API_KEY) {
+                    log('  ⚠️ No Dune API key', 'warn');
+                    return 0;
+                }
+                
+                try {
+                    log('  📡 Fetching from Dune API...', 'info');
+                    const allRows = await fetchDuneWithRefresh(DUNE_L1_TOTAL_VOLUME_QUERY_ID, 'date');
+                    
+                    if (allRows && allRows.length > 0) {
+                        log(`  📊 Got ${allRows.length} L1 Total Volume records from Dune`, 'info');
+                        
+                        const records = allRows.map(row => ({
+                            date: row.date?.split(' ')[0] || row.date,
+                            eth_volume_usd: parseFloat(row.eth_volume_usd) || 0,
+                            token_volume_usd: parseFloat(row.token_volume_usd) || 0,
+                            total_volume_usd: parseFloat(row.total_volume_usd) || 0,
+                            updated_at: new Date().toISOString()
+                        })).filter(r => r.date && r.total_volume_usd > 0);
+                        
+                        if (records.length > 0) {
+                            const { error } = await batchUpsert('historical_l1_total_volume', records, 'date');
+                            if (error) {
+                                log(`  ❌ Supabase error: ${error.message}`, 'error');
+                                return 0;
+                            }
+                        }
+                        
+                        log(`  ✅ L1 Total Volume: ${records.length} records saved from Dune`, 'success');
+                        return records.length;
+                    }
+                    
+                    log('  ⚠️ No data from Dune', 'warn');
+                    return 0;
+                } catch (e) {
+                    log(`  ❌ Dune API error: ${e.message}`, 'error');
+                    return 0;
+                }
+            },
+
+            // L2 Total Volume - Dune API (Native + all tokens, 8 chains)
+            async l2_total_volume() {
+                log('  🔍 Fetching L2 Total Volume (8 chains, Native + all tokens)...', 'info');
+                log(`  📡 Query ID: ${DUNE_L2_TOTAL_VOLUME_QUERY_ID}`, 'info');
+                
+                if (!DUNE_API_KEY) {
+                    log('  ⚠️ No Dune API key', 'warn');
+                    return 0;
+                }
+                
+                try {
+                    log('  📡 Fetching from Dune API (pagination)...', 'info');
+                    const pageSize = 10000;
+                    let offset = 0;
+                    let allRows = [];
+                    let hasMore = true;
+                    
+                    while (hasMore) {
+                        const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_L2_TOTAL_VOLUME_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
+                            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                        });
+                        
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        
+                        const data = await response.json();
+                        const rows = data.result?.rows || [];
+                        allRows = allRows.concat(rows);
+                        
+                        log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`, 'info');
+                        
+                        if (rows.length < pageSize) {
+                            hasMore = false;
+                        } else {
+                            offset += pageSize;
+                        }
+                    }
+                    
+                    if (allRows && allRows.length > 0) {
+                        log(`  📊 Got ${allRows.length} L2 Total Volume records from Dune`, 'info');
+                        
+                        const records = allRows.map(row => ({
+                            date: row.date?.split(' ')[0] || row.date,
+                            chain: row.chain,
+                            native_volume_usd: parseFloat(row.native_volume_usd) || 0,
+                            token_volume_usd: parseFloat(row.token_volume_usd) || 0,
+                            total_volume_usd: parseFloat(row.total_volume_usd) || 0,
+                            updated_at: new Date().toISOString()
+                        })).filter(r => r.date && r.chain && r.total_volume_usd > 0);
+                        
+                        if (records.length > 0) {
+                            const { error } = await batchUpsert('historical_l2_total_volume', records, 'date,chain');
+                            if (error) {
+                                log(`  ❌ Supabase error: ${error.message}`, 'error');
+                                return 0;
+                            }
+                        }
+                        
+                        log(`  ✅ L2 Total Volume: ${records.length} records saved from Dune`, 'success');
                         return records.length;
                     }
                     
@@ -4070,21 +4188,44 @@
             // 02.7 결제량 - 6개 차트
             // NOTE: L1/L2 Volume은 네이티브 토큰 전송만 포함 (ETH, MNT 등)
             // ERC-20 토큰 전송, DEX 스왑 등은 별도 지표로 측정
-            // Charts: L1 ETH Transfer, L2 Native Transfer, Bridge Volume, L1 Stablecoin Volume, L2 Stablecoin Volume, DEX Volume
+            // Charts: L1 ETH Transfer, L1 Total Volume, L2 Native Transfer, L2 Total Volume, Bridge Volume, L1 Stablecoin Volume, L2 Stablecoin Volume, DEX Volume
             settlement_volume: {
                 title: 'Settlement Volume',
                 title_ko: '결제량',
-                charts: ['L1 ETH Transfer', 'L2 Native Transfer', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
+                charts: ['L1 ETH Transfer', 'L1 Total Volume', 'L2 Native Transfer', 'L2 Total Volume', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
                 // AI에게 전달할 컨텍스트: 각 지표의 정확한 정의
-                context: `IMPORTANT METRIC DEFINITIONS:
-- L1 ETH Transfer: Native ETH transfers only on Ethereum mainnet. Does NOT include ERC-20 token transfers.
-- L2 Native Transfer: Native token transfers on L2s (ETH on Arbitrum/Base/Optimism/etc, MNT on Mantle). Does NOT include token transfers.
-- L1/L2 Stablecoin Volume: ERC-20 stablecoin transfers (USDT, USDC, DAI, etc). This is SEPARATE from native transfers.
-- DEX Volume: Decentralized exchange trading volume.
-- These metrics are NOT supersets of each other. Native transfers and token transfers are measured separately.`,
+                context: `CRITICAL NAMING RULES - YOU MUST FOLLOW THESE EXACTLY:
+
+⚠️ NEVER say "L1 트랜잭션 볼륨", "L1 Transaction Volume", "L1 TX Volume", or "L1 거래량"
+⚠️ NEVER say "L2 트랜잭션 볼륨", "L2 Transaction Volume", "L2 TX Volume", or "L2 거래량"
+
+✅ ALWAYS say "L1 ETH 전송량" or "L1 ETH Transfer" for native ETH only
+✅ ALWAYS say "L2 네이티브 전송량" or "L2 Native Transfer" for native tokens only
+✅ ALWAYS say "L1 전체 볼륨" or "L1 Total Volume" for complete L1 on-chain volume
+✅ ALWAYS say "L2 전체 볼륨" or "L2 Total Volume" for complete L2 on-chain volume
+
+METRIC DEFINITIONS (in hierarchy order):
+- L1 Total Volume (~$100-600B/day): ALL on-chain transfers (ETH + ALL ERC-20 tokens). This is the COMPLETE L1 settlement.
+- L2 Total Volume (~$50-100B/day): ALL on-chain transfers on 8 L2s (Native + ALL tokens). This is the COMPLETE L2 settlement.
+- L1 ETH Transfer (~$7B/day): ONLY native ETH transfers. A SUBSET of L1 Total Volume.
+- L2 Native Transfer (~$300M/day): ONLY native tokens (ETH/MNT). A SUBSET of L2 Total Volume.
+- L1 Stablecoin Volume (~$83B/day): ERC-20 stablecoins only. A SUBSET of L1 Total Volume.
+- L2 Stablecoin Volume (~$77B/day): L2 stablecoins. A SUBSET of L2 Total Volume.
+- DEX Volume (~$2B/day): DEX trading volume.
+
+HIERARCHY:
+L1 Total Volume > L1 ETH Transfer + L1 Token Transfers (including Stablecoins)
+L2 Total Volume > L2 Native Transfer + L2 Token Transfers (including Stablecoins)
+
+WHY TOTAL VOLUME MATTERS:
+- Total Volume shows COMPLETE on-chain economic activity
+- Native Transfer only shows a small portion of actual settlement
+- Use Total Volume for accurate settlement layer valuation`,
                 tables: {
                     l1_volume: 'historical_nvt',  // tx_volume_usd (L1 ETH Transfer - native ETH only)
+                    l1_total_volume: 'historical_l1_total_volume',  // total_volume_usd (ETH + all tokens)
                     l2_volume: 'historical_l2_tx_volume',  // tx_volume_usd (L2 Native Transfer - ETH/MNT only)
+                    l2_total_volume: 'historical_l2_total_volume',  // total_volume_usd (Native + all tokens)
                     bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
                     stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume
                     dex_volume: 'historical_dex_volume'  // volume
@@ -4198,7 +4339,7 @@
                                 const prev7Values = cleaned.slice(1, 8).map(r => r.tx_volume_usd);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
                                 if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                                    console.log(`   ⚠️ l1_volume: 마지막 날 미취합 제외`);
+                                    console.log(`   ⚠️ l1_eth_transfer: 마지막 날 미취합 제외`);
                                     cleaned = cleaned.slice(1);
                                 }
                             }
@@ -4288,7 +4429,7 @@
                         continue;
                     }
                     
-                    // Special handling for L2 TX Volume (stored by chain, now in USD)
+                    // Special handling for L2 Native Transfer (stored by chain, now in USD)
                     if (tableName === 'historical_l2_tx_volume') {
                         const { data: recent } = await client
                             .from(tableName)
@@ -4296,7 +4437,7 @@
                             .gte('date', thirtyFiveDaysAgo)
                             .order('date', { ascending: false });
                         
-                        console.log(`📊 L2 TX Volume raw records: ${recent?.length || 0}`);
+                        console.log(`📊 L2 Native Transfer raw records: ${recent?.length || 0}`);
                         
                         if (recent && recent.length > 0) {
                             const byDate = {};
@@ -4306,7 +4447,7 @@
                             }
                             let dates = Object.keys(byDate).sort().reverse();
                             
-                            console.log(`📊 L2 TX Volume aggregated: ${dates.length} dates, latest=$${(byDate[dates[0]]/1e9)?.toFixed(2)}B`);
+                            console.log(`📊 L2 Native Transfer aggregated: ${dates.length} dates, latest=$${(byDate[dates[0]]/1e9)?.toFixed(2)}B`);
                             
                             // 미취합 데이터 제외 (집계된 값 기준)
                             if (dates.length >= 8) {
@@ -4314,7 +4455,7 @@
                                 const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                                 const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
                                 if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                                    console.log(`   ⚠️ l2_tx_volume: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
+                                    console.log(`   ⚠️ l2_native_transfer: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
                                     dates = dates.slice(1);
                                 }
                             }

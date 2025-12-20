@@ -125,24 +125,47 @@ const COMMENTARY_SECTIONS = {
     // 02.7 결제량 - 6개 차트
     // NOTE: L1/L2 Volume은 네이티브 토큰 전송만 포함 (ETH, MNT 등)
     // ERC-20 토큰 전송, DEX 스왑 등은 별도 지표로 측정
-    // Charts: L1 ETH Transfer, L2 Native Transfer, Bridge Volume, L1 Stablecoin Volume, L2 Stablecoin Volume, DEX Volume
+    // Charts: L1 ETH Transfer, L1 Total Volume, L2 Native Transfer, L2 Total Volume, Bridge Volume, L1 Stablecoin Volume, L2 Stablecoin Volume, DEX Volume
     settlement_volume: {
         title: 'Settlement Volume',
         title_ko: '결제량',
-        charts: ['L1 ETH Transfer', 'L2 Native Transfer', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
+        charts: ['L1 ETH Transfer', 'L1 Total Volume', 'L2 Native Transfer', 'L2 Total Volume', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
         // AI에게 전달할 컨텍스트: 각 지표의 정확한 정의
-        context: `IMPORTANT METRIC DEFINITIONS:
-- L1 ETH Transfer: Native ETH transfers only on Ethereum mainnet. Does NOT include ERC-20 token transfers.
-- L2 Native Transfer: Native token transfers on L2s (ETH on Arbitrum/Base/Optimism/etc, MNT on Mantle). Does NOT include token transfers.
-- L1/L2 Stablecoin Volume: ERC-20 stablecoin transfers (USDT, USDC, DAI, etc). This is SEPARATE from native transfers.
-- DEX Volume: Decentralized exchange trading volume.
-- These metrics are NOT supersets of each other. Native transfers and token transfers are measured separately.`,
+        context: `CRITICAL NAMING RULES - YOU MUST FOLLOW THESE EXACTLY:
+
+⚠️ NEVER say "L1 트랜잭션 볼륨", "L1 Transaction Volume", "L1 TX Volume", or "L1 거래량"
+⚠️ NEVER say "L2 트랜잭션 볼륨", "L2 Transaction Volume", "L2 TX Volume", or "L2 거래량"
+
+✅ ALWAYS say "L1 ETH 전송량" or "L1 ETH Transfer" for native ETH only
+✅ ALWAYS say "L2 네이티브 전송량" or "L2 Native Transfer" for native tokens only
+✅ ALWAYS say "L1 전체 볼륨" or "L1 Total Volume" for complete L1 on-chain volume
+✅ ALWAYS say "L2 전체 볼륨" or "L2 Total Volume" for complete L2 on-chain volume
+
+METRIC DEFINITIONS (in hierarchy order):
+- L1 Total Volume (~$100-600B/day): ALL on-chain transfers (ETH + ALL ERC-20 tokens). This is the COMPLETE L1 settlement.
+- L2 Total Volume (~$50-100B/day): ALL on-chain transfers on 8 L2s (Native + ALL tokens). This is the COMPLETE L2 settlement.
+- L1 ETH Transfer (~$7B/day): ONLY native ETH transfers. A SUBSET of L1 Total Volume.
+- L2 Native Transfer (~$300M/day): ONLY native tokens (ETH/MNT). A SUBSET of L2 Total Volume.
+- L1 Stablecoin Volume (~$83B/day): ERC-20 stablecoins only. A SUBSET of L1 Total Volume.
+- L2 Stablecoin Volume (~$77B/day): L2 stablecoins. A SUBSET of L2 Total Volume.
+- DEX Volume (~$2B/day): DEX trading volume.
+
+HIERARCHY:
+L1 Total Volume > L1 ETH Transfer + L1 Token Transfers (including Stablecoins)
+L2 Total Volume > L2 Native Transfer + L2 Token Transfers (including Stablecoins)
+
+WHY TOTAL VOLUME MATTERS:
+- Total Volume shows COMPLETE on-chain economic activity
+- Native Transfer only shows a small portion of actual settlement
+- Use Total Volume for accurate settlement layer valuation`,
         tables: {
-            l1_volume: 'historical_nvt',  // tx_volume_usd (L1 ETH Transfer - native ETH only)
-            l2_volume: 'historical_l2_tx_volume',  // tx_volume_usd (L2 Native Transfer - ETH/MNT only)
-            bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
-            stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume
-            dex_volume: 'historical_dex_volume'  // volume
+            l1_volume: 'historical_nvt',
+            l1_total_volume: 'historical_l1_total_volume',
+            l2_volume: 'historical_l2_tx_volume',
+            l2_total_volume: 'historical_l2_total_volume',
+            bridge_volume: 'historical_bridge_volume',
+            stablecoin_volume: 'historical_stablecoin_volume',
+            dex_volume: 'historical_dex_volume'
         }
     }
 };
@@ -2158,9 +2181,9 @@ async function collect_dune_l2_addr() {
     return result.ok(saved);
 }
 
-// 34. L2 TX Volume (Dune) - now in USD
-async function collect_dune_l2_volume() {
-    console.log('\n🔗 [34/39] L2 TX Volume (Dune)...');
+// 34. L2 Native Transfer (Dune) - native token transfers only (ETH/MNT), excludes ERC-20
+async function collect_dune_l2_native_transfer() {
+    console.log('\n🔗 [34/39] L2 Native Transfer (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.L2_TX_VOLUME, 10000);

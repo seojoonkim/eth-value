@@ -12403,6 +12403,26 @@
                     </div>
                 </div>
 
+                <div class="metric-card" data-metric="l1TotalVolume">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.l1TotalVolume">L1 Total Volume</h4>
+                            <div class="metric-value-large" id="l1-total-volume-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-total-volume-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l1-total-volume-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l1TotalVolume">Total on-chain volume (ETH + all ERC-20 tokens).</div>
+                    </div>
+                </div>
+
                 <div class="metric-card" data-metric="l2Volume">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -12420,6 +12440,26 @@
                         <span>Dune</span>
                         <span class="change" id="l2-volume-change">--</span>
                         <div class="metric-desc" data-i18n="desc.l2Volume">Daily native token transfers on L2s (ETH, MNT, etc). Excludes token transfers.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="l2TotalVolume">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.l2TotalVolume">L2 Total Volume</h4>
+                            <div class="metric-value-large" id="l2-total-volume-value">$--</div>
+                        </div>
+                        <div class="metric-tabs">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-total-volume-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>Dune</span>
+                        <span class="change" id="l2-total-volume-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.l2TotalVolume">Total on-chain volume across 8 L2s (Native + all tokens).</div>
                     </div>
                 </div>
 
@@ -16686,7 +16726,11 @@
                 'desc.l1ActiveAddr': "Daily unique addresses on Ethereum mainnet.",
                 'desc.l2ActiveAddr': "Daily unique addresses on L2s (Arbitrum, Optimism, Base, etc).",
                 'metric.l1Volume': "L1 ETH Transfer (Daily)",
+                'metric.l1TotalVolume': "L1 Total Volume (Daily)",
+                'desc.l1TotalVolume': "Total on-chain volume (ETH + all ERC-20 tokens). Complete L1 settlement.",
                 'metric.l2Volume': "L2 Native Transfer (Daily)",
+                'metric.l2TotalVolume': "L2 Total Volume (Daily)",
+                'desc.l2TotalVolume': "Total on-chain volume across 8 L2s (Native + all tokens). Complete L2 settlement.",
                 'metric.bridgeVolume': "Bridge Volume (Daily)",
                 'metric.whaleTx': "Whale Transactions",
                 'metric.stablecoinVol': "L1 Stablecoin Volume",
@@ -17081,7 +17125,11 @@
                 'desc.l1ActiveAddr': "이더리움 메인넷 일일 활성 주소 수.",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base 등) 일일 활성 주소 수.",
                 'metric.l1Volume': "L1 ETH 전송 (일일)",
+                'metric.l1TotalVolume': "L1 전체 볼륨 (일일)",
+                'desc.l1TotalVolume': "전체 온체인 볼륨 (ETH + 모든 ERC-20 토큰). L1 총 결제량.",
                 'metric.l2Volume': "L2 네이티브 전송 (일일)",
+                'metric.l2TotalVolume': "L2 전체 볼륨 (일일)",
+                'desc.l2TotalVolume': "8개 L2의 전체 온체인 볼륨 (네이티브 + 모든 토큰). L2 총 결제량.",
                 'metric.bridgeVolume': "브릿지 볼륨 (일일)",
                 'metric.whaleTx': "고래 거래",
                 'metric.stablecoinVol': "L1 스테이블코인 볼륨",
@@ -17464,7 +17512,11 @@
                 'desc.l1ActiveAddr': "以太坊主网每日活跃地址数。",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base等) 每日活跃地址数。",
                 'metric.l1Volume': "L1 ETH转账 (日)",
+                'metric.l1TotalVolume': "L1总交易量 (日)",
+                'desc.l1TotalVolume': "总链上交易量 (ETH + 所有ERC-20代币)。L1总结算量。",
                 'metric.l2Volume': "L2原生转账 (日)",
+                'metric.l2TotalVolume': "L2总交易量 (日)",
+                'desc.l2TotalVolume': "8个L2的总链上交易量 (原生 + 所有代币)。L2总结算量。",
                 'metric.bridgeVolume': "桥接量 (日)",
                 'metric.whaleTx': "巨鲸交易",
                 'metric.stablecoinVol': "L1稳定币交易量",
@@ -17850,7 +17902,11 @@
                 'desc.l1ActiveAddr': "イーサリアムメインネット日次アクティブアドレス数。",
                 'desc.l2ActiveAddr': "L2 (Arbitrum, Optimism, Base等) 日次アクティブアドレス数。",
                 'metric.l1Volume': "L1 ETH送金 (日次)",
+                'metric.l1TotalVolume': "L1総取引量 (日次)",
+                'desc.l1TotalVolume': "総オンチェーン取引量 (ETH + 全ERC-20トークン)。L1総決済量。",
                 'metric.l2Volume': "L2ネイティブ送金 (日次)",
+                'metric.l2TotalVolume': "L2総取引量 (日次)",
+                'desc.l2TotalVolume': "8つのL2の総オンチェーン取引量 (ネイティブ + 全トークン)。L2総決済量。",
                 'metric.bridgeVolume': "ブリッジ量 (日次)",
                 'metric.whaleTx': "クジラ取引",
                 'metric.stablecoinVol': "L1ステーブルコイン取引量",
@@ -18182,7 +18238,9 @@
         let supplyChart = null;
         let supplyDistChart = null;
         let l1VolumeChart = null;
+        let l1TotalVolumeChart = null;
         let l2VolumeChart = null;
+        let l2TotalVolumeChart = null;
         let bridgeVolumeChart = null;
         let whaleTxChart = null;
         let stablecoinVolChart = null;
@@ -18241,11 +18299,15 @@
             appCapitalHistory: [],
             // Settlement Layer (MV=PQ) (L1 + L2 + Bridge TX Volume)
             l1DailyVolume: 0,
+            l1TotalVolume: 0,
             l2DailyVolume: 0,
+            l2TotalVolume: 0,
             bridgeDailyVolume: 0,
             dailySettlement: 0,
             l1VolumeHistory: [],
+            l1TotalVolumeHistory: [],
             l2VolumeHistory: [],
+            l2TotalVolumeHistory: [],
             bridgeVolumeHistory: [],
             
             // Whale Transactions
@@ -18908,7 +18970,7 @@
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, bridgeVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, l1TotalVolumeData, l2TotalVolumeData, bridgeVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -18933,6 +18995,8 @@
                     safeFetchSupabase(`${baseUrl}/historical_transactions?select=date,tx_count&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_transactions?select=date,chain,tx_count&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_usd&order=date.desc&limit=${limit * 15}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l1_total_volume?select=date,total_volume_usd&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l2_total_volume?select=date,chain,total_volume_usd&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_mvrv?select=date,spot_price,realized_price,mvrv_ratio,mvrv_pct&order=date.desc&limit=3000`),
@@ -19251,6 +19315,73 @@
                     } else if (sortedDates.length > 0) {
                         state.l2DailyVolume = l2VolByDate[sortedDates[0]];
                         log(`   ✓ L2 Native Transfer: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedDates[0]})`);
+                    }
+                }
+                
+                // L1 Total Volume (ETH + all tokens)
+                if (l1TotalVolumeData && l1TotalVolumeData.length > 0) {
+                    let l1TotalHistory = l1TotalVolumeData
+                        .filter(d => d.total_volume_usd > 0)
+                        .map(d => ({ date: new Date(d.date), value: parseFloat(d.total_volume_usd) }))
+                        .sort((a, b) => a.date - b.date);
+                    
+                    // Filter incomplete data
+                    if (l1TotalHistory.length >= 8) {
+                        const lastVal = l1TotalHistory[l1TotalHistory.length - 1].value;
+                        const prev7Avg = l1TotalHistory.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
+                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
+                            log(`   ⚠️ Filtering incomplete L1 Total history`);
+                            l1TotalHistory = l1TotalHistory.slice(0, -1);
+                        }
+                    }
+                    
+                    if (l1TotalHistory.length > 0) {
+                        state.l1TotalVolumeHistory = l1TotalHistory;
+                        log(`   ✓ L1 Total Volume History: ${l1TotalHistory.length} records`);
+                    }
+                    
+                    const sortedL1Total = l1TotalVolumeData
+                        .filter(d => d.total_volume_usd > 0)
+                        .sort((a, b) => b.date.localeCompare(a.date));
+                    
+                    if (sortedL1Total.length > 0) {
+                        state.l1TotalVolume = parseFloat(sortedL1Total[0].total_volume_usd);
+                        log(`   ✓ L1 Total Volume: $${(state.l1TotalVolume / 1e9).toFixed(2)}B`);
+                    }
+                }
+                
+                // L2 Total Volume (all 8 chains, Native + all tokens)
+                if (l2TotalVolumeData && l2TotalVolumeData.length > 0) {
+                    const l2TotalByDate = {};
+                    l2TotalVolumeData.forEach(d => {
+                        const dateKey = d.date;
+                        if (!l2TotalByDate[dateKey]) l2TotalByDate[dateKey] = 0;
+                        l2TotalByDate[dateKey] += parseFloat(d.total_volume_usd || 0);
+                    });
+                    
+                    let l2TotalHistory = Object.entries(l2TotalByDate)
+                        .map(([date, usd]) => ({ date: new Date(date), value: usd }))
+                        .sort((a, b) => a.date - b.date);
+                    
+                    // Filter incomplete data
+                    if (l2TotalHistory.length >= 8) {
+                        const lastVal = l2TotalHistory[l2TotalHistory.length - 1].value;
+                        const prev7Avg = l2TotalHistory.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
+                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
+                            log(`   ⚠️ Filtering incomplete L2 Total history`);
+                            l2TotalHistory = l2TotalHistory.slice(0, -1);
+                        }
+                    }
+                    
+                    if (l2TotalHistory.length > 0) {
+                        state.l2TotalVolumeHistory = l2TotalHistory;
+                        log(`   ✓ L2 Total Volume History: ${l2TotalHistory.length} records`);
+                    }
+                    
+                    const sortedDates = Object.keys(l2TotalByDate).sort().reverse();
+                    if (sortedDates.length > 0) {
+                        state.l2TotalVolume = l2TotalByDate[sortedDates[0]];
+                        log(`   ✓ L2 Total Volume: $${(state.l2TotalVolume / 1e9).toFixed(2)}B`);
                     }
                 }
                 
@@ -21298,6 +21429,19 @@
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
+            if (state.l1TotalVolumeHistory && state.l1TotalVolumeHistory.length > 0) {
+                const result = updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, state.l1TotalVolumeHistory, '#06b6d4', 'l1TotalVolume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l1-total-volume-value').textContent = '$' + (result.lastValue / 1e9).toFixed(1) + 'B';
+                    state.l1TotalVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l1-total-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
             if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
                 const result = updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
                 if (result && result.lastValue !== null) {
@@ -21308,6 +21452,19 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-volume-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
+            }
+            if (state.l2TotalVolumeHistory && state.l2TotalVolumeHistory.length > 0) {
+                const result = updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, state.l2TotalVolumeHistory, '#f59e0b', 'l2TotalVolume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l2-total-volume-value').textContent = '$' + (result.lastValue / 1e9).toFixed(1) + 'B';
+                    state.l2TotalVolume = result.lastValue;
+                }
+                if (result && result.history && result.history.length > 1) {
+                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('l2-total-volume-change');
                     if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
@@ -24389,7 +24546,9 @@
             if (chartLastValue !== null) {
                 const valueMapping = {
                     'l1Volume': { el: 'l1-volume-value', fmt: v => fmt.usd(v), state: 'l1DailyVolume' },
+                    'l1TotalVolume': { el: 'l1-total-volume-value', fmt: v => '$' + (v / 1e9).toFixed(1) + 'B', state: 'l1TotalVolume' },
                     'l2Volume': { el: 'l2-volume-value', fmt: v => fmt.usd(v), state: 'l2DailyVolume' },
+                    'l2TotalVolume': { el: 'l2-total-volume-value', fmt: v => '$' + (v / 1e9).toFixed(1) + 'B', state: 'l2TotalVolume' },
                     'bridgeVolume': { el: 'bridge-volume-value', fmt: v => fmt.usd(v), state: 'bridgeDailyVolume' },
                     'stablecoinVol': { el: 'stablecoin-vol-value', fmt: v => '$' + (v / 1e9).toFixed(2) + 'B', state: 'stablecoinDailyVolume' },
                     'l2StablecoinVol': { el: 'l2-stablecoin-vol-value', fmt: v => '$' + (v / 1e9).toFixed(2) + 'B', state: 'l2StablecoinVolume' },
