@@ -1028,7 +1028,8 @@
             staking_apr: { name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', valueField: 'lido_apr', format: 'percent', expectedDays: 1095, phase: 1, source: 'DefiLlama Yields' },
             blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, note: 'Since Dencun 2024-03-13', phase: 1, source: '🔷 Dune API' },
             l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true, expectedDays: 3000, phase: 1, source: 'growthepie API' },
-            l1_tx_volume: { name: 'L1 TX Volume', icon: '💰', table: 'historical_l1_volume', valueField: 'tx_volume_eth', format: 'eth', expectedDays: 1095, phase: 1, source: '🔷 Dune API' },
+            // l1_tx_volume은 별도 수집 불필요 - historical_nvt.tx_volume_usd 사용
+            // (NVT collector에서 이미 수집됨)
             l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
             bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
             whale_tx: { name: 'Whale Transactions', icon: '🐋', table: 'historical_whale_tx', valueField: 'whale_tx_count', format: 'number', expectedDays: 1095, phase: 1, source: '🔷 Dune API' },
@@ -2449,8 +2450,21 @@
                             }
                             
                             if (records.length > 0) {
+                                // Sort by date descending
+                                records.sort((a, b) => b.date.localeCompare(a.date));
+                                
+                                // Filter incomplete data: if latest day's volume < 30% of 7-day avg, exclude it
+                                if (records.length >= 8) {
+                                    const latestVol = records[0].tx_volume_usd;
+                                    const prev7Avg = records.slice(1, 8).reduce((sum, r) => sum + r.tx_volume_usd, 0) / 7;
+                                    if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
+                                        log(`  ⚠️ Excluding incomplete data: ${records[0].date} (${(latestVol/1e9).toFixed(2)}B < 30% of avg ${(prev7Avg/1e9).toFixed(2)}B)`, 'warn');
+                                        records.shift(); // Remove latest incomplete record
+                                    }
+                                }
+                                
                                 // Show sample calculations
-                                const samples = records.slice(-3);
+                                const samples = records.slice(0, 3); // Show latest 3 after filtering
                                 samples.forEach(r => {
                                     log(`  📊 ${r.date}: NVT=${r.nvt_ratio.toFixed(1)}, Vol=${(r.tx_volume_usd/1e9).toFixed(2)}B`, 'info');
                                 });
