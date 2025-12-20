@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHval Admin v7.0 - Schema Aligned</title>
+    <title>ETHval Admin v7.5 - Schema Aligned</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -73,7 +73,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚡ ETHval Admin <span class="badge">v7.0</span></h1>
+            <h1>⚡ ETHval Admin <span class="badge">v7.5</span></h1>
             <div class="header-actions">
                 <div class="connection-status" id="connStatus" onclick="showConfig()">
                     <span>●</span>
@@ -197,87 +197,42 @@
             <div class="section-title"><span>📊 Datasets</span><span class="mono" id="lastUpdate">-</span></div>
             <table><thead><tr><th>#</th><th>Dataset</th><th>Source</th><th>Table</th><th>Records</th><th>Date Range</th><th>Value</th><th>Coverage</th><th>Status</th><th>Actions</th></tr></thead><tbody id="dataTable"></tbody></table>
         </div>
-        <!-- CSV Upload Section -->
+        <!-- CSV Upload Section (Collapsible) -->
         <div class="table-container" style="margin-bottom: 24px;">
-            <div class="section-title">
-                <span>📁 Etherscan CSV Import (One-time Setup for Historical Data)</span>
-                <button class="btn btn-sm btn-primary" onclick="autoFillNewData()">🔄 Auto-fill New Data</button>
+            <div class="section-title" style="cursor: pointer;" onclick="toggleCSVSection()">
+                <span>📁 Manual CSV Import <span style="font-size: 11px; color: var(--text-muted);">(Most data now from APIs - only ETH Supply needs CSV)</span></span>
+                <span id="csvToggle" style="font-size: 18px;">▼</span>
             </div>
-            <div style="padding: 20px;">
+            <div id="csvSection" style="padding: 20px; display: none;">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
-                    <!-- Daily ETH Burnt -->
-                    <div class="csv-upload-box" id="dropBurn" ondrop="handleDrop(event, 'burn')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <div class="csv-icon">🔥</div>
-                        <div class="csv-title">Daily ETH Burnt</div>
-                        <a href="https://etherscan.io/chart/dailyethburnt" target="_blank" class="csv-link">📥 Download CSV</a>
-                        <input type="file" id="fileBurn" accept=".csv" onchange="handleFile(event, 'burn')" style="display:none">
-                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('fileBurn').click()">Select CSV</button>
-                        <div class="csv-status" id="statusBurn">No file</div>
-                    </div>
-                    <!-- Daily Transactions -->
-                    <div class="csv-upload-box" id="dropTx" ondrop="handleDrop(event, 'tx')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <div class="csv-icon">📝</div>
-                        <div class="csv-title">Daily Transactions</div>
-                        <a href="https://etherscan.io/chart/tx" target="_blank" class="csv-link">📥 Download CSV</a>
-                        <input type="file" id="fileTx" accept=".csv" onchange="handleFile(event, 'tx')" style="display:none">
-                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('fileTx').click()">Select CSV</button>
-                        <div class="csv-status" id="statusTx">No file</div>
-                    </div>
-                    <!-- Gas Price -->
-                    <div class="csv-upload-box" id="dropGas" ondrop="handleDrop(event, 'gas')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <div class="csv-icon">⛽</div>
-                        <div class="csv-title">Avg Gas Price</div>
-                        <a href="https://etherscan.io/chart/gasprice" target="_blank" class="csv-link">📥 Download CSV</a>
-                        <input type="file" id="fileGas" accept=".csv" onchange="handleFile(event, 'gas')" style="display:none">
-                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('fileGas').click()">Select CSV</button>
-                        <div class="csv-status" id="statusGas">No file</div>
-                    </div>
-                    <!-- Total Supply -->
-                    <div class="csv-upload-box" id="dropSupply" ondrop="handleDrop(event, 'supply')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <!-- Total Supply (Primary - still needed) -->
+                    <div class="csv-upload-box" id="dropSupply" ondrop="handleDrop(event, 'supply')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" style="border: 2px solid var(--primary);">
                         <div class="csv-icon">💎</div>
-                        <div class="csv-title">Total Supply</div>
+                        <div class="csv-title">ETH Supply <span style="font-size: 10px; color: var(--primary);">★ Required</span></div>
                         <a href="https://etherscan.io/chart/ethersupply" target="_blank" class="csv-link">📥 Download CSV</a>
                         <input type="file" id="fileSupply" accept=".csv" onchange="handleFile(event, 'supply')" style="display:none">
-                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('fileSupply').click()">Select CSV</button>
+                        <button class="btn btn-sm btn-primary" onclick="document.getElementById('fileSupply').click()">Select CSV</button>
                         <div class="csv-status" id="statusSupply">No file</div>
                     </div>
-                    <!-- Daily Issuance -->
+                    <!-- Daily Issuance (Optional) -->
                     <div class="csv-upload-box" id="dropDailyIssuance" ondrop="handleDrop(event, 'dailyIssuance')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
                         <div class="csv-icon">🪙</div>
-                        <div class="csv-title">Daily Issuance</div>
-                        <a href="#" onclick="alert('Use generated CSV from Claude or download from ultrasound.money'); return false;" class="csv-link">📥 Get CSV</a>
+                        <div class="csv-title">Daily Issuance <span style="font-size: 10px; color: var(--text-muted);">Optional</span></div>
+                        <a href="#" onclick="alert('Auto-calculated from staking data'); return false;" class="csv-link">📊 Auto-calculated</a>
                         <input type="file" id="fileDailyIssuance" accept=".csv" onchange="handleFile(event, 'dailyIssuance')" style="display:none">
                         <button class="btn btn-sm btn-secondary" onclick="document.getElementById('fileDailyIssuance').click()">Select CSV</button>
                         <div class="csv-status" id="statusDailyIssuance">No file</div>
                     </div>
-                    <!-- Blob Data (Dune) -->
-                    <div class="csv-upload-box" id="dropBlob" ondrop="handleDrop(event, 'blob')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <div class="csv-icon">🫧</div>
-                        <div class="csv-title">Blob Data (Dune)</div>
-                        <a href="https://dune.com/queries/new" target="_blank" class="csv-link">📥 Query Dune</a>
-                        <input type="file" id="fileBlob" accept=".csv" onchange="handleFile(event, 'blob')" style="display:none">
-                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('fileBlob').click()">Select CSV</button>
-                        <div class="csv-status" id="statusBlob">No file</div>
-                    </div>
-                    <!-- Gas Utilization -->
-                    <div class="csv-upload-box" id="dropGasUtil" ondrop="handleDrop(event, 'gasUtil')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <div class="csv-icon">📊</div>
-                        <div class="csv-title">Gas Utilization</div>
-                        <a href="https://etherscan.io/chart/networkutilization" target="_blank" class="csv-link">📥 Download CSV</a>
-                        <input type="file" id="fileGasUtil" accept=".csv" onchange="handleFile(event, 'gasUtil')" style="display:none">
-                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('fileGasUtil').click()">Select CSV</button>
-                        <div class="csv-status" id="statusGasUtil">No file</div>
-                    </div>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                    <button class="btn btn-success" id="importBtn" onclick="importAllCSV()" disabled>📥 Import All to Supabase</button>
+                    <button class="btn btn-success" id="importBtn" onclick="importAllCSV()" disabled>📥 Import to Supabase</button>
                     <span id="importProgress" style="color: var(--text-muted); font-size: 13px;"></span>
                 </div>
                 <div style="margin-top: 12px; padding: 12px; background: var(--bg); border-radius: 8px; font-size: 12px; color: var(--text-muted);">
-                    💡 <b>How to get CSV:</b> Visit each Etherscan chart page → Click "Download: CSV Data" link at top → Upload here<br>
-                    🔄 <b>Auto-fill:</b> After CSV import, click "Auto-fill New Data" to calculate missing days using block data
+                    💡 <b>Note:</b> Most data (Gas, Burn, Transactions, Blob, etc.) now fetched via APIs. Only ETH Supply still requires CSV from Etherscan.
                 </div>
             </div>
+        </div>
         </div>
         
         <style>
@@ -1013,57 +968,61 @@
             // ═══════════════════════════════════════════════════════════════════
             // PHASE 1: 외부 API 직접 수집 (독립적)
             // ═══════════════════════════════════════════════════════════════════
-            eth_price: { name: 'ETH Price + Volume', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price', expectedDays: 1095, phase: 1, source: 'Binance + CoinGecko', note: 'Price: Binance, Volume: CoinGecko total market' },
-            ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: 'DefiLlama API' },
-            staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth', expectedDays: 1095, phase: 1, source: 'DefiLlama (Lido)' },
-            l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 6000, phase: 1, source: 'DefiLlama L2 API' },
-            protocol_fees: { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', valueField: 'fees', format: 'fees', expectedDays: 1095, phase: 1, source: 'DefiLlama Fees API' },
-            dex_volume: { name: 'DEX Volume', icon: '💱', table: 'historical_dex_volume', valueField: 'volume', format: 'tvl', expectedDays: 1095, phase: 1, source: 'DefiLlama DEX API' },
-            stablecoins: { name: 'Stablecoins (All)', icon: '💵', table: 'historical_stablecoins', valueField: 'total_mcap', format: 'tvl', expectedDays: 1095, phase: 1, source: 'DefiLlama Stables' },
-            stablecoins_eth: { name: 'Stablecoins (ETH)', icon: '🔷', table: 'historical_stablecoins_eth', valueField: 'total_mcap', format: 'tvl', expectedDays: 1095, phase: 1, source: 'DefiLlama Stables' },
-            eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio', expectedDays: 1095, phase: 1, source: 'CoinGecko API' },
-            funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8', expectedDays: 1095, phase: 1, source: 'Binance API' },
-            eth_dominance: { name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', valueField: 'eth_dominance', format: 'percent', expectedDays: 365, phase: 1, source: 'CoinGecko API' },
-            lending_tvl: { name: 'Lending TVL', icon: '🏦', table: 'historical_lending_tvl', valueField: 'total_tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: 'DefiLlama API' },
-            staking_apr: { name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', valueField: 'lido_apr', format: 'percent', expectedDays: 1095, phase: 1, source: 'DefiLlama Yields' },
-            blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, note: 'Since Dencun 2024-03-13', phase: 1, source: '🔷 Dune API' },
-            l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true, expectedDays: 3000, phase: 1, source: 'growthepie API' },
-            // l1_tx_volume은 별도 수집 불필요 - historical_nvt.tx_volume_usd 사용
-            // (NVT collector에서 이미 수집됨)
-            l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
-            bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔷 Dune API' },
-            whale_tx: { name: 'Whale Transactions', icon: '🐋', table: 'historical_whale_tx', valueField: 'whale_tx_count', format: 'number', expectedDays: 1095, phase: 1, source: '🔷 Dune API' },
-            mvrv_ratio: { name: 'MVRV Ratio', icon: '📊', table: 'historical_mvrv', valueField: 'mvrv_ratio', format: 'ratio', expectedDays: 2878, phase: 1, source: '🔷 Dune API' },
-            stablecoin_volume: { name: 'Stablecoin Volume', icon: '💵', table: 'historical_stablecoin_volume', valueField: 'daily_volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🔷 Dune API' },
-            new_addresses: { name: 'New Addresses', icon: '🆕', table: 'historical_new_addresses', valueField: 'new_addresses', format: 'number', expectedDays: 1095, phase: 1, source: '🔷 Dune API' },
-            gas_price: { name: 'Gas Price', icon: '⛽', table: 'historical_gas_burn', valueField: 'avg_gas_price_gwei', format: 'gwei', expectedDays: 1095, phase: 1, source: '🔷 Dune API', note: 'Updates avg_gas_price_gwei in gas_burn table' },
+            // PHASE 1: External APIs (Real-time data sources)
+            // ═══════════════════════════════════════════════════════════════════
+            
+            // --- Binance API ---
+            eth_price: { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price', expectedDays: 1095, phase: 1, source: '🟡 Binance' },
+            eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio', expectedDays: 1095, phase: 1, source: '🟡 Binance' },
+            funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8', expectedDays: 1095, phase: 1, source: '🟡 Binance' },
+            
+            // --- DefiLlama API ---
+            ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 6000, phase: 1, source: '🦙 DefiLlama' },
+            protocol_fees: { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', valueField: 'fees', format: 'fees', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            dex_volume: { name: 'DEX Volume', icon: '💱', table: 'historical_dex_volume', valueField: 'volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            stablecoins: { name: 'Stablecoins (All)', icon: '💵', table: 'historical_stablecoins', valueField: 'total_mcap', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            stablecoins_eth: { name: 'Stablecoins (ETH)', icon: '🔷', table: 'historical_stablecoins_eth', valueField: 'total_mcap', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            lending_tvl: { name: 'Lending TVL', icon: '🏦', table: 'historical_lending_tvl', valueField: 'total_tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            staking_apr: { name: 'Staking APR', icon: '💹', table: 'historical_staking_apr', valueField: 'lido_apr', format: 'percent', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            
+            // --- CoinGecko API ---
+            eth_dominance: { name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', valueField: 'eth_dominance', format: 'percent', expectedDays: 365, phase: 1, source: '🦎 CoinGecko' },
+            
+            // --- Dune Analytics API ---
+            blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, phase: 1, source: '🔶 Dune' },
+            l2_tx_volume: { name: 'L2 TX Volume', icon: '💸', table: 'historical_l2_tx_volume', valueField: 'tx_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
+            bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
+            whale_tx: { name: 'Whale TX', icon: '🐋', table: 'historical_whale_tx', valueField: 'whale_tx_count', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
+            mvrv_ratio: { name: 'MVRV Ratio', icon: '📊', table: 'historical_mvrv', valueField: 'mvrv_ratio', format: 'ratio', expectedDays: 2878, phase: 1, source: '🔶 Dune' },
+            stablecoin_volume: { name: 'Stablecoin Vol', icon: '💵', table: 'historical_stablecoin_volume', valueField: 'daily_volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
+            new_addresses: { name: 'New Addresses', icon: '🆕', table: 'historical_new_addresses', valueField: 'new_addresses', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
+            gas_price: { name: 'Gas Price', icon: '⛽', table: 'historical_gas_burn', valueField: 'avg_gas_price_gwei', format: 'gwei', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
+            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
+            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
+            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true, expectedDays: 3000, phase: 2, source: '🔶 Dune' },
+            
+            // --- growthepie API ---
+            l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true, expectedDays: 3000, phase: 1, source: '🥧 growthepie' },
+            transactions: { name: 'Transactions', icon: '📝', table: 'historical_transactions', valueField: 'tx_count', format: 'number', expectedDays: 1095, phase: 2, source: '🥧 growthepie' },
+            
+            // --- Other APIs ---
+            fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, source: '📊 alternative.me' },
+            global_mcap: { name: 'Global Mcap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl', expectedDays: 365, phase: 4, source: '🦎 CoinGecko' },
             
             // ═══════════════════════════════════════════════════════════════════
-            // PHASE 2: 1차 계산 (Phase 1 데이터 의존)
+            // PHASE 2-4: Calculated / Dependent data
             // ═══════════════════════════════════════════════════════════════════
-            transactions: { name: 'Transactions', icon: '📝', table: 'historical_transactions', valueField: 'tx_count', format: 'number', expectedDays: 1095, phase: 2, depends: [], source: 'growthepie API' },
-            volatility: { name: 'Volatility', icon: '📉', table: 'historical_volatility', valueField: 'volatility_30d', format: 'percent', expectedDays: 1065, phase: 2, depends: ['eth_price'], source: '📊 Calculated' },
-            exchange_reserve: { name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', valueField: 'reserve_eth', format: 'eth', expectedDays: 1095, phase: 2, depends: [], source: '⚠️ Estimated' },
-            eth_supply: { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', format: 'eth', expectedDays: 1095, phase: 2, depends: ['staking_data'], source: 'Etherscan API' },
-            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true, expectedDays: 3000, phase: 2, depends: [], source: '🔷 Dune API' },
-            daily_issuance: { name: 'Daily Issuance', icon: '🪙', table: 'historical_daily_issuance', valueField: 'daily_issuance', format: 'eth', expectedDays: 30, phase: 2, depends: ['staking'], source: '📊 Calculated' },
-            
-            // ═══════════════════════════════════════════════════════════════════
-            // PHASE 3: 2차 계산 (Phase 1+2 데이터 의존)
-            // ═══════════════════════════════════════════════════════════════════
-            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔷 Dune API', note: 'Daily burn (via Gas Price)', noCollect: true },
-            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, depends: [], source: '🔷 Dune API' },
-            fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, depends: ['eth_price', 'volatility'], source: 'alternative.me API' },
-            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, depends: ['eth_price'], source: '🔷 Dune API' },
-            
-            // ═══════════════════════════════════════════════════════════════════
-            // 기타 (독립적, 참고용)
-            // ═══════════════════════════════════════════════════════════════════
-            protocol_tvl: { name: 'Protocol TVL', icon: '📊', table: 'historical_protocol_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 5000, phase: 4, source: 'DefiLlama API' },
-            eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth', expectedDays: 1095, phase: 4, depends: ['ethereum_tvl', 'eth_price'], source: '📊 Calculated' },
-            global_mcap: { name: 'Global Market Cap', icon: '🌍', table: 'historical_global_mcap', valueField: 'total_mcap', format: 'tvl', expectedDays: 365, phase: 4, source: 'CoinGecko API' },
-            dex_by_protocol: { name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', valueField: 'volume', format: 'tvl', aggregate: true, expectedDays: 3000, phase: 4, source: 'DefiLlama API' },
-            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number', expectedDays: 1, phase: 4, source: 'Etherscan API' }
+            volatility: { name: 'Volatility', icon: '📉', table: 'historical_volatility', valueField: 'volatility_30d', format: 'percent', expectedDays: 1065, phase: 2, source: '📊 Calculated' },
+            exchange_reserve: { name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', valueField: 'reserve_eth', format: 'eth', expectedDays: 1095, phase: 2, source: '⚠️ Estimated' },
+            eth_supply: { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', format: 'eth', expectedDays: 1095, phase: 2, source: '📄 CSV Required' },
+            daily_issuance: { name: 'Daily Issuance', icon: '🪙', table: 'historical_daily_issuance', valueField: 'daily_issuance', format: 'eth', expectedDays: 30, phase: 2, source: '📊 Calculated' },
+            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔶 Dune', noCollect: true },
+            eth_in_defi: { name: 'ETH in DeFi', icon: '🔒', table: 'historical_eth_in_defi', valueField: 'eth_locked', format: 'eth', expectedDays: 1095, phase: 4, source: '📊 Calculated' },
+            protocol_tvl: { name: 'Protocol TVL', icon: '📊', table: 'historical_protocol_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 5000, phase: 4, source: '🦙 DefiLlama' },
+            dex_by_protocol: { name: 'DEX by Protocol', icon: '💱', table: 'historical_dex_by_protocol', valueField: 'volume', format: 'tvl', aggregate: true, expectedDays: 3000, phase: 4, source: '🦙 DefiLlama' },
+            network_stats: { name: 'Network Stats', icon: '⛓️', table: 'historical_network_stats', valueField: 'block_count', format: 'number', expectedDays: 1, phase: 4, source: '🔗 Etherscan' }
         };
 
         function formatValue(val, format) {
@@ -1084,12 +1043,45 @@
         }
 
         const DEBUG = false; // true로 변경하면 상세 로그 표시
+        let logBuffer = []; // 성공 로그 버퍼
         
         function log(msg, type = '', debug = false) {
-            if (debug && !DEBUG) return; // DEBUG 모드가 아니면 debug 로그 무시
+            if (debug && !DEBUG) return;
             const el = document.getElementById('log');
-            el.innerHTML += `<span class="${type}">[${new Date().toLocaleTimeString()}] ${msg}</span>\n`;
+            
+            // 에러/경고는 즉시 표시, 성공/info는 버퍼링
+            if (type === 'error' || type === 'warn') {
+                el.innerHTML += `<span class="${type}">[${new Date().toLocaleTimeString()}] ${msg}</span>\n`;
+            } else if (type === 'success') {
+                // 성공은 간단히 한 줄로
+                el.innerHTML += `<span class="success">${msg}</span>\n`;
+            } else {
+                el.innerHTML += `<span class="${type}">${msg}</span>\n`;
+            }
             el.scrollTop = el.scrollHeight;
+        }
+        
+        // 요약 로그 (수집 완료 후)
+        function logSummary(results) {
+            const el = document.getElementById('log');
+            const success = results.filter(r => r.count > 0).length;
+            const failed = results.filter(r => r.count === 0 || r.error).length;
+            el.innerHTML += `\n<span class="info">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>\n`;
+            el.innerHTML += `<span class="${failed > 0 ? 'warn' : 'success'}">📊 완료: ${success} 성공, ${failed} 실패</span>\n`;
+            el.scrollTop = el.scrollHeight;
+        }
+        
+        // CSV 섹션 토글
+        function toggleCSVSection() {
+            const section = document.getElementById('csvSection');
+            const toggle = document.getElementById('csvToggle');
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                toggle.textContent = '▲';
+            } else {
+                section.style.display = 'none';
+                toggle.textContent = '▼';
+            }
         }
 
         async function fetchJSON(url, retries = 2) {
@@ -1287,8 +1279,19 @@
                 }
                 
                 const row = document.createElement('tr');
-                if (isStale) row.style.background = 'rgba(239, 68, 68, 0.1)'; // 오래된 데이터 행 강조
-                const sourceStyle = ds.source?.includes('Dune') ? 'color:#7c3aed;font-weight:600' : ds.source?.includes('Estimated') ? 'color:var(--warning)' : ds.source?.includes('Calculated') ? 'color:var(--text-muted)' : '';
+                if (isStale) row.style.background = 'rgba(239, 68, 68, 0.1)';
+                
+                // 소스별 색상 스타일
+                let sourceStyle = '';
+                if (ds.source?.includes('Dune')) sourceStyle = 'color:#f97316;font-weight:500';        // 오렌지
+                else if (ds.source?.includes('Binance')) sourceStyle = 'color:#f0b90b;font-weight:500'; // 바이낸스 옐로
+                else if (ds.source?.includes('DefiLlama')) sourceStyle = 'color:#8b5cf6;font-weight:500'; // 퍼플
+                else if (ds.source?.includes('CoinGecko')) sourceStyle = 'color:#22c55e;font-weight:500'; // 그린
+                else if (ds.source?.includes('growthepie')) sourceStyle = 'color:#ec4899;font-weight:500'; // 핑크
+                else if (ds.source?.includes('Calculated')) sourceStyle = 'color:var(--text-muted)';
+                else if (ds.source?.includes('Estimated')) sourceStyle = 'color:var(--warning)';
+                else if (ds.source?.includes('CSV')) sourceStyle = 'color:#06b6d4;font-weight:500';     // 시안
+                
                 const collectBtn = ds.noCollect 
                     ? `<button class="btn btn-secondary btn-sm" disabled title="Collected via Gas Price">-</button>`
                     : `<button class="btn btn-secondary btn-sm" onclick="collectOne('${key}')">📥</button>`;
@@ -3432,28 +3435,42 @@
         }
 
         async function collectAll() {
-            log('🚀 Collecting all datasets...', 'info');
+            const el = document.getElementById('log');
+            el.innerHTML = ''; // 로그 초기화
+            log('🚀 데이터 수집 시작...', 'info');
+            
             const keys = Object.keys(DATASETS);
             let ok = 0, fail = 0, skipped = 0;
             let currentPhase = 0;
+            let phaseResults = [];
             lastCollectResult = {};
             
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];
                 const ds = DATASETS[key];
                 
+                // Phase 변경 시 이전 Phase 결과 출력
                 if (ds.phase && ds.phase !== currentPhase) {
+                    if (currentPhase > 0 && phaseResults.length > 0) {
+                        const phaseOk = phaseResults.filter(r => r.ok).length;
+                        const phaseFail = phaseResults.filter(r => !r.ok).length;
+                        log(`Phase ${currentPhase}: ${phaseOk}✓ ${phaseFail > 0 ? phaseFail + '✗' : ''}`, phaseFail > 0 ? 'warn' : 'success');
+                    }
                     currentPhase = ds.phase;
+                    phaseResults = [];
                     log(`\n━━━ Phase ${currentPhase} ━━━`, 'info');
                 }
                 
                 if (ds.noCollect) {
                     skipped++;
                     ok++;
+                    phaseResults.push({ key, ok: true });
                     continue;
                 }
                 
-                log(`[${i+1}/${keys.length}] ${ds.icon} ${ds.name}...`, 'info');
+                // 진행 표시 (현재 작업만)
+                document.getElementById('stats-total').textContent = `${i+1}/${keys.length}`;
+                
                 try {
                     const count = await Promise.race([
                         collectors[key](),
@@ -3467,24 +3484,35 @@
                     if (count === -1) {
                         skipped++;
                         ok++;
-                    } else if (count === 0) {
-                        log(`  ❌ Failed`, 'error');
+                        phaseResults.push({ key, ok: true });
+                    } else if (count === 0 || ratio < 0.1) {
+                        // 실패만 상세 로그
+                        log(`  ❌ ${ds.icon} ${ds.name}: ${count === 0 ? 'Failed' : count + ' (' + (ratio*100).toFixed(0) + '%)'}`, 'error');
                         fail++;
-                    } else if (ratio < 0.1) {
-                        log(`  ⚠️ ${count} (${(ratio*100).toFixed(0)}%)`, 'warn');
-                        fail++;
+                        phaseResults.push({ key, ok: false });
                     } else {
-                        log(`  ✅ ${count}`, 'success');
                         ok++;
+                        phaseResults.push({ key, ok: true, count });
                     }
                 } catch (e) { 
-                    log(`  ❌ ${e.message}`, 'error'); 
+                    log(`  ❌ ${ds.icon} ${ds.name}: ${e.message}`, 'error'); 
                     lastCollectResult[key] = { count: 0, expected: ds.expectedDays || 1095, ratio: 0, error: e.message, time: new Date() };
                     fail++; 
+                    phaseResults.push({ key, ok: false });
                 }
                 await new Promise(r => setTimeout(r, 300));
             }
-            log(`\n📊 Done: ${ok} success, ${fail} failed`, ok > fail ? 'success' : 'warn');
+            
+            // 마지막 Phase 결과
+            if (phaseResults.length > 0) {
+                const phaseOk = phaseResults.filter(r => r.ok).length;
+                const phaseFail = phaseResults.filter(r => !r.ok).length;
+                log(`Phase ${currentPhase}: ${phaseOk}✓ ${phaseFail > 0 ? phaseFail + '✗' : ''}`, phaseFail > 0 ? 'warn' : 'success');
+            }
+            
+            // 최종 요약
+            log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'info');
+            log(`📊 완료: ${ok} 성공, ${fail} 실패`, ok > fail ? 'success' : 'warn');
             
             await autoFillNewData();
             await loadDataStatus();
@@ -3785,7 +3813,7 @@
         async function init() {
             console.log('🚀 init() started');
             try {
-                log('🚀 ETHval Admin v7.0 (Schema Aligned)', 'info');
+                log('🚀 ETHval Admin v7.5 (Schema Aligned)', 'info');
                 
                 // Etherscan API 키 상태 표시
                 if (ETHERSCAN_API_KEY) {
