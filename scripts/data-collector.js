@@ -130,7 +130,7 @@ const COMMENTARY_SECTIONS = {
         charts: ['L1 TX Volume', 'L2 TX Volume', 'Bridge Volume', 'L1 Stablecoin Volume', 'L2 Stablecoin Volume', 'DEX Volume'],
         tables: {
             l1_volume: 'historical_nvt',  // tx_volume_usd (L1 TX Volume - from NVT table)
-            l2_volume: 'historical_l2_tx_volume',  // tx_volume_eth (aggregate)
+            l2_volume: 'historical_l2_tx_volume',  // tx_volume_usd (aggregate)
             bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
             stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume
             dex_volume: 'historical_dex_volume'  // volume
@@ -190,7 +190,7 @@ async function fetchSectionMetrics(sectionKey) {
         'historical_staking_apr': 'lido_apr',
         'historical_blob_data': 'blob_count',
         'historical_l2_transactions': 'tx_count',
-        'historical_l2_tx_volume': 'tx_volume_eth',
+        'historical_l2_tx_volume': 'tx_volume_usd',
         'historical_bridge_volume': 'bridge_volume_eth',
         'historical_whale_tx': 'whale_tx_count',
         'historical_mvrv': 'mvrv_ratio',
@@ -323,11 +323,11 @@ async function fetchSectionMetrics(sectionKey) {
                 continue;
             }
             
-            // Special handling for L2 TX Volume (stored by chain)
+            // Special handling for L2 TX Volume (stored by chain, now in USD)
             if (tableName === 'historical_l2_tx_volume') {
                 const { data: recent } = await supabase
                     .from(tableName)
-                    .select('date, tx_volume_eth')
+                    .select('date, tx_volume_usd')
                     .gte('date', thirtyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
@@ -335,7 +335,7 @@ async function fetchSectionMetrics(sectionKey) {
                     const byDate = {};
                     for (const r of recent) {
                         if (!byDate[r.date]) byDate[r.date] = 0;
-                        byDate[r.date] += parseFloat(r.tx_volume_eth || 0);
+                        byDate[r.date] += parseFloat(r.tx_volume_usd || 0);
                     }
                     let dates = Object.keys(byDate).sort().reverse();
                     
@@ -345,7 +345,7 @@ async function fetchSectionMetrics(sectionKey) {
                         const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
                         const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
                         if (avg7 > 0 && (lastValue < avg7 * 0.3 || lastValue <= 0)) {
-                            console.log(`   ⚠️ l2_tx_volume: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
+                            console.log(`   ⚠️ l2_tx_volume: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
                             dates = dates.slice(1);
                         }
                     }
@@ -353,11 +353,11 @@ async function fetchSectionMetrics(sectionKey) {
                     const latestDate = dates[0];
                     
                     metricsData[metricKey] = {
-                        latest: { date: latestDate, tx_volume_eth: byDate[latestDate] },
-                        recent3d: dates.slice(0, 3).map(d => ({ date: d, tx_volume_eth: byDate[d] })),
-                        recent7d: dates.slice(0, 7).map(d => ({ date: d, tx_volume_eth: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, tx_volume_eth: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tx_volume_eth: byDate[dates[30]] } : null
+                        latest: { date: latestDate, tx_volume_usd: byDate[latestDate] },
+                        recent3d: dates.slice(0, 3).map(d => ({ date: d, tx_volume_usd: byDate[d] })),
+                        recent7d: dates.slice(0, 7).map(d => ({ date: d, tx_volume_usd: byDate[d] })),
+                        around30d: dates.slice(27, 34).map(d => ({ date: d, tx_volume_usd: byDate[d] })),
+                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tx_volume_usd: byDate[dates[30]] } : null
                     };
                 }
                 continue;
@@ -527,7 +527,7 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
             'mvrv_ratio', 'realized_price', 'nvt_ratio', 'volatility_30d', 'whale_tx_count',
             'blob_count', 'blob_fee_eth', 'new_addresses', 'active_addresses', 'tx_count',
             'eth_supply', 'total_staked_eth', 'avg_gas_price_gwei', 'eth_burnt',
-            'tx_volume_usd', 'daily_volume', 'tx_volume_eth', 'bridge_volume_eth',
+            'tx_volume_usd', 'daily_volume', 'bridge_volume_eth',
             'volume', 'fees', 'tvl', 'total_tvl', 'total_mcap'];
         for (const f of fields) {
             if (record[f] !== undefined && record[f] !== null) {
@@ -538,7 +538,8 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
     };
     
     // 차트에서 USD로 표시하는 ETH 볼륨 필드들 (ETH→USD 변환 필요)
-    const ethToUsdFields = ['tx_volume_eth', 'bridge_volume_eth'];
+    // Note: tx_volume_usd는 이미 USD로 저장되므로 변환 불필요
+    const ethToUsdFields = ['bridge_volume_eth'];
     
     // 배열의 평균값 계산 (ETH 볼륨은 USD로 변환)
     const calcAvg = (records, fieldName) => {
@@ -2145,7 +2146,7 @@ async function collect_dune_l2_addr() {
     return result.ok(saved);
 }
 
-// 34. L2 TX Volume (Dune)
+// 34. L2 TX Volume (Dune) - now in USD
 async function collect_dune_l2_volume() {
     console.log('\n🔗 [34/39] L2 TX Volume (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
@@ -2167,10 +2168,10 @@ async function collect_dune_l2_volume() {
         return {
             date: dateStr,
             chain: r.chain || r.l2_name || 'unknown',
-            tx_volume_eth: parseFloat(r.tx_volume_eth || r.volume_eth || 0),
+            tx_volume_usd: parseFloat(r.tx_volume_usd || r.volume_usd || 0),
             source: 'dune'
         };
-    }).filter(r => r.date && r.tx_volume_eth > 0);
+    }).filter(r => r.date && r.tx_volume_usd > 0);
     
     console.log(`  ✓ ${records.length} records`);
     if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);

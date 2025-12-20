@@ -18932,7 +18932,7 @@
                     safeFetchSupabase(`${baseUrl}/historical_daily_issuance?select=date,daily_issuance&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_transactions?select=date,tx_count&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_transactions?select=date,chain,tx_count&order=date.desc&limit=${limit * 15}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_eth&order=date.desc&limit=${limit * 15}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_usd&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_mvrv?select=date,spot_price,realized_price,mvrv_ratio,mvrv_pct&order=date.desc&limit=3000`),
@@ -19199,18 +19199,18 @@
                 }
                 
                 // L2 TX Volume (aggregate by date) for Settlement Layer (MV=PQ)
+                // Note: tx_volume_usd is already in USD from Dune query
                 if (l2TxVolumeData && l2TxVolumeData.length > 0) {
                     const l2VolByDate = {};
                     l2TxVolumeData.forEach(d => {
                         const dateKey = d.date;
                         if (!l2VolByDate[dateKey]) l2VolByDate[dateKey] = 0;
-                        l2VolByDate[dateKey] += parseFloat(d.tx_volume_eth || 0);
+                        l2VolByDate[dateKey] += parseFloat(d.tx_volume_usd || 0);
                     });
                     
-                    // Build history (ETH → USD)
-                    const ethPrice = state.price || 3500;
+                    // Build history (already in USD)
                     let l2History = Object.entries(l2VolByDate)
-                        .map(([date, eth]) => ({ date: new Date(date), value: eth * ethPrice }))
+                        .map(([date, usd]) => ({ date: new Date(date), value: usd }))
                         .sort((a, b) => a.date - b.date);
                     
                     // Filter incomplete data from history (for accurate chart % change)
@@ -19229,8 +19229,8 @@
                     // Use LATEST valid value (matches chart end point)
                     const sortedDates = Object.keys(l2VolByDate).sort().reverse();
                     if (sortedDates.length >= 8) {
-                        const latestVol = l2VolByDate[sortedDates[0]] * ethPrice;
-                        const prev7Avg = sortedDates.slice(1, 8).reduce((sum, d) => sum + l2VolByDate[d], 0) / 7 * ethPrice;
+                        const latestVol = l2VolByDate[sortedDates[0]];
+                        const prev7Avg = sortedDates.slice(1, 8).reduce((sum, d) => sum + l2VolByDate[d], 0) / 7;
                         
                         let startIdx = 0;
                         if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
@@ -19238,15 +19238,14 @@
                             startIdx = 1;
                         }
                         
-                        state.l2DailyVolume = l2VolByDate[sortedDates[startIdx]] * ethPrice;
+                        state.l2DailyVolume = l2VolByDate[sortedDates[startIdx]];
                         log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (${sortedDates[startIdx]})`);
                         
                         // Keep 7-day avg for calculations
                         const recentDates = sortedDates.slice(startIdx, startIdx + 7);
-                        const avgL2VolumeEth = recentDates.reduce((sum, date) => sum + l2VolByDate[date], 0) / recentDates.length;
-                        state.l2DailyVolumeAvg = avgL2VolumeEth * ethPrice;
+                        state.l2DailyVolumeAvg = recentDates.reduce((sum, date) => sum + l2VolByDate[date], 0) / recentDates.length;
                     } else if (sortedDates.length > 0) {
-                        state.l2DailyVolume = l2VolByDate[sortedDates[0]] * ethPrice;
+                        state.l2DailyVolume = l2VolByDate[sortedDates[0]];
                         log(`   ✓ L2 Daily Volume: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedDates[0]})`);
                     }
                 }
