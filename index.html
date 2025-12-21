@@ -27101,9 +27101,9 @@
             // OPTIMIZED: Use IntersectionObserver instead of setInterval for scroll detection
             // ═══════════════════════════════════════════════════════════════════
             const sections = [
+                { id: 'section-summary', navId: 'overview' },
                 { id: 'section-metrics', navId: 'section-metrics' },
                 { id: 'section-valuation', navId: 'section-valuation' },
-                { id: 'section-historical', navId: 'section-historical' },
                 { id: 'section-methodology', navId: 'section-methodology' },
                 { id: 'section-rankings', navId: 'section-rankings' }
             ];
@@ -27137,7 +27137,10 @@
                 const sectionObserver = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
-                            updateActiveNav(entry.target.id);
+                            // Map section id to nav id
+                            const sectionConfig = sections.find(s => s.id === entry.target.id);
+                            const navId = sectionConfig ? sectionConfig.navId : entry.target.id;
+                            updateActiveNav(navId);
                         }
                     });
                 }, observerOptions);
