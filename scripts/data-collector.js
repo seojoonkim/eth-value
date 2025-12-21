@@ -85,9 +85,19 @@ const COMMENTARY_SECTIONS = {
         tables: {
             staking_apr: 'historical_staking_apr',  // lido_apr
             staking: 'historical_staking',  // total_staked_eth
-            gas_burn: 'historical_gas_burn',  // eth_burnt
-            eth_supply: 'historical_eth_supply'  // eth_supply
-        }
+            eth_burnt: 'historical_gas_burn',  // eth_burnt
+            eth_issued: 'historical_daily_issuance',  // daily_issuance
+            eth_supply: 'historical_eth_supply'  // eth_supply (for Effective Float calc)
+        },
+        fieldOverrides: {
+            eth_burnt: 'eth_burnt',
+            eth_issued: 'daily_issuance'
+        },
+        context: `Net Supply와 Effective Float는 계산값입니다:
+- Net Supply Change = (ETH Burned - ETH Issued) / Total Supply * 365 * 100 (연간 %)
+- Effective Float = Total Supply - Staked ETH - Contract Balances
+현재 ETH는 약 +0.5%/년 인플레이션 (burn < issuance 상태).
+Merge 직후에는 burn > issuance로 디플레이션이었으나, L2 전환으로 L1 가스비가 낮아지면서 현재는 인플레이션.`
     },
     // 02.4 네트워크 수요 - 5개 차트
     // Charts: Gas Price, Gas Utilization, Network Fees, Blob Fees, Blob Count
@@ -96,9 +106,18 @@ const COMMENTARY_SECTIONS = {
         title_ko: '네트워크 수요',
         charts: ['Gas Price', 'Gas Utilization', 'Network Fees', 'Blob Fees', 'Blob Count'],
         tables: {
-            gas_burn: 'historical_gas_burn',  // avg_gas_price_gwei, gas_utilization
+            gas_price: 'historical_gas_burn',  // avg_gas_price_gwei (메인 필드)
+            gas_utilization: 'historical_gas_burn',  // gas_utilization (별도 키로 분리)
             fees: 'historical_protocol_fees',  // fees
-            blob: 'historical_blob_data'  // blob_count, blob_fee_eth
+            blob_count: 'historical_blob_data',  // blob_count (메인 필드)
+            blob_fees: 'historical_blob_data'  // blob_fee_eth (별도 키로 분리)
+        },
+        // 각 키별로 어떤 필드를 메인으로 사용할지 지정
+        fieldOverrides: {
+            gas_price: 'avg_gas_price_gwei',
+            gas_utilization: 'gas_utilization',
+            blob_count: 'blob_count',
+            blob_fees: 'blob_fee_eth'
         }
     },
     // 02.5 사용자 활동 - 5개 차트
@@ -126,7 +145,11 @@ const COMMENTARY_SECTIONS = {
             l2_tvl: 'historical_l2_tvl',  // tvl (aggregate)
             lending_tvl: 'historical_lending_tvl',  // total_tvl
             stablecoins_eth: 'historical_stablecoins_eth',  // total_mcap (L1 ETH 체인 스테이블코인)
+            l2_stablecoins: 'historical_l2_stablecoin_daily',  // total (L2 스테이블코인 공급량)
             staking: 'historical_staking'  // total_staked_eth (App Capital용)
+        },
+        fieldOverrides: {
+            l2_stablecoins: 'total'
         }
     },
     // 02.7 결제량 - 6개 차트
@@ -234,6 +257,8 @@ async function fetchSectionMetrics(sectionKey) {
         'historical_mvrv': 'mvrv_ratio',
         'historical_stablecoin_volume': 'daily_volume',
         'historical_l2_stablecoin_volume': 'total_volume',
+        'historical_l2_stablecoin_daily': 'total',  // L2 Stablecoin Supply
+        'historical_daily_issuance': 'daily_issuance',  // ETH Issued
         'historical_new_addresses': 'new_addresses',
         'historical_gas_burn': 'avg_gas_price_gwei',
         'historical_transactions': 'tx_count',
@@ -244,6 +269,7 @@ async function fetchSectionMetrics(sectionKey) {
         'historical_active_addresses': 'active_addresses',
         'historical_fear_greed': 'value',
         'historical_nvt': 'nvt_ratio',
+        'historical_open_interest': 'open_interest',
         'historical_l1_total_volume': 'total_volume_usd',  // Also has eth_volume_usd for L1 ETH Transfer
         'historical_l2_total_volume': 'total_volume_usd',  // Also has native_volume_usd for L2 ETH Transfer
     };
@@ -505,8 +531,13 @@ async function fetchSectionMetrics(sectionKey) {
                 .limit(1);
             
             if (recent && recent.length > 0) {
+                // fieldOverrides가 있으면 해당 필드를 메인으로 사용
+                let valueField = valueFieldMap[tableName];
+                if (section.fieldOverrides && section.fieldOverrides[metricKey]) {
+                    valueField = section.fieldOverrides[metricKey];
+                }
+                
                 // 미취합 데이터 제외 (화면과 동일 로직)
-                const valueField = valueFieldMap[tableName];
                 let cleanedRecent = recent;
                 if (valueField) {
                     cleanedRecent = checkAndRemoveIncomplete(recent, valueField);
@@ -518,13 +549,25 @@ async function fetchSectionMetrics(sectionKey) {
                     return daysDiff >= 87 && daysDiff <= 93;
                 });
                 
-                metricsData[metricKey] = {
-                    latest: cleanedRecent[0],
-                    recent3d: cleanedRecent.slice(0, 3),
-                    recent7d: cleanedRecent.slice(0, 7),
-                    around90d: around90d,
-                    ninetyDaysAgo: older?.[0] || null
-                };
+                // fieldOverrides가 있으면 해당 필드만 추출해서 저장 (중복 테이블 문제 해결)
+                if (section.fieldOverrides && section.fieldOverrides[metricKey]) {
+                    const targetField = section.fieldOverrides[metricKey];
+                    metricsData[metricKey] = {
+                        latest: { date: cleanedRecent[0]?.date, [targetField]: cleanedRecent[0]?.[targetField] },
+                        recent3d: cleanedRecent.slice(0, 3).map(r => ({ date: r.date, [targetField]: r[targetField] })),
+                        recent7d: cleanedRecent.slice(0, 7).map(r => ({ date: r.date, [targetField]: r[targetField] })),
+                        around90d: around90d.map(r => ({ date: r.date, [targetField]: r[targetField] })),
+                        ninetyDaysAgo: older?.[0] ? { date: older[0].date, [targetField]: older[0][targetField] } : null
+                    };
+                } else {
+                    metricsData[metricKey] = {
+                        latest: cleanedRecent[0],
+                        recent3d: cleanedRecent.slice(0, 3),
+                        recent7d: cleanedRecent.slice(0, 7),
+                        around90d: around90d,
+                        ninetyDaysAgo: older?.[0] || null
+                    };
+                }
             }
         } catch (e) {
             console.error(`  Error fetching ${tableName}:`, e.message);
@@ -573,8 +616,8 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
             'blob_count', 'blob_fee_eth', 'new_addresses', 'active_addresses', 'tx_count',
             'eth_supply', 'total_staked_eth', 'avg_gas_price_gwei', 'gas_utilization', 'eth_burnt',
             'tx_volume_usd', 'daily_volume', 'bridge_volume_eth', 'open_interest',
-            'volume', 'fees', 'tvl', 'total_tvl', 'total_mcap',
-            'eth_volume_usd', 'total_volume_usd', 'native_volume_usd', 'total_volume'];
+            'volume', 'fees', 'tvl', 'total_tvl', 'total_mcap', 'total',
+            'eth_volume_usd', 'total_volume_usd', 'native_volume_usd', 'total_volume', 'daily_issuance'];
         for (const f of fields) {
             if (record[f] !== undefined && record[f] !== null) {
                 return { field: f, value: record[f] };
@@ -629,9 +672,9 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         
         // 단위 결정 (차트 표시 단위 기준)
         let unit = '';
-        if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'total_mcap', 'fees', 'eth_volume_usd', 'total_volume_usd', 'native_volume_usd', 'total_volume', 'open_interest'].includes(fieldName)) unit = ' USD';
+        if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'total_mcap', 'fees', 'eth_volume_usd', 'total_volume_usd', 'native_volume_usd', 'total_volume', 'open_interest', 'total'].includes(fieldName)) unit = ' USD';
         else if (ethToUsdFields.includes(fieldName)) unit = ' USD';  // ETH 볼륨 → 차트에서 USD로 표시
-        else if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'blob_fee_eth'].includes(fieldName)) unit = ' ETH';
+        else if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'blob_fee_eth', 'daily_issuance'].includes(fieldName)) unit = ' ETH';
         else if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr', 'gas_utilization'].includes(fieldName)) unit = '%';
         else if (fieldName === 'avg_gas_price_gwei') unit = ' Gwei';
         

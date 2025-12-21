@@ -4301,16 +4301,17 @@
         // ============================================================
         
         const COMMENTARY_SECTIONS = {
-            // 02.1 투자자 심리 - 6개 차트
-            // Charts: Realized Price, MVRV Ratio, Fear & Greed, Funding Rate, Exchange ETH Reserve, Whale Transactions
+            // 02.1 투자자 심리 - 7개 차트
+            // Charts: Realized Price, MVRV Ratio, Fear & Greed, Funding Rate, Open Interest, Exchange ETH Reserve, Whale Transactions
             investor_sentiment: {
                 title: 'Investor Sentiment',
                 title_ko: '투자자 심리',
-                charts: ['Realized Price', 'MVRV Ratio', 'Fear & Greed', 'Funding Rate', 'Exchange ETH Reserve', 'Whale Transactions'],
+                charts: ['Realized Price', 'MVRV Ratio', 'Fear & Greed', 'Funding Rate', 'Open Interest', 'Exchange ETH Reserve', 'Whale Transactions'],
                 tables: {
                     mvrv: 'historical_mvrv',  // mvrv_ratio + realized_price
                     fear_greed: 'historical_fear_greed',  // value
                     funding_rate: 'historical_funding_rate',  // funding_rate
+                    open_interest: 'historical_open_interest',  // open_interest
                     exchange_reserve: 'historical_exchange_reserve',  // reserve_eth
                     whale_tx: 'historical_whale_tx'  // whale_tx_count
                 }
@@ -4338,9 +4339,18 @@
                 tables: {
                     staking_apr: 'historical_staking_apr',  // lido_apr
                     staking: 'historical_staking',  // total_staked_eth
-                    gas_burn: 'historical_gas_burn',  // eth_burnt
+                    eth_burnt: 'historical_gas_burn',  // eth_burnt
+                    eth_issued: 'historical_daily_issuance',  // daily_issuance
                     eth_supply: 'historical_eth_supply'  // eth_supply
-                }
+                },
+                fieldOverrides: {
+                    eth_burnt: 'eth_burnt',
+                    eth_issued: 'daily_issuance'
+                },
+                context: `Net Supply와 Effective Float는 계산값입니다:
+- Net Supply Change = (ETH Burned - ETH Issued) / Total Supply * 365 * 100 (연간 %)
+- Effective Float = Total Supply - Staked ETH - Contract Balances
+현재 ETH는 약 +0.5%/년 인플레이션 (burn < issuance 상태).`
             },
             // 02.4 네트워크 수요 - 5개 차트
             // Charts: Gas Price, Gas Utilization, Network Fees, Blob Fees, Blob Count
@@ -4349,9 +4359,17 @@
                 title_ko: '네트워크 수요',
                 charts: ['Gas Price', 'Gas Utilization', 'Network Fees', 'Blob Fees', 'Blob Count'],
                 tables: {
-                    gas_burn: 'historical_gas_burn',  // avg_gas_price_gwei, gas_utilization
+                    gas_price: 'historical_gas_burn',  // avg_gas_price_gwei
+                    gas_utilization: 'historical_gas_burn',  // gas_utilization
                     fees: 'historical_protocol_fees',  // fees
-                    blob: 'historical_blob_data'  // blob_count, blob_fee_eth
+                    blob_count: 'historical_blob_data',  // blob_count
+                    blob_fees: 'historical_blob_data'  // blob_fee_eth
+                },
+                fieldOverrides: {
+                    gas_price: 'avg_gas_price_gwei',
+                    gas_utilization: 'gas_utilization',
+                    blob_count: 'blob_count',
+                    blob_fees: 'blob_fee_eth'
                 }
             },
             // 02.5 사용자 활동 - 5개 차트
@@ -4378,8 +4396,12 @@
                     ethereum_tvl: 'historical_ethereum_tvl',  // tvl
                     l2_tvl: 'historical_l2_tvl',  // tvl (aggregate)
                     lending_tvl: 'historical_lending_tvl',  // total_tvl
-                    stablecoins_eth: 'historical_stablecoins_eth',  // total_mcap (L1 ETH 체인 스테이블코인)
+                    stablecoins_eth: 'historical_stablecoins_eth',  // total_mcap (L1 스테이블코인)
+                    l2_stablecoins: 'historical_l2_stablecoin_daily',  // total (L2 스테이블코인)
                     staking: 'historical_staking'  // total_staked_eth (App Capital용)
+                },
+                fieldOverrides: {
+                    l2_stablecoins: 'total'
                 }
             },
             // 02.7 결제량 - 6개 차트
@@ -4497,6 +4519,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 'historical_whale_tx': 'whale_tx_count',
                 'historical_mvrv': 'mvrv_ratio',
                 'historical_stablecoin_volume': 'daily_volume',
+                'historical_l2_stablecoin_daily': 'total',  // L2 Stablecoin Supply
+                'historical_daily_issuance': 'daily_issuance',  // ETH Issued
                 'historical_new_addresses': 'new_addresses',
                 'historical_gas_burn': 'avg_gas_price_gwei',
                 'historical_transactions': 'tx_count',
@@ -4507,6 +4531,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 'historical_active_addresses': 'active_addresses',
                 'historical_fear_greed': 'value',
                 'historical_nvt': 'nvt_ratio',
+                'historical_open_interest': 'open_interest',
                 // REMOVED: 'historical_l1_volume' - now using historical_l1_total_volume.eth_volume_usd
                 'historical_l1_total_volume': 'total_volume_usd',  // L1 Total Volume (also has eth_volume_usd)
                 'historical_l2_total_volume': 'total_volume_usd',  // L2 Total Volume (also has native_volume_usd)
@@ -4763,18 +4788,33 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         .limit(1);
                     
                     if (recent && recent.length > 0) {
+                        // fieldOverrides가 있으면 해당 필드를 메인으로 사용
+                        let valueField = valueFieldMap[tableName];
+                        if (section.fieldOverrides && section.fieldOverrides[metricKey]) {
+                            valueField = section.fieldOverrides[metricKey];
+                        }
+                        
                         // 미취합 데이터 제외 (화면과 동일 로직)
-                        const valueField = valueFieldMap[tableName];
                         let cleanedRecent = recent;
                         if (valueField) {
                             cleanedRecent = checkAndRemoveIncomplete(recent, valueField);
                         }
                         
-                        metricsData[metricKey] = {
-                            latest: cleanedRecent[0],
-                            all90d: cleanedRecent,  // 전체 90일+ 데이터 (종합 분석용)
-                            ninetyDaysAgo: older?.[0] || null
-                        };
+                        // fieldOverrides가 있으면 해당 필드만 추출해서 저장
+                        if (section.fieldOverrides && section.fieldOverrides[metricKey]) {
+                            const targetField = section.fieldOverrides[metricKey];
+                            metricsData[metricKey] = {
+                                latest: { date: cleanedRecent[0]?.date, [targetField]: cleanedRecent[0]?.[targetField] },
+                                all90d: cleanedRecent.map(r => ({ date: r.date, [targetField]: r[targetField] })),
+                                ninetyDaysAgo: older?.[0] ? { date: older[0].date, [targetField]: older[0][targetField] } : null
+                            };
+                        } else {
+                            metricsData[metricKey] = {
+                                latest: cleanedRecent[0],
+                                all90d: cleanedRecent,  // 전체 90일+ 데이터 (종합 분석용)
+                                ninetyDaysAgo: older?.[0] || null
+                            };
+                        }
                     }
                 } catch (e) {
                     commentaryLog(`Error fetching ${tableName}: ${e.message}`, 'error');
@@ -5026,10 +5066,10 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             // 필드에서 값을 추출하는 헬퍼 함수 (DATASETS 기준)
             const extractValue = (record) => {
                 if (!record) return null;
-                const fields = ['value', 'tvl', 'total_tvl', 'total_mcap', 'funding_rate', 'total_staked_eth', 
+                const fields = ['value', 'tvl', 'total_tvl', 'total_mcap', 'total', 'funding_rate', 'total_staked_eth', 
                     'lido_apr', 'eth_dominance', 'ratio', 'reserve_eth', 'avg_gas_price_gwei', 'gas_utilization', 'eth_burnt',
                     'mvrv_ratio', 'realized_price', 'nvt_ratio', 'tx_volume_usd', 'eth_volume_usd', 'native_volume_usd',
-                    'total_volume_usd', 'total_volume', 'daily_volume', 'volume', 'open_interest',
+                    'total_volume_usd', 'total_volume', 'daily_volume', 'volume', 'open_interest', 'daily_issuance',
                     'bridge_volume_eth', 'blob_count', 'blob_fee_eth',
                     'active_addresses', 'new_addresses', 'tx_count', 'volatility_30d', 'eth_supply', 
                     'fees', 'whale_tx_count'];
@@ -5062,11 +5102,11 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             // 단위 결정 함수 (차트 표시 단위 기준)
             const getUnit = (fieldName) => {
                 // 차트에서 USD로 표시하는 필드들
-                if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'eth_volume_usd', 'native_volume_usd', 'total_volume_usd', 'total_volume', 'total_mcap', 'fees', 'open_interest'].includes(fieldName)) return ' USD';
+                if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'eth_volume_usd', 'native_volume_usd', 'total_volume_usd', 'total_volume', 'total_mcap', 'total', 'fees', 'open_interest'].includes(fieldName)) return ' USD';
                 // ETH 볼륨 → 차트에서 USD로 표시하므로 USD
                 if (ethToUsdFields.includes(fieldName)) return ' USD';
                 // 차트에서 ETH로 표시하는 필드들
-                if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'blob_fee_eth'].includes(fieldName)) return ' ETH';
+                if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'blob_fee_eth', 'daily_issuance'].includes(fieldName)) return ' ETH';
                 if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr', 'gas_utilization'].includes(fieldName)) return '%';
                 if (fieldName === 'avg_gas_price_gwei') return ' Gwei';
                 return '';
