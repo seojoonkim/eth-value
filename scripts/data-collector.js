@@ -190,8 +190,8 @@ async function fetchSectionMetrics(sectionKey) {
     const metricsData = {};
     const today = new Date().toISOString().split('T')[0];
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const thirtyFiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const ninetyFiveDaysAgo = new Date(Date.now() - 95 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
     // ═══════════════════════════════════════════════════════════════════
     // 마지막 날 미취합 데이터 제외 함수 (화면과 동일 로직)
@@ -250,9 +250,9 @@ async function fetchSectionMetrics(sectionKey) {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select(`date, ${fieldToUse}`)
-                    .gte('date', thirtyFiveDaysAgo)
+                    .gte('date', ninetyFiveDaysAgo)
                     .order('date', { ascending: false })
-                    .limit(35);
+                    .limit(95);
                 
                 if (recent && recent.length > 0) {
                     // 마지막 데이터 제외 (수집 중일 수 있음)
@@ -265,8 +265,8 @@ async function fetchSectionMetrics(sectionKey) {
                         latest: cleaned[0],
                         recent3d: cleaned.slice(0, 3),
                         recent7d: cleaned.slice(0, 7),
-                        around30d: cleaned.slice(27, 34),
-                        thirtyDaysAgo: cleaned.length > 30 ? cleaned[30] : null
+                        around90d: cleaned.slice(87, 94),
+                        ninetyDaysAgo: cleaned.length > 90 ? cleaned[90] : null
                     };
                 }
                 continue;
@@ -277,7 +277,7 @@ async function fetchSectionMetrics(sectionKey) {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select('date, active_addresses')
-                    .gte('date', thirtyFiveDaysAgo)
+                    .gte('date', ninetyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
                 if (recent && recent.length > 0) {
@@ -299,8 +299,8 @@ async function fetchSectionMetrics(sectionKey) {
                         latest: { date: latestDate, active_addresses: byDate[latestDate] },
                         recent3d: dates.slice(0, 3).map(d => ({ date: d, active_addresses: byDate[d] })),
                         recent7d: dates.slice(0, 7).map(d => ({ date: d, active_addresses: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, active_addresses: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], active_addresses: byDate[dates[30]] } : null
+                        around90d: dates.slice(87, 94).map(d => ({ date: d, active_addresses: byDate[d] })),
+                        ninetyDaysAgo: dates.length > 90 ? { date: dates[90], active_addresses: byDate[dates[90]] } : null
                     };
                 }
                 continue;
@@ -311,7 +311,7 @@ async function fetchSectionMetrics(sectionKey) {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select('date, tx_count')
-                    .gte('date', thirtyFiveDaysAgo)
+                    .gte('date', ninetyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
                 if (recent && recent.length > 0) {
@@ -333,8 +333,8 @@ async function fetchSectionMetrics(sectionKey) {
                         latest: { date: latestDate, tx_count: byDate[latestDate] },
                         recent3d: dates.slice(0, 3).map(d => ({ date: d, tx_count: byDate[d] })),
                         recent7d: dates.slice(0, 7).map(d => ({ date: d, tx_count: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, tx_count: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tx_count: byDate[dates[30]] } : null
+                        around90d: dates.slice(87, 94).map(d => ({ date: d, tx_count: byDate[d] })),
+                        ninetyDaysAgo: dates.length > 90 ? { date: dates[90], tx_count: byDate[dates[90]] } : null
                     };
                 }
                 continue;
@@ -348,7 +348,7 @@ async function fetchSectionMetrics(sectionKey) {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select('date, bridge_volume_eth')
-                    .gte('date', thirtyFiveDaysAgo)
+                    .gte('date', ninetyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
                 if (recent && recent.length > 0) {
@@ -370,8 +370,8 @@ async function fetchSectionMetrics(sectionKey) {
                         latest: { date: latestDate, bridge_volume_eth: byDate[latestDate] },
                         recent3d: dates.slice(0, 3).map(d => ({ date: d, bridge_volume_eth: byDate[d] })),
                         recent7d: dates.slice(0, 7).map(d => ({ date: d, bridge_volume_eth: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, bridge_volume_eth: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], bridge_volume_eth: byDate[dates[30]] } : null
+                        around90d: dates.slice(87, 94).map(d => ({ date: d, bridge_volume_eth: byDate[d] })),
+                        ninetyDaysAgo: dates.length > 90 ? { date: dates[90], bridge_volume_eth: byDate[dates[90]] } : null
                     };
                 }
                 continue;
@@ -382,7 +382,7 @@ async function fetchSectionMetrics(sectionKey) {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select('date, tvl')
-                    .gte('date', thirtyFiveDaysAgo)
+                    .gte('date', ninetyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
                 if (recent && recent.length > 0) {
@@ -404,8 +404,8 @@ async function fetchSectionMetrics(sectionKey) {
                         latest: { date: latestDate, tvl: byDate[latestDate] },
                         recent3d: dates.slice(0, 3).map(d => ({ date: d, tvl: byDate[d] })),
                         recent7d: dates.slice(0, 7).map(d => ({ date: d, tvl: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, tvl: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tvl: byDate[dates[30]] } : null
+                        around90d: dates.slice(87, 94).map(d => ({ date: d, tvl: byDate[d] })),
+                        ninetyDaysAgo: dates.length > 90 ? { date: dates[90], tvl: byDate[dates[90]] } : null
                     };
                 }
                 continue;
@@ -418,7 +418,7 @@ async function fetchSectionMetrics(sectionKey) {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select(`date, ${fieldToUse}`)
-                    .gte('date', thirtyFiveDaysAgo)
+                    .gte('date', ninetyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
                 if (recent && recent.length > 0) {
@@ -440,8 +440,8 @@ async function fetchSectionMetrics(sectionKey) {
                         latest: { date: latestDate, [fieldToUse]: byDate[latestDate] },
                         recent3d: dates.slice(0, 3).map(d => ({ date: d, [fieldToUse]: byDate[d] })),
                         recent7d: dates.slice(0, 7).map(d => ({ date: d, [fieldToUse]: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, [fieldToUse]: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], [fieldToUse]: byDate[dates[30]] } : null
+                        around90d: dates.slice(87, 94).map(d => ({ date: d, [fieldToUse]: byDate[d] })),
+                        ninetyDaysAgo: dates.length > 90 ? { date: dates[90], [fieldToUse]: byDate[dates[90]] } : null
                     };
                 }
                 continue;
@@ -452,7 +452,7 @@ async function fetchSectionMetrics(sectionKey) {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select('date, total_volume')
-                    .gte('date', thirtyFiveDaysAgo)
+                    .gte('date', ninetyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
                 if (recent && recent.length > 0) {
@@ -474,8 +474,8 @@ async function fetchSectionMetrics(sectionKey) {
                         latest: { date: latestDate, total_volume: byDate[latestDate] },
                         recent3d: dates.slice(0, 3).map(d => ({ date: d, total_volume: byDate[d] })),
                         recent7d: dates.slice(0, 7).map(d => ({ date: d, total_volume: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, total_volume: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], total_volume: byDate[dates[30]] } : null
+                        around90d: dates.slice(87, 94).map(d => ({ date: d, total_volume: byDate[d] })),
+                        ninetyDaysAgo: dates.length > 90 ? { date: dates[90], total_volume: byDate[dates[90]] } : null
                     };
                 }
                 continue;
@@ -485,15 +485,15 @@ async function fetchSectionMetrics(sectionKey) {
             const { data: recent } = await supabase
                 .from(tableName)
                 .select('*')
-                .gte('date', thirtyFiveDaysAgo)
+                .gte('date', ninetyFiveDaysAgo)
                 .order('date', { ascending: false })
-                .limit(35);
+                .limit(95);
             
             // Get 30-day ago data for comparison (backup)
             const { data: older } = await supabase
                 .from(tableName)
                 .select('*')
-                .lte('date', thirtyDaysAgo)
+                .lte('date', ninetyDaysAgo)
                 .order('date', { ascending: false })
                 .limit(1);
             
@@ -506,17 +506,17 @@ async function fetchSectionMetrics(sectionKey) {
                 }
                 
                 // 30일 전 ±3일 (27~33일 전) 데이터 찾기
-                const around30d = cleanedRecent.filter(d => {
+                const around90d = cleanedRecent.filter(d => {
                     const daysDiff = Math.floor((new Date(today) - new Date(d.date)) / (24 * 60 * 60 * 1000));
-                    return daysDiff >= 27 && daysDiff <= 33;
+                    return daysDiff >= 87 && daysDiff <= 93;
                 });
                 
                 metricsData[metricKey] = {
                     latest: cleanedRecent[0],
                     recent3d: cleanedRecent.slice(0, 3),
                     recent7d: cleanedRecent.slice(0, 7),
-                    around30d: around30d,
-                    thirtyDaysAgo: older?.[0] || null
+                    around90d: around90d,
+                    ninetyDaysAgo: older?.[0] || null
                 };
             }
         } catch (e) {
@@ -546,7 +546,7 @@ async function fetchSectionMetrics(sectionKey) {
 }
 
 /**
- * Format metrics data for AI prompt (using 3-day averages for 30d comparison)
+ * Format metrics data for AI prompt (using 3-day averages for 90d comparison)
  */
 function formatMetricsForPrompt(sectionKey, metricsData) {
     const section = COMMENTARY_SECTIONS[sectionKey];
@@ -555,7 +555,7 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
     let prompt = `Section: ${section.title} (${section.title_ko})\n`;
     prompt += `Charts in this section: ${section.charts.join(', ')}\n\n`;
     prompt += `Current ETH Price: $${ethPrice.toFixed(2)}\n\n`;
-    prompt += `Key Metrics (Current = latest complete day, 30-Day Change = vs 3-day avg from 30 days ago):\n`;
+    prompt += `Key Metrics (Current = latest complete day, 90-Day Change = vs 3-day avg from 90 days ago):\n`;
     
     // 필드에서 값을 추출하는 헬퍼 함수 (DATASETS 기준)
     // 순서 중요: 구체적인 필드명이 먼저 와야 함
@@ -602,8 +602,8 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         const multiplier = needsUsdConversion ? ethPrice : 1;
         const currentVal = extracted.value * multiplier;  // 최신 완전한 날의 값 (차트와 동일)
         
-        // 30일 전 3일 평균
-        const around30dAvg = calcAvg(data.around30d, fieldName);
+        // 90일 전 3일 평균
+        const around90dAvg = calcAvg(data.around90d, fieldName);
         
         // 단위 결정 (차트 표시 단위 기준)
         let unit = '';
@@ -613,11 +613,11 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         else if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr'].includes(fieldName)) unit = '%';
         else if (fieldName === 'avg_gas_price_gwei') unit = ' Gwei';
         
-        // 30일 변화율 계산 (현재값 vs 30일 전 3일 평균)
+        // 90일 변화율 계산 (현재값 vs 90일 전 3일 평균)
         let changeStr = '';
-        if (around30dAvg !== null && around30dAvg !== 0) {
-            const change = ((currentVal - around30dAvg) / around30dAvg * 100).toFixed(1);
-            changeStr = `(${change > 0 ? '+' : ''}${change}% vs 30d ago)`;
+        if (around90dAvg !== null && around90dAvg !== 0) {
+            const change = ((currentVal - around90dAvg) / around90dAvg * 100).toFixed(1);
+            changeStr = `(${change > 0 ? '+' : ''}${change}% vs 90d ago)`;
         }
         
         // 값 포맷팅
@@ -666,16 +666,16 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
         en: {
             instruction: 'Write in English.',
             headers: {
-                current: '📊 Current State',
-                trend: '📈 30-Day Trend', 
-                valuation: '💡 Valuation Implications'
+                current: '📊 Current Status',
+                trend: '📈 90-Day Trend', 
+                valuation: '💡 Valuation Insight'
             }
         },
         ko: {
             instruction: 'Write in Korean (한국어로 작성하세요). Use natural Korean financial terminology. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Korean translation first, then include the English term in parentheses. Example: 총 예치금(TVL), 시장가치 대 실현가치 비율(MVRV), 공포탐욕지수(Fear & Greed Index).',
             headers: {
                 current: '📊 현재 상태',
-                trend: '📈 최근 30일 트렌드',
+                trend: '📈 90일 트렌드',
                 valuation: '💡 밸류에이션 시사점'
             }
         },
@@ -683,16 +683,16 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
             instruction: 'Write in Simplified Chinese (用简体中文写). Use standard Chinese financial terms. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Chinese translation first, then include the English term in parentheses. Example: 总锁定价值(TVL), 市值与实现价值比率(MVRV), 恐惧贪婪指数(Fear & Greed Index).',
             headers: {
                 current: '📊 当前状态',
-                trend: '📈 近30天趋势',
-                valuation: '💡 估值影响'
+                trend: '📈 90天趋势',
+                valuation: '💡 估值启示'
             }
         },
         ja: {
             instruction: 'Write in Japanese (日本語で書いてください). Use appropriate Japanese financial terminology. IMPORTANT: For blockchain/crypto technical terms (TVL, MVRV, NVT, DeFi, Fear & Greed Index, Funding Rate, etc.), write the Japanese translation first, then include the English term in parentheses. Example: 総預かり資産(TVL), 時価総額対実現価値比率(MVRV), 恐怖強欲指数(Fear & Greed Index).',
             headers: {
                 current: '📊 現在の状況',
-                trend: '📈 過去30日のトレンド',
-                valuation: '💡 バリュエーションへの示唆'
+                trend: '📈 90日トレンド',
+                valuation: '💡 バリュエーションの示唆'
             }
         }
     };
@@ -705,9 +705,9 @@ STRICT OUTPUT FORMAT:
 You must write exactly 3 paragraphs separated by ||| (three pipe characters).
 
 Example output structure:
-First sentence about current status. Second sentence with specific data point. Third sentence with comparison or context. Fourth sentence with interpretation or significance.
+First sentence about current status (today's spot data). Second sentence with specific data point. Third sentence about 7-day short-term movement (minor). Fourth sentence with interpretation or significance.
 |||
-First sentence about 30-day trends. Second sentence with percentage changes. Third sentence analyzing the trend direction. Fourth sentence explaining what this means.
+First sentence about 90-day trends. Second sentence with percentage changes over 90 days. Third sentence analyzing the medium-term trend direction. Fourth sentence explaining what this means.
 |||
 First sentence about valuation implications. Second sentence connecting metrics to value. Third sentence with outlook or prediction. Fourth sentence with investor guidance.
 
@@ -717,7 +717,8 @@ CRITICAL RULES:
 - NO headers, NO titles, NO section labels
 - EACH PARAGRAPH MUST HAVE EXACTLY 4 SENTENCES - this is mandatory, count them
 - The separator ||| must be on its own line between paragraphs
-- Focus on 30-DAY trends (not 7-day)
+- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context as minor detail
+- Paragraph 2 (Trend): Focus on 90-DAY trends (not 30-day), aligns with chart's 90D view
 - Be specific with numbers from the data provided
 - Professional analyst tone
 - Minimum 150 words per paragraph`;
@@ -729,9 +730,9 @@ ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n`
 IMPORTANT: Each paragraph MUST contain exactly 4 sentences. This is a strict requirement.
 
 Output format:
-[Paragraph 1 - current status - 4 sentences]
+[Paragraph 1 - current status: TODAY's spot data (major) + 7-day movement (minor) - 4 sentences]
 |||
-[Paragraph 2 - 30-day trends - 4 sentences]  
+[Paragraph 2 - 90-day trends - 4 sentences]  
 |||
 [Paragraph 3 - valuation insight - 4 sentences]`;
 

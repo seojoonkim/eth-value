@@ -4401,8 +4401,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             const metricsData = {};
             const today = new Date().toISOString().split('T')[0];
             const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            const thirtyFiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            const ninetyFiveDaysAgo = new Date(Date.now() - 95 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             
             const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             
@@ -4467,9 +4467,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         const { data: recent } = await client
                             .from(tableName)
                             .select(`date, ${fieldToUse}`)
-                            .gte('date', thirtyFiveDaysAgo)
+                            .gte('date', ninetyFiveDaysAgo)
                             .order('date', { ascending: false })
-                            .limit(35);
+                            .limit(95);
                         
                         if (recent && recent.length > 0) {
                             // 마지막 데이터 제외 (수집 중일 수 있음)
@@ -4480,8 +4480,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             metricsData[metricKey] = {
                                 latest: cleaned[0],
-                                all30d: cleaned,
-                                thirtyDaysAgo: cleaned.length > 30 ? cleaned[30] : null
+                                all90d: cleaned,
+                                ninetyDaysAgo: cleaned.length > 90 ? cleaned[90] : null
                             };
                         }
                         continue;
@@ -4492,7 +4492,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         const { data: recent } = await client
                             .from(tableName)
                             .select('date, active_addresses')
-                            .gte('date', thirtyFiveDaysAgo)
+                            .gte('date', ninetyFiveDaysAgo)
                             .order('date', { ascending: false });
                         
                         if (recent && recent.length > 0) {
@@ -4512,8 +4512,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             metricsData[metricKey] = {
                                 latest: { date: latestDate, active_addresses: byDate[latestDate] },
-                                all30d: dates.map(d => ({ date: d, active_addresses: byDate[d] })),
-                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], active_addresses: byDate[dates[30]] } : null
+                                all90d: dates.map(d => ({ date: d, active_addresses: byDate[d] })),
+                                ninetyDaysAgo: dates.length > 90 ? { date: dates[90], active_addresses: byDate[dates[90]] } : null
                             };
                         }
                         continue;
@@ -4524,7 +4524,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         const { data: recent } = await client
                             .from(tableName)
                             .select('date, tx_count')
-                            .gte('date', thirtyFiveDaysAgo)
+                            .gte('date', ninetyFiveDaysAgo)
                             .order('date', { ascending: false });
                         
                         if (recent && recent.length > 0) {
@@ -4544,8 +4544,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             metricsData[metricKey] = {
                                 latest: { date: latestDate, tx_count: byDate[latestDate] },
-                                all30d: dates.map(d => ({ date: d, tx_count: byDate[d] })),
-                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tx_count: byDate[dates[30]] } : null
+                                all90d: dates.map(d => ({ date: d, tx_count: byDate[d] })),
+                                ninetyDaysAgo: dates.length > 90 ? { date: dates[90], tx_count: byDate[dates[90]] } : null
                             };
                         }
                         continue;
@@ -4559,7 +4559,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         const { data: recent } = await client
                             .from(tableName)
                             .select('date, bridge_volume_eth')
-                            .gte('date', thirtyFiveDaysAgo)
+                            .gte('date', ninetyFiveDaysAgo)
                             .order('date', { ascending: false });
                         
                         if (recent && recent.length > 0) {
@@ -4579,8 +4579,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             metricsData[metricKey] = {
                                 latest: { date: latestDate, bridge_volume_eth: byDate[latestDate] },
-                                all30d: dates.map(d => ({ date: d, bridge_volume_eth: byDate[d] })),
-                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], bridge_volume_eth: byDate[dates[30]] } : null
+                                all90d: dates.map(d => ({ date: d, bridge_volume_eth: byDate[d] })),
+                                ninetyDaysAgo: dates.length > 90 ? { date: dates[90], bridge_volume_eth: byDate[dates[90]] } : null
                             };
                         }
                         continue;
@@ -4593,7 +4593,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         const { data: recent } = await client
                             .from(tableName)
                             .select(`date, ${fieldToUse}`)
-                            .gte('date', thirtyFiveDaysAgo)
+                            .gte('date', ninetyFiveDaysAgo)
                             .order('date', { ascending: false });
                         
                         if (recent && recent.length > 0) {
@@ -4615,8 +4615,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             metricsData[metricKey] = {
                                 latest: { date: latestDate, [fieldToUse]: byDate[latestDate] },
-                                all30d: dates.map(d => ({ date: d, [fieldToUse]: byDate[d] })),
-                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], [fieldToUse]: byDate[dates[30]] } : null
+                                all90d: dates.map(d => ({ date: d, [fieldToUse]: byDate[d] })),
+                                ninetyDaysAgo: dates.length > 90 ? { date: dates[90], [fieldToUse]: byDate[dates[90]] } : null
                             };
                         }
                         continue;
@@ -4627,7 +4627,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         const { data: recent } = await client
                             .from(tableName)
                             .select('date, total_volume')
-                            .gte('date', thirtyFiveDaysAgo)
+                            .gte('date', ninetyFiveDaysAgo)
                             .order('date', { ascending: false });
                         
                         if (recent && recent.length > 0) {
@@ -4649,8 +4649,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             metricsData[metricKey] = {
                                 latest: { date: latestDate, total_volume: byDate[latestDate] },
-                                all30d: dates.map(d => ({ date: d, total_volume: byDate[d] })),
-                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], total_volume: byDate[dates[30]] } : null
+                                all90d: dates.map(d => ({ date: d, total_volume: byDate[d] })),
+                                ninetyDaysAgo: dates.length > 90 ? { date: dates[90], total_volume: byDate[dates[90]] } : null
                             };
                         }
                         continue;
@@ -4661,7 +4661,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         const { data: recent } = await client
                             .from(tableName)
                             .select('date, tvl')
-                            .gte('date', thirtyFiveDaysAgo)
+                            .gte('date', ninetyFiveDaysAgo)
                             .order('date', { ascending: false });
                         
                         if (recent && recent.length > 0) {
@@ -4681,25 +4681,25 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             metricsData[metricKey] = {
                                 latest: { date: latestDate, tvl: byDate[latestDate] },
-                                all30d: dates.map(d => ({ date: d, tvl: byDate[d] })),
-                                thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tvl: byDate[dates[30]] } : null
+                                all90d: dates.map(d => ({ date: d, tvl: byDate[d] })),
+                                ninetyDaysAgo: dates.length > 90 ? { date: dates[90], tvl: byDate[dates[90]] } : null
                             };
                         }
                         continue;
                     }
                     
-                    // 35일치 데이터 가져오기 (미취합 제외 + 30일 트렌드용)
+                    // 95일치 데이터 가져오기 (미취합 제외 + 90일 트렌드용)
                     const { data: recent } = await client
                         .from(tableName)
                         .select('*')
-                        .gte('date', thirtyFiveDaysAgo)
+                        .gte('date', ninetyFiveDaysAgo)
                         .order('date', { ascending: false })
-                        .limit(35);
+                        .limit(95);
                     
                     const { data: older } = await client
                         .from(tableName)
                         .select('*')
-                        .lte('date', thirtyDaysAgo)
+                        .lte('date', ninetyDaysAgo)
                         .order('date', { ascending: false })
                         .limit(1);
                     
@@ -4713,8 +4713,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                         
                         metricsData[metricKey] = {
                             latest: cleanedRecent[0],
-                            all30d: cleanedRecent,  // 전체 30일+ 데이터 (종합 분석용)
-                            thirtyDaysAgo: older?.[0] || null
+                            all90d: cleanedRecent,  // 전체 90일+ 데이터 (종합 분석용)
+                            ninetyDaysAgo: older?.[0] || null
                         };
                     }
                 } catch (e) {
@@ -4837,22 +4837,22 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                     for (const [metricKey, tableName] of Object.entries(section.tables)) {
                         const data = metricsData[metricKey];
                         const hasLatest = !!data?.latest;
-                        const all30d = data?.all30d || [];
-                        const dataCount = all30d.length;
+                        const all90d = data?.all90d || [];
+                        const dataCount = all90d.length;
                         
                         const extracted = extractValue(data?.latest);
                         
-                        // 30일 변화율 및 트렌드 계산
-                        let change30d = null;
+                        // 90일 변화율 및 트렌드 계산
+                        let change90d = null;
                         let trend = '-';
                         
-                        if (all30d.length >= 2) {
-                            const values = all30d.map(r => extractValue(r)?.value).filter(v => v !== null);
+                        if (all90d.length >= 2) {
+                            const values = all90d.map(r => extractValue(r)?.value).filter(v => v !== null);
                             if (values.length >= 2) {
                                 const latest = values[0];
                                 const oldest = values[values.length - 1];
                                 if (oldest !== 0) {
-                                    change30d = ((latest - oldest) / Math.abs(oldest) * 100).toFixed(1);
+                                    change90d = ((latest - oldest) / Math.abs(oldest) * 100).toFixed(1);
                                 }
                                 
                                 // 트렌드 판단
@@ -4896,8 +4896,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                     ${dataCount}d
                                 </td>
                                 <td style="padding: 6px 8px; font-size: 10px; font-family: monospace;">
-                                    <span style="color: ${change30d !== null ? (change30d >= 0 ? '#3fb950' : '#f85149') : '#6e7681'};">
-                                        ${change30d !== null ? '~' + (change30d >= 0 ? '+' : '') + change30d + '%' : '-'}
+                                    <span style="color: ${change90d !== null ? (change90d >= 0 ? '#3fb950' : '#f85149') : '#6e7681'};">
+                                        ${change90d !== null ? '~' + (change90d >= 0 ? '+' : '') + change90d + '%' : '-'}
                                     </span>
                                     <span style="margin-left: 4px; color: ${trend === '↑' ? '#3fb950' : trend === '↓' ? '#f85149' : '#8b949e'};">${trend}</span>
                                 </td>
@@ -4929,7 +4929,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                                         <th style="padding: 6px 8px; text-align: left;">Field</th>
                                         <th style="padding: 6px 8px; text-align: left;">Value</th>
                                         <th style="padding: 6px 8px; text-align: left;" title="Days of data available">Days</th>
-                                        <th style="padding: 6px 8px; text-align: left;" title="Approximate 30-day change (based on recent data average)">~30d</th>
+                                        <th style="padding: 6px 8px; text-align: left;" title="Approximate 90-day change (based on recent data average)">~90d</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -5016,14 +5016,14 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             
             for (const [key, data] of Object.entries(metricsData)) {
                 if (key === 'eth_price') continue;
-                if (!data?.latest || !data?.all30d || data.all30d.length === 0) continue;
+                if (!data?.latest || !data?.all90d || data.all90d.length === 0) continue;
                 
                 const extracted = extractValue(data.latest);
                 if (!extracted) continue;
                 
                 const fieldName = extracted.field;
                 const unit = getUnit(fieldName);
-                const all = data.all30d;
+                const all = data.all90d;
                 
                 // ETH→USD 변환 여부
                 const needsUsdConversion = ethToUsdFields.includes(fieldName);
@@ -5044,49 +5044,49 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 const latest = dataWithDates[0].value;
                 const latestDate = new Date(dataWithDates[0].date);
                 
-                // 30일 전 날짜 계산 (±1일 = 29~31일 전)
-                const target30dAgo = new Date(latestDate);
-                target30dAgo.setDate(target30dAgo.getDate() - 30);
+                // 90일 전 날짜 계산 (±1일 = 89~91일 전)
+                const target90dAgo = new Date(latestDate);
+                target90dAgo.setDate(target90dAgo.getDate() - 90);
                 
-                // 30일 전 ±1일 범위의 데이터 찾기 (3일 평균)
-                const day29Ago = new Date(latestDate); day29Ago.setDate(day29Ago.getDate() - 29);
-                const day31Ago = new Date(latestDate); day31Ago.setDate(day31Ago.getDate() - 31);
+                // 90일 전 ±1일 범위의 데이터 찾기 (3일 평균)
+                const day89Ago = new Date(latestDate); day89Ago.setDate(day89Ago.getDate() - 89);
+                const day91Ago = new Date(latestDate); day91Ago.setDate(day91Ago.getDate() - 91);
                 
-                const around30dAgoData = dataWithDates.filter(d => {
+                const around90dAgoData = dataWithDates.filter(d => {
                     const date = new Date(d.date);
-                    return date >= day31Ago && date <= day29Ago;
+                    return date >= day91Ago && date <= day89Ago;
                 });
                 
-                // 30일 전 3일 평균 계산
-                let avg30dAgo = null;
-                if (around30dAgoData.length > 0) {
-                    avg30dAgo = around30dAgoData.reduce((sum, d) => sum + d.value, 0) / around30dAgoData.length;
+                // 90일 전 3일 평균 계산
+                let avg90dAgo = null;
+                if (around90dAgoData.length > 0) {
+                    avg90dAgo = around90dAgoData.reduce((sum, d) => sum + d.value, 0) / around90dAgoData.length;
                 }
                 
-                // 30일 변화율: (현재 - 30일전평균) / 30일전평균 * 100
-                const change30d = avg30dAgo && avg30dAgo !== 0 
-                    ? ((latest - avg30dAgo) / Math.abs(avg30dAgo) * 100) 
+                // 90일 변화율: (현재 - 90일전평균) / 90일전평균 * 100
+                const change90d = avg90dAgo && avg90dAgo !== 0 
+                    ? ((latest - avg90dAgo) / Math.abs(avg90dAgo) * 100) 
                     : null;
                 
-                // 전체 30일 통계
+                // 전체 90일 통계
                 const values = dataWithDates.map(d => d.value);
-                const avg30d = values.reduce((a, b) => a + b, 0) / values.length;
-                const max30d = Math.max(...values);
-                const min30d = Math.min(...values);
+                const avg90d = values.reduce((a, b) => a + b, 0) / values.length;
+                const max90d = Math.max(...values);
+                const min90d = Math.min(...values);
                 
                 // 추세 방향 판단 (선형 회귀 기울기)
                 let trendDirection = 'stable';
                 if (values.length >= 5) {
                     const n = values.length;
                     const xMean = (n - 1) / 2;
-                    const yMean = avg30d;
+                    const yMean = avg90d;
                     let numerator = 0, denominator = 0;
                     for (let i = 0; i < n; i++) {
                         numerator += (i - xMean) * (values[n - 1 - i] - yMean);
                         denominator += (i - xMean) ** 2;
                     }
                     const slope = denominator !== 0 ? numerator / denominator : 0;
-                    const normalizedSlope = avg30d !== 0 ? (slope / avg30d) * 100 : 0;
+                    const normalizedSlope = avg90d !== 0 ? (slope / avg90d) * 100 : 0;
                     
                     if (normalizedSlope > 1) trendDirection = 'uptrend';
                     else if (normalizedSlope < -1) trendDirection = 'downtrend';
@@ -5094,17 +5094,17 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 }
                 
                 // 변동성 (표준편차 / 평균)
-                const variance = values.reduce((sum, v) => sum + Math.pow(v - avg30d, 2), 0) / values.length;
+                const variance = values.reduce((sum, v) => sum + Math.pow(v - avg90d, 2), 0) / values.length;
                 const stdDev = Math.sqrt(variance);
-                const volatility = avg30d !== 0 ? (stdDev / Math.abs(avg30d) * 100) : 0;
+                const volatility = avg90d !== 0 ? (stdDev / Math.abs(avg90d) * 100) : 0;
                 
                 prompt += `▶ ${key.toUpperCase()}\n`;
                 prompt += `  Current (${dataWithDates[0].date}): ${formatVal(latest, unit)}\n`;
-                if (avg30dAgo !== null) {
-                    prompt += `  30 Days Ago (3-day avg): ${formatVal(avg30dAgo, unit)}\n`;
-                    prompt += `  30-Day Change: ${change30d > 0 ? '+' : ''}${change30d.toFixed(1)}%\n`;
+                if (avg90dAgo !== null) {
+                    prompt += `  90 Days Ago (3-day avg): ${formatVal(avg90dAgo, unit)}\n`;
+                    prompt += `  90-Day Change: ${change90d > 0 ? '+' : ''}${change90d.toFixed(1)}%\n`;
                 }
-                prompt += `  30-Day Range: ${formatVal(min30d, unit)} ~ ${formatVal(max30d, unit)}\n`;
+                prompt += `  90-Day Range: ${formatVal(min90d, unit)} ~ ${formatVal(max90d, unit)}\n`;
                 prompt += `  Trend: ${trendDirection.toUpperCase()} | Volatility: ${volatility.toFixed(1)}%\n`;
                 
                 // 추가 필드
@@ -5154,9 +5154,9 @@ STRICT OUTPUT FORMAT:
 You must write exactly 3 paragraphs separated by ||| (three pipe characters).
 
 Example output structure:
-First sentence about current status. Second sentence with specific data point. Third sentence with comparison or context. Fourth sentence with interpretation or significance.
+First sentence about current status (today's spot data). Second sentence with specific data point. Third sentence about 7-day short-term movement (minor). Fourth sentence with interpretation or significance.
 |||
-First sentence about 30-day trends. Second sentence with percentage changes. Third sentence analyzing the trend direction. Fourth sentence explaining what this means.
+First sentence about 90-day trends. Second sentence with percentage changes over 90 days. Third sentence analyzing the medium-term trend direction. Fourth sentence explaining what this means.
 |||
 First sentence about valuation implications. Second sentence connecting metrics to value. Third sentence with outlook or prediction. Fourth sentence with investor guidance.
 
@@ -5166,7 +5166,8 @@ CRITICAL RULES:
 - NO headers, NO titles, NO section labels
 - EACH PARAGRAPH MUST HAVE EXACTLY 4 SENTENCES - this is mandatory, count them
 - The separator ||| must be on its own line between paragraphs
-- Focus on 30-DAY trends (not 7-day)
+- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context as minor detail
+- Paragraph 2 (Trend): Focus on 90-DAY trends (not 30-day), aligns with chart's 90D view
 - Be specific with numbers from the data provided
 - Professional analyst tone
 - Minimum 150 words per paragraph`;
@@ -5178,9 +5179,9 @@ ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n`
 IMPORTANT: Each paragraph MUST contain exactly 4 sentences. This is a strict requirement.
 
 Output format:
-[Paragraph 1 - current status - 4 sentences]
+[Paragraph 1 - current status: TODAY's spot data (major) + 7-day movement (minor) - 4 sentences]
 |||
-[Paragraph 2 - 30-day trends - 4 sentences]  
+[Paragraph 2 - 90-day trends - 4 sentences]  
 |||
 [Paragraph 3 - valuation insight - 4 sentences]`;
             
