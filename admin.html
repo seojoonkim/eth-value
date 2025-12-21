@@ -4532,6 +4532,8 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 'historical_fear_greed': 'value',
                 'historical_nvt': 'nvt_ratio',
                 'historical_open_interest': 'open_interest',
+                'historical_daily_issuance': 'daily_issuance',
+                'historical_l2_stablecoin_daily': 'total',
                 // REMOVED: 'historical_l1_volume' - now using historical_l1_total_volume.eth_volume_usd
                 'historical_l1_total_volume': 'total_volume_usd',  // L1 Total Volume (also has eth_volume_usd)
                 'historical_l2_total_volume': 'total_volume_usd',  // L2 Total Volume (also has native_volume_usd)
@@ -4867,6 +4869,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                     // 구체적인 필드명 먼저 (이 필드들은 해당 테이블에만 존재)
                     { field: 'value', label: 'Fear & Greed' },  // fear_greed
                     { field: 'funding_rate', label: 'Funding Rate' },
+                    { field: 'open_interest', label: 'Open Interest' },  // open_interest
                     { field: 'lido_apr', label: 'Staking APR' },  // staking_apr
                     { field: 'eth_dominance', label: 'ETH Dominance' },
                     { field: 'ratio', label: 'Ratio' },  // eth_btc
@@ -4884,12 +4887,15 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                     { field: 'eth_supply', label: 'ETH Supply' },
                     { field: 'total_staked_eth', label: 'Staked ETH' },
                     { field: 'avg_gas_price_gwei', label: 'Gas Price' },  // gas_burn
+                    { field: 'gas_utilization', label: 'gas_utilization' },  // gas_burn
                     { field: 'eth_burnt', label: 'ETH Burnt' },  // gas_burn
+                    { field: 'daily_issuance', label: 'daily_issuance' },  // daily_issuance
                     { field: 'tx_volume_usd', label: 'TX Volume USD' },  // nvt table
                     { field: 'total_volume_usd', label: 'Total Volume USD' },  // l1/l2_total_volume
                     { field: 'eth_volume_usd', label: 'ETH Volume USD' },  // l1_total_volume (L1 ETH Transfer)
                     { field: 'native_volume_usd', label: 'Native Volume USD' },  // l2_total_volume (L2 ETH Transfer)
                     { field: 'total_volume', label: 'Total Volume' },  // l2_stablecoin_volume
+                    { field: 'total', label: 'total' },  // l2_stablecoin_daily
                     { field: 'daily_volume', label: 'Daily Volume' },  // stablecoin_volume
                     { field: 'tx_volume_usd', label: 'TX Volume USD' },  // l2_tx_volume
                     { field: 'bridge_volume_eth', label: 'Bridge Volume' },  // bridge_volume

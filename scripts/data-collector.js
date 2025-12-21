@@ -96,8 +96,8 @@ const COMMENTARY_SECTIONS = {
         context: `Net Supply와 Effective Float는 계산값입니다:
 - Net Supply Change = (ETH Burned - ETH Issued) / Total Supply * 365 * 100 (연간 %)
 - Effective Float = Total Supply - Staked ETH - Contract Balances
-현재 ETH는 약 +0.5%/년 인플레이션 (burn < issuance 상태).
-Merge 직후에는 burn > issuance로 디플레이션이었으나, L2 전환으로 L1 가스비가 낮아지면서 현재는 인플레이션.`
+ETH Issued는 일 약 930 ETH (검증자 보상)
+현재 ETH는 burn < issuance로 약 +0.5%/년 인플레이션 상태.`
     },
     // 02.4 네트워크 수요 - 5개 차트
     // Charts: Gas Price, Gas Utilization, Network Fees, Blob Fees, Blob Count
