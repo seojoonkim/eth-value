@@ -11722,9 +11722,29 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="funding-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Binance</span>
+                        <span>CryptoQuant</span>
                         <span class="change" id="funding-sentiment">--</span>
                         <div class="metric-desc" data-i18n="desc.funding">Perpetual futures funding. Positive = longs pay shorts, market bullish.</div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-metric="openInterest">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.openInterest">Open Interest</h4>
+                            <div class="metric-value-large" id="open-interest-value">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="openInterest">
+                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab active" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="open-interest-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>CryptoQuant</span>
+                        <span class="change" id="open-interest-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.openInterest">Total open derivative positions. Rising OI + price = strong trend confirmation.</div>
                     </div>
                 </div>
 
@@ -11743,7 +11763,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="reserve-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Santiment</span>
+                        <span>CryptoQuant</span>
                         <span class="change" id="reserve-change">--</span>
                         <div class="metric-desc" data-i18n="desc.reserve">ETH held on exchanges. Declining reserve = accumulation, bullish signal.</div>
                     </div>
@@ -18286,9 +18306,12 @@
             // Transaction data
             txEth: 0, txTotal: 0,
             txEthHistory: [], txTotalHistory: [],
-            // Exchange Reserve (Santiment)
+            // Exchange Reserve (CryptoQuant)
             exchangeReserve: 0,
             reserveHistory: [],
+            // Open Interest (CryptoQuant)
+            openInterest: 0,
+            openInterestHistory: [],
             // NVT & Active Addresses
             nvtRatio: 0,
             nvtHistory: [],
@@ -18975,7 +18998,7 @@
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l1TotalVolumeData, l2TotalVolumeData, bridgeVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, openInterestData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l1TotalVolumeData, l2TotalVolumeData, bridgeVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -18991,6 +19014,7 @@
                     safeFetchSupabase(`${baseUrl}/historical_stablecoins_eth?select=date,total_mcap&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_funding_rate?select=date,funding_rate&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_exchange_reserve?select=date,reserve_eth&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_open_interest?select=date,open_interest&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_blob_data?select=date,blob_count,blob_fee_eth&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_lending_tvl?select=date,total_tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_volatility?select=date,volatility_30d&order=date.desc&limit=${limit}`),
@@ -19122,6 +19146,11 @@
                 if (reserveData.length > 10) {
                     log(`   ✓ Reserve: ${reserveData.length} records`);
                     state.supabaseReserveHistory = reserveData.map(d => ({ date: new Date(d.date), value: parseFloat(d.reserve_eth) })).reverse();
+                }
+                
+                if (openInterestData.length > 10) {
+                    log(`   ✓ Open Interest: ${openInterestData.length} records`);
+                    state.supabaseOpenInterestHistory = openInterestData.map(d => ({ date: new Date(d.date), value: parseFloat(d.open_interest) })).reverse();
                 }
                 
                 if (blobData.length > 10) {
@@ -21875,6 +21904,31 @@
                 'eth',
                 dates
             ));
+        }
+
+        // Open Interest 데이터 로드 및 차트 초기화
+        function loadOpenInterestData() {
+            // Supabase 데이터 우선 사용
+            if (state.supabaseOpenInterestHistory && state.supabaseOpenInterestHistory.length > 10) {
+                log('   Using Supabase Open Interest data:', state.supabaseOpenInterestHistory.length, 'points');
+                state.openInterestHistory = state.supabaseOpenInterestHistory;
+                state.openInterest = state.openInterestHistory[state.openInterestHistory.length - 1].value;
+                document.getElementById('open-interest-value').textContent = '$' + (state.openInterest / 1e9).toFixed(2) + 'B';
+                updateOpenInterestChartWithPeriod(1095);
+                
+                const first = state.openInterestHistory[0].value;
+                const last = state.openInterest;
+                const change = ((last - first) / first) * 100;
+                const changeEl = document.getElementById('open-interest-change');
+                if (changeEl) {
+                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                }
+                return;
+            }
+            
+            log('No Open Interest data available yet');
+            document.getElementById('open-interest-value').textContent = 'No Data';
         }
 
         function updateCombinedPriceVolumeChart(days = 1095) {
@@ -25318,6 +25372,16 @@
             });
         });
 
+        // Open Interest chart tabs
+        document.querySelectorAll('.metric-tabs[data-chart="openInterest"] .metric-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const period = parseInt(tab.dataset.period);
+                updateOpenInterestChartWithPeriod(period);
+            });
+        });
+
         // Gas Price chart tabs
         document.querySelectorAll('.metric-tabs[data-chart="gasPrice"] .metric-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -25487,6 +25551,39 @@
             const last = filtered[filtered.length - 1].value;
             const change = ((last - first) / first) * 100;
             const changeEl = document.getElementById('reserve-change');
+            if (changeEl) {
+                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
+                changeEl.textContent = fmt.pct(change) + ' ' + label;
+                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
+        }
+
+        // Open Interest 차트 기간별 업데이트
+        let openInterestChart = null;
+        function updateOpenInterestChartWithPeriod(days) {
+            const ctx = document.getElementById('open-interest-chart');
+            if (!ctx || !state.openInterestHistory || state.openInterestHistory.length === 0) return;
+            
+            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const filtered = state.openInterestHistory.filter(d => d.date.getTime() > cutoffDate);
+            
+            if (filtered.length === 0) return;
+            
+            if (openInterestChart) openInterestChart.destroy();
+            openInterestChart = new Chart(ctx.getContext('2d'), chartConfig(
+                '#8b5cf6',
+                filtered.map(d => d.value),
+                filtered.map(d => fmt.chartLabel(d.date)),
+                (v) => '$' + (v / 1e9).toFixed(2) + 'B',
+                'dollar',
+                filtered.map(d => d.date)
+            ));
+            
+            // 변화율 업데이트
+            const first = filtered[0].value;
+            const last = filtered[filtered.length - 1].value;
+            const change = ((last - first) / first) * 100;
+            const changeEl = document.getElementById('open-interest-change');
             if (changeEl) {
                 const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
                 changeEl.textContent = fmt.pct(change) + ' ' + label;
@@ -26070,6 +26167,24 @@
                 safeCall(() => updateMetricChart('reserve-chart', reserveChart, state.reserveHistory, '#f59e0b', 'reserve'), 'reserve');
                 setDataSource('reserve-chart', reserveSource, 'CryptoQuant');
                 setChange('reserve-change', state.reserveHistory);
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 9.5. Open Interest (NEW)
+                // ═══════════════════════════════════════════════════════════════════
+                let openInterestSource = 'fallback';
+                if (state.supabaseOpenInterestHistory?.length > 0) {
+                    state.openInterestHistory = state.supabaseOpenInterestHistory;
+                    state.openInterest = state.openInterestHistory[state.openInterestHistory.length - 1].value;
+                    openInterestSource = 'supabase';
+                }
+                if (state.openInterest > 0) {
+                    setEl('open-interest-value', '$' + (state.openInterest / 1e9).toFixed(2) + 'B');
+                    safeCall(() => updateOpenInterestChartWithPeriod(1095), 'openInterest');
+                    setDataSource('open-interest-chart', openInterestSource, 'CryptoQuant');
+                    setChange('open-interest-change', state.openInterestHistory);
+                } else {
+                    setEl('open-interest-value', 'No Data');
+                }
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // 10. Fear & Greed

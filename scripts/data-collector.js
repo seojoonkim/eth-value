@@ -47,16 +47,17 @@ const result = {
 // AI Commentary Section Definitions
 // ============================================================
 const COMMENTARY_SECTIONS = {
-    // 02.1 투자자 심리 - 6개 차트
-    // Charts: Realized Price, MVRV Ratio, Fear & Greed, Funding Rate, Exchange ETH Reserve, Whale Transactions
+    // 02.1 투자자 심리 - 7개 차트
+    // Charts: Realized Price, MVRV Ratio, Fear & Greed, Funding Rate, Open Interest, Exchange ETH Reserve, Whale Transactions
     investor_sentiment: {
         title: 'Investor Sentiment',
         title_ko: '투자자 심리',
-        charts: ['Realized Price', 'MVRV Ratio', 'Fear & Greed', 'Funding Rate', 'Exchange ETH Reserve', 'Whale Transactions'],
+        charts: ['Realized Price', 'MVRV Ratio', 'Fear & Greed', 'Funding Rate', 'Open Interest', 'Exchange ETH Reserve', 'Whale Transactions'],
         tables: {
             mvrv: 'historical_mvrv',  // mvrv_ratio + realized_price
             fear_greed: 'historical_fear_greed',  // value
             funding_rate: 'historical_funding_rate',  // funding_rate
+            open_interest: 'historical_open_interest',  // open_interest
             exchange_reserve: 'historical_exchange_reserve',  // reserve_eth
             whale_tx: 'historical_whale_tx'  // whale_tx_count
         }
@@ -1597,49 +1598,62 @@ async function collect_funding_rate() {
 }
 
 // ============================================================
-// 15. Exchange Reserve (estimate)
+// 15. Exchange Reserve (CryptoQuant API - 거래소 ETH 보유량)
 // ============================================================
 async function collect_exchange_reserve() {
-    // ⚠️ 무료 API 없음 - CryptoQuant/Glassnode/CoinGlass 모두 유료
-    // 실제 트렌드 기반 추정: 2022년 ~24M → 2025년 ~15M (지속적 감소)
-    
-    const today = new Date();
-    const startDate = new Date('2022-01-01');
-    const records = [];
-    
-    for (let i = 0; i < 1095; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        
-        // 2022년: ~24M ETH → 2025년: ~15M ETH (꾸준한 감소)
-        // FTX 붕괴 (2022.11) 이후 급격한 감소 → 이후 완만한 감소
-        let baseTrend;
-        if (date < new Date('2022-11-01')) {
-            baseTrend = 24000000; // FTX 전
-        } else if (date < new Date('2023-06-01')) {
-            // FTX 붕괴 후 급감 (24M → 18M)
-            const ftxProgress = (date - new Date('2022-11-01')) / (new Date('2023-06-01') - new Date('2022-11-01'));
-            baseTrend = 24000000 - (6000000 * Math.min(1, ftxProgress));
-        } else {
-            // 2023년 중반 이후 완만한 감소 (18M → 15M)
-            const postFtxProgress = (date - new Date('2023-06-01')) / (today - new Date('2023-06-01'));
-            baseTrend = 18000000 - (3000000 * Math.min(1, postFtxProgress));
-        }
-        
-        // 소폭 변동 (±1%)
-        const noise = (Math.sin(i * 0.3) * 0.005 + Math.sin(i * 0.07) * 0.005) * baseTrend;
-        const reserve = Math.max(14000000, baseTrend + noise);
-        
-        records.push({
-            date: dateStr,
-            reserve_eth: Math.round(reserve),
-            source: 'estimated'
-        });
+    if (!CRYPTOQUANT_API_KEY) {
+        return result.skip('No CryptoQuant API key');
     }
     
-    console.log(`  📦 Generated ${records.length} estimated records (24M→15M trend)`);
-    return await upsertBatch('historical_exchange_reserve', records);
+    try {
+        // CryptoQuant API: ETH Exchange Reserve
+        // 예상 endpoint: /v1/eth/exchange-flows/reserve
+        const response = await fetch(
+            'https://api.cryptoquant.com/v1/eth/exchange-flows/reserve?exchange=all_exchange&window=day&limit=1095',
+            { 
+                headers: { 
+                    'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
+                    'Accept': 'application/json'
+                } 
+            }
+        );
+        
+        if (!response.ok) {
+            throw new Error(`CryptoQuant API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const rows = data?.result?.data || data?.data || data;
+        
+        if (!Array.isArray(rows) || rows.length === 0) {
+            throw new Error('No data from CryptoQuant');
+        }
+        
+        const records = rows.map(row => ({
+            date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
+            reserve_eth: parseFloat(row.reserve || row.value || row.reserve_eth || 0),
+            source: 'cryptoquant'
+        })).filter(r => r.date && !isNaN(r.reserve_eth) && r.reserve_eth > 0);
+        
+        if (records.length > 100) {
+            const saved = await upsertBatch('historical_exchange_reserve', records);
+            return result.ok(saved);
+        }
+        
+        throw new Error('Insufficient data');
+    } catch (e) {
+        // 실패 시 기존 데이터 유지
+        const { data: existing } = await supabase
+            .from('historical_exchange_reserve')
+            .select('date')
+            .order('date', { ascending: false })
+            .limit(1);
+        
+        if (existing?.length > 0) {
+            return result.skip(`CryptoQuant error: ${e.message}`);
+        }
+        return result.fail(e.message);
+    }
 }
 
 // ============================================================
@@ -1712,6 +1726,64 @@ async function collect_eth_dominance() {
         return result.skip('API blocked, using existing');
     }
     return result.fail('No data available');
+}
+
+// ============================================================
+// 16-2. Open Interest (CryptoQuant API - 신규)
+// ============================================================
+async function collect_open_interest() {
+    if (!CRYPTOQUANT_API_KEY) {
+        return result.skip('No CryptoQuant API key');
+    }
+    
+    try {
+        // CryptoQuant API: ETH Open Interest
+        const response = await fetch(
+            'https://api.cryptoquant.com/v1/eth/derivatives/open-interest?exchange=all_exchange&window=day&limit=1095',
+            { 
+                headers: { 
+                    'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
+                    'Accept': 'application/json'
+                } 
+            }
+        );
+        
+        if (!response.ok) {
+            throw new Error(`CryptoQuant API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const rows = data?.result?.data || data?.data || data;
+        
+        if (!Array.isArray(rows) || rows.length === 0) {
+            throw new Error('No data from CryptoQuant');
+        }
+        
+        const records = rows.map(row => ({
+            date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
+            open_interest: parseFloat(row.open_interest || row.openInterest || row.value || 0),
+            source: 'cryptoquant'
+        })).filter(r => r.date && !isNaN(r.open_interest) && r.open_interest > 0);
+        
+        if (records.length > 100) {
+            const saved = await upsertBatch('historical_open_interest', records);
+            return result.ok(saved);
+        }
+        
+        throw new Error('Insufficient data');
+    } catch (e) {
+        // 실패 시 기존 데이터 유지
+        const { data: existing } = await supabase
+            .from('historical_open_interest')
+            .select('date')
+            .order('date', { ascending: false })
+            .limit(1);
+        
+        if (existing?.length > 0) {
+            return result.skip(`CryptoQuant error: ${e.message}`);
+        }
+        return result.fail(e.message);
+    }
 }
 
 // ============================================================
@@ -2420,13 +2492,14 @@ async function main() {
         collect_l2_addresses(),
         collect_funding_rate(),
         collect_exchange_reserve(),
+        collect_open_interest(),
         collect_blob_data(),
         collect_active_addresses(),
         collect_network_stats(),
         collect_gas_burn()
     ]);
     
-    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'blob_data', 'active_addresses', 'network_stats', 'gas_burn'];
+    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'network_stats', 'gas_burn'];
     phase3Results.forEach((res, i) => {
         results[phase3Names[i]] = wrapResult(res);
         const r = results[phase3Names[i]];
