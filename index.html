@@ -18970,7 +18970,7 @@
                 
                 // 모든 테이블 병렬 로딩
                 const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l2TxVolumeData, l1TotalVolumeData, l2TotalVolumeData, bridgeVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
+                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l1TotalVolumeData, l2TotalVolumeData, bridgeVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
@@ -18990,13 +18990,13 @@
                     safeFetchSupabase(`${baseUrl}/historical_lending_tvl?select=date,total_tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_volatility?select=date,volatility_30d&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_tvl?select=date,chain,tvl&order=date.desc&limit=${limit * 15}`),
-                    safeFetchSupabase(`${baseUrl}/historical_nvt?select=date,nvt_ratio,tx_volume_usd&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_nvt?select=date,nvt_ratio&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_daily_issuance?select=date,daily_issuance&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_transactions?select=date,tx_count&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_transactions?select=date,chain,tx_count&order=date.desc&limit=${limit * 15}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_tx_volume?select=date,chain,tx_volume_usd&order=date.desc&limit=${limit * 15}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l1_total_volume?select=date,total_volume_usd&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_total_volume?select=date,chain,total_volume_usd&order=date.desc&limit=${limit * 15}`),
+                    // REMOVED: historical_l2_tx_volume - now using historical_l2_total_volume.native_volume_usd
+                    safeFetchSupabase(`${baseUrl}/historical_l1_total_volume?select=date,eth_volume_usd,total_volume_usd&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l2_total_volume?select=date,chain,native_volume_usd,total_volume_usd&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_mvrv?select=date,spot_price,realized_price,mvrv_ratio,mvrv_pct&order=date.desc&limit=3000`),
@@ -19214,106 +19214,79 @@
                     });
                     
                     log(`   ✓ NVT: ${state.supabaseNvtHistory.length} records (7-day MA)`);
-                    
-                    // L1 ETH Transfer History (from NVT table tx_volume_usd)
-                    // NOTE: This is NATIVE ETH transfers only, NOT total on-chain volume
-                    // ERC-20 token transfers (stablecoins, etc.) are measured separately
-                    let l1VolHistory = nvtData
-                        .filter(d => d.tx_volume_usd > 0)
-                        .map(d => ({ date: new Date(d.date), value: parseFloat(d.tx_volume_usd) }))
+                }
+                
+                // L1 ETH Transfer History (from L1 Total Volume table eth_volume_usd)
+                // NOTE: This is NATIVE ETH transfers only, NOT total on-chain volume
+                if (l1TotalVolumeData && l1TotalVolumeData.length > 0) {
+                    let l1EthHistory = l1TotalVolumeData
+                        .filter(d => d.eth_volume_usd > 0)
+                        .map(d => ({ date: new Date(d.date), value: parseFloat(d.eth_volume_usd) }))
                         .sort((a, b) => a.date - b.date);
                     
-                    // Filter incomplete data from history (for accurate chart % change)
-                    if (l1VolHistory.length >= 8) {
-                        const lastVal = l1VolHistory[l1VolHistory.length - 1].value;
-                        const prev7Avg = l1VolHistory.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
-                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
-                            log(`   ⚠️ Filtering incomplete L1 history: last day ${(lastVal/1e9).toFixed(2)}B < 30% of avg`);
-                            l1VolHistory = l1VolHistory.slice(0, -1); // Remove last incomplete day
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (l1EthHistory.length > 2) {
+                        l1EthHistory = l1EthHistory.slice(0, -1);
                     }
                     
-                    if (l1VolHistory.length > 0) {
-                        state.l1VolumeHistory = l1VolHistory;
-                        log(`   ✓ L1 ETH Transfer History: ${l1VolHistory.length} records`);
+                    if (l1EthHistory.length > 0) {
+                        state.l1VolumeHistory = l1EthHistory;
+                        log(`   ✓ L1 ETH Transfer History: ${l1EthHistory.length} records`);
                     }
                     
-                    // Use LATEST value (matches chart end point)
-                    const sortedL1 = nvtData.filter(d => d.tx_volume_usd > 0).sort((a, b) => b.date.localeCompare(a.date));
-                    if (sortedL1.length >= 8) {
-                        // Filter incomplete data: if latest day's volume < 30% of 7-day avg, skip it
-                        const latestVol = parseFloat(sortedL1[0].tx_volume_usd);
-                        const prev7Avg = sortedL1.slice(1, 8).reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / 7;
+                    // Use latest valid value (skip last incomplete day)
+                    const sortedL1 = l1TotalVolumeData.filter(d => d.eth_volume_usd > 0).sort((a, b) => b.date.localeCompare(a.date));
+                    if (sortedL1.length > 2) {
+                        // 마지막 데이터 제외
+                        state.l1DailyVolume = parseFloat(sortedL1[1].eth_volume_usd);
+                        log(`   ✓ L1 ETH Transfer: $${(state.l1DailyVolume / 1e9).toFixed(2)}B (${sortedL1[1].date})`);
                         
-                        let startIdx = 0;
-                        if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
-                            log(`   ⚠️ Skipping incomplete L1 data: ${sortedL1[0].date} ($${(latestVol/1e9).toFixed(2)}B < 30% of avg $${(prev7Avg/1e9).toFixed(2)}B)`);
-                            startIdx = 1; // Skip incomplete day
-                        }
-                        
-                        state.l1DailyVolume = parseFloat(sortedL1[startIdx].tx_volume_usd);
-                        log(`   ✓ L1 ETH Transfer: $${(state.l1DailyVolume / 1e9).toFixed(2)}B (${sortedL1[startIdx].date})`);
-                        
-                        // Keep 7-day avg for calculations (excluding incomplete)
-                        const recentNvt = sortedL1.slice(startIdx, startIdx + 7);
-                        state.l1DailyVolumeAvg = recentNvt.reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / recentNvt.length;
+                        // Keep 7-day avg for calculations
+                        const recentL1 = sortedL1.slice(1, 8);
+                        state.l1DailyVolumeAvg = recentL1.reduce((sum, d) => sum + parseFloat(d.eth_volume_usd || 0), 0) / recentL1.length;
                     } else if (sortedL1.length > 0) {
-                        state.l1DailyVolume = parseFloat(sortedL1[0].tx_volume_usd);
+                        state.l1DailyVolume = parseFloat(sortedL1[0].eth_volume_usd);
                         log(`   ✓ L1 ETH Transfer: $${(state.l1DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedL1[0].date})`);
-                        state.l1DailyVolumeAvg = sortedL1.reduce((sum, d) => sum + parseFloat(d.tx_volume_usd || 0), 0) / sortedL1.length;
+                        state.l1DailyVolumeAvg = sortedL1.reduce((sum, d) => sum + parseFloat(d.eth_volume_usd || 0), 0) / sortedL1.length;
                     }
                 }
                 
                 // L2 Native Token Transfer (aggregate by date) for Settlement Layer
+                // Now using native_volume_usd from historical_l2_total_volume table
                 // NOTE: This is NATIVE token transfers only (ETH on most L2s, MNT on Mantle)
-                // Does NOT include ERC-20 token transfers - those are measured separately
-                // tx_volume_usd is already in USD from Dune query (with correct token prices)
-                if (l2TxVolumeData && l2TxVolumeData.length > 0) {
-                    const l2VolByDate = {};
-                    l2TxVolumeData.forEach(d => {
+                if (l2TotalVolumeData && l2TotalVolumeData.length > 0) {
+                    const l2NativeByDate = {};
+                    l2TotalVolumeData.forEach(d => {
                         const dateKey = d.date;
-                        if (!l2VolByDate[dateKey]) l2VolByDate[dateKey] = 0;
-                        l2VolByDate[dateKey] += parseFloat(d.tx_volume_usd || 0);
+                        if (!l2NativeByDate[dateKey]) l2NativeByDate[dateKey] = 0;
+                        l2NativeByDate[dateKey] += parseFloat(d.native_volume_usd || 0);
                     });
                     
                     // Build history (already in USD)
-                    let l2History = Object.entries(l2VolByDate)
+                    let l2NativeHistory = Object.entries(l2NativeByDate)
                         .map(([date, usd]) => ({ date: new Date(date), value: usd }))
                         .sort((a, b) => a.date - b.date);
                     
-                    // Filter incomplete data from history (for accurate chart % change)
-                    if (l2History.length >= 8) {
-                        const lastVal = l2History[l2History.length - 1].value;
-                        const prev7Avg = l2History.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
-                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
-                            log(`   ⚠️ Filtering incomplete L2 history: last day ${(lastVal/1e9).toFixed(2)}B < 30% of avg`);
-                            l2History = l2History.slice(0, -1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (l2NativeHistory.length > 2) {
+                        l2NativeHistory = l2NativeHistory.slice(0, -1);
                     }
                     
-                    state.l2VolumeHistory = l2History;
-                    log(`   ✓ L2 Volume History: ${state.l2VolumeHistory.length} records`);
+                    state.l2VolumeHistory = l2NativeHistory;
+                    log(`   ✓ L2 Native Transfer History: ${state.l2VolumeHistory.length} records`);
                     
-                    // Use LATEST valid value (matches chart end point)
-                    const sortedDates = Object.keys(l2VolByDate).sort().reverse();
-                    if (sortedDates.length >= 8) {
-                        const latestVol = l2VolByDate[sortedDates[0]];
-                        const prev7Avg = sortedDates.slice(1, 8).reduce((sum, d) => sum + l2VolByDate[d], 0) / 7;
-                        
-                        let startIdx = 0;
-                        if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
-                            log(`   ⚠️ Skipping incomplete L2 data: ${sortedDates[0]}`);
-                            startIdx = 1;
-                        }
-                        
-                        state.l2DailyVolume = l2VolByDate[sortedDates[startIdx]];
-                        log(`   ✓ L2 Native Transfer: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (${sortedDates[startIdx]})`);
+                    // Use latest valid value (skip last incomplete day)
+                    const sortedDates = Object.keys(l2NativeByDate).sort().reverse();
+                    if (sortedDates.length > 2) {
+                        // 마지막 데이터 제외
+                        state.l2DailyVolume = l2NativeByDate[sortedDates[1]];
+                        log(`   ✓ L2 Native Transfer: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (${sortedDates[1]})`);
                         
                         // Keep 7-day avg for calculations
-                        const recentDates = sortedDates.slice(startIdx, startIdx + 7);
-                        state.l2DailyVolumeAvg = recentDates.reduce((sum, date) => sum + l2VolByDate[date], 0) / recentDates.length;
+                        const recentDates = sortedDates.slice(1, 8);
+                        state.l2DailyVolumeAvg = recentDates.reduce((sum, date) => sum + l2NativeByDate[date], 0) / recentDates.length;
                     } else if (sortedDates.length > 0) {
-                        state.l2DailyVolume = l2VolByDate[sortedDates[0]];
+                        state.l2DailyVolume = l2NativeByDate[sortedDates[0]];
                         log(`   ✓ L2 Native Transfer: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedDates[0]})`);
                     }
                 }
@@ -19377,36 +19350,23 @@
                         .map(([date, eth]) => ({ date: new Date(date), value: eth * ethPrice }))
                         .sort((a, b) => a.date - b.date);
                     
-                    // Filter incomplete data from history (for accurate chart % change)
-                    if (bridgeHistory.length >= 8) {
-                        const lastVal = bridgeHistory[bridgeHistory.length - 1].value;
-                        const prev7Avg = bridgeHistory.slice(-8, -1).reduce((sum, d) => sum + d.value, 0) / 7;
-                        if (prev7Avg > 0 && lastVal < prev7Avg * 0.3) {
-                            log(`   ⚠️ Filtering incomplete Bridge history: last day ${(lastVal/1e6).toFixed(2)}M < 30% of avg`);
-                            bridgeHistory = bridgeHistory.slice(0, -1);
-                        }
+                    // 마지막 데이터 제외 (수집 중일 수 있음)
+                    if (bridgeHistory.length > 2) {
+                        bridgeHistory = bridgeHistory.slice(0, -1);
                     }
                     
                     state.bridgeVolumeHistory = bridgeHistory;
                     log(`   ✓ Bridge Volume History: ${state.bridgeVolumeHistory.length} records`);
                     
-                    // Use LATEST valid value (matches chart end point)
+                    // Use latest valid value (skip last incomplete day)
                     const sortedDates = Object.keys(bridgeByDate).sort().reverse();
-                    if (sortedDates.length >= 8) {
-                        const latestVol = bridgeByDate[sortedDates[0]] * ethPrice;
-                        const prev7Avg = sortedDates.slice(1, 8).reduce((sum, d) => sum + bridgeByDate[d], 0) / 7 * ethPrice;
-                        
-                        let startIdx = 0;
-                        if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
-                            log(`   ⚠️ Skipping incomplete Bridge data: ${sortedDates[0]}`);
-                            startIdx = 1;
-                        }
-                        
-                        state.bridgeDailyVolume = bridgeByDate[sortedDates[startIdx]] * ethPrice;
-                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (${sortedDates[startIdx]})`);
+                    if (sortedDates.length > 2) {
+                        // 마지막 데이터 제외
+                        state.bridgeDailyVolume = bridgeByDate[sortedDates[1]] * ethPrice;
+                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (${sortedDates[1]})`);
                         
                         // Keep 7-day avg for calculations
-                        const recentDates = sortedDates.slice(startIdx, startIdx + 7);
+                        const recentDates = sortedDates.slice(1, 8);
                         const avgBridgeVolumeEth = recentDates.reduce((sum, date) => sum + bridgeByDate[date], 0) / recentDates.length;
                         state.bridgeDailyVolumeAvg = avgBridgeVolumeEth * ethPrice;
                     } else if (sortedDates.length > 0) {

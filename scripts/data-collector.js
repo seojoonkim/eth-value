@@ -164,9 +164,9 @@ const COMMENTARY_SECTIONS = {
 
 When you see data, check the VALUE RANGE to identify which metric it is!`,
         tables: {
-            l1_eth_transfer: 'historical_nvt',  // tx_volume_usd (L1 ETH Transfer - native ETH only, ~$7B)
+            l1_eth_transfer: 'historical_l1_total_volume',  // eth_volume_usd (L1 ETH Transfer - native ETH only, ~$7B)
             l1_total_volume: 'historical_l1_total_volume',  // total_volume_usd (ETH + all tokens, ~$200B)
-            l2_native_transfer: 'historical_l2_tx_volume',  // tx_volume_usd (L2 Native Transfer - ETH/MNT only, ~$300M)
+            l2_native_transfer: 'historical_l2_total_volume',  // native_volume_usd (L2 Native Transfer - ETH/MNT only, ~$300M)
             l2_total_volume: 'historical_l2_total_volume',  // total_volume_usd (Native + all tokens, ~$100B)
             bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
             stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume (~$80B)
@@ -221,7 +221,7 @@ async function fetchSectionMetrics(sectionKey) {
         'historical_staking_apr': 'lido_apr',
         'historical_blob_data': 'blob_count',
         'historical_l2_transactions': 'tx_count',
-        'historical_l2_tx_volume': 'tx_volume_usd',
+        // REMOVED: 'historical_l2_tx_volume' - now using historical_l2_total_volume.native_volume_usd
         'historical_bridge_volume': 'bridge_volume_eth',
         'historical_whale_tx': 'whale_tx_count',
         'historical_mvrv': 'mvrv_ratio',
@@ -237,52 +237,26 @@ async function fetchSectionMetrics(sectionKey) {
         'historical_active_addresses': 'active_addresses',
         'historical_fear_greed': 'value',
         'historical_nvt': 'nvt_ratio',
-        'historical_l1_total_volume': 'total_volume_usd',
-        'historical_l2_total_volume': 'total_volume_usd',
+        'historical_l1_total_volume': 'total_volume_usd',  // Also has eth_volume_usd for L1 ETH Transfer
+        'historical_l2_total_volume': 'total_volume_usd',  // Also has native_volume_usd for L2 Native Transfer
     };
     
     for (const [metricKey, tableName] of Object.entries(section.tables)) {
         try {
-            // Special handling for L1 ETH Transfer (uses tx_volume_usd from nvt table)
-            // NOTE: This is NATIVE ETH transfers only, not total on-chain volume
-            if (metricKey === 'l1_eth_transfer' && tableName === 'historical_nvt') {
-                const { data: recent } = await supabase
-                    .from(tableName)
-                    .select('date, tx_volume_usd')
-                    .gte('date', thirtyFiveDaysAgo)
-                    .order('date', { ascending: false })
-                    .limit(35);
-                
-                if (recent && recent.length > 0) {
-                    // 마지막 데이터 제외 (수집 중일 수 있음)
-                    let cleaned = recent.filter(r => r.tx_volume_usd > 0);
-                    if (cleaned.length > 2) {
-                        cleaned = cleaned.slice(1);
-                    }
-                    
-                    metricsData[metricKey] = {
-                        latest: cleaned[0],
-                        recent3d: cleaned.slice(0, 3),
-                        recent7d: cleaned.slice(0, 7),
-                        around30d: cleaned.slice(27, 34),
-                        thirtyDaysAgo: cleaned.length > 30 ? cleaned[30] : null
-                    };
-                }
-                continue;
-            }
-            
-            // Special handling for L1 Total Volume (ETH + all ERC-20 tokens)
+            // Special handling for L1 Total Volume table (used by both l1_eth_transfer and l1_total_volume)
+            // l1_eth_transfer uses eth_volume_usd, l1_total_volume uses total_volume_usd
             if (tableName === 'historical_l1_total_volume') {
+                const fieldToUse = metricKey === 'l1_eth_transfer' ? 'eth_volume_usd' : 'total_volume_usd';
                 const { data: recent } = await supabase
                     .from(tableName)
-                    .select('date, total_volume_usd')
+                    .select(`date, ${fieldToUse}`)
                     .gte('date', thirtyFiveDaysAgo)
                     .order('date', { ascending: false })
                     .limit(35);
                 
                 if (recent && recent.length > 0) {
                     // 마지막 데이터 제외 (수집 중일 수 있음)
-                    let cleaned = recent.filter(r => r.total_volume_usd > 0);
+                    let cleaned = recent.filter(r => r[fieldToUse] > 0);
                     if (cleaned.length > 2) {
                         cleaned = cleaned.slice(1);
                     }
@@ -366,41 +340,8 @@ async function fetchSectionMetrics(sectionKey) {
                 continue;
             }
             
-            // Special handling for L2 Native Transfer (stored by chain, now in USD)
-            // NOTE: This is NATIVE token transfers only (ETH on most L2s, MNT on Mantle)
-            // Does NOT include ERC-20 token transfers
-            if (tableName === 'historical_l2_tx_volume') {
-                const { data: recent } = await supabase
-                    .from(tableName)
-                    .select('date, tx_volume_usd')
-                    .gte('date', thirtyFiveDaysAgo)
-                    .order('date', { ascending: false });
-                
-                if (recent && recent.length > 0) {
-                    const byDate = {};
-                    for (const r of recent) {
-                        if (!byDate[r.date]) byDate[r.date] = 0;
-                        byDate[r.date] += parseFloat(r.tx_volume_usd || 0);
-                    }
-                    let dates = Object.keys(byDate).sort().reverse();
-                    
-                    // 마지막 데이터 제외 (수집 중일 수 있음)
-                    if (dates.length > 2) {
-                        dates = dates.slice(1);
-                    }
-                    
-                    const latestDate = dates[0];
-                    
-                    metricsData[metricKey] = {
-                        latest: { date: latestDate, tx_volume_usd: byDate[latestDate] },
-                        recent3d: dates.slice(0, 3).map(d => ({ date: d, tx_volume_usd: byDate[d] })),
-                        recent7d: dates.slice(0, 7).map(d => ({ date: d, tx_volume_usd: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, tx_volume_usd: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], tx_volume_usd: byDate[dates[30]] } : null
-                    };
-                }
-                continue;
-            }
+            // REMOVED: historical_l2_tx_volume handling
+            // L2 Native Transfer now uses historical_l2_total_volume.native_volume_usd
             
             // Special handling for Bridge Volume (stored by chain)
             if (tableName === 'historical_bridge_volume') {
@@ -470,11 +411,13 @@ async function fetchSectionMetrics(sectionKey) {
                 continue;
             }
             
-            // Special handling for L2 Total Volume (stored by chain)
+            // Special handling for L2 Total Volume table (used by both l2_native_transfer and l2_total_volume)
+            // l2_native_transfer uses native_volume_usd, l2_total_volume uses total_volume_usd
             if (tableName === 'historical_l2_total_volume') {
+                const fieldToUse = metricKey === 'l2_native_transfer' ? 'native_volume_usd' : 'total_volume_usd';
                 const { data: recent } = await supabase
                     .from(tableName)
-                    .select('date, total_volume_usd')
+                    .select(`date, ${fieldToUse}`)
                     .gte('date', thirtyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
@@ -482,7 +425,7 @@ async function fetchSectionMetrics(sectionKey) {
                     const byDate = {};
                     for (const r of recent) {
                         if (!byDate[r.date]) byDate[r.date] = 0;
-                        byDate[r.date] += parseFloat(r.total_volume_usd || 0);
+                        byDate[r.date] += parseFloat(r[fieldToUse] || 0);
                     }
                     let dates = Object.keys(byDate).sort().reverse();
                     
@@ -494,11 +437,11 @@ async function fetchSectionMetrics(sectionKey) {
                     const latestDate = dates[0];
                     
                     metricsData[metricKey] = {
-                        latest: { date: latestDate, total_volume_usd: byDate[latestDate] },
-                        recent3d: dates.slice(0, 3).map(d => ({ date: d, total_volume_usd: byDate[d] })),
-                        recent7d: dates.slice(0, 7).map(d => ({ date: d, total_volume_usd: byDate[d] })),
-                        around30d: dates.slice(27, 34).map(d => ({ date: d, total_volume_usd: byDate[d] })),
-                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], total_volume_usd: byDate[dates[30]] } : null
+                        latest: { date: latestDate, [fieldToUse]: byDate[latestDate] },
+                        recent3d: dates.slice(0, 3).map(d => ({ date: d, [fieldToUse]: byDate[d] })),
+                        recent7d: dates.slice(0, 7).map(d => ({ date: d, [fieldToUse]: byDate[d] })),
+                        around30d: dates.slice(27, 34).map(d => ({ date: d, [fieldToUse]: byDate[d] })),
+                        thirtyDaysAgo: dates.length > 30 ? { date: dates[30], [fieldToUse]: byDate[dates[30]] } : null
                     };
                 }
                 continue;
@@ -929,10 +872,10 @@ async function generateAllCommentaries() {
 // Dune Query IDs
 const DUNE_QUERIES = {
     BLOB: 6350774,
-    TX_VOLUME: 6350858,
+    // TX_VOLUME: 6350858,  // REMOVED - Use L1 Total Volume (6386589) eth_volume_usd instead
     ACTIVE_ADDR: 6352303,
     L2_ACTIVE_ADDR: 6352308,
-    L2_TX_VOLUME: 6352386,
+    // L2_TX_VOLUME: 6352386,  // REMOVED - Use L2 Total Volume (6386591) native_volume_usd instead
     BRIDGE_VOLUME: 6352417,
     WHALE_TX: 6352498,
     NEW_ADDR: 6352513,
@@ -2145,41 +2088,13 @@ async function collect_dune_blob() {
 }
 
 // 31. L1 TX Volume (Dune)
-async function collect_dune_l1_volume() {
-    console.log('\n💸 [31/39] L1 TX Volume (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
-    
-    const rows = await fetchDuneResults(DUNE_QUERIES.TX_VOLUME, 5000);
-    if (!rows) {
-        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.TX_VOLUME);
-        return result.warn(0, 'Query failed');
-    }
-    if (rows.length === 0) {
-        console.log('  ⚠️ Query returned empty - check if scheduled');
-        return result.warn(0, 'No data from Dune');
-    }
-    
-    const records = rows.map(r => {
-        let dateStr = r.block_date || r.date || '';
-        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
-        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
-        return {
-            date: dateStr,
-            tx_volume_eth: parseFloat(r.tx_volume_eth || r.volume_eth || 0),
-            tx_volume_usd: parseFloat(r.tx_volume_usd || r.volume_usd || 0),
-            source: 'dune'
-        };
-    }).filter(r => r.date && r.tx_volume_eth > 0);
-    
-    console.log(`  ✓ ${records.length} records`);
-    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
-    const saved = await upsertBatch('historical_l1_volume', records);
-    return result.ok(saved);
-}
+// REMOVED: collect_dune_l1_volume
+// L1 ETH Transfer now uses historical_l1_total_volume.eth_volume_usd instead
+// Query 6350858 is no longer needed
 
 // 32. Active Addresses L1 (Dune)
 async function collect_dune_active_addr() {
-    console.log('\n👥 [32/39] Active Addresses L1 (Dune)...');
+    console.log('\n👥 [31/38] Active Addresses L1 (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.ACTIVE_ADDR, 5000);
@@ -2242,41 +2157,13 @@ async function collect_dune_l2_addr() {
 }
 
 // 34. L2 Native Transfer (Dune) - native token transfers only (ETH/MNT), excludes ERC-20
-async function collect_dune_l2_native_transfer() {
-    console.log('\n🔗 [34/39] L2 Native Transfer (Dune)...');
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
-    
-    const rows = await fetchDuneResults(DUNE_QUERIES.L2_TX_VOLUME, 10000);
-    if (!rows) {
-        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.L2_TX_VOLUME);
-        return result.warn(0, 'Query failed');
-    }
-    if (rows.length === 0) {
-        console.log('  ⚠️ Query returned empty - check if scheduled');
-        return result.warn(0, 'No data from Dune');
-    }
-    
-    const records = rows.map(r => {
-        let dateStr = r.block_date || r.date || '';
-        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
-        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
-        return {
-            date: dateStr,
-            chain: r.chain || r.l2_name || 'unknown',
-            tx_volume_usd: parseFloat(r.tx_volume_usd || r.volume_usd || 0),
-            source: 'dune'
-        };
-    }).filter(r => r.date && r.tx_volume_usd > 0);
-    
-    console.log(`  ✓ ${records.length} records`);
-    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
-    const saved = await upsertBatch('historical_l2_tx_volume', records, 'date,chain');
-    return result.ok(saved);
-}
+// REMOVED: collect_dune_l2_native_transfer
+// L2 Native Transfer now uses historical_l2_total_volume.native_volume_usd instead
+// Query 6352386 is no longer needed
 
-// 35. Bridge Volume (Dune)
+// 34. Bridge Volume (Dune)
 async function collect_dune_bridge() {
-    console.log('\n🌉 [35/39] Bridge Volume (Dune)...');
+    console.log('\n🌉 [34/38] Bridge Volume (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.BRIDGE_VOLUME, 10000);
@@ -2599,31 +2486,28 @@ async function main() {
     const duneStart = Date.now();
     
     if (DUNE_API_KEY) {
-        const [dune_blob, dune_active_addr, dune_l2_addr, dune_l2_volume, dune_bridge, dune_whale, dune_new_addr, dune_mvrv, dune_stablecoin_vol, dune_gas_price, dune_l1_volume] = await Promise.all([
+        // REMOVED: collect_dune_l1_volume, collect_dune_l2_volume (now using Total Volume tables)
+        const [dune_blob, dune_active_addr, dune_l2_addr, dune_bridge, dune_whale, dune_new_addr, dune_mvrv, dune_stablecoin_vol, dune_gas_price] = await Promise.all([
             collect_dune_blob(),
             collect_dune_active_addr(),
             collect_dune_l2_addr(),
-            collect_dune_l2_volume(),
             collect_dune_bridge(),
             collect_dune_whale(),
             collect_dune_new_addr(),
             collect_dune_mvrv(),
             collect_dune_stablecoin_vol(),
-            collect_dune_gas_price(),
-            collect_dune_l1_volume()
+            collect_dune_gas_price()
         ]);
         
         results.dune_blob = wrapResult(dune_blob, true);
         results.dune_active_addr = wrapResult(dune_active_addr, true);
         results.dune_l2_addr = wrapResult(dune_l2_addr, true);
-        results.dune_l2_volume = wrapResult(dune_l2_volume, true);
         results.dune_bridge = wrapResult(dune_bridge, true);
         results.dune_whale = wrapResult(dune_whale, true);
         results.dune_new_addr = wrapResult(dune_new_addr, true);
         results.dune_mvrv = wrapResult(dune_mvrv, true);
         results.dune_stablecoin_vol = wrapResult(dune_stablecoin_vol, true);
         results.dune_gas_price = wrapResult(dune_gas_price, true);
-        results.dune_l1_volume = wrapResult(dune_l1_volume, true);
         
         console.log(`  ⏱️ Dune: ${((Date.now() - duneStart) / 1000).toFixed(1)}s`);
     } else {
@@ -2694,7 +2578,7 @@ async function main() {
             failed_count: failed,
             failed_datasets: JSON.stringify(failedDatasets),
             duration_seconds: duration,
-            total_datasets: 40  // l1_volume 포함
+            total_datasets: 38  // l1_volume, l2_volume 제거됨 (Total Volume 테이블로 통합)
         }, { onConflict: 'run_date' });
         
         if (error) console.error('Failed to save scheduler log:', error.message);
