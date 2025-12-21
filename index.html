@@ -27586,13 +27586,17 @@ Check out ETHval 👇`;
                     const settlementValue = (dailySettlement * 365 / velocity) / supply;
                     results.settlementLayer.push({ date, value: settlementValue });
                 } else {
-                    // Use actual L1 volume history from Dune
-                    const l1Volume = findClosest(state.l1VolumeHistory, date, 7);
-                    if (l1Volume && l1Volume > 0) {
-                        const settlementValue = (l1Volume * 365 / velocity) / supply;
+                    // Use actual L1 ETH + L2 ETH + Bridge volume history
+                    const l1Volume = findClosest(state.l1VolumeHistory, date, 7) || 0;
+                    const l2Volume = findClosest(state.l2VolumeHistory, date, 7) || 0;
+                    const bridgeVolume = findClosest(state.bridgeVolumeHistory, date, 7) || 0;
+                    const totalSettlement = l1Volume + l2Volume + bridgeVolume;
+                    
+                    if (totalSettlement > 0) {
+                        const settlementValue = (totalSettlement * 365 / velocity) / supply;
                         results.settlementLayer.push({ date, value: settlementValue });
                     } else if (tvl > 0 && price > 0) {
-                        // Fallback: estimate based on TVL if no L1 data
+                        // Fallback: estimate based on TVL if no volume data
                         const currentTvl = state.tvl || 58000000000;
                         const baselineSettlement = 5000000000; // $5B baseline
                         const tvlRatio = tvl / currentTvl;
