@@ -571,9 +571,10 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         const fields = ['value', 'funding_rate', 'lido_apr', 'eth_dominance', 'ratio', 'reserve_eth',
             'mvrv_ratio', 'realized_price', 'nvt_ratio', 'volatility_30d', 'whale_tx_count',
             'blob_count', 'blob_fee_eth', 'new_addresses', 'active_addresses', 'tx_count',
-            'eth_supply', 'total_staked_eth', 'avg_gas_price_gwei', 'eth_burnt',
-            'tx_volume_usd', 'daily_volume', 'bridge_volume_eth',
-            'volume', 'fees', 'tvl', 'total_tvl', 'total_mcap'];
+            'eth_supply', 'total_staked_eth', 'avg_gas_price_gwei', 'gas_utilization', 'eth_burnt',
+            'tx_volume_usd', 'daily_volume', 'bridge_volume_eth', 'open_interest',
+            'volume', 'fees', 'tvl', 'total_tvl', 'total_mcap',
+            'eth_volume_usd', 'total_volume_usd', 'native_volume_usd', 'total_volume'];
         for (const f of fields) {
             if (record[f] !== undefined && record[f] !== null) {
                 return { field: f, value: record[f] };
@@ -595,6 +596,20 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         return (values.reduce((a, b) => a + b, 0) / values.length) * multiplier;
     };
     
+    // 특정 필드의 90일 변화 계산 헬퍼
+    const calc90dChangeForField = (data, fieldName) => {
+        if (!data?.latest || !data?.around90d || data.around90d.length === 0) return null;
+        const currentVal = data.latest[fieldName];
+        if (currentVal === undefined || currentVal === null) return null;
+        
+        const oldValues = data.around90d.map(r => r[fieldName]).filter(v => v !== null && v !== undefined);
+        if (oldValues.length === 0) return null;
+        const oldAvg = oldValues.reduce((a, b) => a + b, 0) / oldValues.length;
+        if (oldAvg === 0) return null;
+        
+        return ((currentVal - oldAvg) / oldAvg * 100).toFixed(1);
+    };
+    
     for (const [key, data] of Object.entries(metricsData)) {
         if (key === 'eth_price') continue;
         if (!data?.latest) continue;
@@ -614,10 +629,10 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         
         // 단위 결정 (차트 표시 단위 기준)
         let unit = '';
-        if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'total_mcap', 'fees'].includes(fieldName)) unit = ' USD';
+        if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'total_mcap', 'fees', 'eth_volume_usd', 'total_volume_usd', 'native_volume_usd', 'total_volume', 'open_interest'].includes(fieldName)) unit = ' USD';
         else if (ethToUsdFields.includes(fieldName)) unit = ' USD';  // ETH 볼륨 → 차트에서 USD로 표시
         else if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'blob_fee_eth'].includes(fieldName)) unit = ' ETH';
-        else if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr'].includes(fieldName)) unit = '%';
+        else if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr', 'gas_utilization'].includes(fieldName)) unit = '%';
         else if (fieldName === 'avg_gas_price_gwei') unit = ' Gwei';
         
         // 90일 변화율 계산 (현재값 vs 90일 전 3일 평균)
@@ -641,18 +656,57 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         
         prompt += `- ${key}: ${valStr}${unit} ${changeStr}\n`;
         
-        // 추가 필드 (staking APR, gas utilization 등)
-        if (data.latest.lido_apr !== undefined) {
-            prompt += `  └ staking_apr: ${data.latest.lido_apr?.toFixed(2) || 'N/A'}%\n`;
+        // 추가 필드들 (같은 테이블에 있는 관련 데이터)
+        const latest = data.latest;
+        
+        // Staking APR
+        if (latest.lido_apr !== undefined && fieldName !== 'lido_apr') {
+            const change90d = calc90dChangeForField(data, 'lido_apr');
+            const changeNote = change90d ? ` (${change90d > 0 ? '+' : ''}${change90d}% vs 90d)` : '';
+            prompt += `  └ staking_apr: ${latest.lido_apr?.toFixed(2) || 'N/A'}%${changeNote}\n`;
         }
-        if (data.latest.gas_utilization !== undefined) {
-            prompt += `  └ gas_utilization: ${data.latest.gas_utilization?.toFixed(1) || 'N/A'}%\n`;
+        
+        // Gas Utilization
+        if (latest.gas_utilization !== undefined && fieldName !== 'gas_utilization') {
+            const change90d = calc90dChangeForField(data, 'gas_utilization');
+            const changeNote = change90d ? ` (${change90d > 0 ? '+' : ''}${change90d}% vs 90d)` : '';
+            prompt += `  └ gas_utilization: ${latest.gas_utilization?.toFixed(1) || 'N/A'}%${changeNote}\n`;
         }
-        if (data.latest.blob_fee_eth !== undefined) {
-            prompt += `  └ blob_fees: ${data.latest.blob_fee_eth?.toFixed(4) || 'N/A'} ETH\n`;
+        
+        // Blob Fees
+        if (latest.blob_fee_eth !== undefined && fieldName !== 'blob_fee_eth') {
+            const change90d = calc90dChangeForField(data, 'blob_fee_eth');
+            const changeNote = change90d ? ` (${change90d > 0 ? '+' : ''}${change90d}% vs 90d)` : '';
+            prompt += `  └ blob_fees: ${latest.blob_fee_eth?.toFixed(4) || 'N/A'} ETH${changeNote}\n`;
         }
-        if (data.latest.realized_price !== undefined && key !== 'mvrv') {
-            prompt += `  └ realized_price: $${data.latest.realized_price?.toFixed(2) || 'N/A'}\n`;
+        
+        // Realized Price
+        if (latest.realized_price !== undefined && key !== 'mvrv' && fieldName !== 'realized_price') {
+            const change90d = calc90dChangeForField(data, 'realized_price');
+            const changeNote = change90d ? ` (${change90d > 0 ? '+' : ''}${change90d}% vs 90d)` : '';
+            prompt += `  └ realized_price: $${latest.realized_price?.toFixed(2) || 'N/A'}${changeNote}\n`;
+        }
+        
+        // MVRV Ratio (for mvrv table)
+        if (latest.mvrv_ratio !== undefined && fieldName !== 'mvrv_ratio') {
+            const change90d = calc90dChangeForField(data, 'mvrv_ratio');
+            const changeNote = change90d ? ` (${change90d > 0 ? '+' : ''}${change90d}% vs 90d)` : '';
+            prompt += `  └ mvrv_ratio: ${latest.mvrv_ratio?.toFixed(2) || 'N/A'}${changeNote}\n`;
+        }
+        
+        // ETH Burnt (for gas_burn table)
+        if (latest.eth_burnt !== undefined && fieldName !== 'eth_burnt') {
+            const change90d = calc90dChangeForField(data, 'eth_burnt');
+            const changeNote = change90d ? ` (${change90d > 0 ? '+' : ''}${change90d}% vs 90d)` : '';
+            prompt += `  └ eth_burnt: ${latest.eth_burnt?.toFixed(2) || 'N/A'} ETH${changeNote}\n`;
+        }
+        
+        // Open Interest
+        if (latest.open_interest !== undefined && fieldName !== 'open_interest') {
+            const change90d = calc90dChangeForField(data, 'open_interest');
+            const changeNote = change90d ? ` (${change90d > 0 ? '+' : ''}${change90d}% vs 90d)` : '';
+            const oiVal = latest.open_interest >= 1e9 ? (latest.open_interest / 1e9).toFixed(2) + 'B' : (latest.open_interest / 1e6).toFixed(2) + 'M';
+            prompt += `  └ open_interest: $${oiVal}${changeNote}\n`;
         }
     }
     

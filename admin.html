@@ -5027,9 +5027,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             const extractValue = (record) => {
                 if (!record) return null;
                 const fields = ['value', 'tvl', 'total_tvl', 'total_mcap', 'funding_rate', 'total_staked_eth', 
-                    'lido_apr', 'eth_dominance', 'ratio', 'reserve_eth', 'avg_gas_price_gwei', 'eth_burnt',
+                    'lido_apr', 'eth_dominance', 'ratio', 'reserve_eth', 'avg_gas_price_gwei', 'gas_utilization', 'eth_burnt',
                     'mvrv_ratio', 'realized_price', 'nvt_ratio', 'tx_volume_usd', 'eth_volume_usd', 'native_volume_usd',
-                    'total_volume_usd', 'total_volume', 'daily_volume', 'volume',
+                    'total_volume_usd', 'total_volume', 'daily_volume', 'volume', 'open_interest',
                     'bridge_volume_eth', 'blob_count', 'blob_fee_eth',
                     'active_addresses', 'new_addresses', 'tx_count', 'volatility_30d', 'eth_supply', 
                     'fees', 'whale_tx_count'];
@@ -5062,12 +5062,12 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             // 단위 결정 함수 (차트 표시 단위 기준)
             const getUnit = (fieldName) => {
                 // 차트에서 USD로 표시하는 필드들
-                if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'eth_volume_usd', 'native_volume_usd', 'total_volume_usd', 'total_volume', 'total_mcap', 'fees'].includes(fieldName)) return ' USD';
+                if (['tvl', 'total_tvl', 'realized_price', 'daily_volume', 'volume', 'tx_volume_usd', 'eth_volume_usd', 'native_volume_usd', 'total_volume_usd', 'total_volume', 'total_mcap', 'fees', 'open_interest'].includes(fieldName)) return ' USD';
                 // ETH 볼륨 → 차트에서 USD로 표시하므로 USD
                 if (ethToUsdFields.includes(fieldName)) return ' USD';
                 // 차트에서 ETH로 표시하는 필드들
                 if (['total_staked_eth', 'reserve_eth', 'eth_burnt', 'eth_supply', 'blob_fee_eth'].includes(fieldName)) return ' ETH';
-                if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr'].includes(fieldName)) return '%';
+                if (['funding_rate', 'eth_dominance', 'volatility_30d', 'lido_apr', 'gas_utilization'].includes(fieldName)) return '%';
                 if (fieldName === 'avg_gas_price_gwei') return ' Gwei';
                 return '';
             };
@@ -5179,17 +5179,30 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 prompt += `  Trend: ${trendDirection.toUpperCase()} | Volatility: ${volatility.toFixed(1)}%\n`;
                 
                 // 추가 필드
-                if (data.latest.apy !== undefined && fieldName !== 'apy') {
-                    prompt += `  └ Staking APY: ${data.latest.apy?.toFixed(2) || 'N/A'}%\n`;
+                if (data.latest.lido_apr !== undefined && fieldName !== 'lido_apr') {
+                    prompt += `  └ Staking APR: ${data.latest.lido_apr?.toFixed(2) || 'N/A'}%\n`;
                 }
-                if (data.latest.gas_utilization !== undefined) {
+                if (data.latest.gas_utilization !== undefined && fieldName !== 'gas_utilization') {
                     prompt += `  └ Gas Utilization: ${data.latest.gas_utilization?.toFixed(1) || 'N/A'}%\n`;
                 }
-                if (data.latest.blob_fee_eth !== undefined) {
+                if (data.latest.blob_fee_eth !== undefined && fieldName !== 'blob_fee_eth') {
                     prompt += `  └ Blob Fees: ${data.latest.blob_fee_eth?.toFixed(4) || 'N/A'} ETH\n`;
                 }
                 if (data.latest.whale_volume_eth !== undefined) {
                     prompt += `  └ Whale Volume: ${formatVal(data.latest.whale_volume_eth, ' ETH')}\n`;
+                }
+                if (data.latest.realized_price !== undefined && key !== 'mvrv' && fieldName !== 'realized_price') {
+                    prompt += `  └ Realized Price: $${data.latest.realized_price?.toFixed(2) || 'N/A'}\n`;
+                }
+                if (data.latest.mvrv_ratio !== undefined && fieldName !== 'mvrv_ratio') {
+                    prompt += `  └ MVRV Ratio: ${data.latest.mvrv_ratio?.toFixed(2) || 'N/A'}\n`;
+                }
+                if (data.latest.eth_burnt !== undefined && fieldName !== 'eth_burnt') {
+                    prompt += `  └ ETH Burnt: ${data.latest.eth_burnt?.toFixed(2) || 'N/A'} ETH\n`;
+                }
+                if (data.latest.open_interest !== undefined && fieldName !== 'open_interest') {
+                    const oiVal = data.latest.open_interest >= 1e9 ? (data.latest.open_interest / 1e9).toFixed(2) + 'B' : (data.latest.open_interest / 1e6).toFixed(2) + 'M';
+                    prompt += `  └ Open Interest: $${oiVal}\n`;
                 }
                 
                 prompt += `\n`;
