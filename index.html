@@ -13338,7 +13338,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">(L1 ETH + L2 Native + Bridge) × 365 ÷ Velocity ÷ Supply</div>
+                            <div class="method-formula">(L1 ETH + L2 ETH + Bridge) × 365 ÷ Velocity ÷ Supply</div>
                             <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume uses L1 mainnet transfers (L2 excluded as it double-counts DEX activity). Velocity of 6 reflects ETH's Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value.</div>
                         </div>
                         <div class="method-right">
@@ -15118,8 +15118,8 @@
                     ]
                 },
                 'settlementLayer': {
-                    formula: '(L1 ETH + L2 Native + Bridge) × 365 ÷ Velocity ÷ Supply',
-                    desc: t('method.settlement.desc', 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 ETH transfers, L2 native token transfers (ETH/MNT), and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, post-ETF institutional holding patterns, USD M1 velocity (~5.5x) benchmark.'),
+                    formula: '(L1 ETH + L2 ETH + Bridge) × 365 ÷ Velocity ÷ Supply',
+                    desc: t('method.settlement.desc', 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 ETH transfers, L2 ETH transfers (excludes Mantle MNT), and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, post-ETF institutional holding patterns, USD M1 velocity (~5.5x) benchmark.'),
                     reliability: 2,
                     caveat: t('method.settlement.note', 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly'),
                     sources: [
@@ -18297,7 +18297,7 @@
             // App Capital (Stablecoins proxy)
             appCapital: 0,
             appCapitalHistory: [],
-            // Settlement Layer (MV=PQ) (L1 + L2 + Bridge TX Volume)
+            // Settlement Layer (MV=PQ) (L1 ETH + L2 ETH + Bridge)
             l1DailyVolume: 0,
             l1TotalVolume: 0,
             l2DailyVolume: 0,
@@ -19253,10 +19253,13 @@
                 
                 // L2 Native Token Transfer (aggregate by date) for Settlement Layer
                 // Now using native_volume_usd from historical_l2_total_volume table
-                // NOTE: This is NATIVE token transfers only (ETH on most L2s, MNT on Mantle)
+                // NOTE: Excludes Mantle (MNT is not ETH) - only ETH-native L2s counted
                 if (l2TotalVolumeData && l2TotalVolumeData.length > 0) {
                     const l2NativeByDate = {};
                     l2TotalVolumeData.forEach(d => {
+                        // Exclude Mantle - its native token is MNT, not ETH
+                        if (d.chain && d.chain.toLowerCase() === 'mantle') return;
+                        
                         const dateKey = d.date;
                         if (!l2NativeByDate[dateKey]) l2NativeByDate[dateKey] = 0;
                         l2NativeByDate[dateKey] += parseFloat(d.native_volume_usd || 0);
@@ -19273,21 +19276,21 @@
                     }
                     
                     state.l2VolumeHistory = l2NativeHistory;
-                    log(`   ✓ L2 Native Transfer History: ${state.l2VolumeHistory.length} records`);
+                    log(`   ✓ L2 ETH Transfer History: ${state.l2VolumeHistory.length} records (excl. Mantle)`);
                     
                     // Use latest valid value (skip last incomplete day)
                     const sortedDates = Object.keys(l2NativeByDate).sort().reverse();
                     if (sortedDates.length > 2) {
                         // 마지막 데이터 제외
                         state.l2DailyVolume = l2NativeByDate[sortedDates[1]];
-                        log(`   ✓ L2 Native Transfer: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (${sortedDates[1]})`);
+                        log(`   ✓ L2 ETH Transfer: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (${sortedDates[1]})`);
                         
                         // Keep 7-day avg for calculations
                         const recentDates = sortedDates.slice(1, 8);
                         state.l2DailyVolumeAvg = recentDates.reduce((sum, date) => sum + l2NativeByDate[date], 0) / recentDates.length;
                     } else if (sortedDates.length > 0) {
                         state.l2DailyVolume = l2NativeByDate[sortedDates[0]];
-                        log(`   ✓ L2 Native Transfer: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedDates[0]})`);
+                        log(`   ✓ L2 ETH Transfer: $${(state.l2DailyVolume / 1e9).toFixed(2)}B (latest: ${sortedDates[0]})`);
                     }
                 }
                 
@@ -19375,11 +19378,11 @@
                     }
                 }
                 
-                // Calculate total dailySettlement (L1 ETH + L2 Native + Bridge)
-                // This represents total native token settlement across Ethereum ecosystem
+                // Calculate total dailySettlement (L1 ETH + L2 ETH + Bridge)
+                // This represents total ETH settlement across Ethereum ecosystem (excl. Mantle MNT)
                 if (state.l1DailyVolume || state.l2DailyVolume || state.bridgeDailyVolume) {
                     state.dailySettlement = (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0) + (state.bridgeDailyVolume || 0);
-                    log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1 ETH + L2 Native + Bridge)`);
+                    log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1 ETH + L2 ETH + Bridge)`);
                 }
                 
                 // Whale Transactions (1000+ ETH)
@@ -24919,7 +24922,7 @@
                 models.push({ 
                     id: 'settlementLayer',
                     name: 'Settlement Layer (MV=PQ)', 
-                    formula: '(L1 ETH + L2 Native + Bridge) × 365 ÷ Velocity ÷ Supply', 
+                    formula: '(L1 ETH + L2 ETH + Bridge) × 365 ÷ Velocity ÷ Supply', 
                     price: fairMarketCap / cs,
                     reliability: 2,
                     source: `Velocity=${velocity} (SoV-heavy)`
@@ -27576,7 +27579,7 @@ Check out ETHval 👇`;
                 }
                 
                 // 12. Settlement Layer (MV=PQ)
-                // Uses L1 ETH + L2 Native + Bridge volume with velocity assumption
+                // Uses L1 ETH + L2 ETH (excl. Mantle) + Bridge volume with velocity assumption
                 const velocity = 6;
                 if (isLastPoint) {
                     const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
@@ -27685,7 +27688,7 @@ Check out ETHval 👇`;
             const targetYield = riskFreeRate + riskPremium; // 6%
             valuation.validatorEcon = state.price * (targetYield / state.stakingApr);
             
-            // 12. Settlement Layer (MV=PQ): (L1 ETH + L2 Native + Bridge) × 365 / Velocity / Supply
+            // 12. Settlement Layer (MV=PQ): (L1 ETH + L2 ETH + Bridge) × 365 / Velocity / Supply
             const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
             valuation.settlementLayer = (dailySettlement * 365 / 6) / csVal;
             
