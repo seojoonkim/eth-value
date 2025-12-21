@@ -3129,7 +3129,8 @@
                         .select('date, chain, tx_count').order('date', { ascending: false }).limit(8000);
                     if (!txs?.length) return 0;
                     const records = txs.map(t => ({
-                        date: t.date, timestamp: Date.now(), chain: t.chain,
+                        date: t.date,
+                        chain: t.chain,
                         active_addresses: Math.floor(t.tx_count * 0.3),
                         source: 'estimated'
                     }));
@@ -3175,7 +3176,6 @@
                             
                             return {
                                 date: dateStr,
-                                timestamp: new Date(dateStr).getTime(),
                                 chain: row.chain,
                                 active_addresses: parseInt(row.active_addresses) || 0,
                                 source: 'dune'
