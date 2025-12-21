@@ -13338,7 +13338,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">(L1 Vol × 365 ÷ Velocity) ÷ Supply</div>
+                            <div class="method-formula">(L1 ETH + L2 Native + Bridge) × 365 ÷ Velocity ÷ Supply</div>
                             <div class="method-desc" data-i18n="method.settlement.desc">Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume uses L1 mainnet transfers (L2 excluded as it double-counts DEX activity). Velocity of 6 reflects ETH's Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value.</div>
                         </div>
                         <div class="method-right">
@@ -15118,8 +15118,8 @@
                     ]
                 },
                 'settlementLayer': {
-                    formula: 'DailySettlement × 365 ÷ Velocity ÷ Supply',
-                    desc: t('method.settlement.desc', 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics.'),
+                    formula: '(L1 ETH + L2 Native + Bridge) × 365 ÷ Velocity ÷ Supply',
+                    desc: t('method.settlement.desc', 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 ETH transfers, L2 native token transfers (ETH/MNT), and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, post-ETF institutional holding patterns, USD M1 velocity (~5.5x) benchmark.'),
                     reliability: 2,
                     caveat: t('method.settlement.note', 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly'),
                     sources: [
@@ -19375,11 +19375,11 @@
                     }
                 }
                 
-                // Calculate total dailySettlement (L1 + Bridge only)
-                // Note: L2 TX Volume excluded - it double-counts DEX swaps and contract calls
-                if (state.l1DailyVolume || state.bridgeDailyVolume) {
-                    state.dailySettlement = (state.l1DailyVolume || 0) + (state.bridgeDailyVolume || 0);
-                    log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1+Bridge)`);
+                // Calculate total dailySettlement (L1 ETH + L2 Native + Bridge)
+                // This represents total native token settlement across Ethereum ecosystem
+                if (state.l1DailyVolume || state.l2DailyVolume || state.bridgeDailyVolume) {
+                    state.dailySettlement = (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0) + (state.bridgeDailyVolume || 0);
+                    log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1 ETH + L2 Native + Bridge)`);
                 }
                 
                 // Whale Transactions (1000+ ETH)
@@ -24919,7 +24919,7 @@
                 models.push({ 
                     id: 'settlementLayer',
                     name: 'Settlement Layer (MV=PQ)', 
-                    formula: '(L1 Vol × 365 ÷ Velocity) ÷ Supply', 
+                    formula: '(L1 ETH + L2 Native + Bridge) × 365 ÷ Velocity ÷ Supply', 
                     price: fairMarketCap / cs,
                     reliability: 2,
                     source: `Velocity=${velocity} (SoV-heavy)`
@@ -27576,7 +27576,7 @@ Check out ETHval 👇`;
                 }
                 
                 // 12. Settlement Layer (MV=PQ)
-                // Uses L1 daily settlement volume + bridge volume with velocity assumption
+                // Uses L1 ETH + L2 Native + Bridge volume with velocity assumption
                 const velocity = 6;
                 if (isLastPoint) {
                     const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
@@ -27685,7 +27685,7 @@ Check out ETHval 👇`;
             const targetYield = riskFreeRate + riskPremium; // 6%
             valuation.validatorEcon = state.price * (targetYield / state.stakingApr);
             
-            // 12. Settlement Layer (MV=PQ): (L1 Vol × 365 / Velocity) / Supply
+            // 12. Settlement Layer (MV=PQ): (L1 ETH + L2 Native + Bridge) × 365 / Velocity / Supply
             const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
             valuation.settlementLayer = (dailySettlement * 365 / 6) / csVal;
             
