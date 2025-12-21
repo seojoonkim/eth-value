@@ -21356,29 +21356,36 @@
                 setDataSource('ethbtc-chart', ethbtcSource, 'Binance');
                 
                 // ═══════════════════════════════════════════════════════════════════
-                // 변화율 계산 (전체 데이터 기준)
+                // 변화율 계산 (기본 90일 기준)
                 // ═══════════════════════════════════════════════════════════════════
+                const defaultPeriod = CHART_CONFIG.DEFAULT_PERIOD;
+                const cutoff = Date.now() - defaultPeriod * 24 * 60 * 60 * 1000;
+                
                 if (state.dominanceHistory && state.dominanceHistory.length > 1) {
-                    const first = state.dominanceHistory[0].value;
-                    const last = state.dominanceHistory[state.dominanceHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('dominance-change');
-                    if (changeEl) {
-                        const label = CHART_CONFIG.getLabel(state.dominanceHistory.length > 900 ? 1095 : state.dominanceHistory.length > 300 ? 365 : 90);
-                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    const filtered = state.dominanceHistory.filter(d => d.date.getTime() > cutoff);
+                    if (filtered.length > 1) {
+                        const first = filtered[0].value;
+                        const last = filtered[filtered.length - 1].value;
+                        const change = ((last - first) / first) * 100;
+                        const changeEl = document.getElementById('dominance-change');
+                        if (changeEl) {
+                            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
+                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                        }
                     }
                 }
                 
                 if (state.ethbtcHistory && state.ethbtcHistory.length > 1) {
-                    const first = state.ethbtcHistory[0].value;
-                    const last = state.ethbtcHistory[state.ethbtcHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('ethbtc-change');
-                    if (changeEl) {
-                        const label = CHART_CONFIG.getLabel(state.ethbtcHistory.length > 900 ? 1095 : state.ethbtcHistory.length > 300 ? 365 : 90);
-                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    const filtered = state.ethbtcHistory.filter(d => d.date.getTime() > cutoff);
+                    if (filtered.length > 1) {
+                        const first = filtered[0].value;
+                        const last = filtered[filtered.length - 1].value;
+                        const change = ((last - first) / first) * 100;
+                        const changeEl = document.getElementById('ethbtc-change');
+                        if (changeEl) {
+                            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
+                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                        }
                     }
                 }
                 
@@ -22199,14 +22206,19 @@
                 }
                 
                 document.getElementById('exchange-reserve').textContent = fmt.num(state.exchangeReserve, 1) + ' ETH';
-                updateReserveChartWithPeriod(90);
+                updateReserveChartWithPeriod(CHART_CONFIG.DEFAULT_PERIOD);
                 
-                const first = state.reserveHistory[0].value;
-                const last = state.exchangeReserve;
-                const change = ((last - first) / first) * 100;
-                const changeEl = document.getElementById('reserve-change');
-                changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                // Use filtered data for change calculation
+                const cutoff = Date.now() - CHART_CONFIG.DEFAULT_PERIOD * 24 * 60 * 60 * 1000;
+                const filtered = state.reserveHistory.filter(d => d.date.getTime() > cutoff);
+                if (filtered.length > 1) {
+                    const first = filtered[0].value;
+                    const last = filtered[filtered.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const changeEl = document.getElementById('reserve-change');
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
+                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                }
                 return;
             }
             
@@ -22230,15 +22242,19 @@
             state.exchangeReserve = state.reserveHistory[state.reserveHistory.length - 1].value;
             
             document.getElementById('exchange-reserve').textContent = fmt.num(state.exchangeReserve, 1) + ' ETH';
-            updateReserveChartWithPeriod(90);
+            updateReserveChartWithPeriod(CHART_CONFIG.DEFAULT_PERIOD);
             
-            // YoY 변화율
-            const first = state.reserveHistory[0].value;
-            const last = state.exchangeReserve;
-            const change = ((last - first) / first) * 100;
-            const changeEl = document.getElementById('reserve-change');
-            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
-            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            // Use filtered data for change calculation
+            const cutoff2 = Date.now() - CHART_CONFIG.DEFAULT_PERIOD * 24 * 60 * 60 * 1000;
+            const filtered2 = state.reserveHistory.filter(d => d.date.getTime() > cutoff2);
+            if (filtered2.length > 1) {
+                const first = filtered2[0].value;
+                const last = filtered2[filtered2.length - 1].value;
+                const change = ((last - first) / first) * 100;
+                const changeEl = document.getElementById('reserve-change');
+                changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
+                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
         }
         
         function updateReserveChart() {
@@ -22277,15 +22293,20 @@
                 state.openInterestHistory = state.supabaseOpenInterestHistory;
                 state.openInterest = state.openInterestHistory[state.openInterestHistory.length - 1].value;
                 document.getElementById('open-interest-value').textContent = '$' + (state.openInterest / 1e9).toFixed(2) + 'B';
-                updateOpenInterestChartWithPeriod(90);
+                updateOpenInterestChartWithPeriod(CHART_CONFIG.DEFAULT_PERIOD);
                 
-                const first = state.openInterestHistory[0].value;
-                const last = state.openInterest;
-                const change = ((last - first) / first) * 100;
-                const changeEl = document.getElementById('open-interest-change');
-                if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                // Use filtered data for change calculation
+                const cutoff = Date.now() - CHART_CONFIG.DEFAULT_PERIOD * 24 * 60 * 60 * 1000;
+                const filtered = state.openInterestHistory.filter(d => d.date.getTime() > cutoff);
+                if (filtered.length > 1) {
+                    const first = filtered[0].value;
+                    const last = filtered[filtered.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const changeEl = document.getElementById('open-interest-change');
+                    if (changeEl) {
+                        changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
                 }
                 return;
             }
@@ -22692,14 +22713,17 @@
             }
             // MVRV Ratio
             if (state.mvrvHistory && state.mvrvHistory.length > 0) {
-                renderMvrvChart('mvrv-ratio-chart', state.mvrvHistory, CHART_CONFIG.DEFAULT_PERIOD);
+                const result = renderMvrvChart('mvrv-ratio-chart', state.mvrvHistory, CHART_CONFIG.DEFAULT_PERIOD);
                 const latest = state.mvrvHistory[state.mvrvHistory.length - 1];
                 document.getElementById('mvrv-ratio-value').textContent = latest.value.toFixed(2) + 'x';
-                // MVRV change: compare to beginning of period
-                const first = state.mvrvHistory[0].value, last = latest.value;
-                const change = ((last - first) / first) * 100;
-                const el = document.getElementById('mvrv-ratio-change');
-                if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                // MVRV change: use filtered history
+                const chartHistory = result?.history || state.mvrvHistory;
+                if (chartHistory.length > 1) {
+                    const first = chartHistory[0].value, last = chartHistory[chartHistory.length - 1].value;
+                    const change = ((last - first) / first) * 100;
+                    const el = document.getElementById('mvrv-ratio-change');
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                }
             } else {
                 // Default MVRV if no history loaded
                 const mvrvEl = document.getElementById('mvrv-ratio-value');
@@ -25236,6 +25260,9 @@
             });
             
             setChartLoading(canvasId, false);
+            
+            // Return filtered history for change calculation
+            return { history: filteredHistory };
         }
 
         // Valuation with formulas
