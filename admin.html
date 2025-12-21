@@ -1020,7 +1020,7 @@
             
             // --- 🔶 Dune Analytics ---
             blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, phase: 1, source: '🔶 Dune' },
-            l2_native_transfer: { name: 'L2 Native Transfer', icon: '💸', table: 'historical_l2_total_volume', valueField: 'native_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Native token transfers only (ETH/MNT). Now from L2 Total Volume table.' },
+            l2_native_transfer: { name: 'L2 ETH Transfer', icon: '💸', table: 'historical_l2_total_volume', valueField: 'native_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'ETH transfers on L2s (excludes Mantle MNT). For Settlement Layer.' },
             l1_total_volume: { name: 'L1 Total Volume', icon: '📊', table: 'historical_l1_total_volume', valueField: 'total_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (ETH + all ERC-20 tokens)' },
             l1_eth_transfer: { name: 'L1 ETH Transfer', icon: '💸', table: 'historical_l1_total_volume', valueField: 'eth_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Native ETH transfers only. Now from L1 Total Volume table.' },
             l2_total_volume: { name: 'L2 Total Volume', icon: '📈', table: 'historical_l2_total_volume', valueField: 'total_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (Native + all tokens) across 8 L2s' },
@@ -3157,7 +3157,7 @@
             },
 
             // REMOVED: l2_native_transfer() function
-            // L2 Native Transfer now uses native_volume_usd from historical_l2_total_volume table
+            // L2 ETH Transfer now uses native_volume_usd from historical_l2_total_volume table
             // Query ID 6352386 is no longer needed
 
             // L1 Total Volume - Dune API (ETH + all ERC-20 tokens)
@@ -4115,13 +4115,13 @@
                 }
             },
             // 02.7 결제량 - 6개 차트
-            // NOTE: L1/L2 Volume은 네이티브 토큰 전송만 포함 (ETH, MNT 등)
+            // NOTE: L1/L2 Volume은 전체 토큰 전송 포함, L1/L2 ETH Transfer는 ETH만
             // ERC-20 토큰 전송, DEX 스왑 등은 별도 지표로 측정
-            // Charts: L1 Total Volume, L1 Stablecoin Volume, L1 ETH Transfer, L2 Total Volume, L2 Stablecoin Volume, L2 Native Transfer, L1 DEX Volume, Bridge Volume
+            // Charts: L1 Total Volume, L1 Stablecoin Volume, L1 ETH Transfer, L2 Total Volume, L2 Stablecoin Volume, L2 ETH Transfer, L1 DEX Volume, Bridge Volume
             settlement_volume: {
                 title: 'Settlement Volume',
                 title_ko: '결제량',
-                charts: ['L1 Total Volume', 'L1 Stablecoin Volume', 'L1 ETH Transfer', 'L2 Total Volume', 'L2 Stablecoin Volume', 'L2 Native Transfer', 'L1 DEX Volume', 'Bridge Volume'],
+                charts: ['L1 Total Volume', 'L1 Stablecoin Volume', 'L1 ETH Transfer', 'L2 Total Volume', 'L2 Stablecoin Volume', 'L2 ETH Transfer', 'L1 DEX Volume', 'Bridge Volume'],
                 // AI에게 전달할 컨텍스트: 각 지표의 정확한 정의
                 context: `⚠️ CRITICAL: 8 DIFFERENT METRICS - DO NOT CONFUSE ⚠️
 
@@ -4132,7 +4132,7 @@
 4. L2 스테이블코인 볼륨: $70-100B/day
 5. L1 ETH 전송량 (L1 ETH Transfer): $5-10B/day ← MUCH SMALLER!
 6. L1 DEX 볼륨: $1-3B/day
-7. L2 네이티브 전송량: $200-500M/day
+7. L2 ETH 전송량 (L2 ETH Transfer): $200-500M/day (Mantle 제외)
 8. 브릿지 볼륨: $10-50M/day
 
 === THE KEY DISTINCTION ===
@@ -4149,7 +4149,7 @@
 • L1 ETH Transfer: L1의 네이티브 ETH 전송만 (토큰 제외)
 • L1 Stablecoin Volume: L1의 스테이블코인 전송만
 • L2 Total Volume: L2 8개 체인의 모든 전송
-• L2 Native Transfer: L2의 네이티브 토큰만 (ETH/MNT)
+• L2 ETH Transfer: L2의 ETH 전송만 (Mantle MNT 제외, Settlement Layer용)
 • L2 Stablecoin Volume: L2의 스테이블코인만
 • L1 DEX Volume: L1 DEX 거래량 (주간 데이터)
 • Bridge Volume: 브릿지 전송량
@@ -4158,7 +4158,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 tables: {
                     l1_eth_transfer: 'historical_l1_total_volume',  // eth_volume_usd (L1 ETH Transfer - native ETH only, ~$7B)
                     l1_total_volume: 'historical_l1_total_volume',  // total_volume_usd (ETH + all tokens, ~$200B)
-                    l2_native_transfer: 'historical_l2_total_volume',  // native_volume_usd (L2 Native Transfer - ETH/MNT only, ~$300M)
+                    l2_native_transfer: 'historical_l2_total_volume',  // native_volume_usd (L2 ETH Transfer - excl Mantle, ~$300M)
                     l2_total_volume: 'historical_l2_total_volume',  // total_volume_usd (Native + all tokens, ~$100B)
                     bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
                     stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume (~$80B)
@@ -4343,7 +4343,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                     }
                     
                     // REMOVED: historical_l2_tx_volume handling
-                    // L2 Native Transfer now uses historical_l2_total_volume.native_volume_usd
+                    // L2 ETH Transfer now uses historical_l2_total_volume.native_volume_usd
                     
                     // Special handling for Bridge Volume (stored by chain)
                     if (tableName === 'historical_bridge_volume') {
@@ -4378,7 +4378,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                     }
                     
                     // Special handling for L2 Total Volume table (used by both l2_native_transfer and l2_total_volume)
-                    // l2_native_transfer uses native_volume_usd, l2_total_volume uses total_volume_usd
+                    // l2_native_transfer (L2 ETH Transfer) uses native_volume_usd, l2_total_volume uses total_volume_usd
                     if (tableName === 'historical_l2_total_volume') {
                         const fieldToUse = metricKey === 'l2_native_transfer' ? 'native_volume_usd' : 'total_volume_usd';
                         const { data: recent } = await client
@@ -4395,7 +4395,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             }
                             let dates = Object.keys(byDate).sort().reverse();
                             
-                            console.log(`📊 L2 ${metricKey === 'l2_native_transfer' ? 'Native Transfer' : 'Total Volume'} aggregated: ${dates.length} dates, latest=$${(byDate[dates[0]]/1e9)?.toFixed(2)}B`);
+                            console.log(`📊 L2 ${metricKey === 'l2_native_transfer' ? 'ETH Transfer' : 'Total Volume'} aggregated: ${dates.length} dates, latest=$${(byDate[dates[0]]/1e9)?.toFixed(2)}B`);
                             
                             // 마지막 데이터 제외 (수집 중일 수 있음)
                             if (dates.length > 2) {
