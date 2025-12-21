@@ -2571,19 +2571,25 @@ async function main() {
     const duration = Math.round((endTime - startTime) / 1000);
     const logStatus = failed === 0 ? 'success' : (success > failed ? 'partial' : 'failed');
     
+    // Detect trigger type from GitHub Actions environment
+    const triggerType = process.env.GITHUB_EVENT_NAME === 'schedule' ? 'schedule' : 'manual';
+    const runTimestamp = new Date().toISOString();
+    
     try {
-        const { error } = await supabase.from('scheduler_logs').upsert({
-            run_date: new Date().toISOString().split('T')[0],
+        const { error } = await supabase.from('scheduler_logs').insert({
+            run_timestamp: runTimestamp,
+            run_date: runTimestamp.split('T')[0],
+            trigger_type: triggerType,
             status: logStatus,
             success_count: success,
             failed_count: failed,
             failed_datasets: JSON.stringify(failedDatasets),
             duration_seconds: duration,
             total_datasets: 38  // l1_volume, l2_volume 제거됨 (Total Volume 테이블로 통합)
-        }, { onConflict: 'run_date' });
+        });
         
         if (error) console.error('Failed to save scheduler log:', error.message);
-        else console.log('📝 Scheduler log saved to Supabase');
+        else console.log(`📝 Scheduler log saved (${triggerType})`);
     } catch (e) {
         console.error('Failed to save scheduler log:', e.message);
     }

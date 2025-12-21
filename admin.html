@@ -103,7 +103,7 @@
         <!-- Scheduler Logs Section -->
         <div class="table-container" style="margin-bottom: 24px;">
             <div class="section-title">
-                <span>🤖 Scheduler Logs (Last 7 Days)</span>
+                <span>🤖 Scheduler Logs (Last 10 Runs)</span>
                 <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;" onclick="refreshSchedulerLogs()">🔄 Refresh</button>
             </div>
             <div id="scheduler-logs-container">
@@ -117,7 +117,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Date</th>
+                            <th>Date & Time</th>
+                            <th>Trigger</th>
                             <th>Status</th>
                             <th>Duration</th>
                             <th>Success</th>
@@ -126,7 +127,7 @@
                         </tr>
                     </thead>
                     <tbody id="scheduler-logs-table">
-                        <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading scheduler logs...</td></tr>
+                        <tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading scheduler logs...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -3871,34 +3872,31 @@
         // ══════════════════════════════════════════════════════════════
         async function refreshSchedulerLogs() {
             const tbody = document.getElementById('scheduler-logs-table');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading...</td></tr>';
             
             try {
-                // Get logs from last 7 days
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                
+                // Get last 10 runs (not limited by date)
                 const { data: logs, error } = await sb
                     .from('scheduler_logs')
                     .select('*')
-                    .gte('run_date', sevenDaysAgo.toISOString().split('T')[0])
-                    .order('run_date', { ascending: false });
+                    .order('run_timestamp', { ascending: false })
+                    .limit(10);
                 
                 if (error) {
                     console.error('Scheduler logs error:', error);
                     // Table might not exist yet
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">
                         No scheduler logs yet. Logs will appear after the first automated run.<br>
-                        <small style="opacity: 0.7;">Schedule: Daily at KST 15:00 (UTC 06:00)</small>
+                        <small style="opacity: 0.7;">Schedule: Daily at KST 13:30 (UTC 04:30)</small>
                     </td></tr>`;
                     updateSchedulerSummary([]);
                     return;
                 }
                 
                 if (!logs || logs.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
-                        No scheduler runs in the last 7 days.<br>
-                        <small style="opacity: 0.7;">Schedule: Daily at KST 15:00 (UTC 06:00)</small>
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                        No scheduler runs yet.<br>
+                        <small style="opacity: 0.7;">Schedule: Daily at KST 13:30 (UTC 04:30)</small>
                     </td></tr>`;
                     updateSchedulerSummary([]);
                     return;
@@ -3914,8 +3912,25 @@
                         ? `<span style="color: var(--error); font-size: 11px;">${failedDatasets.join(', ')}</span>`
                         : '<span style="color: var(--text-muted);">-</span>';
                     
+                    // Format datetime with local timezone
+                    const runTime = log.run_timestamp ? new Date(log.run_timestamp) : new Date(log.run_date);
+                    const dateStr = runTime.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', weekday: 'short' });
+                    const timeStr = runTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    // Trigger type badge
+                    const triggerType = log.trigger_type || 'schedule';
+                    const triggerIcon = triggerType === 'manual' ? '👆' : '🕐';
+                    const triggerColor = triggerType === 'manual' ? '#58a6ff' : '#8b949e';
+                    const triggerLabel = triggerType === 'manual' ? 'Manual' : 'Scheduled';
+                    
                     return `<tr>
-                        <td style="white-space: nowrap;">${new Date(log.run_date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', weekday: 'short' })}</td>
+                        <td style="white-space: nowrap;">
+                            <div style="font-size: 12px;">${dateStr}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${timeStr}</div>
+                        </td>
+                        <td>
+                            <span style="color: ${triggerColor}; font-size: 11px;">${triggerIcon} ${triggerLabel}</span>
+                        </td>
                         <td><span class="badge ${statusClass}">${statusIcon} ${log.status}</span></td>
                         <td>${log.duration_seconds ? log.duration_seconds + 's' : '-'}</td>
                         <td style="color: var(--success);">${log.success_count || 0}</td>
@@ -3926,7 +3941,7 @@
                 
             } catch (e) {
                 console.error('Failed to load scheduler logs:', e);
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--error);">Failed to load logs</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--error);">Failed to load logs</td></tr>';
             }
         }
         
@@ -3935,7 +3950,14 @@
             const success = logs.filter(l => l.status === 'success').length;
             const partial = logs.filter(l => l.status === 'partial').length;
             const failed = logs.filter(l => l.status === 'failed').length;
-            const lastRun = logs[0] ? new Date(logs[0].run_date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+            
+            // Format last run with timestamp
+            let lastRun = '-';
+            if (logs[0]) {
+                const runTime = logs[0].run_timestamp ? new Date(logs[0].run_timestamp) : new Date(logs[0].run_date);
+                lastRun = runTime.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' ' +
+                          runTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            }
             
             document.getElementById('sched-total').textContent = total;
             document.getElementById('sched-success').textContent = success;
@@ -5013,6 +5035,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 return '';
             };
             
+            // 퍼센트로 변환이 필요한 필드들 (소수 → 퍼센트, * 100)
+            const percentConversionFields = ['funding_rate'];
+            
             prompt += `═══════════════════════════════════════════════════════════════\n`;
             prompt += `COMPREHENSIVE 30-DAY METRICS ANALYSIS\n`;
             prompt += `═══════════════════════════════════════════════════════════════\n\n`;
@@ -5030,7 +5055,13 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 
                 // ETH→USD 변환 여부
                 const needsUsdConversion = ethToUsdFields.includes(fieldName);
-                const multiplier = needsUsdConversion ? ethPrice : 1;
+                const usdMultiplier = needsUsdConversion ? ethPrice : 1;
+                
+                // 소수→퍼센트 변환 여부 (funding_rate는 0.0001 → 0.01%로 변환 필요)
+                const needsPercentConversion = percentConversionFields.includes(fieldName);
+                const percentMultiplier = needsPercentConversion ? 100 : 1;
+                
+                const multiplier = usdMultiplier * percentMultiplier;
                 
                 // 날짜와 값을 함께 추출
                 const dataWithDates = all.map(r => {
