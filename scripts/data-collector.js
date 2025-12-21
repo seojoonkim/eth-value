@@ -211,6 +211,64 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
 // ============================================================
 
 /**
+ * Fetch historical statistics for a metric (3-year data for context)
+ * Returns min, max, median, percentiles, and current percentile
+ */
+async function fetchHistoricalStats(tableName, fieldName) {
+    try {
+        // 3년치 데이터 가져오기 (약 1095일)
+        const { data, error } = await supabase
+            .from(tableName)
+            .select(`date, ${fieldName}`)
+            .order('date', { ascending: false })
+            .limit(1100);
+        
+        if (error || !data || data.length < 30) return null;
+        
+        // 유효한 값만 추출
+        const values = data
+            .map(d => d[fieldName])
+            .filter(v => v !== null && v !== undefined && !isNaN(v) && isFinite(v));
+        
+        if (values.length < 30) return null;
+        
+        // 정렬
+        const sorted = [...values].sort((a, b) => a - b);
+        const n = sorted.length;
+        
+        // 통계 계산
+        const min = sorted[0];
+        const max = sorted[n - 1];
+        const median = sorted[Math.floor(n / 2)];
+        const p10 = sorted[Math.floor(n * 0.1)];
+        const p25 = sorted[Math.floor(n * 0.25)];
+        const p75 = sorted[Math.floor(n * 0.75)];
+        const p90 = sorted[Math.floor(n * 0.9)];
+        
+        // 현재값의 percentile 계산
+        const currentVal = values[0]; // 최신값
+        const belowCount = sorted.filter(v => v < currentVal).length;
+        const currentPercentile = Math.round((belowCount / n) * 100);
+        
+        return {
+            min,
+            max,
+            median,
+            p10,
+            p25,
+            p75,
+            p90,
+            currentVal,
+            currentPercentile,
+            dataPoints: n
+        };
+    } catch (e) {
+        console.error(`  Error fetching stats for ${tableName}.${fieldName}:`, e.message);
+        return null;
+    }
+}
+
+/**
  * Fetch latest metrics data for a section
  */
 async function fetchSectionMetrics(sectionKey) {
@@ -552,20 +610,28 @@ async function fetchSectionMetrics(sectionKey) {
                 // fieldOverrides가 있으면 해당 필드만 추출해서 저장 (중복 테이블 문제 해결)
                 if (section.fieldOverrides && section.fieldOverrides[metricKey]) {
                     const targetField = section.fieldOverrides[metricKey];
+                    // 역사적 통계 가져오기
+                    const historicalStats = await fetchHistoricalStats(tableName, targetField);
+                    
                     metricsData[metricKey] = {
                         latest: { date: cleanedRecent[0]?.date, [targetField]: cleanedRecent[0]?.[targetField] },
                         recent3d: cleanedRecent.slice(0, 3).map(r => ({ date: r.date, [targetField]: r[targetField] })),
                         recent7d: cleanedRecent.slice(0, 7).map(r => ({ date: r.date, [targetField]: r[targetField] })),
                         around90d: around90d.map(r => ({ date: r.date, [targetField]: r[targetField] })),
-                        ninetyDaysAgo: older?.[0] ? { date: older[0].date, [targetField]: older[0][targetField] } : null
+                        ninetyDaysAgo: older?.[0] ? { date: older[0].date, [targetField]: older[0][targetField] } : null,
+                        historicalStats: historicalStats
                     };
                 } else {
+                    // 역사적 통계 가져오기
+                    const historicalStats = await fetchHistoricalStats(tableName, valueField);
+                    
                     metricsData[metricKey] = {
                         latest: cleanedRecent[0],
                         recent3d: cleanedRecent.slice(0, 3),
                         recent7d: cleanedRecent.slice(0, 7),
                         around90d: around90d,
-                        ninetyDaysAgo: older?.[0] || null
+                        ninetyDaysAgo: older?.[0] || null,
+                        historicalStats: historicalStats
                     };
                 }
             }
@@ -699,6 +765,23 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
         
         prompt += `- ${key}: ${valStr}${unit} ${changeStr}\n`;
         
+        // 역사적 통계 추가 (AI가 맥락을 이해하도록)
+        const stats = data.historicalStats;
+        if (stats) {
+            const formatStatVal = (v) => {
+                if (v >= 1e12) return (v / 1e12).toFixed(2) + 'T';
+                if (v >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+                if (v >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+                if (v >= 1e3) return (v / 1e3).toFixed(2) + 'K';
+                if (Math.abs(v) < 1 && v !== 0) return v.toFixed(4);
+                return v.toFixed(2);
+            };
+            prompt += `  └ 📊 Historical Context (${stats.dataPoints} days):\n`;
+            prompt += `    • Current Percentile: ${stats.currentPercentile}% (${stats.currentPercentile < 25 ? 'LOW - bottom quartile' : stats.currentPercentile < 50 ? 'BELOW median' : stats.currentPercentile < 75 ? 'ABOVE median' : 'HIGH - top quartile'})\n`;
+            prompt += `    • Range: ${formatStatVal(stats.min)}${unit} ~ ${formatStatVal(stats.max)}${unit}\n`;
+            prompt += `    • Median: ${formatStatVal(stats.median)}${unit}, P25: ${formatStatVal(stats.p25)}${unit}, P75: ${formatStatVal(stats.p75)}${unit}\n`;
+        }
+        
         // 추가 필드들 (같은 테이블에 있는 관련 데이터)
         const latest = data.latest;
         
@@ -821,16 +904,26 @@ REQUIRED JSON FORMAT (output ONLY this, no markdown):
 
 SCORE DEFINITIONS (0-100 scale, 50 is neutral):
 - Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
-  * Based on: Fear & Greed Index, Funding Rate, market sentiment indicators
+  * Based on: Fear & Greed Index, Funding Rate, current percentile vs historical
   * Low score = market fear/cooling, High score = market greed/overheating
   
 - Score 2 (90-Day Trend - Momentum): 0-44=downtrend, 45-55=sideways, 56-100=uptrend  
-  * Based on: 90-day price change, MVRV change, volume trends
-  * Low score = bearish momentum, High score = bullish momentum
+  * Based on: 90-day % changes in the data
+  * Changes > +20% → high score (70-90), Changes < -20% → low score (10-30)
   
 - Score 3 (Valuation - Bullish/Bearish Signal): 0-44=bearish, 45-55=neutral, 56-100=bullish
-  * Based on: MVRV vs historical, realized price vs current, valuation models
-  * Low score = overvalued/bearish, High score = undervalued/bullish
+  * IMPORTANT: Use the "Current Percentile" data provided
+  * Percentile < 25% (bottom quartile) = UNDERVALUED → Bullish score (70-90)
+  * Percentile 25-50% = Slightly undervalued → Score 55-70
+  * Percentile 50-75% = Slightly overvalued → Score 30-45
+  * Percentile > 75% (top quartile) = OVERVALUED → Bearish score (10-30)
+
+SCORING GUIDELINES USING HISTORICAL CONTEXT:
+- The data includes "Current Percentile" for each metric (0-100%)
+- Percentile shows where current value sits in 3-year history
+- For VALUATION score: Lower percentile = more undervalued = HIGHER score (inverted!)
+- For SENTIMENT score: Use Fear & Greed percentile directly
+- For TREND score: Focus on 90-day % change direction and magnitude
 
 CRITICAL RULES:
 - ${config.instruction}
@@ -838,12 +931,8 @@ CRITICAL RULES:
 - scores array must have exactly 3 integers between 0-100
 - text field contains 3 paragraphs separated by |||
 - EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
-- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
-- Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
-- Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
-- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively (rising/falling/stable, etc.)
-- ⚠️ DO NOT include any specific percentages, dollar amounts, ratios, or numerical values in the paragraphs
-- ⚠️ Use descriptive words instead: "significantly increased", "sharply declined", "remained stable", "moderate growth"
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively only
+- ⚠️ Use descriptive words: "historically low", "near all-time highs", "below median"
 - Professional analyst tone, qualitative analysis only
 - Minimum 180 words per paragraph`;
 

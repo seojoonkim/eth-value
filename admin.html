@@ -4475,6 +4475,45 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             el.style.color = color;
         }
         
+        // 역사적 통계 가져오기 (3년치 데이터로 percentile 계산)
+        async function fetchHistoricalStats(client, tableName, fieldName) {
+            try {
+                const { data, error } = await client
+                    .from(tableName)
+                    .select(`date, ${fieldName}`)
+                    .order('date', { ascending: false })
+                    .limit(1100);
+                
+                if (error || !data || data.length < 30) return null;
+                
+                const values = data
+                    .map(d => d[fieldName])
+                    .filter(v => v !== null && v !== undefined && !isNaN(v) && isFinite(v));
+                
+                if (values.length < 30) return null;
+                
+                const sorted = [...values].sort((a, b) => a - b);
+                const n = sorted.length;
+                
+                const min = sorted[0];
+                const max = sorted[n - 1];
+                const median = sorted[Math.floor(n / 2)];
+                const p10 = sorted[Math.floor(n * 0.1)];
+                const p25 = sorted[Math.floor(n * 0.25)];
+                const p75 = sorted[Math.floor(n * 0.75)];
+                const p90 = sorted[Math.floor(n * 0.9)];
+                
+                const currentVal = values[0];
+                const belowCount = sorted.filter(v => v < currentVal).length;
+                const currentPercentile = Math.round((belowCount / n) * 100);
+                
+                return { min, max, median, p10, p25, p75, p90, currentVal, currentPercentile, dataPoints: n };
+            } catch (e) {
+                console.error(`Error fetching stats for ${tableName}.${fieldName}:`, e.message);
+                return null;
+            }
+        }
+        
         async function fetchSectionMetricsForCommentary(sectionKey) {
             const section = COMMENTARY_SECTIONS[sectionKey];
             if (!section) return null;
@@ -4802,19 +4841,24 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             cleanedRecent = checkAndRemoveIncomplete(recent, valueField);
                         }
                         
+                        // 역사적 통계 가져오기
+                        const historicalStats = await fetchHistoricalStats(client, tableName, valueField);
+                        
                         // fieldOverrides가 있으면 해당 필드만 추출해서 저장
                         if (section.fieldOverrides && section.fieldOverrides[metricKey]) {
                             const targetField = section.fieldOverrides[metricKey];
                             metricsData[metricKey] = {
                                 latest: { date: cleanedRecent[0]?.date, [targetField]: cleanedRecent[0]?.[targetField] },
                                 all90d: cleanedRecent.map(r => ({ date: r.date, [targetField]: r[targetField] })),
-                                ninetyDaysAgo: older?.[0] ? { date: older[0].date, [targetField]: older[0][targetField] } : null
+                                ninetyDaysAgo: older?.[0] ? { date: older[0].date, [targetField]: older[0][targetField] } : null,
+                                historicalStats: historicalStats
                             };
                         } else {
                             metricsData[metricKey] = {
                                 latest: cleanedRecent[0],
                                 all90d: cleanedRecent,  // 전체 90일+ 데이터 (종합 분석용)
-                                ninetyDaysAgo: older?.[0] || null
+                                ninetyDaysAgo: older?.[0] || null,
+                                historicalStats: historicalStats
                             };
                         }
                     }
@@ -5224,6 +5268,19 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 prompt += `  90-Day Range: ${formatVal(min90d, unit)} ~ ${formatVal(max90d, unit)}\n`;
                 prompt += `  Trend: ${trendDirection.toUpperCase()} | Volatility: ${volatility.toFixed(1)}%\n`;
                 
+                // 역사적 통계 추가 (AI가 맥락을 이해하도록)
+                const stats = data.historicalStats;
+                if (stats) {
+                    const percentileLabel = stats.currentPercentile < 25 ? 'LOW - bottom quartile' 
+                        : stats.currentPercentile < 50 ? 'BELOW median' 
+                        : stats.currentPercentile < 75 ? 'ABOVE median' 
+                        : 'HIGH - top quartile';
+                    prompt += `  📊 Historical Context (${stats.dataPoints} days):\n`;
+                    prompt += `    • Current Percentile: ${stats.currentPercentile}% (${percentileLabel})\n`;
+                    prompt += `    • All-time Range: ${formatVal(stats.min, unit)} ~ ${formatVal(stats.max, unit)}\n`;
+                    prompt += `    • Median: ${formatVal(stats.median, unit)}, P25: ${formatVal(stats.p25, unit)}, P75: ${formatVal(stats.p75, unit)}\n`;
+                }
+                
                 // 추가 필드
                 if (data.latest.lido_apr !== undefined && fieldName !== 'lido_apr') {
                     prompt += `  └ Staking APR: ${data.latest.lido_apr?.toFixed(2) || 'N/A'}%\n`;
@@ -5293,8 +5350,25 @@ REQUIRED JSON FORMAT (output ONLY this, no markdown):
 
 SCORE DEFINITIONS (0-100 scale, 50 is neutral):
 - Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
+  * Based on: Fear & Greed Index, Funding Rate, current percentile vs historical
+  
 - Score 2 (90-Day Trend - Momentum): 0-44=downtrend, 45-55=sideways, 56-100=uptrend  
+  * Based on: 90-day % changes in the data
+  * Changes > +20% → high score (70-90), Changes < -20% → low score (10-30)
+  
 - Score 3 (Valuation - Bullish/Bearish Signal): 0-44=bearish, 45-55=neutral, 56-100=bullish
+  * IMPORTANT: Use the "Current Percentile" data provided
+  * Percentile < 25% (bottom quartile) = UNDERVALUED → Bullish score (70-90)
+  * Percentile 25-50% = Slightly undervalued → Score 55-70
+  * Percentile 50-75% = Slightly overvalued → Score 30-45
+  * Percentile > 75% (top quartile) = OVERVALUED → Bearish score (10-30)
+
+SCORING GUIDELINES USING HISTORICAL CONTEXT:
+- The data includes "Current Percentile" for each metric (0-100%)
+- Percentile shows where current value sits in 3-year history
+- For VALUATION score: Lower percentile = more undervalued = HIGHER score (inverted!)
+- For SENTIMENT score: Use Fear & Greed percentile directly
+- For TREND score: Focus on 90-day % change direction and magnitude
 
 CRITICAL RULES:
 - ${langInstructions[lang]}
@@ -5303,8 +5377,7 @@ CRITICAL RULES:
 - text field contains 3 paragraphs separated by |||
 - EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
 - ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively only
-- ⚠️ DO NOT include any specific percentages, dollar amounts, ratios, or numerical values
-- ⚠️ Use descriptive words: "significantly increased", "sharply declined", "remained stable"
+- ⚠️ Use descriptive words: "historically low", "near all-time highs", "below median"
 - Professional analyst tone, qualitative analysis only
 - Minimum 180 words per paragraph`;
 
@@ -5314,7 +5387,7 @@ ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n`
 
 IMPORTANT REQUIREMENTS:
 1. Each paragraph MUST contain exactly 5 sentences
-2. Scores must reflect the actual data objectively
+2. Use the Historical Context percentiles to inform your scores
 3. NO NUMBERS in the text paragraphs
 4. Output format: {"scores":[X,Y,Z],"text":"para1|||para2|||para3"}`;
             } else {
