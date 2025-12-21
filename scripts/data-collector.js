@@ -833,8 +833,10 @@ CRITICAL RULES:
 - Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
 - Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
 - Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
-- Be specific with numbers from the data provided
-- Professional analyst tone
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively (상승/하락/횡보, rising/falling/stable, etc.)
+- ⚠️ DO NOT include any specific percentages, dollar amounts, ratios, or numerical values in the paragraphs
+- ⚠️ Use descriptive words instead: "significantly increased", "sharply declined", "remained stable", "moderate growth"
+- Professional analyst tone, qualitative analysis only
 - Minimum 180 words per paragraph`;
 
     const userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
