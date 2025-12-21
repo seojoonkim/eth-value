@@ -333,18 +333,18 @@
                     </div>
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">Anthropic API Key <span style="font-weight: normal; opacity: 0.7;">(for AI Commentary - console.anthropic.com)</span></label>
-                        <input type="password" id="configAnthropicKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="sk-ant-api03-...">
+                        <input type="text" id="configAnthropicKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="sk-ant-api03-...">
                     </div>
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">CryptoQuant API Key <span style="font-weight: normal; opacity: 0.7;">(for Funding Rate - cryptoquant.com)</span></label>
-                        <input type="password" id="configCryptoQuantKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="Premium/Institutional plan required">
+                        <input type="text" id="configCryptoQuantKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="Premium/Institutional plan required">
                     </div>
                     
                     <!-- Cloud Sync Section -->
                     <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
                         <label style="display: block; margin-bottom: 8px; font-weight: 600;">☁️ Cloud Sync <span style="font-weight: normal; opacity: 0.7;">(암호화 저장)</span></label>
                         <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                            <input type="password" id="cloudPassword" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="패스워드 입력...">
+                            <input type="text" id="cloudPassword" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="패스워드 입력...">
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn" style="flex: 1; background: #3b82f6;" onclick="loadFromCloud()">📥 불러오기</button>
@@ -5339,14 +5339,14 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             let systemPrompt, userPrompt;
             
             if (isEnglish) {
-                // 영어: 점수 + 본문 생성
+                // 영어: 점수 + reasoning + 본문 생성
                 systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
 STRICT OUTPUT FORMAT:
-You must output a JSON object with scores AND 3 paragraphs separated by ||| (three pipe characters).
+You must output a JSON object with scores, reasoning for each score, AND 3 paragraphs.
 
 REQUIRED JSON FORMAT (output ONLY this, no markdown):
-{"scores":[X,Y,Z],"text":"paragraph1|||paragraph2|||paragraph3"}
+{"scores":[X,Y,Z],"reasoning":["reason for score1","reason for score2","reason for score3"],"text":"paragraph1|||paragraph2|||paragraph3"}
 
 SCORE DEFINITIONS (0-100 scale, 50 is neutral):
 - Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
@@ -5363,6 +5363,12 @@ SCORE DEFINITIONS (0-100 scale, 50 is neutral):
   * Percentile 50-75% = Slightly overvalued → Score 30-45
   * Percentile > 75% (top quartile) = OVERVALUED → Bearish score (10-30)
 
+REASONING FORMAT:
+- Each reasoning string should be 1-2 sentences explaining why you chose that score
+- Include specific data points that influenced the score (percentiles, % changes)
+- Example: "Score 65: Fear & Greed at 72 (75th percentile) indicates greed, Funding Rate positive"
+- Example: "Score 28: 90d change of -35% across key metrics shows strong downtrend"
+
 SCORING GUIDELINES USING HISTORICAL CONTEXT:
 - The data includes "Current Percentile" for each metric (0-100%)
 - Percentile shows where current value sits in 3-year history
@@ -5374,22 +5380,23 @@ CRITICAL RULES:
 - ${langInstructions[lang]}
 - Output ONLY valid JSON, no markdown code blocks
 - scores array must have exactly 3 integers between 0-100
+- reasoning array must have exactly 3 strings explaining each score
 - text field contains 3 paragraphs separated by |||
 - EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
-- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively only
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT paragraphs - describe trends qualitatively only
 - ⚠️ Use descriptive words: "historically low", "near all-time highs", "below median"
 - Professional analyst tone, qualitative analysis only
 - Minimum 180 words per paragraph`;
 
-                userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
+                userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores, reasoning, and text.
 
 ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
 IMPORTANT REQUIREMENTS:
 1. Each paragraph MUST contain exactly 5 sentences
-2. Use the Historical Context percentiles to inform your scores
+2. Provide clear reasoning for each score using the data above
 3. NO NUMBERS in the text paragraphs
-4. Output format: {"scores":[X,Y,Z],"text":"para1|||para2|||para3"}`;
+4. Output format: {"scores":[X,Y,Z],"reasoning":["...","...","..."],"text":"para1|||para2|||para3"}`;
             } else {
                 // 다른 언어: 본문만 생성
                 systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
@@ -5443,17 +5450,19 @@ IMPORTANT:
             if (!content) return null;
             
             if (isEnglish) {
-                // 영어: JSON 파싱 (scores + text)
+                // 영어: JSON 파싱 (scores + reasoning + text)
                 try {
                     const parsed = JSON.parse(content);
                     return {
                         scores: parsed.scores || [50, 50, 50],
+                        reasoning: parsed.reasoning || ['No reasoning provided', 'No reasoning provided', 'No reasoning provided'],
                         text: parsed.text || content
                     };
                 } catch (e) {
                     console.warn('JSON parse failed, using text fallback');
                     return {
                         scores: [50, 50, 50],
+                        reasoning: ['Parse error', 'Parse error', 'Parse error'],
                         text: content
                     };
                 }
@@ -5461,12 +5470,13 @@ IMPORTANT:
                 // 다른 언어: 텍스트만 반환 (기존 scores 사용)
                 return {
                     scores: existingScores || [50, 50, 50],
+                    reasoning: null,
                     text: content
                 };
             }
         }
         
-        async function saveCommentaryToSupabase(sectionKey, commentaries, scores, metricsData) {
+        async function saveCommentaryToSupabase(sectionKey, commentaries, scores, reasoning, metricsData) {
             const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             const today = new Date().toISOString().split('T')[0];
             const now = new Date().toISOString();
@@ -5482,6 +5492,7 @@ IMPORTANT:
                         commentary_zh: commentaries.zh || null,
                         commentary_ja: commentaries.ja || null,
                         scores: scores || [50, 50, 50],
+                        score_reasoning: reasoning || null,
                         metrics_snapshot: metricsData,
                         updated_at: now
                     }, { onConflict: 'date,section_key' });
@@ -5524,15 +5535,25 @@ IMPORTANT:
                 // 영어 먼저 생성해서 점수 확정
                 const commentaries = {};
                 let scores = [50, 50, 50];
+                let reasoning = null;
                 
-                // 1. 영어 먼저 (점수 포함)
-                commentaryLog(`  Generating EN (with scores)...`);
+                // 1. 영어 먼저 (점수 + reasoning 포함)
+                commentaryLog(`  Generating EN (with scores & reasoning)...`);
                 const enResult = await generateCommentaryWithClaude(sectionKey, metricsData, 'en', null);
                 if (enResult) {
                     commentaries.en = enResult.text;
                     scores = enResult.scores;
+                    reasoning = enResult.reasoning;
                     const hasDelimiter = enResult.text.includes('|||');
                     commentaryLog(`  ✓ EN: ${enResult.text.length} chars, scores: [${scores.join(',')}] ${hasDelimiter ? '✓' : '⚠️ NO |||'}`, hasDelimiter ? 'success' : 'warning');
+                    
+                    // Reasoning 출력
+                    if (reasoning && reasoning.length === 3) {
+                        commentaryLog(`  📝 Score Reasoning:`, 'info');
+                        commentaryLog(`     Status: ${reasoning[0]}`, 'info');
+                        commentaryLog(`     Trend: ${reasoning[1]}`, 'info');
+                        commentaryLog(`     Valuation: ${reasoning[2]}`, 'info');
+                    }
                 } else {
                     throw new Error('Failed to generate English commentary');
                 }
@@ -5552,10 +5573,10 @@ IMPORTANT:
                     await new Promise(r => setTimeout(r, 500));
                 }
                 
-                // Save to Supabase (with scores)
+                // Save to Supabase (with scores and reasoning)
                 commentaryLog('  Saving to Supabase...');
                 commentaryLog(`  Scores: [${scores.join(', ')}]`);
-                const saved = await saveCommentaryToSupabase(sectionKey, commentaries, scores, metricsData);
+                const saved = await saveCommentaryToSupabase(sectionKey, commentaries, scores, reasoning, metricsData);
                 if (saved) {
                     commentaryLog(`✅ Successfully saved ${sectionKey}!`, 'success');
                     setCommentaryStatus('Completed', '#3fb950');
@@ -5658,14 +5679,41 @@ IMPORTANT:
                 const section = sectionNames[item.section_key] || { icon: '📝', name: item.section_key };
                 const content = item[langField] || item.commentary || '(No translation available)';
                 const charCount = content.length;
+                const scores = item.scores || [50, 50, 50];
+                const reasoning = item.score_reasoning || [];
+                
+                // Score labels
+                const scoreLabels = ['Status', 'Trend', 'Valuation'];
+                const scoreColors = scores.map(s => s < 45 ? '#f85149' : s > 55 ? '#3fb950' : '#d29922');
+                
+                // Reasoning display
+                let reasoningHtml = '';
+                if (reasoning && reasoning.length === 3) {
+                    reasoningHtml = `
+                        <div style="margin-top: 10px; padding: 8px; background: var(--bg); border-radius: 4px; font-size: 10px;">
+                            <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">📝 Score Reasoning:</div>
+                            ${reasoning.map((r, i) => `
+                                <div style="margin-bottom: 4px; color: var(--text-muted);">
+                                    <span style="color: ${scoreColors[i]}; font-weight: 600;">${scoreLabels[i]} (${scores[i]}):</span> ${escapeHtml(r)}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
                 
                 return `
                     <div style="background: var(--bg-secondary); border-radius: 8px; padding: 16px; border: 1px solid var(--border);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <div style="font-weight: 600; color: var(--primary);">${section.icon} ${section.name}</div>
-                            <span style="font-size: 10px; color: var(--text-muted);">${charCount} chars</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span style="font-size: 10px; padding: 2px 6px; background: ${scoreColors[0]}22; color: ${scoreColors[0]}; border-radius: 4px;">S:${scores[0]}</span>
+                                <span style="font-size: 10px; padding: 2px 6px; background: ${scoreColors[1]}22; color: ${scoreColors[1]}; border-radius: 4px;">T:${scores[1]}</span>
+                                <span style="font-size: 10px; padding: 2px 6px; background: ${scoreColors[2]}22; color: ${scoreColors[2]}; border-radius: 4px;">V:${scores[2]}</span>
+                                <span style="font-size: 10px; color: var(--text-muted);">${charCount} chars</span>
+                            </div>
                         </div>
                         <div style="font-size: 12px; line-height: 1.6; color: var(--text); max-height: 200px; overflow-y: auto; white-space: pre-wrap;">${escapeHtml(content)}</div>
+                        ${reasoningHtml}
                     </div>
                 `;
             }).join('');
@@ -5712,13 +5760,18 @@ IMPORTANT:
                         // 영어 먼저 생성해서 점수 확정
                         const commentaries = {};
                         let scores = [50, 50, 50];
+                        let reasoning = null;
                         
-                        // 1. 영어 먼저 (점수 포함)
+                        // 1. 영어 먼저 (점수 + reasoning 포함)
                         const enResult = await generateCommentaryWithClaude(sectionKey, metricsData, 'en', null);
                         if (enResult) {
                             commentaries.en = enResult.text;
                             scores = enResult.scores;
+                            reasoning = enResult.reasoning;
                             commentaryLog(`  ✓ EN: ${enResult.text.length} chars, scores: [${scores.join(',')}]`, 'success');
+                            if (reasoning) {
+                                commentaryLog(`  📝 Reasoning: ${reasoning[0].substring(0, 50)}...`, 'info');
+                            }
                         } else {
                             commentaryLog(`  ❌ Failed to generate English`, 'error');
                             failed++;
@@ -5738,8 +5791,8 @@ IMPORTANT:
                             await new Promise(r => setTimeout(r, 500));
                         }
                         
-                        // Save (with scores)
-                        const saved = await saveCommentaryToSupabase(sectionKey, commentaries, scores, metricsData);
+                        // Save (with scores and reasoning)
+                        const saved = await saveCommentaryToSupabase(sectionKey, commentaries, scores, reasoning, metricsData);
                         if (saved) {
                             commentaryLog(`  ✅ Saved!`, 'success');
                             success++;

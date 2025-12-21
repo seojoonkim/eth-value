@@ -893,14 +893,14 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en', existing
     let userPrompt;
     
     if (isEnglish) {
-        // 영어: 점수 + 본문 생성
+        // 영어: 점수 + 본문 + reasoning 생성
         systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
 STRICT OUTPUT FORMAT:
-You must output a JSON object with scores AND 3 paragraphs separated by ||| (three pipe characters).
+You must output a JSON object with scores, reasoning for each score, AND 3 paragraphs.
 
 REQUIRED JSON FORMAT (output ONLY this, no markdown):
-{"scores":[X,Y,Z],"text":"paragraph1|||paragraph2|||paragraph3"}
+{"scores":[X,Y,Z],"reasoning":["reason for score1","reason for score2","reason for score3"],"text":"paragraph1|||paragraph2|||paragraph3"}
 
 SCORE DEFINITIONS (0-100 scale, 50 is neutral):
 - Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
@@ -918,6 +918,13 @@ SCORE DEFINITIONS (0-100 scale, 50 is neutral):
   * Percentile 50-75% = Slightly overvalued → Score 30-45
   * Percentile > 75% (top quartile) = OVERVALUED → Bearish score (10-30)
 
+REASONING FORMAT:
+- Each reasoning string should be 1-2 sentences explaining why you chose that score
+- Include specific data points that influenced the score (percentiles, % changes)
+- Example: "Score 65: Fear & Greed at 72 (75th percentile) indicates greed, Funding Rate positive at 0.01%"
+- Example: "Score 28: 90d change of -35% across key metrics shows strong downtrend"
+- Example: "Score 78: MVRV at 22nd percentile (historically low) suggests undervaluation"
+
 SCORING GUIDELINES USING HISTORICAL CONTEXT:
 - The data includes "Current Percentile" for each metric (0-100%)
 - Percentile shows where current value sits in 3-year history
@@ -929,26 +936,27 @@ CRITICAL RULES:
 - ${config.instruction}
 - Output ONLY valid JSON, no markdown code blocks
 - scores array must have exactly 3 integers between 0-100
+- reasoning array must have exactly 3 strings explaining each score
 - text field contains 3 paragraphs separated by |||
 - EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
-- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively only
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT paragraphs - describe trends qualitatively only
 - ⚠️ Use descriptive words: "historically low", "near all-time highs", "below median"
 - Professional analyst tone, qualitative analysis only
 - Minimum 180 words per paragraph`;
 
-        userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
+        userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores, reasoning, and text.
 
 ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
 IMPORTANT REQUIREMENTS:
 1. Each paragraph MUST contain exactly 5 sentences
-2. Scores must reflect the actual data objectively
-3. Output format: {"scores":[X,Y,Z],"text":"para1|||para2|||para3"}
+2. Provide clear reasoning for each score using the data above
+3. Output format: {"scores":[X,Y,Z],"reasoning":["...","...","..."],"text":"para1|||para2|||para3"}
 
 Remember: Score meanings
-- Current Status: cold(0-44) / neutral(45-55) / hot(56-100)
-- 90-Day Trend: down(0-44) / sideways(45-55) / up(56-100)
-- Valuation: bearish(0-44) / neutral(45-55) / bullish(56-100)`;
+- Score 1 (Current Status): cold(0-44) / neutral(45-55) / hot(56-100)
+- Score 2 (90-Day Trend): down(0-44) / sideways(45-55) / up(56-100)
+- Score 3 (Valuation): bearish(0-44) / neutral(45-55) / bullish(56-100)`;
     } else {
         // 다른 언어: 본문만 생성 (점수는 영어에서 이미 생성됨)
         systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
@@ -1012,17 +1020,19 @@ IMPORTANT:
         if (!content) return null;
         
         if (isEnglish) {
-            // 영어: JSON 파싱 (scores + text)
+            // 영어: JSON 파싱 (scores + reasoning + text)
             try {
                 const parsed = JSON.parse(content);
                 return {
                     scores: parsed.scores || [50, 50, 50],
+                    reasoning: parsed.reasoning || ['No reasoning provided', 'No reasoning provided', 'No reasoning provided'],
                     text: parsed.text || content
                 };
             } catch (e) {
                 console.warn('  JSON parse failed, using text fallback');
                 return {
                     scores: [50, 50, 50],
+                    reasoning: ['Parse error', 'Parse error', 'Parse error'],
                     text: content
                 };
             }
@@ -1030,6 +1040,7 @@ IMPORTANT:
             // 다른 언어: 텍스트만 반환 (기존 scores 사용)
             return {
                 scores: existingScores || [50, 50, 50],
+                reasoning: null, // 다른 언어는 reasoning 없음
                 text: content
             };
         }
@@ -1041,9 +1052,9 @@ IMPORTANT:
 }
 
 /**
- * Save commentary to Supabase (with multilingual support and scores)
+ * Save commentary to Supabase (with multilingual support, scores, and reasoning)
  */
-async function saveCommentary(sectionKey, commentaries, scores, metricsSnapshot) {
+async function saveCommentary(sectionKey, commentaries, scores, reasoning, metricsSnapshot) {
     const today = new Date().toISOString().split('T')[0];
     
     try {
@@ -1057,6 +1068,7 @@ async function saveCommentary(sectionKey, commentaries, scores, metricsSnapshot)
                 commentary_zh: commentaries.zh || null,
                 commentary_ja: commentaries.ja || null,
                 scores: scores || [50, 50, 50],
+                score_reasoning: reasoning || null,
                 metrics_snapshot: metricsSnapshot,
                 created_at: new Date().toISOString()
             }, { onConflict: 'date,section_key' });
@@ -1107,13 +1119,19 @@ async function generateAllCommentaries() {
         // 영어 먼저 생성해서 점수 확정, 다른 언어는 같은 점수 사용
         const commentaries = {};
         let scores = [50, 50, 50]; // Default scores
+        let reasoning = null;
         
-        // 1. 영어 먼저 생성 (점수 포함)
+        // 1. 영어 먼저 생성 (점수 + reasoning 포함)
         const enResult = await generateCommentary(sectionKey, metricsData, 'en', null);
         if (enResult) {
             commentaries.en = enResult.text;
             scores = enResult.scores;
+            reasoning = enResult.reasoning;
             console.log(`  ✓ EN: ${enResult.text.length} chars, scores: [${scores.join(',')}]`);
+            if (reasoning) {
+                console.log(`  📝 Reasoning:`);
+                reasoning.forEach((r, i) => console.log(`     Score ${i+1}: ${r}`));
+            }
         } else {
             console.log(`  ❌ Failed to generate English commentary`);
             failed++;
@@ -1133,11 +1151,8 @@ async function generateAllCommentaries() {
             await sleep(500); // Rate limit between API calls
         }
         
-        // Need at least English version (already checked above);
-        }
-        
-        // Save to Supabase (with scores)
-        const saved = await saveCommentary(sectionKey, commentaries, scores, metricsData);
+        // Save to Supabase (with scores and reasoning)
+        const saved = await saveCommentary(sectionKey, commentaries, scores, reasoning, metricsData);
         if (saved) {
             console.log(`  ✅ Saved to Supabase (${Object.keys(commentaries).length} languages)`);
             success++;
