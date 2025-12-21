@@ -1,9 +1,9 @@
 /**
- * ETHval Data Collector v7.2
+ * ETHval Data Collector v7.3
  * 39개 전체 데이터셋 수집 (Dune API 포함)
+ * + ETH Price, ETH/BTC를 Dune에서 수집 (Binance/CoinGecko 대체)
  * + AI 일간 해설 생성 (Claude Haiku)
  * + 병렬 처리로 속도 개선
- * + 명확한 로그 출력
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -872,6 +872,11 @@ async function generateAllCommentaries() {
 
 // Dune Query IDs
 const DUNE_QUERIES = {
+    // Price Data (Binance/CoinGecko 대체)
+    ETH_PRICE: 6390291,      // ETHval - ETH Daily Price
+    ETH_BTC_RATIO: 6390302,  // ETHval - ETH BTC Ratio
+    
+    // Existing queries
     BLOB: 6350774,
     // TX_VOLUME: 6350858,  // REMOVED - Use L1 Total Volume (6386589) eth_volume_usd instead
     ACTIVE_ADDR: 6352303,
@@ -995,104 +1000,64 @@ async function upsertBatch(table, records, conflict = 'date') {
 const cutoff3Y = () => Date.now() / 1000 - (1095 * 24 * 60 * 60);
 
 // ============================================================
-// 1. ETH Price (Binance - primary, CoinGecko - fallback)
+// 1. ETH Price (Dune API - 안정적)
 // ============================================================
 async function collect_eth_price() {
-    console.log('\n📈 [1/29] ETH Price + Volume (Binance)...');
-    
-    // Binance API (primary) - 무료, rate limit 관대
-    const endTime = Date.now();
-    const startTime = endTime - (1100 * 24 * 60 * 60 * 1000); // 1100일
-    const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&startTime=${startTime}&endTime=${endTime}&limit=1000`;
-    
-    let records = [];
+    if (!DUNE_API_KEY) {
+        return result.skip('No Dune API key');
+    }
     
     try {
-        const binanceData = await fetchJSON(binanceUrl);
+        // Dune API로 ETH 가격 데이터 가져오기
+        const response = await fetch(
+            `https://api.dune.com/api/v1/query/${DUNE_QUERIES.ETH_PRICE}/results?limit=1500`,
+            { headers: { 'X-Dune-API-Key': DUNE_API_KEY } }
+        );
         
-        if (binanceData && Array.isArray(binanceData) && binanceData.length > 0) {
-            console.log(`  ✓ Binance: ${binanceData.length} days`);
-            
-            records = binanceData.map(k => ({
-                date: new Date(k[0]).toISOString().split('T')[0],
-                open: parseFloat(k[1]),
-                high: parseFloat(k[2]),
-                low: parseFloat(k[3]),
-                close: parseFloat(k[4]),
-                volume: parseFloat(k[5]) * parseFloat(k[4]) // ETH volume * price = USD volume
-            }));
-            
-            // Binance는 최대 1000개만 반환하므로 추가 요청
-            if (binanceData.length === 1000) {
-                const lastTime = binanceData[binanceData.length - 1][0];
-                const moreUrl = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&startTime=${lastTime + 86400000}&endTime=${endTime}&limit=1000`;
-                const moreData = await fetchJSON(moreUrl);
-                if (moreData && Array.isArray(moreData)) {
-                    const moreRecords = moreData.map(k => ({
-                        date: new Date(k[0]).toISOString().split('T')[0],
-                        open: parseFloat(k[1]),
-                        high: parseFloat(k[2]),
-                        low: parseFloat(k[3]),
-                        close: parseFloat(k[4]),
-                        volume: parseFloat(k[5]) * parseFloat(k[4])
-                    }));
-                    records.push(...moreRecords);
-                    console.log(`  ✓ Binance (more): +${moreRecords.length} days`);
-                }
-            }
+        if (!response.ok) {
+            throw new Error(`Dune API error: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        if (!data?.result?.rows || data.result.rows.length === 0) {
+            throw new Error('No data from Dune');
+        }
+        
+        const records = data.result.rows.map(row => ({
+            date: row.date,
+            open: parseFloat(row.open) || parseFloat(row.avg_price),
+            high: parseFloat(row.high) || parseFloat(row.avg_price),
+            low: parseFloat(row.low) || parseFloat(row.avg_price),
+            close: parseFloat(row.close) || parseFloat(row.avg_price),
+            volume: 0  // Dune에서 volume 없음
+        }));
+        
+        if (records.length > 100) {
+            const saved = await upsertBatch('historical_eth_price', records);
+            return result.ok(saved);
+        }
+        
+        throw new Error('Insufficient data');
     } catch (e) {
-        console.log(`  ⚠️ Binance API error: ${e.message}`);
-    }
-    
-    // Fallback: CoinGecko (if Binance failed)
-    if (records.length === 0) {
-        console.log('  🔄 Trying CoinGecko fallback...');
-        const cgData = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=1100&interval=daily');
+        // 실패 시 기존 데이터 유지
+        const { data: existing } = await supabase
+            .from('historical_eth_price')
+            .select('date')
+            .order('date', { ascending: false })
+            .limit(1);
         
-        if (cgData?.prices) {
-            const priceMap = new Map();
-            const volumeMap = new Map();
-            
-            for (const [ts, price] of cgData.prices) {
-                priceMap.set(new Date(ts).toISOString().split('T')[0], price);
-            }
-            if (cgData.total_volumes) {
-                for (const [ts, vol] of cgData.total_volumes) {
-                    volumeMap.set(new Date(ts).toISOString().split('T')[0], vol);
-                }
-            }
-            
-            for (const [date, close] of priceMap) {
-                records.push({
-                    date,
-                    open: close,
-                    high: close,
-                    low: close,
-                    close: parseFloat(close.toFixed(2)),
-                    volume: volumeMap.get(date) || 0
-                });
-            }
-            console.log(`  ✓ CoinGecko fallback: ${records.length} days`);
+        if (existing?.length > 0) {
+            return result.skip(`Dune error: ${e.message}`);
         }
+        return result.fail(e.message);
     }
-    
-    if (records.length === 0) {
-        return result.fail('Both Binance and CoinGecko failed');
-    }
-    
-    records.sort((a, b) => a.date.localeCompare(b.date));
-    console.log(`  📊 Total: ${records.length} days`);
-    
-    const saved = await upsertBatch('historical_eth_price', records);
-    return result.ok(saved);
 }
 
 // ============================================================
 // 2. Ethereum TVL (DefiLlama)
 // ============================================================
 async function collect_ethereum_tvl() {
-    console.log('\n🏦 [2/29] Ethereum TVL...');
     const data = await fetchJSON('https://api.llama.fi/v2/historicalChainTvl/Ethereum');
     if (!data) return 0;
     const records = data.filter(d => d.date > cutoff3Y() && d.tvl > 0).map(d => ({
@@ -1106,7 +1071,6 @@ async function collect_ethereum_tvl() {
 // 3. L2 TVL (DefiLlama)
 // ============================================================
 async function collect_l2_tvl() {
-    console.log('\n🔗 [3/29] L2 TVL...');
     const chains = ['Arbitrum', 'Optimism', 'Base', 'zkSync Era', 'Linea', 'Scroll', 'Blast'];
     const all = [];
     for (const chain of chains) {
@@ -1128,7 +1092,6 @@ async function collect_l2_tvl() {
 // 4. Protocol Fees (DefiLlama)
 // ============================================================
 async function collect_protocol_fees() {
-    console.log('\n💰 [4/29] Protocol Fees...');
     const data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
     if (!data?.totalDataChart) return 0;
     const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
@@ -1142,7 +1105,6 @@ async function collect_protocol_fees() {
 // 5. Staking Data (DefiLlama Yields API - admin.html 방식)
 // ============================================================
 async function collect_staking() {
-    console.log('\n🥩 [5/29] Staking Data...');
     
     // Primary: DefiLlama yields API (APR + TVL 동시에)
     const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
@@ -1253,7 +1215,6 @@ async function collect_staking() {
 // 6. Gas & Burn (Etherscan API for gas utilization)
 // ============================================================
 async function collect_gas_burn() {
-    console.log('\n🔥 [6/29] Gas & Burn...');
     
     const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
     
@@ -1359,7 +1320,6 @@ async function collect_gas_burn() {
 // 7. Active Addresses (Etherscan or estimate)
 // ============================================================
 async function collect_active_addresses() {
-    console.log('\n👥 [7/29] Active Addresses...');
     // Using transactions as proxy - real data would need Etherscan API
     const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
     if (!txs || txs.length === 0) {
@@ -1378,7 +1338,6 @@ async function collect_active_addresses() {
 // 8. ETH Supply (Ultrasound.money or estimate)
 // ============================================================
 async function collect_eth_supply() {
-    console.log('\n💎 [8/29] ETH Supply...');
     // Try ultrasound.money API
     const data = await fetchJSON('https://ultrasound.money/api/v2/fees/supply-over-time');
     if (data && Array.isArray(data)) {
@@ -1413,7 +1372,6 @@ async function collect_eth_supply() {
 // 9. Fear & Greed (Alternative.me)
 // ============================================================
 async function collect_fear_greed() {
-    console.log('\n😱 [9/29] Fear & Greed...');
     const data = await fetchJSON('https://api.alternative.me/fng/?limit=1095&format=json');
     
     if (data?.data && data.data.length > 10) {
@@ -1480,7 +1438,6 @@ async function collect_fear_greed() {
 // 10. DEX Volume (DefiLlama)
 // ============================================================
 async function collect_dex_volume() {
-    console.log('\n💱 [10/29] DEX Volume...');
     const data = await fetchJSON('https://api.llama.fi/overview/dexs/ethereum?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true&dataType=dailyVolume');
     if (!data?.totalDataChart) return 0;
     const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
@@ -1494,7 +1451,6 @@ async function collect_dex_volume() {
 // 11. Stablecoins All (DefiLlama)
 // ============================================================
 async function collect_stablecoins() {
-    console.log('\n💵 [11/29] Stablecoins (All)...');
     const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/all');
     if (!data) return 0;
     const records = data.filter(d => d.date > cutoff3Y()).map(d => ({
@@ -1509,7 +1465,6 @@ async function collect_stablecoins() {
 // 12. Stablecoins ETH (DefiLlama)
 // ============================================================
 async function collect_stablecoins_eth() {
-    console.log('\n🔷 [12/29] Stablecoins (ETH)...');
     const data = await fetchJSON('https://stablecoins.llama.fi/stablecoincharts/Ethereum');
     if (!data) return 0;
     const records = data.filter(d => d.date > cutoff3Y()).map(d => ({
@@ -1521,124 +1476,121 @@ async function collect_stablecoins_eth() {
 }
 
 // ============================================================
-// 13. ETH/BTC Ratio (CoinGecko)
+// 13. ETH/BTC Ratio (Dune API - 안정적)
 // ============================================================
 async function collect_eth_btc() {
-    console.log('\n₿ [13/29] ETH/BTC (Binance)...');
-    
-    // Binance API (primary) - ETHBTC 쌍
-    const endTime = Date.now();
-    const startTime = endTime - (1100 * 24 * 60 * 60 * 1000);
-    const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&startTime=${startTime}&endTime=${endTime}&limit=1000`;
-    
-    let records = [];
+    if (!DUNE_API_KEY) {
+        return result.skip('No Dune API key');
+    }
     
     try {
-        const binanceData = await fetchJSON(binanceUrl);
+        // Dune API로 ETH/BTC 비율 데이터 가져오기
+        const response = await fetch(
+            `https://api.dune.com/api/v1/query/${DUNE_QUERIES.ETH_BTC_RATIO}/results?limit=1500`,
+            { headers: { 'X-Dune-API-Key': DUNE_API_KEY } }
+        );
         
-        if (binanceData && Array.isArray(binanceData) && binanceData.length > 0) {
-            records = binanceData.map(k => ({
-                date: new Date(k[0]).toISOString().split('T')[0],
-                ratio: parseFloat(parseFloat(k[4]).toFixed(6)) // close price
-            }));
-            
-            // 추가 데이터 요청 (1000개 초과시)
-            if (binanceData.length === 1000) {
-                const lastTime = binanceData[binanceData.length - 1][0];
-                const moreUrl = `https://api.binance.com/api/v3/klines?symbol=ETHBTC&interval=1d&startTime=${lastTime + 86400000}&endTime=${endTime}&limit=1000`;
-                const moreData = await fetchJSON(moreUrl);
-                if (moreData && Array.isArray(moreData)) {
-                    const moreRecords = moreData.map(k => ({
-                        date: new Date(k[0]).toISOString().split('T')[0],
-                        ratio: parseFloat(parseFloat(k[4]).toFixed(6))
-                    }));
-                    records.push(...moreRecords);
-                }
-            }
-            
-            console.log(`  ✓ Binance: ${records.length} days`);
+        if (!response.ok) {
+            throw new Error(`Dune API error: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        if (!data?.result?.rows || data.result.rows.length === 0) {
+            throw new Error('No data from Dune');
+        }
+        
+        const records = data.result.rows.map(row => ({
+            date: row.date,
+            ratio: parseFloat(row.ratio),
+            source: 'dune'
+        }));
+        
+        if (records.length > 100) {
+            const saved = await upsertBatch('historical_eth_btc', records);
+            return result.ok(saved);
+        }
+        
+        throw new Error('Insufficient data');
     } catch (e) {
-        console.log(`  ⚠️ Binance error: ${e.message}`);
-    }
-    
-    // Fallback: CoinGecko
-    if (records.length === 0) {
-        console.log('  🔄 Trying CoinGecko fallback...');
-        const data = await fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=btc&days=1100&interval=daily');
-        if (data?.prices) {
-            records = data.prices.map(([ts, price]) => ({
-                date: new Date(ts).toISOString().split('T')[0],
-                ratio: parseFloat(price.toFixed(6))
-            }));
-            console.log(`  ✓ CoinGecko fallback: ${records.length} days`);
+        // 실패 시 기존 데이터 유지
+        const { data: existing } = await supabase
+            .from('historical_eth_btc')
+            .select('date')
+            .order('date', { ascending: false })
+            .limit(1);
+        
+        if (existing?.length > 0) {
+            return result.skip(`Dune error: ${e.message}`);
         }
+        return result.fail(e.message);
     }
-    
-    if (records.length === 0) {
-        return result.fail('Both Binance and CoinGecko failed');
-    }
-    
-    const saved = await upsertBatch('historical_eth_btc', records);
-    return result.ok(saved);
 }
 
 // ============================================================
-// 14. Funding Rate (estimate if API fails)
+// 14. Funding Rate (Binance Futures - admin.html과 동일)
 // ============================================================
 async function collect_funding_rate() {
-    console.log('\n📊 [14/29] Funding Rate...');
+    const allData = [];
+    const now = Date.now();
+    const threeYearsAgo = now - (1095 * 24 * 60 * 60 * 1000);
     
-    // Try Binance Futures API
-    const data = await fetchJSON('https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1000');
-    
-    if (data && Array.isArray(data) && data.length > 0) {
-        // Group by date and average
-        const byDate = new Map();
-        data.forEach(d => {
-            const date = new Date(d.fundingTime).toISOString().split('T')[0];
-            if (!byDate.has(date)) byDate.set(date, []);
-            byDate.get(date).push(parseFloat(d.fundingRate));
-        });
+    try {
+        let startTime = threeYearsAgo;
+        while (startTime < now) {
+            const url = `https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&startTime=${startTime}&limit=1000`;
+            const data = await fetchJSON(url);
+            if (!data || data.length === 0) break;
+            
+            allData.push(...data);
+            startTime = data[data.length - 1].fundingTime + 1;
+            if (data.length < 1000) break;
+            await sleep(100);
+        }
         
-        const records = [];
-        byDate.forEach((rates, date) => {
-            const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
-            records.push({ date, funding_rate: parseFloat(avg.toFixed(8)) });
-        });
-        
-        console.log(`  ✓ Binance Futures: ${records.length} days`);
-        const saved = await upsertBatch('historical_funding_rate', records);
-        return result.ok(saved);
+        if (allData.length > 0) {
+            // Aggregate by date
+            const byDate = new Map();
+            allData.forEach(d => {
+                const date = new Date(d.fundingTime).toISOString().split('T')[0];
+                if (!byDate.has(date)) byDate.set(date, []);
+                byDate.get(date).push(parseFloat(d.fundingRate));
+            });
+            
+            const records = [];
+            byDate.forEach((rates, date) => {
+                records.push({
+                    date,
+                    timestamp: Date.now(),
+                    funding_rate: parseFloat((rates.reduce((a,b)=>a+b,0)/rates.length).toFixed(8)),
+                    source: 'binance'
+                });
+            });
+            
+            const saved = await upsertBatch('historical_funding_rate', records);
+            return result.ok(saved);
+        }
+    } catch (e) {
+        // API 차단됨
     }
     
-    // Fallback: Generate estimated funding rate (neutral ~0.01%)
-    console.log('  ⚠️ Binance blocked, using estimated data');
-    const records = [];
-    const today = new Date();
+    // 실패 시 기존 데이터 유지
+    const { data: existing } = await supabase
+        .from('historical_funding_rate')
+        .select('date')
+        .order('date', { ascending: false })
+        .limit(1);
     
-    for (let i = 0; i < 365; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        
-        // Random funding rate between -0.01% and 0.03% (typical range)
-        const rate = (Math.random() * 0.0004 - 0.0001);
-        records.push({
-            date: dateStr,
-            funding_rate: parseFloat(rate.toFixed(8))
-        });
+    if (existing?.length > 0) {
+        return result.skip('API blocked, using existing');
     }
-    
-    const saved = await upsertBatch('historical_funding_rate', records);
-    return result.warn(saved, 'estimated');
+    return result.fail('No data available');
 }
 
 // ============================================================
 // 15. Exchange Reserve (estimate)
 // ============================================================
 async function collect_exchange_reserve() {
-    console.log('\n🏛️ [15/29] Exchange Reserve...');
     // ⚠️ 무료 API 없음 - CryptoQuant/Glassnode/CoinGlass 모두 유료
     // 실제 트렌드 기반 추정: 2022년 ~24M → 2025년 ~15M (지속적 감소)
     
@@ -1682,71 +1634,81 @@ async function collect_exchange_reserve() {
 }
 
 // ============================================================
-// 16. ETH Dominance (CoinCap primary, CoinGecko fallback)
+// 16. ETH Dominance (CoinGecko - admin.html과 동일)
 // ============================================================
 async function collect_eth_dominance() {
-    console.log('\n👑 [16/29] ETH Dominance...');
-    
-    let ethDominance = null;
-    let btcDominance = null;
-    let totalMcap = null;
-    
-    // Primary: CoinCap API (무료, rate limit 관대)
     try {
-        const data = await fetchJSON('https://api.coincap.io/v2/assets?limit=100');
-        if (data?.data && Array.isArray(data.data)) {
-            const assets = data.data;
-            totalMcap = assets.reduce((sum, a) => sum + parseFloat(a.marketCapUsd || 0), 0);
+        // CoinGecko API (admin.html과 동일)
+        const [ethData, btcData, globalData] = await Promise.all([
+            fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=365&interval=daily'),
+            fetchJSON('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily'),
+            fetchJSON('https://api.coingecko.com/api/v3/global')
+        ]);
+        
+        if (!ethData?.market_caps || !btcData?.market_caps || !globalData?.data) {
+            throw new Error('CoinGecko API failed');
+        }
+        
+        const currentBtcDom = globalData.data.market_cap_percentage.btc;
+        
+        // BTC mcap을 날짜별 맵으로
+        const btcMcapMap = new Map();
+        for (const [ts, mcap] of btcData.market_caps) {
+            const date = new Date(ts).toISOString().split('T')[0];
+            btcMcapMap.set(date, mcap);
+        }
+        
+        const records = [];
+        const seenDates = new Set();
+        
+        for (const [timestamp, ethMcap] of ethData.market_caps) {
+            const date = new Date(timestamp).toISOString().split('T')[0];
+            if (seenDates.has(date)) continue;
+            seenDates.add(date);
             
-            const eth = assets.find(a => a.id === 'ethereum');
-            const btc = assets.find(a => a.id === 'bitcoin');
+            const btcMcap = btcMcapMap.get(date);
+            if (!btcMcap) continue;
             
-            if (eth && totalMcap > 0) {
-                ethDominance = (parseFloat(eth.marketCapUsd) / totalMcap) * 100;
-                console.log(`  ✓ CoinCap ETH: ${ethDominance.toFixed(2)}%`);
-            }
-            if (btc && totalMcap > 0) {
-                btcDominance = (parseFloat(btc.marketCapUsd) / totalMcap) * 100;
-            }
+            // Total market cap = BTC mcap / BTC dominance
+            const totalMcap = btcMcap / (currentBtcDom / 100);
+            const ethDominance = (ethMcap / totalMcap) * 100;
+            const btcDominance = (btcMcap / totalMcap) * 100;
+            
+            records.push({
+                date,
+                timestamp,
+                eth_dominance: parseFloat(Math.min(25, Math.max(8, ethDominance)).toFixed(2)),
+                btc_dominance: parseFloat(Math.min(70, Math.max(35, btcDominance)).toFixed(2)),
+                total_mcap: totalMcap,
+                source: 'coingecko'
+            });
+        }
+        
+        if (records.length > 100) {
+            const saved = await upsertBatch('historical_eth_dominance', records);
+            return result.ok(saved);
         }
     } catch (e) {
-        console.log(`  ⚠️ CoinCap error: ${e.message}`);
+        // API 차단됨
     }
     
-    // Fallback: CoinGecko
-    if (!ethDominance) {
-        console.log('  🔄 Trying CoinGecko fallback...');
-        const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
-        if (data?.data?.market_cap_percentage?.eth) {
-            ethDominance = data.data.market_cap_percentage.eth;
-            btcDominance = data.data.market_cap_percentage.btc;
-            totalMcap = data.data.total_market_cap.usd;
-            console.log(`  ✓ CoinGecko ETH: ${ethDominance.toFixed(2)}%`);
-        }
+    // 실패 시 기존 데이터 유지
+    const { data: existing } = await supabase
+        .from('historical_eth_dominance')
+        .select('date')
+        .order('date', { ascending: false })
+        .limit(1);
+    
+    if (existing?.length > 0) {
+        return result.skip('API blocked, using existing');
     }
-    
-    if (!ethDominance) {
-        return result.fail('Both CoinCap and CoinGecko failed');
-    }
-    
-    const today = new Date().toISOString().split('T')[0];
-    const records = [{
-        date: today,
-        eth_dominance: parseFloat(ethDominance.toFixed(2)),
-        btc_dominance: btcDominance ? parseFloat(btcDominance.toFixed(2)) : null,
-        total_mcap: totalMcap,
-        source: 'coincap'
-    }];
-    
-    const saved = await upsertBatch('historical_eth_dominance', records);
-    return result.ok(saved);
+    return result.fail('No data available');
 }
 
 // ============================================================
 // 17. Blob Data (beaconcha.in)
 // ============================================================
 async function collect_blob_data() {
-    console.log('\n🫧 [17/29] Blob Data...');
     // Limited API access - using existing or estimate
     const { data: existing } = await supabase.from('historical_blob_data').select('*').order('date', { ascending: false }).limit(1);
     if (existing && existing.length > 0) {
@@ -1760,7 +1722,6 @@ async function collect_blob_data() {
 // 18. Lending TVL (DefiLlama)
 // ============================================================
 async function collect_lending_tvl() {
-    console.log('\n🏦 [18/29] Lending TVL...');
     const data = await fetchJSON('https://api.llama.fi/v2/historicalChainTvl/Ethereum');
     if (!data) return 0;
     // Estimate lending as ~50% of total TVL
@@ -1776,7 +1737,6 @@ async function collect_lending_tvl() {
 // 19. Volatility (calculated from price)
 // ============================================================
 async function collect_volatility() {
-    console.log('\n📉 [19/29] Volatility...');
     const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: true });
     if (!prices || prices.length < 30) return 0;
     
@@ -1814,7 +1774,6 @@ async function collect_volatility() {
 // 20. NVT Ratio (calculated)
 // ============================================================
 async function collect_nvt() {
-    console.log('\n📐 [20/29] NVT Ratio...');
     const { data: prices } = await supabase.from('historical_eth_price').select('date, close, volume').order('date');
     if (!prices) return 0;
     
@@ -1839,7 +1798,6 @@ async function collect_nvt() {
 // 21. Transactions (DefiLlama)
 // ============================================================
 async function collect_transactions() {
-    console.log('\n📝 [21/29] Transactions (growthepie)...');
     
     // growthepie API - 실제 트랜잭션 수
     const data = await fetchJSON('https://api.growthepie.xyz/v1/export/txcount.json');
@@ -1865,7 +1823,6 @@ async function collect_transactions() {
 // 22. L2 Transactions (growthepie - 실제 데이터)
 // ============================================================
 async function collect_l2_transactions() {
-    console.log('\n🔗 [22/29] L2 Transactions (growthepie)...');
     
     // growthepie API - 모든 체인의 실제 트랜잭션 수
     const data = await fetchJSON('https://api.growthepie.xyz/v1/export/txcount.json');
@@ -1894,7 +1851,6 @@ async function collect_l2_transactions() {
 // 23. L2 Addresses (estimate)
 // ============================================================
 async function collect_l2_addresses() {
-    console.log('\n👤 [23/29] L2 Addresses...');
     const { data: txs } = await supabase.from('historical_l2_transactions').select('date, chain, tx_count').order('date');
     if (!txs) return 0;
     const records = txs.map(t => ({
@@ -1909,7 +1865,6 @@ async function collect_l2_addresses() {
 // 24. Protocol TVL (DefiLlama)
 // ============================================================
 async function collect_protocol_tvl() {
-    console.log('\n📊 [24/29] Protocol TVL...');
     const protocols = ['lido', 'aave', 'makerdao', 'uniswap', 'eigenlayer'];
     const all = [];
     for (const protocol of protocols) {
@@ -1931,7 +1886,6 @@ async function collect_protocol_tvl() {
 // 25. Staking APR (DefiLlama/Lido) - admin.html 방식
 // ============================================================
 async function collect_staking_apr() {
-    console.log('\n💹 [25/29] Staking APR...');
     const data = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
     
     if (!data?.data || data.data.length === 0) {
@@ -1975,7 +1929,6 @@ async function collect_staking_apr() {
 // 26. ETH in DeFi (estimate from TVL)
 // ============================================================
 async function collect_eth_in_defi() {
-    console.log('\n🔒 [26/29] ETH in DeFi...');
     const { data: tvl } = await supabase.from('historical_ethereum_tvl').select('date, tvl').order('date');
     const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
     if (!tvl || !prices) return 0;
@@ -1999,7 +1952,6 @@ async function collect_eth_in_defi() {
 // 27. Global Market Cap (CoinGecko)
 // ============================================================
 async function collect_global_mcap() {
-    console.log('\n🌍 [27/29] Global Market Cap...');
     const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
     if (!data?.data) return 0;
     const today = new Date().toISOString().split('T')[0];
@@ -2016,7 +1968,6 @@ async function collect_global_mcap() {
 // 28. DEX by Protocol (DefiLlama)
 // ============================================================
 async function collect_dex_by_protocol() {
-    console.log('\n💱 [28/29] DEX by Protocol...');
     const protocols = ['uniswap', 'curve-dex', 'balancer'];
     const all = [];
     for (const protocol of protocols) {
@@ -2038,7 +1989,6 @@ async function collect_dex_by_protocol() {
 // 29. Network Stats (beaconcha.in)
 // ============================================================
 async function collect_network_stats() {
-    console.log('\n⛓️ [29/29] Network Stats...');
     const data = await fetchJSON('https://beaconcha.in/api/v1/epoch/latest');
     if (!data?.data) return 0;
     const today = new Date().toISOString().split('T')[0];
@@ -2056,7 +2006,6 @@ async function collect_network_stats() {
 
 // 30. Blob Data (Dune)
 async function collect_dune_blob() {
-    console.log('\n🫧 [30/39] Blob Data (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.BLOB, 1000);
@@ -2095,7 +2044,6 @@ async function collect_dune_blob() {
 
 // 32. Active Addresses L1 (Dune)
 async function collect_dune_active_addr() {
-    console.log('\n👥 [31/38] Active Addresses L1 (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.ACTIVE_ADDR, 5000);
@@ -2126,7 +2074,6 @@ async function collect_dune_active_addr() {
 
 // 33. L2 Active Addresses (Dune)
 async function collect_dune_l2_addr() {
-    console.log('\n👤 [33/39] L2 Active Addresses (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.L2_ACTIVE_ADDR, 10000);
@@ -2164,7 +2111,6 @@ async function collect_dune_l2_addr() {
 
 // 34. Bridge Volume (Dune)
 async function collect_dune_bridge() {
-    console.log('\n🌉 [34/38] Bridge Volume (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.BRIDGE_VOLUME, 10000);
@@ -2197,7 +2143,6 @@ async function collect_dune_bridge() {
 
 // 36. Whale Transactions (Dune)
 async function collect_dune_whale() {
-    console.log('\n🐋 [36/39] Whale Transactions (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.WHALE_TX, 5000);
@@ -2216,7 +2161,6 @@ async function collect_dune_whale() {
 
 // 37. New Addresses (Dune)
 async function collect_dune_new_addr() {
-    console.log('\n🆕 [37/39] New Addresses (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.NEW_ADDR, 5000);
@@ -2234,7 +2178,6 @@ async function collect_dune_new_addr() {
 
 // 38. MVRV Ratio (Dune)
 async function collect_dune_mvrv() {
-    console.log('\n📊 [38/39] MVRV Ratio (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.MVRV, 5000);
@@ -2279,7 +2222,6 @@ async function collect_dune_mvrv() {
 
 // 39. Stablecoin Volume (Dune)
 async function collect_dune_stablecoin_vol() {
-    console.log('\n💵 [39/40] Stablecoin Volume (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
     
     const rows = await fetchDuneResults(DUNE_QUERIES.STABLECOIN_VOL, 5000);
@@ -2317,7 +2259,6 @@ async function collect_dune_stablecoin_vol() {
 
 // 40. Gas Price (Dune) - Daily average gas price
 async function collect_dune_gas_price() {
-    console.log('\n⛽ [40/40] Gas Price (Dune)...');
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
     if (DUNE_QUERIES.GAS_PRICE === 0) { 
         console.log('  ⏭️ Skipped - Query ID not set'); 
@@ -2380,16 +2321,13 @@ async function collect_dune_gas_price() {
 // Main
 // ============================================================
 async function main() {
-    console.log('🚀 ETHval Data Collector v7.2');
+    console.log('═'.repeat(60));
+    console.log('🚀 ETHval Data Collector v7.3');
     console.log(`📅 ${new Date().toISOString()}`);
-    console.log('='.repeat(60));
-    console.log('Collecting 40 datasets (29 API + 11 Dune)...');
-    if (DUNE_API_KEY) {
-        console.log('✅ Dune API Key detected');
-        console.log('📌 Note: Dune queries auto-refresh daily at 03:30-04:00 UTC');
-    } else {
-        console.log('⚠️ No Dune API Key - Dune collections will be skipped');
-    }
+    console.log('═'.repeat(60));
+    
+    if (DUNE_API_KEY) console.log('✓ Dune API Key detected');
+    else console.log('⚠️ No Dune API Key - Dune collections will be skipped');
     
     const startTime = Date.now();
     const results = {};
@@ -2405,38 +2343,55 @@ async function main() {
         return res;
     };
     
+    // 진행상황 출력 헬퍼
+    const runCollector = async (name, fn, index, total) => {
+        const prefix = `[${String(index).padStart(2, '0')}/${total}]`;
+        try {
+            const res = wrapResult(await fn());
+            if (res.status === 'fail') {
+                console.log(`❌ ${prefix} ${name}: ${res.msg}`);
+            } else if (res.status === 'warn') {
+                console.log(`⚠️ ${prefix} ${name}: ${res.count} (${res.msg})`);
+            }
+            // 성공은 로그 안 함 (Summary에서 표시)
+            return res;
+        } catch (e) {
+            console.log(`❌ ${prefix} ${name}: ${e.message}`);
+            return result.fail(e.message);
+        }
+    };
+    
     // ============================================================
     // PHASE 1: DefiLlama APIs (순차 처리 - rate limit 방지)
     // ============================================================
-    console.log('\n📦 Phase 1: DefiLlama APIs (sequential, 500ms delay)...');
+    console.log('\n📦 Phase 1: DefiLlama APIs...');
     const defiLlamaStart = Date.now();
     
-    // DefiLlama rate limit: 순차 처리 + 딜레이
-    results.ethereum_tvl = wrapResult(await collect_ethereum_tvl()); await sleep(500);
-    results.l2_tvl = wrapResult(await collect_l2_tvl()); await sleep(500);
-    results.protocol_fees = wrapResult(await collect_protocol_fees()); await sleep(500);
-    results.lending_tvl = wrapResult(await collect_lending_tvl()); await sleep(500);
-    results.protocol_tvl = wrapResult(await collect_protocol_tvl()); await sleep(500);
-    results.staking_apr = wrapResult(await collect_staking_apr()); await sleep(500);
-    results.eth_in_defi = wrapResult(await collect_eth_in_defi()); await sleep(500);
-    results.dex_volume = wrapResult(await collect_dex_volume()); await sleep(500);
-    results.dex_by_protocol = wrapResult(await collect_dex_by_protocol()); await sleep(500);
-    results.staking = wrapResult(await collect_staking());
+    results.ethereum_tvl = await runCollector('Ethereum TVL', collect_ethereum_tvl, 1, 38); await sleep(500);
+    results.l2_tvl = await runCollector('L2 TVL', collect_l2_tvl, 2, 38); await sleep(500);
+    results.protocol_fees = await runCollector('Protocol Fees', collect_protocol_fees, 3, 38); await sleep(500);
+    results.lending_tvl = await runCollector('Lending TVL', collect_lending_tvl, 4, 38); await sleep(500);
+    results.protocol_tvl = await runCollector('Protocol TVL', collect_protocol_tvl, 5, 38); await sleep(500);
+    results.staking_apr = await runCollector('Staking APR', collect_staking_apr, 6, 38); await sleep(500);
+    results.eth_in_defi = await runCollector('ETH in DeFi', collect_eth_in_defi, 7, 38); await sleep(500);
+    results.dex_volume = await runCollector('DEX Volume', collect_dex_volume, 8, 38); await sleep(500);
+    results.dex_by_protocol = await runCollector('DEX by Protocol', collect_dex_by_protocol, 9, 38); await sleep(500);
+    results.staking = await runCollector('Staking Data', collect_staking, 10, 38);
     
-    console.log(`  ⏱️ DefiLlama: ${((Date.now() - defiLlamaStart) / 1000).toFixed(1)}s`);
+    console.log(`  ✓ DefiLlama: ${((Date.now() - defiLlamaStart) / 1000).toFixed(1)}s`);
     
     // ============================================================
-    // PHASE 2: Price APIs (Binance primary, CoinGecko fallback)
+    // PHASE 2: Price APIs (DefiLlama primary)
     // ============================================================
-    console.log('\n💰 Phase 2: Price APIs (Binance primary)...');
+    console.log('\n💰 Phase 2: Price & Market Data...');
     const priceStart = Date.now();
     
-    results.eth_price = wrapResult(await collect_eth_price()); await sleep(500);
-    results.eth_btc = wrapResult(await collect_eth_btc()); await sleep(500);
-    results.eth_dominance = wrapResult(await collect_eth_dominance()); await sleep(500);
-    results.global_mcap = wrapResult(await collect_global_mcap());
+    results.eth_price = await runCollector('ETH Price', collect_eth_price, 11, 38); await sleep(500);
+    results.eth_btc = await runCollector('ETH/BTC Ratio', collect_eth_btc, 12, 38); await sleep(500);
+    results.eth_dominance = await runCollector('ETH Dominance', collect_eth_dominance, 13, 38); await sleep(500);
+    results.global_mcap = await runCollector('Global MCap', collect_global_mcap, 14, 38);
     
-    console.log(`  ⏱️ Price APIs: ${((Date.now() - priceStart) / 1000).toFixed(1)}s`);
+    console.log(`  ✓ Price APIs: ${((Date.now() - priceStart) / 1000).toFixed(1)}s`);
     
     // ============================================================
     // PHASE 3: Other APIs (병렬)
@@ -2444,7 +2399,7 @@ async function main() {
     console.log('\n🔗 Phase 3: Other APIs (parallel)...');
     const otherStart = Date.now();
     
-    const [stablecoins, stablecoins_eth, fear_greed, eth_supply, volatility, nvt, transactions, l2_transactions, l2_addresses, funding_rate, exchange_reserve, blob_data, active_addresses, network_stats, gas_burn] = await Promise.all([
+    const phase3Results = await Promise.all([
         collect_stablecoins(),
         collect_stablecoins_eth(),
         collect_fear_greed(),
@@ -2462,33 +2417,24 @@ async function main() {
         collect_gas_burn()
     ]);
     
-    results.stablecoins = wrapResult(stablecoins);
-    results.stablecoins_eth = wrapResult(stablecoins_eth);
-    results.fear_greed = wrapResult(fear_greed);
-    results.eth_supply = wrapResult(eth_supply);
-    results.volatility = wrapResult(volatility);
-    results.nvt = wrapResult(nvt);
-    results.transactions = wrapResult(transactions);
-    results.l2_transactions = wrapResult(l2_transactions);
-    results.l2_addresses = wrapResult(l2_addresses);
-    results.funding_rate = wrapResult(funding_rate);
-    results.exchange_reserve = wrapResult(exchange_reserve);
-    results.blob_data = wrapResult(blob_data);
-    results.active_addresses = wrapResult(active_addresses);
-    results.network_stats = wrapResult(network_stats);
-    results.gas_burn = wrapResult(gas_burn);
+    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'blob_data', 'active_addresses', 'network_stats', 'gas_burn'];
+    phase3Results.forEach((res, i) => {
+        results[phase3Names[i]] = wrapResult(res);
+        const r = results[phase3Names[i]];
+        if (r.status === 'fail') console.log(`  ❌ ${phase3Names[i]}: ${r.msg}`);
+        else if (r.status === 'warn') console.log(`  ⚠️ ${phase3Names[i]}: ${r.msg}`);
+    });
     
-    console.log(`  ⏱️ Other APIs: ${((Date.now() - otherStart) / 1000).toFixed(1)}s`);
+    console.log(`  ✓ Other APIs: ${((Date.now() - otherStart) / 1000).toFixed(1)}s`);
     
     // ============================================================
     // PHASE 4: Dune APIs (병렬)
     // ============================================================
-    console.log('\n🔷 Phase 4: Dune APIs (parallel)...');
+    console.log('\n🔷 Phase 4: Dune APIs...');
     const duneStart = Date.now();
     
     if (DUNE_API_KEY) {
-        // REMOVED: collect_dune_l1_volume, collect_dune_l2_volume (now using Total Volume tables)
-        const [dune_blob, dune_active_addr, dune_l2_addr, dune_bridge, dune_whale, dune_new_addr, dune_mvrv, dune_stablecoin_vol, dune_gas_price] = await Promise.all([
+        const duneResults = await Promise.all([
             collect_dune_blob(),
             collect_dune_active_addr(),
             collect_dune_l2_addr(),
@@ -2500,17 +2446,15 @@ async function main() {
             collect_dune_gas_price()
         ]);
         
-        results.dune_blob = wrapResult(dune_blob, true);
-        results.dune_active_addr = wrapResult(dune_active_addr, true);
-        results.dune_l2_addr = wrapResult(dune_l2_addr, true);
-        results.dune_bridge = wrapResult(dune_bridge, true);
-        results.dune_whale = wrapResult(dune_whale, true);
-        results.dune_new_addr = wrapResult(dune_new_addr, true);
-        results.dune_mvrv = wrapResult(dune_mvrv, true);
-        results.dune_stablecoin_vol = wrapResult(dune_stablecoin_vol, true);
-        results.dune_gas_price = wrapResult(dune_gas_price, true);
+        const duneNames = ['dune_blob', 'dune_active_addr', 'dune_l2_addr', 'dune_bridge', 'dune_whale', 'dune_new_addr', 'dune_mvrv', 'dune_stablecoin_vol', 'dune_gas_price'];
+        duneResults.forEach((res, i) => {
+            results[duneNames[i]] = wrapResult(res, true);
+            const r = results[duneNames[i]];
+            if (r.status === 'fail') console.log(`  ❌ ${duneNames[i]}: ${r.msg}`);
+            else if (r.status === 'warn' && r.count === 0) console.log(`  ⚠️ ${duneNames[i]}: ${r.msg}`);
+        });
         
-        console.log(`  ⏱️ Dune: ${((Date.now() - duneStart) / 1000).toFixed(1)}s`);
+        console.log(`  ✓ Dune: ${((Date.now() - duneStart) / 1000).toFixed(1)}s`);
     } else {
         console.log('  ⏭️ Skipped (no API key)');
     }
