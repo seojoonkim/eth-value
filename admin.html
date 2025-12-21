@@ -4273,18 +4273,10 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             // 조건: 마지막 값이 직전 7일 평균의 30% 미만이면 제외
             // ═══════════════════════════════════════════════════════════════════
             function checkAndRemoveIncomplete(records, valueField) {
-                if (!records || records.length < 8) return records;
+                if (!records || records.length < 3) return records;
                 
-                const getValue = (r) => parseFloat(r[valueField]) || 0;
-                const lastValue = getValue(records[0]); // records는 desc 정렬
-                const prev7Values = records.slice(1, 8).map(r => getValue(r));
-                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                
-                if (dates.length > 2) {
-                    commentaryLog(`   ⚠️ ${valueField}: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`, 'warning');
-                    return records.slice(1); // 첫 번째(최신) 제외
-                }
-                return records;
+                // 마지막 데이터 항상 제외 (수집 중일 수 있음)
+                return records.slice(1);
             }
             
             // 테이블별 값 필드 매핑 (DATASETS 기준 - 실제 DB 필드명)
@@ -4340,16 +4332,10 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             .limit(35);
                         
                         if (recent && recent.length > 0) {
-                            // 미취합 데이터 제외
+                            // 마지막 데이터 제외 (수집 중일 수 있음)
                             let cleaned = recent.filter(r => r.tx_volume_usd > 0);
-                            if (cleaned.length >= 8) {
-                                const lastValue = cleaned[0].tx_volume_usd;
-                                const prev7Values = cleaned.slice(1, 8).map(r => r.tx_volume_usd);
-                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (dates.length > 2) {
-                                    console.log(`   ⚠️ l1_eth_transfer: 마지막 날 미취합 제외`);
-                                    cleaned = cleaned.slice(1);
-                                }
+                            if (cleaned.length > 2) {
+                                cleaned = cleaned.slice(1);
                             }
                             
                             metricsData[metricKey] = {
@@ -4377,15 +4363,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             }
                             let dates = Object.keys(byDate).sort().reverse();
                             
-                            // 미취합 체크 (집계된 값 기준)
-                            if (dates.length >= 8) {
-                                const lastValue = byDate[dates[0]];
-                                const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (dates.length > 2) {
-                                    commentaryLog(`   ⚠️ l2_addresses: 마지막 날 미취합 제외`, 'warning');
-                                    dates = dates.slice(1);
-                                }
+                            // 마지막 데이터 제외 (수집 중일 수 있음)
+                            if (dates.length > 2) {
+                                dates = dates.slice(1);
                             }
                             
                             const latestDate = dates[0];
@@ -4415,15 +4395,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             }
                             let dates = Object.keys(byDate).sort().reverse();
                             
-                            // 미취합 체크
-                            if (dates.length >= 8) {
-                                const lastValue = byDate[dates[0]];
-                                const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (dates.length > 2) {
-                                    commentaryLog(`   ⚠️ l2_transactions: 마지막 날 미취합 제외`, 'warning');
-                                    dates = dates.slice(1);
-                                }
+                            // 마지막 데이터 제외 (수집 중일 수 있음)
+                            if (dates.length > 2) {
+                                dates = dates.slice(1);
                             }
                             
                             const latestDate = dates[0];
@@ -4457,15 +4431,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             console.log(`📊 L2 Native Transfer aggregated: ${dates.length} dates, latest=$${(byDate[dates[0]]/1e9)?.toFixed(2)}B`);
                             
-                            // 미취합 데이터 제외 (집계된 값 기준)
-                            if (dates.length >= 8) {
-                                const lastValue = byDate[dates[0]];
-                                const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (dates.length > 2) {
-                                    console.log(`   ⚠️ l2_native_transfer: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
-                                    dates = dates.slice(1);
-                                }
+                            // 마지막 데이터 제외 (수집 중일 수 있음)
+                            if (dates.length > 2) {
+                                dates = dates.slice(1);
                             }
                             
                             const latestDate = dates[0];
@@ -4495,15 +4463,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             }
                             let dates = Object.keys(byDate).sort().reverse();
                             
-                            // 미취합 데이터 제외 (집계된 값 기준)
-                            if (dates.length >= 8) {
-                                const lastValue = byDate[dates[0]];
-                                const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (dates.length > 2) {
-                                    console.log(`   ⚠️ bridge_volume: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
-                                    dates = dates.slice(1);
-                                }
+                            // 마지막 데이터 제외 (수집 중일 수 있음)
+                            if (dates.length > 2) {
+                                dates = dates.slice(1);
                             }
                             
                             const latestDate = dates[0];
@@ -4535,15 +4497,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             
                             console.log(`📊 L2 Total Volume aggregated: ${dates.length} dates, latest=$${(byDate[dates[0]]/1e9)?.toFixed(2)}B`);
                             
-                            // 미취합 데이터 제외 (집계된 값 기준)
-                            if (dates.length >= 8) {
-                                const lastValue = byDate[dates[0]];
-                                const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (dates.length > 2) {
-                                    console.log(`   ⚠️ l2_total_volume: 마지막 날 미취합 제외 ($${(lastValue/1e9).toFixed(2)}B < 30% of avg)`);
-                                    dates = dates.slice(1);
-                                }
+                            // 마지막 데이터 제외 (수집 중일 수 있음)
+                            if (dates.length > 2) {
+                                dates = dates.slice(1);
                             }
                             
                             const latestDate = dates[0];
@@ -4607,15 +4563,9 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                             }
                             let dates = Object.keys(byDate).sort().reverse();
                             
-                            // 미취합 데이터 제외 (집계된 값 기준)
-                            if (dates.length >= 8) {
-                                const lastValue = byDate[dates[0]];
-                                const prev7Values = dates.slice(1, 8).map(d => byDate[d]);
-                                const avg7 = prev7Values.reduce((a, b) => a + b, 0) / prev7Values.length;
-                                if (dates.length > 2) {
-                                    console.log(`   ⚠️ l2_tvl: 마지막 날 미취합 제외 (${lastValue.toFixed(0)} < 30% of avg ${avg7.toFixed(0)})`);
-                                    dates = dates.slice(1);
-                                }
+                            // 마지막 데이터 제외 (수집 중일 수 있음)
+                            if (dates.length > 2) {
+                                dates = dates.slice(1);
                             }
                             
                             const latestDate = dates[0];
