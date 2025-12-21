@@ -1543,11 +1543,10 @@ async function collect_funding_rate() {
     }
     
     try {
-        // CryptoQuant API: ETH Derivatives Funding Rates
-        // Endpoint: /v1/eth/derivatives/funding-rates
-        // Params: window=day, limit=1095 (3년)
+        // CryptoQuant API: ETH Funding Rates
+        // https://api.cryptoquant.com/v1/eth/market-data/funding-rates?window=day&exchange=all_exchange
         const response = await fetch(
-            'https://api.cryptoquant.com/v1/eth/derivatives/funding-rates?window=day&limit=1095',
+            'https://api.cryptoquant.com/v1/eth/market-data/funding-rates?window=day&exchange=all_exchange&limit=1095',
             { 
                 headers: { 
                     'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
@@ -1562,17 +1561,18 @@ async function collect_funding_rate() {
         
         const data = await response.json();
         
-        // CryptoQuant 응답 형식에 맞게 파싱
-        // 예상 응답: { result: { data: [{ date, funding_rate }, ...] } }
+        // CryptoQuant 응답 형식: { status: {...}, result: { data: [...] } }
         const rows = data?.result?.data || data?.data || data;
         
         if (!Array.isArray(rows) || rows.length === 0) {
             throw new Error('No data from CryptoQuant');
         }
         
+        console.log(`  📦 Got ${rows.length} funding rate records from CryptoQuant`);
+        
         const records = rows.map(row => ({
             date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
-            funding_rate: parseFloat(row.funding_rate || row.fundingRate || row.value || 0),
+            funding_rate: parseFloat(row.funding_rates || row.funding_rate || row.value || 0),
             source: 'cryptoquant'
         })).filter(r => r.date && !isNaN(r.funding_rate));
         
@@ -1583,6 +1583,7 @@ async function collect_funding_rate() {
         
         throw new Error('Insufficient data');
     } catch (e) {
+        console.log(`  ❌ funding_rate: ${e.message}`);
         // 실패 시 기존 데이터 유지
         const { data: existing } = await supabase
             .from('historical_funding_rate')
@@ -1607,9 +1608,9 @@ async function collect_exchange_reserve() {
     
     try {
         // CryptoQuant API: ETH Exchange Reserve
-        // 예상 endpoint: /v1/eth/exchange-flows/reserve
+        // https://api.cryptoquant.com/v1/eth/exchange-flows/reserve?window=day&exchange=all_exchange
         const response = await fetch(
-            'https://api.cryptoquant.com/v1/eth/exchange-flows/reserve?exchange=all_exchange&window=day&limit=1095',
+            'https://api.cryptoquant.com/v1/eth/exchange-flows/reserve?window=day&exchange=all_exchange&limit=1095',
             { 
                 headers: { 
                     'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
@@ -1629,9 +1630,11 @@ async function collect_exchange_reserve() {
             throw new Error('No data from CryptoQuant');
         }
         
+        console.log(`  📦 Got ${rows.length} exchange reserve records from CryptoQuant`);
+        
         const records = rows.map(row => ({
             date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
-            reserve_eth: parseFloat(row.reserve || row.value || row.reserve_eth || 0),
+            reserve_eth: parseFloat(row.reserve || row.value || 0),
             source: 'cryptoquant'
         })).filter(r => r.date && !isNaN(r.reserve_eth) && r.reserve_eth > 0);
         
@@ -1642,6 +1645,7 @@ async function collect_exchange_reserve() {
         
         throw new Error('Insufficient data');
     } catch (e) {
+        console.log(`  ❌ exchange_reserve: ${e.message}`);
         // 실패 시 기존 데이터 유지
         const { data: existing } = await supabase
             .from('historical_exchange_reserve')
@@ -1738,8 +1742,9 @@ async function collect_open_interest() {
     
     try {
         // CryptoQuant API: ETH Open Interest
+        // https://api.cryptoquant.com/v1/eth/market-data/open-interest?window=day&exchange=all_exchange&symbol=all_symbol
         const response = await fetch(
-            'https://api.cryptoquant.com/v1/eth/derivatives/open-interest?exchange=all_exchange&window=day&limit=1095',
+            'https://api.cryptoquant.com/v1/eth/market-data/open-interest?window=day&exchange=all_exchange&symbol=all_symbol&limit=1095',
             { 
                 headers: { 
                     'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
@@ -1759,9 +1764,11 @@ async function collect_open_interest() {
             throw new Error('No data from CryptoQuant');
         }
         
+        console.log(`  📦 Got ${rows.length} open interest records from CryptoQuant`);
+        
         const records = rows.map(row => ({
             date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
-            open_interest: parseFloat(row.open_interest || row.openInterest || row.value || 0),
+            open_interest: parseFloat(row.open_interest || row.value || 0),
             source: 'cryptoquant'
         })).filter(r => r.date && !isNaN(r.open_interest) && r.open_interest > 0);
         
@@ -1772,6 +1779,7 @@ async function collect_open_interest() {
         
         throw new Error('Insufficient data');
     } catch (e) {
+        console.log(`  ❌ open_interest: ${e.message}`);
         // 실패 시 기존 데이터 유지
         const { data: existing } = await supabase
             .from('historical_open_interest')
