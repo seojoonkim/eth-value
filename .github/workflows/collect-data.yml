@@ -1,0 +1,49 @@
+name: ETHval Data Collection
+
+on:
+  schedule:
+    # 매일 UTC 03:30 (KST 12:30) - Dune 쿼리 자동 갱신 후
+    - cron: '30 3 * * *'
+    # 매일 UTC 12:00 (KST 21:00) - 오후 업데이트
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+    # 수동 실행 가능
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run data collector
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CRYPTOQUANT_API_KEY: ${{ secrets.CRYPTOQUANT_API_KEY }}
+        run: |
+          echo "🚀 Starting ETHval data collection v7.4..."
+          echo "📊 Collecting 40 datasets (29 API + 11 Dune)"
+          echo "📌 Dune queries auto-refresh daily at 03:30-04:00 UTC"
+          echo "🤖 AI commentary generation enabled"
+          echo "🟠 CryptoQuant: Funding Rate, Exchange Reserve, Open Interest"
+          node scripts/data-collector.js
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "✅ Data collection completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
