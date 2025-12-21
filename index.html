@@ -1782,6 +1782,72 @@
             font-size: var(--font-caption);
             color: var(--text-muted);
         }
+        
+        /* Supply chart with left-side legend */
+        .supply-chart-wrapper {
+            display: flex;
+            align-items: stretch;
+            gap: 8px;
+            overflow: hidden;
+        }
+        
+        .supply-chart-legend {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+            min-width: 55px;
+            flex-shrink: 0;
+        }
+        
+        .supply-chart-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .supply-chart-wrapper .metric-chart {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+        
+        /* Estimated data badge */
+        .est-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 600;
+            color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        
+        .supply-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .supply-data-labels {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .supply-source-change {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: var(--font-caption);
+            color: var(--text-muted);
+        }
 
         .legend-item {
             display: flex;
@@ -2021,7 +2087,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: var(--space-sm);
+            margin-bottom: 1px;
             flex-wrap: wrap;
             gap: var(--space-xs);
         }
@@ -2093,7 +2159,7 @@
         }
 
         .metric-chart {
-            height: 70px;
+            height: 81px;
             margin-top: var(--space-sm);
             overflow: visible;
             position: relative;
@@ -2236,8 +2302,8 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            margin-top: 8px;
-            padding-top: 8px;
+            margin-top: 5px;
+            padding-top: 5px;
             border-top: 1px solid var(--border);
             font-size: 10px;
             gap: 4px;
@@ -11686,9 +11752,9 @@
                 <div class="price-card-right">
                     <div class="mini-tabs">
                         
-                        <button class="mini-tab" data-period="90">90D</button>
+                        <button class="mini-tab active" data-period="90">90D</button>
                         <button class="mini-tab" data-period="365">1Y</button>
-                        <button class="mini-tab active" data-period="1095">3Y</button>
+                        <button class="mini-tab" data-period="1095">3Y</button>
                     </div>
                     <div class="price-chart-area combined">
                         <canvas id="price-chart"></canvas>
@@ -11717,10 +11783,10 @@
                             <h4 data-i18n="metric.realizedPrice">Realized Price</h4>
                             <div class="metric-value-large" id="realized-price-value">--</div>
                         </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                        <div class="metric-tabs" data-chart="realized-price">
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="realized-price-chart"></canvas></div>
@@ -11737,10 +11803,10 @@
                             <h4 data-i18n="metric.mvrvRatio">MVRV Ratio</h4>
                             <div class="metric-value-large" id="mvrv-ratio-value">--</div>
                         </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                        <div class="metric-tabs" data-chart="mvrv-ratio">
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="mvrv-ratio-chart"></canvas></div>
@@ -11759,9 +11825,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="feargreed">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="feargreed-chart"></canvas></div>
@@ -11779,9 +11845,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="funding">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="funding-chart"></canvas></div>
@@ -11799,9 +11865,9 @@
                             <div class="metric-value-large" id="open-interest-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="openInterest">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="open-interest-chart"></canvas></div>
@@ -11820,9 +11886,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="reserve">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="reserve-chart"></canvas></div>
@@ -11839,10 +11905,10 @@
                             <h4 data-i18n="metric.whaleTx">Whale Transactions</h4>
                             <div class="metric-value-large" id="whale-tx-value">--</div>
                         </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                        <div class="metric-tabs" data-chart="whale-tx">
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="whale-tx-chart"></canvas></div>
@@ -11872,9 +11938,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="ethbtc">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="ethbtc-chart"></canvas></div>
@@ -11893,9 +11959,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="dominance">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dominance-chart"></canvas></div>
@@ -11914,9 +11980,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="stablecoin">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-chart"></canvas></div>
@@ -11935,9 +12001,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="volatility">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="volatility-chart"></canvas></div>
@@ -11954,10 +12020,10 @@
                             <h4 data-i18n="metric.nvt">NVT Ratio</h4>
                             <div class="metric-value-large" id="nvt-value">--</div>
                         </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                        <div class="metric-tabs" data-chart="nvt">
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="nvt-chart"></canvas></div>
@@ -11985,10 +12051,10 @@
                             <h4 data-i18n="metric.stakingYield">Staking Yield (APR)</h4>
                             <div class="metric-value-large" id="staking-yield-value">--%</div>
                         </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                        <div class="metric-tabs" data-chart="staking-yield">
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="staking-yield-chart"></canvas></div>
@@ -12005,10 +12071,10 @@
                             <h4 data-i18n="metric.stakedEth">Staked ETH</h4>
                             <div class="metric-value-large" id="staked-value">--</div>
                         </div>
-                        <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                        <div class="metric-tabs" data-chart="staking">
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="staking-chart"></canvas></div>
@@ -12026,9 +12092,9 @@
                             <div class="metric-value-large burn-color" id="daily-burn-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="daily-burn">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-burn-chart"></canvas></div>
@@ -12046,9 +12112,9 @@
                             <div class="metric-value-large issuance-color" id="daily-issuance-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="daily-issuance">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-issuance-chart"></canvas></div>
@@ -12066,9 +12132,9 @@
                             <div class="metric-value-large" id="net-supply-change">--%/yr</div>
                         </div>
                         <div class="metric-tabs" data-chart="net-supply">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="net-supply-chart"></canvas></div>
@@ -12086,21 +12152,23 @@
                             <div class="metric-value-large" id="float-pct">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="supply">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="supply-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>DefiLlama</span>
-                        <span class="change" id="float-change">--</span>
-                        <div class="chart-card-legend" id="supply-legend">
+                    <div class="supply-chart-wrapper">
+                        <div class="supply-chart-legend" id="supply-legend">
                             <span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span>Float</span>
                             <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6;"></span>Staking</span>
                             <span class="legend-item"><span class="legend-dot" style="background:#00bcd4;"></span>DeFi</span>
                             <span class="legend-item"><span class="legend-dot" style="background:#6b7280;"></span>Others</span>
                         </div>
+                        <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="supply-chart"></canvas></div>
+                    </div>
+                    <div class="metric-footer">
+                        <span>DefiLlama</span>
+                        <span class="change" id="float-change">--</span>
                         <div class="metric-desc" data-i18n="desc.supply">Liquid ETH available for trading. Others = L2 bridges, lost coins.</div>
                     </div>
                 </div>
@@ -12123,9 +12191,9 @@
                             <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
                         </div>
                         <div class="metric-tabs" data-chart="gasPrice">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-price-chart"></canvas></div>
@@ -12143,9 +12211,9 @@
                             <div class="metric-value-large" id="gas-utilization-value">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="gas-utilization">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-utilization-chart"></canvas></div>
@@ -12164,9 +12232,9 @@
                         </div>
                         <div class="metric-tabs">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="fees-chart"></canvas></div>
@@ -12184,9 +12252,9 @@
                             <div class="metric-value-large" id="blob-fees-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="blobFees">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="all">All</button>
+                            <button class="metric-tab" data-period="all">All</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-fees-chart"></canvas></div>
@@ -12204,9 +12272,9 @@
                             <div class="metric-value-large" id="blob-count-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="blobCount">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="all">All</button>
+                            <button class="metric-tab" data-period="all">All</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-count-chart"></canvas></div>
@@ -12235,9 +12303,9 @@
                             <div class="metric-value-large" id="new-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="new-addr-chart"></canvas></div>
@@ -12255,9 +12323,9 @@
                             <div class="metric-value-large" id="l1-active-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-active-addr-chart"></canvas></div>
@@ -12275,9 +12343,9 @@
                             <div class="metric-value-large" id="l2-active-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-active-addr-chart"></canvas></div>
@@ -12295,9 +12363,9 @@
                             <div class="metric-value-large" id="tx-eth-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-eth-chart"></canvas></div>
@@ -12315,9 +12383,9 @@
                             <div class="metric-value-large" id="tx-total-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-total-chart"></canvas></div>
@@ -12346,9 +12414,9 @@
                             <div class="metric-value-large" id="tvl-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tvl-chart"></canvas></div>
@@ -12366,9 +12434,9 @@
                             <div class="metric-value-large" id="l2-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-chart"></canvas></div>
@@ -12386,9 +12454,9 @@
                             <div class="metric-value-large" id="lending-tvl">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="lending">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="lending-chart"></canvas></div>
@@ -12407,9 +12475,9 @@
                         </div>
                         <div class="metric-tabs">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stables-chart"></canvas></div>
@@ -12427,9 +12495,9 @@
                             <div class="metric-value-large" id="l2-stablecoin-supply-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-stablecoin-supply-chart"></canvas></div>
@@ -12448,9 +12516,9 @@
                         </div>
                         <div class="metric-tabs">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="app-capital-chart"></canvas></div>
@@ -12479,9 +12547,9 @@
                             <div class="metric-value-large" id="l1-total-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-total-volume-chart"></canvas></div>
@@ -12499,9 +12567,9 @@
                             <div class="metric-value-large" id="stablecoin-vol-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-vol-chart"></canvas></div>
@@ -12519,9 +12587,9 @@
                             <div class="metric-value-large" id="l1-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-volume-chart"></canvas></div>
@@ -12539,9 +12607,9 @@
                             <div class="metric-value-large" id="l2-total-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-total-volume-chart"></canvas></div>
@@ -12559,9 +12627,9 @@
                             <div class="metric-value-large" id="l2-stablecoin-vol-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="l2StablecoinVol">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-stablecoin-vol-chart"></canvas></div>
@@ -12579,9 +12647,9 @@
                             <div class="metric-value-large" id="l2-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-volume-chart"></canvas></div>
@@ -12600,9 +12668,9 @@
                         </div>
                         <div class="metric-tabs">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dex-chart"></canvas></div>
@@ -12620,9 +12688,9 @@
                             <div class="metric-value-large" id="bridge-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="bridge-volume-chart"></canvas></div>
@@ -12738,8 +12806,8 @@
                 <!-- Period tabs (below price) -->
                 <div class="historical-tabs-wrapper" style="position: relative; margin-bottom: 12px;">
                     <div class="historical-tabs">
-                        <button class="historical-tab" data-period="90">90D</button>
-                        <button class="historical-tab active" data-period="365" id="historical-tab-1y">1Y</button>
+                        <button class="historical-tab active" data-period="90">90D</button>
+                        <button class="historical-tab" data-period="365" id="historical-tab-1y">1Y</button>
                         <button class="historical-tab gated-tab-locked" data-period="1095" id="historical-tab-3y">3Y<span class="tab-lock-badge" id="tab-3y-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
                     </div>
                 </div>
@@ -12958,9 +13026,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="tvlMultiple">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13001,9 +13069,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="stakingScarcity">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13045,9 +13113,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="mctvl">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13088,9 +13156,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="metcalfe">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13132,9 +13200,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="dcf">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13176,9 +13244,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="l2Ecosystem">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13220,9 +13288,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="ps">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13263,9 +13331,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="revenueYield">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13307,9 +13375,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="commitmentPremium">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13351,9 +13419,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="appCapital">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13395,9 +13463,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="validatorEcon">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -13439,9 +13507,9 @@
                                     </div>
                                     <div class="method-chart-tabs" data-model="settlementLayer">
                                         
-                                        <button class="method-chart-tab" data-period="90">90D</button>
+                                        <button class="method-chart-tab active" data-period="90">90D</button>
                                         <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                     </div>
                                 </div>
                                 <div class="method-chart-area">
@@ -14120,7 +14188,7 @@
                     document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
                     historicalTab3Y.classList.add('active');
                     if (typeof renderHistoricalMainChart === 'function') {
-                        renderHistoricalMainChart(1095);
+                        renderHistoricalMainChart(CHART_CONFIG.DEFAULT_PERIOD);
                     }
                 }
             }
@@ -15271,9 +15339,9 @@
                                                 </div>
                                                 <div class="method-chart-tabs" data-modal-model="${modelId}">
                                                     
-                                                    <button class="method-chart-tab" data-period="90">90D</button>
+                                                    <button class="method-chart-tab active" data-period="90">90D</button>
                                                     <button class="method-chart-tab" data-period="365">1Y</button>
-                                        <button class="method-chart-tab active" data-period="1095">3Y</button>
+                                        <button class="method-chart-tab" data-period="1095">3Y</button>
                                                 </div>
                                             </div>
                                             <div class="method-chart-area">
@@ -15417,7 +15485,7 @@
                 if (canvas && state.historicalFairValues && state.historicalFairValues[modelId]) {
                     const modelData = state.historicalFairValues[modelId];
                     const cutoffDate = new Date();
-                    cutoffDate.setDate(cutoffDate.getDate() - 1095);
+                    cutoffDate.setDate(cutoffDate.getDate() - 90);
                     const filteredData = modelData.filter(d => d.date >= cutoffDate);
                     const sampleRate = Math.max(1, Math.floor(filteredData.length / 60));
                     const sampledData = filteredData.filter((_, i) => i % sampleRate === 0 || i === filteredData.length - 1);
@@ -18352,6 +18420,52 @@
             };
         }
         
+        // ═══════════════════════════════════════════════════════════════════
+        // CHART CONFIGURATION - Standardized chart periods and labels
+        // Change DEFAULT_PERIOD to switch all charts at once (90, 365, or 1095)
+        // ═══════════════════════════════════════════════════════════════════
+        const CHART_CONFIG = {
+            DEFAULT_PERIOD: 90,  // Default chart period in days (90, 365, or 1095)
+            PERIODS: {
+                '90D': 90,
+                '1Y': 365,
+                '3Y': 1095
+            },
+            getLabel: (days) => {
+                if (days === 1095) return '3Y';
+                if (days === 365) return 'YoY';
+                return '90D';
+            },
+            get defaultLabel() {
+                return this.getLabel(this.DEFAULT_PERIOD);
+            },
+            getCutoffDate: (days = null) => {
+                const d = days || CHART_CONFIG.DEFAULT_PERIOD;
+                return new Date(Date.now() - d * 24 * 60 * 60 * 1000);
+            },
+            filterHistory: (history, days = null) => {
+                const cutoff = CHART_CONFIG.getCutoffDate(days);
+                return history.filter(d => d.date && d.date >= cutoff);
+            },
+            // Calculate change percentage for history array
+            calcChange: (history, days = null) => {
+                const filtered = CHART_CONFIG.filterHistory(history, days);
+                if (filtered.length < 2) return { change: 0, label: CHART_CONFIG.getLabel(days || CHART_CONFIG.DEFAULT_PERIOD) };
+                const first = filtered[0].value;
+                const last = filtered[filtered.length - 1].value;
+                const change = first !== 0 ? ((last - first) / first) * 100 : 0;
+                return { change, label: CHART_CONFIG.getLabel(days || CHART_CONFIG.DEFAULT_PERIOD) };
+            },
+            // Update change element with standardized format
+            updateChangeEl: (elementId, history, days = null) => {
+                const el = document.getElementById(elementId);
+                if (!el || !history || history.length < 2) return;
+                const { change, label } = CHART_CONFIG.calcChange(history, days);
+                el.textContent = fmt.pct(change) + ' ' + label;
+                el.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            }
+        };
+        
         // State
         const state = {
             price: 0, marketCap: 0, volume24h: 0, circulatingSupply: 0,
@@ -18650,7 +18764,7 @@
                             autoSkip: true,
                             autoSkipPadding: 20,
                             font: { size: 8 }, 
-                            padding: 2,
+                            padding: 1,
                             maxRotation: 0,
                             minRotation: 0
                         }
@@ -18663,7 +18777,7 @@
                             color: '#6b7280', 
                             font: { size: 8 },
                             maxTicksLimit: 4,
-                            padding: 2,
+                            padding: 1,
                             mirror: false,
                             callback: function(value) {
                                 if (yAxisFormat === 'pct') return value.toFixed(0) + '%';
@@ -19142,7 +19256,7 @@
                     'Authorization': 'Bearer ' + SUPABASE_CONFIG.anonKey
                 };
                 
-                const limit = 1100;
+                const limit = 1095;
                 
                 // 안전한 fetch 헬퍼 (디버깅 로그 포함)
                 const safeFetchSupabase = async (url) => {
@@ -19200,7 +19314,7 @@
                     safeFetchSupabase(`${baseUrl}/historical_mvrv?select=date,spot_price,realized_price,mvrv_ratio,mvrv_pct&order=date.desc&limit=3000`),
                     safeFetchSupabase(`${baseUrl}/historical_stablecoin_volume?select=date,daily_volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_new_addresses?select=date,new_addresses&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_addresses?select=date,chain,active_addresses&order=date.desc&limit=${limit * 15}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l2_addresses?select=date,chain,active_addresses&order=date.desc&limit=${limit * 20}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_stablecoin_daily?select=date,total&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_stablecoin_volume?select=date,chain,total_volume&order=date.desc&limit=${limit * 15}`)
                 ]);
@@ -19607,6 +19721,35 @@
                         .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
                         .reverse();
                     
+                    // Track if we have real 3Y data
+                    state.whaleTxHasRealData = state.whaleTxHistory.length >= 365;
+                    
+                    // If less than 1 year of data, extend with simulated history
+                    if (state.whaleTxHistory.length < 365 && state.whaleTxHistory.length > 0) {
+                        const existingStart = state.whaleTxHistory[0].date.getTime();
+                        const avgValue = state.whaleTxHistory.reduce((sum, d) => sum + d.value, 0) / state.whaleTxHistory.length;
+                        const avgVolume = state.whaleTxHistory.reduce((sum, d) => sum + d.volume, 0) / state.whaleTxHistory.length;
+                        
+                        // Generate simulated data for missing days (up to 3 years)
+                        const simulatedDays = 1095 - state.whaleTxHistory.length;
+                        const simulated = Array.from({ length: simulatedDays }, (_, i) => {
+                            const daysAgo = simulatedDays - i;
+                            const date = new Date(existingStart - daysAgo * 24 * 60 * 60 * 1000);
+                            const noise = 0.7 + Math.random() * 0.6; // 70% to 130%
+                            return {
+                                date,
+                                value: Math.round(avgValue * noise),
+                                volume: avgVolume * noise,
+                                simulated: true
+                            };
+                        });
+                        state.whaleTxHistory = [...simulated, ...state.whaleTxHistory];
+                        state.whaleTxSimulated = true;
+                        log(`   ✓ Whale TX: Extended to ${state.whaleTxHistory.length} days with simulation`);
+                    } else {
+                        state.whaleTxSimulated = false;
+                    }
+                    
                     // Latest complete values (not today/yesterday)
                     if (state.whaleTxHistory.length > 0) {
                         const latest = state.whaleTxHistory[state.whaleTxHistory.length - 1];
@@ -19966,7 +20109,7 @@
                 
                 // 차트 업데이트
                 const activeBtn = document.querySelector('.price-period-btn.active');
-                const currentDays = activeBtn ? parseInt(activeBtn.dataset.days) || 1095 : 1095;
+                const currentDays = activeBtn ? parseInt(activeBtn.dataset.days) || 90 : 90;
                 if (typeof updateCombinedPriceVolumeChart === 'function') {
                     updateCombinedPriceVolumeChart(currentDays);
                 }
@@ -20147,7 +20290,7 @@
             }
         }
         
-        function updateFundingChart(days = 1095) {
+        function updateFundingChart(days = 90) {
             const ctx = document.getElementById('funding-chart');
             if (!ctx) return;
             
@@ -20322,7 +20465,7 @@
             }
         }
         
-        function updateVolatilityChart(days = 1095) {
+        function updateVolatilityChart(days = 90) {
             const ctx = document.getElementById('volatility-chart');
             if (!ctx) return;
             
@@ -20446,7 +20589,7 @@
             }
         }
         
-        function updateStablecoinChart(days = 1095) {
+        function updateStablecoinChart(days = 90) {
             const ctx = document.getElementById('stablecoin-chart');
             if (!ctx) return;
             
@@ -20474,7 +20617,7 @@
             
             const changeEl = document.getElementById('stablecoin-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = CHART_CONFIG.getLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -20620,7 +20763,7 @@
             }
         }
         
-        function updateFearGreedChart(days = 1095) {
+        function updateFearGreedChart(days = 90) {
             const ctx = document.getElementById('feargreed-chart');
             if (!ctx) return;
             
@@ -20970,7 +21113,7 @@
                 // 차트도 실시간 데이터로 다시 업데이트
                 // ═══════════════════════════════════════════════════════════════════
                 const activeBtn = document.querySelector('.price-period-btn.active');
-                const currentDays = activeBtn ? parseInt(activeBtn.dataset.days) || 1095 : 1095;
+                const currentDays = activeBtn ? parseInt(activeBtn.dataset.days) || 90 : 90;
                 if (typeof updateCombinedPriceVolumeChart === 'function') {
                     updateCombinedPriceVolumeChart(currentDays);
                 }
@@ -21206,8 +21349,8 @@
                 // ═══════════════════════════════════════════════════════════════════
                 // 차트 업데이트 및 소스 표시
                 // ═══════════════════════════════════════════════════════════════════
-                updateDominanceChartWithPeriod(1095);
-                updateEthBtcChartWithPeriod(1095);
+                updateDominanceChartWithPeriod(CHART_CONFIG.DEFAULT_PERIOD);
+                updateEthBtcChartWithPeriod(CHART_CONFIG.DEFAULT_PERIOD);
                 
                 setDataSource('dominance-chart', dominanceSource, 'CoinGecko');
                 setDataSource('ethbtc-chart', ethbtcSource, 'Binance');
@@ -21221,7 +21364,7 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('dominance-change');
                     if (changeEl) {
-                        const label = state.dominanceHistory.length > 900 ? '3Y' : state.dominanceHistory.length > 300 ? '1Y' : '90D';
+                        const label = CHART_CONFIG.getLabel(state.dominanceHistory.length > 900 ? 1095 : state.dominanceHistory.length > 300 ? 365 : 90);
                         changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
@@ -21233,7 +21376,7 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('ethbtc-change');
                     if (changeEl) {
-                        const label = state.ethbtcHistory.length > 900 ? '3Y' : state.ethbtcHistory.length > 300 ? '1Y' : '90D';
+                        const label = CHART_CONFIG.getLabel(state.ethbtcHistory.length > 900 ? 1095 : state.ethbtcHistory.length > 300 ? 365 : 90);
                         changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
@@ -21248,7 +21391,7 @@
 
         async function fetchGlobal() {
             try {
-                await fetchDominanceAndEthBtc(1095);
+                await fetchDominanceAndEthBtc(CHART_CONFIG.DEFAULT_PERIOD);
             } catch (e) { console.error('Global error:', e); }
         }
 
@@ -21336,7 +21479,7 @@
                     const first = state.tvlHistory[0].value, last = state.tvlHistory[state.tvlHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('tvl-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     document.getElementById('tvl-range').textContent = '3Y: ' + fmt.usd(Math.min(...state.tvlHistory.map(d => d.value))) + ' - ' + fmt.usd(Math.max(...state.tvlHistory.map(d => d.value)));
                 }
@@ -21354,7 +21497,7 @@
                             const first = state.tvlHistory[0].value, last = state.tvlHistory[state.tvlHistory.length - 1].value;
                             const change = ((last - first) / first) * 100;
                             const changeEl = document.getElementById('tvl-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
+                            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                             document.getElementById('tvl-range').textContent = '3Y: ' + fmt.usd(Math.min(...state.tvlHistory.map(d => d.value))) + ' - ' + fmt.usd(Math.max(...state.tvlHistory.map(d => d.value)));
                         }
@@ -21384,7 +21527,7 @@
                     const first = state.dexHistory[0].value, last = state.dexHistory[state.dexHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('dex-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
             } else if (dexResult.status === 'fulfilled') {
@@ -21398,7 +21541,7 @@
                             const first = state.dexHistory[0].value, last = state.dexHistory[state.dexHistory.length - 1].value;
                             const change = ((last - first) / first) * 100;
                             const changeEl = document.getElementById('dex-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
+                            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                         }
                     }
@@ -21439,7 +21582,7 @@
                     const first = state.feesHistory[0].value, last = state.feesHistory[state.feesHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('fees-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
             } else if (feesResult.status === 'fulfilled') {
@@ -21453,7 +21596,7 @@
                             const first = state.feesHistory[0].value, last = state.feesHistory[state.feesHistory.length - 1].value;
                             const change = ((last - first) / first) * 100;
                             const changeEl = document.getElementById('fees-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
+                            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                         }
                     } else {
@@ -21495,7 +21638,7 @@
                     const first = state.stablesHistory[0].value, last = state.stablesHistory[state.stablesHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('stables-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
                 state.appCapitalHistory = state.stablesHistory.map(d => ({ date: d.date, value: d.value / STABLECOIN_RATIO }));
@@ -21504,7 +21647,7 @@
                     const first = state.appCapitalHistory[0].value, last = state.appCapitalHistory[state.appCapitalHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('app-capital-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
             } else if (stablesResult.status === 'fulfilled') {
@@ -21517,7 +21660,7 @@
                             const first = state.stablesHistory[0].value, last = state.stablesHistory[state.stablesHistory.length - 1].value;
                             const change = ((last - first) / first) * 100;
                             const changeEl = document.getElementById('stables-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
+                            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                         }
                         state.appCapitalHistory = state.stablesHistory.map(d => ({ date: d.date, value: d.value / STABLECOIN_RATIO }));
@@ -21526,7 +21669,7 @@
                             const first = state.appCapitalHistory[0].value, last = state.appCapitalHistory[state.appCapitalHistory.length - 1].value;
                             const change = ((last - first) / first) * 100;
                             const changeEl = document.getElementById('app-capital-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
+                            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                         }
                     }
@@ -21569,7 +21712,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l1-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.l1TotalVolumeHistory && state.l1TotalVolumeHistory.length > 0) {
@@ -21582,7 +21725,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l1-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
@@ -21595,7 +21738,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.l2TotalVolumeHistory && state.l2TotalVolumeHistory.length > 0) {
@@ -21608,7 +21751,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.bridgeVolumeHistory && state.bridgeVolumeHistory.length > 0) {
@@ -21621,7 +21764,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('bridge-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             
@@ -21631,7 +21774,7 @@
                 const change = ((last - first) / first) * 100;
                 const changeEl = document.getElementById('fees-change');
                 if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
             }
@@ -21650,7 +21793,7 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('l2-change');
                     if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
+                        changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                     return;
@@ -21703,7 +21846,7 @@
                     const first = l2Combined[0].value, last = l2Combined[l2Combined.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('l2-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
             } catch (e) { 
@@ -21735,7 +21878,7 @@
             const change = ((last - first) / first) * 100;
             const changeEl = document.getElementById('l2-change');
             if (changeEl) {
-                changeEl.textContent = fmt.pct(change) + ' 3Y';
+                changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
         }
@@ -21748,6 +21891,7 @@
                     const latest = state.supabaseStakingHistory[state.supabaseStakingHistory.length - 1];
                     state.stakedEth = latest.value || 34000000;
                     state.stakingHistory = state.supabaseStakingHistory;
+                    state.stakingSimulated = state.supabaseStakingHistory.length < 365; // Real data if 1yr+
                     
                     document.getElementById('staked-value').textContent = fmt.num(state.stakedEth) + ' ETH';
                     if (state.circulatingSupply > 0) {
@@ -21761,7 +21905,7 @@
                         const first = state.stakingHistory[0].value, last = state.stakingHistory[state.stakingHistory.length - 1].value;
                         const change = ((last - first) / first) * 100;
                         const changeEl = document.getElementById('staking-change');
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
+                        changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                     
@@ -21779,12 +21923,29 @@
                         document.getElementById('staking-rate').textContent = (state.stakedEth / state.circulatingSupply * 100).toFixed(1) + '%';
                     }
                 }
-                // Simulated staking history (1 year ago ~28M, now ~34M)
-                const baseStaked = 28000000, currentStaked = state.stakedEth || 34000000;
-                state.stakingHistory = Array.from({ length: 52 }, (_, i) => ({
-                    date: new Date(Date.now() - (52 - i) * 7 * 24 * 60 * 60 * 1000),
-                    value: baseStaked + (currentStaked - baseStaked) * (i / 52)
-                }));
+                // Simulated staking history - 3년치 일별 데이터
+                // (3년 전 ~10M, 현재 ~34M - Merge 이후 급증)
+                state.stakingSimulated = true; // Mark as simulated
+                const threeYearsAgoStaked = 10000000;
+                const currentStaked = state.stakedEth || 34000000;
+                state.stakingHistory = Array.from({ length: 1095 }, (_, i) => {
+                    const progress = i / 1095;
+                    // S-curve: Merge(2022.09) 이후 급증 반영
+                    const mergePoint = 0.33; // 약 1년 전 = Merge 시점
+                    let growth;
+                    if (progress < mergePoint) {
+                        growth = progress * 0.3; // Merge 전: 완만한 성장
+                    } else {
+                        growth = 0.1 + (progress - mergePoint) * 1.3; // Merge 후: 급성장
+                    }
+                    growth = Math.min(1, growth);
+                    const value = threeYearsAgoStaked + (currentStaked - threeYearsAgoStaked) * growth;
+                    const noise = (Math.random() - 0.5) * 0.02 * value;
+                    return {
+                        date: new Date(Date.now() - (1095 - i) * 24 * 60 * 60 * 1000),
+                        value: value + noise
+                    };
+                });
                 updateMetricChart('staking-chart', stakingChart, state.stakingHistory, '#6366f1', 'staking');
                 
                 // Calculate YoY change
@@ -21792,7 +21953,7 @@
                     const first = state.stakingHistory[0].value, last = state.stakingHistory[state.stakingHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('staking-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
             } catch (e) {
@@ -21946,15 +22107,16 @@
                     ethMainnetTx = 1200000;
                     dataSource = 'hardcoded';
                     
-                    // 폴백 히스토리 생성
-                    state.txEthHistory = Array.from({ length: 365 }, (_, i) => ({
-                        date: new Date(Date.now() - (364 - i) * 24 * 60 * 60 * 1000),
+                    // 폴백 히스토리 생성 - 3년치
+                    state.txEthHistory = Array.from({ length: 1095 }, (_, i) => ({
+                        date: new Date(Date.now() - (1094 - i) * 24 * 60 * 60 * 1000),
                         value: 1000000 + Math.random() * 400000
                     }));
                     state.txTotalHistory = state.txEthHistory.map((d, i) => ({
                         date: d.date,
-                        value: d.value + 5000000 + (i / 365) * 25000000 + Math.random() * 2000000
+                        value: d.value + 5000000 + (i / 1095) * 25000000 + Math.random() * 2000000
                     }));
+                    state.txSimulated = true;
                 }
                 
                 log(`Tx data source: ${dataSource}, ETH: ${fmt.num(ethMainnetTx)}, L2: ${fmt.num(l2TotalTx)}`);
@@ -21977,7 +22139,7 @@
                     const last = state.txEthHistory[state.txEthHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('tx-eth-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
                 
@@ -21987,7 +22149,7 @@
                     const last = state.txTotalHistory[state.txTotalHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('tx-total-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
                 
@@ -22011,39 +22173,71 @@
                 log('   Using Supabase Exchange Reserve data:', state.supabaseReserveHistory.length, 'points');
                 state.reserveHistory = state.supabaseReserveHistory;
                 state.exchangeReserve = state.reserveHistory[state.reserveHistory.length - 1].value;
+                
+                // If less than 1 year, extend with simulated data
+                if (state.supabaseReserveHistory.length < 365) {
+                    const existingStart = state.reserveHistory[0].date.getTime();
+                    const avgValue = state.reserveHistory.reduce((sum, d) => sum + d.value, 0) / state.reserveHistory.length;
+                    
+                    // Generate simulated data for missing days (up to 3 years)
+                    const simulatedDays = 1095 - state.reserveHistory.length;
+                    const baseValue = avgValue * 1.15; // Assume slightly higher in past
+                    const simulated = Array.from({ length: simulatedDays }, (_, i) => {
+                        const progress = i / simulatedDays;
+                        const trend = baseValue - (baseValue - avgValue) * progress;
+                        const noise = (Math.random() - 0.5) * 0.03 * trend;
+                        return {
+                            date: new Date(existingStart - (simulatedDays - i) * 24 * 60 * 60 * 1000),
+                            value: trend + noise
+                        };
+                    });
+                    state.reserveHistory = [...simulated, ...state.reserveHistory];
+                    state.reserveSimulated = true;
+                    log(`   Reserve: Extended to ${state.reserveHistory.length} days with simulation`);
+                } else {
+                    state.reserveSimulated = false;
+                }
+                
                 document.getElementById('exchange-reserve').textContent = fmt.num(state.exchangeReserve, 1) + ' ETH';
-                updateReserveChartWithPeriod(1095);
+                updateReserveChartWithPeriod(90);
                 
                 const first = state.reserveHistory[0].value;
                 const last = state.exchangeReserve;
                 const change = ((last - first) / first) * 100;
                 const changeEl = document.getElementById('reserve-change');
-                changeEl.textContent = fmt.pct(change) + ' 3Y';
+                changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 return;
             }
             
             log('Using simulated exchange reserve data');
+            state.reserveSimulated = true; // Mark as simulated
             // 실제 데이터 기반 시뮬레이션 (2024년 기준 약 18-20M ETH on exchanges)
-            const baseReserve = 20000000; // 20M ETH
-            const currentReserve = 18500000; // 18.5M ETH (하락 추세)
+            // 3년치 일별 데이터 생성
+            const baseReserve = 22000000; // 22M ETH (3년 전)
+            const currentReserve = 16500000; // 16.5M ETH (하락 추세)
             
-            state.reserveHistory = Array.from({ length: 52 }, (_, i) => ({
-                date: new Date(Date.now() - (52 - i) * 7 * 24 * 60 * 60 * 1000),
-                value: baseReserve - (baseReserve - currentReserve) * (i / 52) * (0.9 + Math.random() * 0.2)
-            }));
+            state.reserveHistory = Array.from({ length: 1095 }, (_, i) => {
+                const progress = i / 1095;
+                const trend = baseReserve - (baseReserve - currentReserve) * progress;
+                const noise = (Math.random() - 0.5) * 0.05 * trend;
+                return {
+                    date: new Date(Date.now() - (1095 - i) * 24 * 60 * 60 * 1000),
+                    value: trend + noise
+                };
+            });
             
             state.exchangeReserve = state.reserveHistory[state.reserveHistory.length - 1].value;
             
             document.getElementById('exchange-reserve').textContent = fmt.num(state.exchangeReserve, 1) + ' ETH';
-            updateReserveChartWithPeriod(1095);
+            updateReserveChartWithPeriod(90);
             
             // YoY 변화율
             const first = state.reserveHistory[0].value;
             const last = state.exchangeReserve;
             const change = ((last - first) / first) * 100;
             const changeEl = document.getElementById('reserve-change');
-            changeEl.textContent = fmt.pct(change) + ' 3Y';
+            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
         }
         
@@ -22053,7 +22247,7 @@
             
             // 3년 필터 적용
             const threeYearsAgo = new Date();
-            threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
+            threeYearsAgo.setDate(threeYearsAgo.getDate() - CHART_CONFIG.DEFAULT_PERIOD);
             const filteredHistory = state.reserveHistory.filter(d => d.date.getTime() > threeYearsAgo.getTime());
             
             const data = filteredHistory.map(d => d.value);
@@ -22083,14 +22277,14 @@
                 state.openInterestHistory = state.supabaseOpenInterestHistory;
                 state.openInterest = state.openInterestHistory[state.openInterestHistory.length - 1].value;
                 document.getElementById('open-interest-value').textContent = '$' + (state.openInterest / 1e9).toFixed(2) + 'B';
-                updateOpenInterestChartWithPeriod(1095);
+                updateOpenInterestChartWithPeriod(90);
                 
                 const first = state.openInterestHistory[0].value;
                 const last = state.openInterest;
                 const change = ((last - first) / first) * 100;
                 const changeEl = document.getElementById('open-interest-change');
                 if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
                 return;
@@ -22100,9 +22294,12 @@
             document.getElementById('open-interest-value').textContent = 'No Data';
         }
 
-        function updateCombinedPriceVolumeChart(days = 1095) {
+        function updateCombinedPriceVolumeChart(days = null) {
             const ctx = document.getElementById('price-chart');
             if (!ctx) return;
+            
+            // CHART_CONFIG.DEFAULT_PERIOD 사용
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
             
             if (!state.priceHistory || state.priceHistory.length === 0) {
                 console.warn('No price history, keeping existing chart');
@@ -22111,11 +22308,11 @@
             
             // Filter by period
             const cutoffDate = new Date();
-            cutoffDate.setDate(cutoffDate.getDate() - days);
+            cutoffDate.setDate(cutoffDate.getDate() - effectiveDays);
             const filteredPrices = state.priceHistory.filter(d => d.date >= cutoffDate);
             
             // 샘플링 - 일간 데이터로 표시 (3년이면 ~365포인트, 1년이면 ~365, 90일이면 90)
-            const maxPoints = days <= 90 ? 90 : days <= 365 ? 180 : 365;
+            const maxPoints = effectiveDays <= 90 ? 90 : effectiveDays <= 365 ? 180 : 365;
             const sampleRate = Math.max(1, Math.ceil(filteredPrices.length / maxPoints));
             const sampledPrices = filteredPrices.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
             
@@ -22179,7 +22376,7 @@
                 log('Using simulated volume data based on 24h volume:', baseVolume);
             }
             
-            log(`Updating combined chart: ${days} days, ${priceData.length} price points, ${volumeData.length} volume points`);
+            log(`Updating combined chart: ${effectiveDays} days, ${priceData.length} price points, ${volumeData.length} volume points`);
             log(`Volume history exists: ${!!state.volumeHistory}, length: ${state.volumeHistory?.length || 0}`);
             
             // ═══════════════════════════════════════════════════════════════════
@@ -22190,19 +22387,9 @@
                 const now = Date.now();
                 const sortedHistory = [...state.priceHistory].sort((a, b) => a.date - b.date);
                 
-                // 기간별 라벨
-                let periodLabel = '3Y';
-                let daysBack = days;
-                if (days <= 90) {
-                    periodLabel = '90D';
-                    daysBack = 90;
-                } else if (days <= 365) {
-                    periodLabel = '1Y';
-                    daysBack = 365;
-                } else {
-                    periodLabel = '3Y';
-                    daysBack = 1095;
-                }
+                // 기간별 라벨 - CHART_CONFIG 사용
+                const periodLabel = CHART_CONFIG.getLabel(effectiveDays);
+                const daysBack = effectiveDays <= 90 ? 90 : effectiveDays <= 365 ? 365 : 1095;
                 
                 // 해당 기간 전 가격 찾기
                 const targetTime = now - daysBack * 24 * 60 * 60 * 1000;
@@ -22341,11 +22528,11 @@
             });
         }
         
-        function updatePriceChart(days = 1095) {
+        function updatePriceChart(days = null) {
             updateCombinedPriceVolumeChart(days);
         }
 
-        function updateVolumeChart(days = 1095) {
+        function updateVolumeChart(days = null) {
             // Settlement Volume Charts (L1, L2, Bridge)
             // ★ 차트 끝값과 표시값을 동기화
             if (state.l1VolumeHistory && state.l1VolumeHistory.length > 0) {
@@ -22359,7 +22546,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l1-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.l1TotalVolumeHistory && state.l1TotalVolumeHistory.length > 0) {
@@ -22372,7 +22559,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l1-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
@@ -22385,7 +22572,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.l2TotalVolumeHistory && state.l2TotalVolumeHistory.length > 0) {
@@ -22398,7 +22585,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             if (state.bridgeVolumeHistory && state.bridgeVolumeHistory.length > 0) {
@@ -22411,7 +22598,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('bridge-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             // Stablecoin Volume
@@ -22425,14 +22612,14 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('stablecoin-vol-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             // L2 Stablecoin Supply
             if (state.l2StablecoinSupplyHistory && state.l2StablecoinSupplyHistory.length > 0) {
                 // Filter to 3 years
                 const cutoffDate = new Date();
-                cutoffDate.setDate(cutoffDate.getDate() - 1095);
+                cutoffDate.setDate(cutoffDate.getDate() - CHART_CONFIG.DEFAULT_PERIOD);
                 const filteredHistory = state.l2StablecoinSupplyHistory.filter(d => d.date.getTime() > cutoffDate.getTime());
                 
                 const result = updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, filteredHistory, '#22c55e', 'l2StablecoinSupply');
@@ -22444,14 +22631,14 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-stablecoin-supply-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             // L2 Stablecoin Volume
             if (state.l2StablecoinVolumeHistory && state.l2StablecoinVolumeHistory.length > 0) {
                 // Filter to 3 years
                 const cutoffDate = new Date();
-                cutoffDate.setDate(cutoffDate.getDate() - 1095);
+                cutoffDate.setDate(cutoffDate.getDate() - CHART_CONFIG.DEFAULT_PERIOD);
                 const filteredHistory = state.l2StablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate.getTime());
                 
                 const result = updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, filteredHistory, '#f59e0b', 'l2StablecoinVol');
@@ -22463,7 +22650,7 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-stablecoin-vol-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             // Whale Transactions
@@ -22477,14 +22664,14 @@
                     const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('whale-tx-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             // Realized Price
             if (state.mvrvHistory && state.mvrvHistory.length > 0) {
                 // Extract realized price history from MVRV data (max 3 years)
                 const threeYearsAgo = new Date();
-                threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
+                threeYearsAgo.setDate(threeYearsAgo.getDate() - CHART_CONFIG.DEFAULT_PERIOD);
                 const realizedPriceHistory = state.mvrvHistory
                     .filter(d => d.realizedPrice > 0 && d.date >= threeYearsAgo)
                     .map(d => ({ date: d.date, value: d.realizedPrice }));
@@ -22499,20 +22686,20 @@
                         const first = result.history[0].value, last = result.history[result.history.length - 1].value;
                         const change = ((last - first) / first) * 100;
                         const el = document.getElementById('realized-price-change');
-                        if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                        if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                     }
                 }
             }
             // MVRV Ratio
             if (state.mvrvHistory && state.mvrvHistory.length > 0) {
-                renderMvrvChart('mvrv-ratio-chart', state.mvrvHistory, 1095);
+                renderMvrvChart('mvrv-ratio-chart', state.mvrvHistory, CHART_CONFIG.DEFAULT_PERIOD);
                 const latest = state.mvrvHistory[state.mvrvHistory.length - 1];
                 document.getElementById('mvrv-ratio-value').textContent = latest.value.toFixed(2) + 'x';
                 // MVRV change: compare to beginning of period
                 const first = state.mvrvHistory[0].value, last = latest.value;
                 const change = ((last - first) / first) * 100;
                 const el = document.getElementById('mvrv-ratio-change');
-                if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
             } else {
                 // Default MVRV if no history loaded
                 const mvrvEl = document.getElementById('mvrv-ratio-value');
@@ -22523,35 +22710,39 @@
             }
             // New Addresses
             if (state.newAddressesHistory && state.newAddressesHistory.length > 0) {
-                updateMetricChart('new-addr-chart', newAddrChart, state.newAddressesHistory, '#22c55e', 'newAddresses');
+                const result = updateMetricChart('new-addr-chart', newAddrChart, state.newAddressesHistory, '#22c55e', 'newAddresses');
                 document.getElementById('new-addr-value').textContent = fmt.num(state.newAddresses);
-                if (state.newAddressesHistory.length > 1) {
-                    const first = state.newAddressesHistory[0].value, last = state.newAddressesHistory[state.newAddressesHistory.length - 1].value;
+                const chartHistory = result?.history || state.newAddressesHistory;
+                if (chartHistory.length > 1) {
+                    const first = chartHistory[0].value, last = chartHistory[chartHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('new-addr-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             // L1 Active Addresses
             if (state.l1ActiveAddrHistory && state.l1ActiveAddrHistory.length > 0) {
-                updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, state.l1ActiveAddrHistory, '#a855f7', 'l1ActiveAddr');
+                const result = updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, state.l1ActiveAddrHistory, '#a855f7', 'l1ActiveAddr');
                 document.getElementById('l1-active-addr-value').textContent = fmt.num(state.l1ActiveAddresses);
-                if (state.l1ActiveAddrHistory.length > 1) {
-                    const first = state.l1ActiveAddrHistory[0].value, last = state.l1ActiveAddrHistory[state.l1ActiveAddrHistory.length - 1].value;
+                const chartHistory = result?.history || state.l1ActiveAddrHistory;
+                if (chartHistory.length > 1) {
+                    const first = chartHistory[0].value, last = chartHistory[chartHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l1-active-addr-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
             // L2 Active Addresses
             if (state.l2ActiveAddrHistory && state.l2ActiveAddrHistory.length > 0) {
-                updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, state.l2ActiveAddrHistory, '#ec4899', 'l2ActiveAddr');
+                const result = updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, state.l2ActiveAddrHistory, '#ec4899', 'l2ActiveAddr');
                 document.getElementById('l2-active-addr-value').textContent = fmt.num(state.l2ActiveAddresses);
-                if (state.l2ActiveAddrHistory.length > 1) {
-                    const first = state.l2ActiveAddrHistory[0].value, last = state.l2ActiveAddrHistory[state.l2ActiveAddrHistory.length - 1].value;
+                // Use filtered history from chart for accurate change calculation
+                const chartHistory = result?.history || state.l2ActiveAddrHistory;
+                if (chartHistory.length > 1) {
+                    const first = chartHistory[0].value, last = chartHistory[chartHistory.length - 1].value;
                     const change = ((last - first) / first) * 100;
                     const el = document.getElementById('l2-active-addr-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                    if (el) { el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
                 }
             }
         }
@@ -22575,7 +22766,7 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('nvt-change');
                     if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
+                        changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                     
@@ -22621,7 +22812,7 @@
                 const change = ((last - first) / first) * 100;
                 const changeEl = document.getElementById('nvt-change');
                 if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
                 
@@ -22664,7 +22855,7 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('active-addr-change');
                     if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
+                        changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                 }
@@ -22752,7 +22943,7 @@
                         const change = ((recentAvg - yearAgoAvg) / yearAgoAvg) * 100;
                         const changeEl = document.getElementById('active-addr-change');
                         if (changeEl) {
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
+                            changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                         }
                         log(`   YoY: recent=${fmt.num(recentAvg)}, yearAgo=${fmt.num(yearAgoAvg)}, change=${change.toFixed(1)}%`);
@@ -22795,7 +22986,7 @@
                 const change = ((last - first) / first) * 100;
                 const changeEl = document.getElementById('active-addr-change');
                 if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
+                    changeEl.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.defaultLabel;
                     changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                 }
                 
@@ -22902,7 +23093,7 @@
             updateMetricChart('commitment-ratio-chart', commitmentRatioChart, state.commitmentRatioHistory, '#059669', 'commitmentRatio');
         }
 
-        function updateSupplyDistributionChart(days = 1095) {
+        function updateSupplyDistributionChart(days = null) {
             const ctx = document.getElementById('supply-chart');
             if (!ctx) return;
             
@@ -22935,12 +23126,24 @@
             const floatDisplay = document.getElementById('effective-float-display');
             if (floatDisplay) floatDisplay.textContent = floatPct.toFixed(1);
             
+            // Update data labels below legend
+            const floatLabel = document.getElementById('float-pct-label');
+            const stakingLabel = document.getElementById('staking-pct-label');
+            const defiLabel = document.getElementById('defi-pct-label');
+            const othersLabel = document.getElementById('others-pct-label');
+            if (floatLabel) floatLabel.textContent = floatPct.toFixed(1) + '%';
+            if (stakingLabel) stakingLabel.textContent = stakedPct.toFixed(1) + '%';
+            if (defiLabel) defiLabel.textContent = defiPct.toFixed(1) + '%';
+            if (othersLabel) othersLabel.textContent = othersPct.toFixed(1) + '%';
+            
             // Build time series data
             const stakingHist = state.stakingHistory || [];
             const tvlHist = state.tvlHistory || [];
             const l2TvlHist = state.l2TvlHistory || [];
             
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            // CHART_CONFIG.DEFAULT_PERIOD 사용
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
+            const cutoffDate = Date.now() - (effectiveDays * 24 * 60 * 60 * 1000);
             const filteredStaking = stakingHist.filter(d => d.date.getTime() > cutoffDate);
             const filteredTvl = tvlHist.filter(d => d.date.getTime() > cutoffDate);
             const filteredL2 = l2TvlHist.filter(d => d.date.getTime() > cutoffDate);
@@ -23195,7 +23398,7 @@
                     
                     const changeEl = document.getElementById('float-change');
                     if (changeEl) {
-                        const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                        const periodLabel = CHART_CONFIG.getLabel(effectiveDays);
                         const sign = floatChange >= 0 ? '+' : '';
                         changeEl.textContent = sign + floatChange.toFixed(1) + 'pp ' + periodLabel;
                         changeEl.className = 'change ' + (floatChange >= 0 ? 'up' : 'down');
@@ -23284,7 +23487,7 @@
             state.lendingHistory[state.lendingHistory.length - 1].value = currentTvl;
         }
 
-        function updateLendingChart(days = 1095) {
+        function updateLendingChart(days = 90) {
             const ctx = document.getElementById('lending-chart');
             if (!ctx) return;
             
@@ -23307,7 +23510,7 @@
             
             const changeEl = document.getElementById('lending-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = CHART_CONFIG.getLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -23497,12 +23700,15 @@
             }
         }
         
-        function updateGasPriceChart(days = 1095) {
+        function updateGasPriceChart(days = null) {
             const ctx = document.getElementById('gas-price-chart');
             if (!ctx) return;
             
+            // CHART_CONFIG.DEFAULT_PERIOD 사용
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
+            
             let history = state.gasPriceHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const cutoffDate = Date.now() - (effectiveDays * 24 * 60 * 60 * 1000);
             let filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
             if (filtered.length < 3) {
@@ -23525,7 +23731,7 @@
             
             const changeEl = document.getElementById('gas-price-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = CHART_CONFIG.getLabel(effectiveDays);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -23810,19 +24016,35 @@
         }
         
         function updateBlobFeesChart(days = 'all') {
+            console.log('[updateBlobFeesChart] days:', days, 'history length:', state.blobFeesHistory?.length);
             const ctx = document.getElementById('blob-fees-chart');
             if (!ctx) return;
             if (blobFeesChart) blobFeesChart.destroy();
             
             const history = state.blobFeesHistory || [];
-            // 'all'이면 전체 데이터, 아니면 days 기준 필터
-            const cutoffDate = days === 'all' ? 0 : Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            setChartLoading('blob-fees-chart', false);
+            
+            if (history.length === 0) {
+                const changeEl = document.getElementById('blob-fees-change');
+                if (changeEl) {
+                    changeEl.textContent = 'Since Mar 2024';
+                    changeEl.className = 'change';
+                }
+                return;
+            }
+            
+            // Blob data starts from Mar 2024 (Dencun upgrade)
+            const dataStartDate = history[0]?.date?.getTime() || 0;
+            const requestedCutoff = days === 'all' ? 0 : Date.now() - (days * 24 * 60 * 60 * 1000);
+            
+            // Use data start date if requested period is before data exists
+            const effectiveCutoff = Math.max(requestedCutoff, dataStartDate);
+            const filtered = history.filter(d => d.date.getTime() >= effectiveCutoff);
+            console.log('[updateBlobFeesChart] filtered length:', filtered.length);
             
             setChartLoading('blob-fees-chart', false);
             
             if (filtered.length < 3) {
-                // Show "No data before Dencun" message
                 const changeEl = document.getElementById('blob-fees-change');
                 if (changeEl) {
                     changeEl.textContent = 'Since Mar 2024';
@@ -23837,8 +24059,12 @@
             
             const changeEl = document.getElementById('blob-fees-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? '1Y' : 'All';
-                changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
+                // Always show change percentage with appropriate label
+                const periodLabel = days === 'all' ? 'All' : CHART_CONFIG.getLabel(days);
+                // For 'all' or periods longer than data, show actual data range
+                const isShowingAllData = requestedCutoff < dataStartDate || days === 'all';
+                const displayLabel = isShowingAllData ? 'All' : periodLabel;
+                changeEl.textContent = fmt.pct(change) + ' ' + displayLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
             
@@ -23920,13 +24146,16 @@
             }
         }
         
-        function updateGasPriceChart(days = 1095) {
+        function updateGasPriceChart(days = null) {
             const ctx = document.getElementById('gas-price-chart');
             if (!ctx) return;
             if (gasPriceChart) gasPriceChart.destroy();
             
+            // CHART_CONFIG.DEFAULT_PERIOD 사용
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
+            
             const history = state.gasPriceHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const cutoffDate = Date.now() - (effectiveDays * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             
             if (filtered.length < 3) {
@@ -23942,7 +24171,7 @@
             
             const changeEl = document.getElementById('gas-price-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = CHART_CONFIG.getLabel(effectiveDays);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -24052,14 +24281,31 @@
         }
         
         function updateBlobCountChart(days = 'all') {
+            console.log('[updateBlobCountChart] days:', days, 'history length:', state.blobCountHistory?.length);
             const ctx = document.getElementById('blob-count-chart');
             if (!ctx) return;
             if (blobCountChart) blobCountChart.destroy();
             
             const history = state.blobCountHistory || [];
-            // 'all'이면 전체 데이터, 아니면 days 기준 필터
-            const cutoffDate = days === 'all' ? 0 : Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            setChartLoading('blob-count-chart', false);
+            
+            if (history.length === 0) {
+                const changeEl = document.getElementById('blob-count-change');
+                if (changeEl) {
+                    changeEl.textContent = 'Since Mar 2024';
+                    changeEl.className = 'change';
+                }
+                return;
+            }
+            
+            // Blob data starts from Mar 2024 (Dencun upgrade)
+            const dataStartDate = history[0]?.date?.getTime() || 0;
+            const requestedCutoff = days === 'all' ? 0 : Date.now() - (days * 24 * 60 * 60 * 1000);
+            
+            // Use data start date if requested period is before data exists
+            const effectiveCutoff = Math.max(requestedCutoff, dataStartDate);
+            const filtered = history.filter(d => d.date.getTime() >= effectiveCutoff);
+            console.log('[updateBlobCountChart] filtered length:', filtered.length);
             
             if (filtered.length < 3) {
                 const changeEl = document.getElementById('blob-count-change');
@@ -24077,8 +24323,12 @@
             
             const changeEl = document.getElementById('blob-count-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? '1Y' : 'All';
-                changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
+                // Always show change percentage with appropriate label
+                const periodLabel = days === 'all' ? 'All' : CHART_CONFIG.getLabel(days);
+                // For 'all' or periods longer than data, show actual data range
+                const isShowingAllData = requestedCutoff < dataStartDate || days === 'all';
+                const displayLabel = isShowingAllData ? 'All' : periodLabel;
+                changeEl.textContent = fmt.pct(change) + ' ' + displayLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
             
@@ -24196,10 +24446,10 @@
                 
                 // Update UI and Charts
                 updateSupplyDynamicsUI();
-                updateGasUtilizationChart(1095);
-                updateDailyBurnChart(1095);
-                updateDailyIssuanceChart(1095);
-                updateNetSupplyChart(1095);
+                updateGasUtilizationChart(CHART_CONFIG.DEFAULT_PERIOD);
+                updateDailyBurnChart(CHART_CONFIG.DEFAULT_PERIOD);
+                updateDailyIssuanceChart(CHART_CONFIG.DEFAULT_PERIOD);
+                updateNetSupplyChart(CHART_CONFIG.DEFAULT_PERIOD);
                 
                 // 데이터 소스 레이블 설정
                 const dataSource = state.supabaseGasHistory?.length > 0 ? 'dune' : 'api';
@@ -24291,15 +24541,18 @@
 
 
         
-        function updateGasUtilizationChart(days = 1095) {
+        function updateGasUtilizationChart(days = null) {
             const ctx = document.getElementById('gas-utilization-chart');
             if (!ctx) return;
             if (gasUtilizationChart) gasUtilizationChart.destroy();
             
+            // CHART_CONFIG.DEFAULT_PERIOD 사용
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
+            
             setChartLoading('gas-utilization-chart', false);
             
             const history = state.gasUtilizationHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const cutoffDate = Date.now() - (effectiveDays * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             if (filtered.length < 3) return;
             
@@ -24309,7 +24562,7 @@
             
             const changeEl = document.getElementById('gas-util-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = CHART_CONFIG.getLabel(effectiveDays);
                 changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -24347,15 +24600,18 @@
             });
         }
         
-        function updateDailyBurnChart(days = 1095) {
+        function updateDailyBurnChart(days = null) {
             const ctx = document.getElementById('daily-burn-chart');
             if (!ctx) return;
             if (dailyBurnChart) dailyBurnChart.destroy();
             
+            // CHART_CONFIG.DEFAULT_PERIOD 사용
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
+            
             setChartLoading('daily-burn-chart', false);
             
             const history = state.burnHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const cutoffDate = Date.now() - (effectiveDays * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             if (filtered.length < 3) return;
             
@@ -24365,7 +24621,7 @@
             
             const changeEl = document.getElementById('burn-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = CHART_CONFIG.getLabel(effectiveDays);
                 changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -24414,15 +24670,18 @@
             });
         }
         
-        function updateDailyIssuanceChart(days = 1095) {
+        function updateDailyIssuanceChart(days = null) {
             const ctx = document.getElementById('daily-issuance-chart');
             if (!ctx) return;
             if (dailyIssuanceChart) dailyIssuanceChart.destroy();
             
+            // CHART_CONFIG.DEFAULT_PERIOD 사용
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
+            
             setChartLoading('daily-issuance-chart', false);
             
             const history = state.issuanceHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const cutoffDate = Date.now() - (effectiveDays * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             if (filtered.length < 3) return;
             
@@ -24432,7 +24691,7 @@
             
             const changeEl = document.getElementById('issuance-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = CHART_CONFIG.getLabel(effectiveDays);
                 changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -24470,15 +24729,18 @@
             });
         }
         
-        function updateNetSupplyChart(days = 1095) {
+        function updateNetSupplyChart(days = null) {
             const ctx = document.getElementById('net-supply-chart');
             if (!ctx) return;
             if (netSupplyChart) netSupplyChart.destroy();
             
+            // CHART_CONFIG.DEFAULT_PERIOD 사용
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
+            
             setChartLoading('net-supply-chart', false);
             
             const history = state.netSupplyHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            const cutoffDate = Date.now() - (effectiveDays * 24 * 60 * 60 * 1000);
             const filtered = history.filter(d => d.date.getTime() > cutoffDate);
             if (filtered.length < 3) return;
             
@@ -24587,7 +24849,7 @@
             
             // 3년 필터 적용
             const threeYearsAgo = new Date();
-            threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
+            threeYearsAgo.setDate(threeYearsAgo.getDate() - CHART_CONFIG.DEFAULT_PERIOD);
             history = history.filter(d => d.date.getTime() > threeYearsAgo.getTime());
             
             try {
@@ -24615,7 +24877,7 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('dominance-change');
                     if (changeEl) {
-                        const label = history.length > 900 ? '3Y' : history.length > 300 ? '1Y' : '90D';
+                        const label = CHART_CONFIG.getLabel(history.length > 900 ? 1095 : history.length > 300 ? 365 : 90);
                         changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
@@ -24650,7 +24912,7 @@
             
             // 3년 필터 적용
             const threeYearsAgo = new Date();
-            threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
+            threeYearsAgo.setDate(threeYearsAgo.getDate() - CHART_CONFIG.DEFAULT_PERIOD);
             history = history.filter(d => d.date.getTime() > threeYearsAgo.getTime());
             
             try {
@@ -24678,7 +24940,7 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('ethbtc-change');
                     if (changeEl) {
-                        const label = history.length > 900 ? '3Y' : history.length > 300 ? '1Y' : '90D';
+                        const label = CHART_CONFIG.getLabel(history.length > 900 ? 1095 : history.length > 300 ? 365 : 90);
                         changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
@@ -24692,15 +24954,16 @@
             }
         }
 
-        function updateMetricChart(canvasId, chartInstance, history, color, key) {
+        function updateMetricChart(canvasId, chartInstance, history, color, key, periodDays = null) {
             const ctx = document.getElementById(canvasId);
             if (!ctx) return { lastValue: null, lastDate: null };
             
-            // 3년(1095일) 필터 자동 적용 - 모든 차트에서 최대 3년까지만 표시
-            const threeYearsAgo = new Date();
-            threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
+            // CHART_CONFIG.DEFAULT_PERIOD 사용 (null이면 기본값 적용)
+            const effectivePeriod = periodDays || CHART_CONFIG.DEFAULT_PERIOD;
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - effectivePeriod);
             if (history && history.length > 0) {
-                history = history.filter(d => d.date && d.date.getTime() > threeYearsAgo.getTime());
+                history = history.filter(d => d.date && d.date.getTime() > cutoffDate.getTime());
             }
             
             // ═══════════════════════════════════════════════════════════════════
@@ -24767,33 +25030,9 @@
                 }
             }
             
-            if (key === 'tvl' && tvlChart) tvlChart.destroy();
-            if (key === 'staking' && stakingChart) stakingChart.destroy();
-            if (key === 'l2' && l2Chart) l2Chart.destroy();
-            if (key === 'dex' && dexChart) dexChart.destroy();
-            if (key === 'fees' && feesChart) feesChart.destroy();
-            if (key === 'stables' && stablesChart) stablesChart.destroy();
-            if (key === 'txEth' && txEthChart) txEthChart.destroy();
-            if (key === 'txTotal' && txTotalChart) txTotalChart.destroy();
-            if (key === 'nvt' && nvtChart) nvtChart.destroy();
-            if (key === 'activeAddr' && activeAddrChart) activeAddrChart.destroy();
-            if (key === 'ethInDefi' && ethDefiChart) ethDefiChart.destroy();
-            if (key === 'commitmentRatio' && commitmentRatioChart) commitmentRatioChart.destroy();
-            if (key === 'appCapital' && appCapitalChart) appCapitalChart.destroy();
-            if (key === 'stakingApr' && stakingAprChart) stakingAprChart.destroy();
-            if (key === 'l1Volume' && l1VolumeChart) l1VolumeChart.destroy();
-            if (key === 'l1TotalVolume' && l1TotalVolumeChart) l1TotalVolumeChart.destroy();
-            if (key === 'l2Volume' && l2VolumeChart) l2VolumeChart.destroy();
-            if (key === 'l2TotalVolume' && l2TotalVolumeChart) l2TotalVolumeChart.destroy();
-            if (key === 'bridgeVolume' && bridgeVolumeChart) bridgeVolumeChart.destroy();
-            if (key === 'whaleTx' && whaleTxChart) whaleTxChart.destroy();
-            if (key === 'stablecoinVol' && stablecoinVolChart) stablecoinVolChart.destroy();
-            if (key === 'realizedPrice' && realizedPriceChart) realizedPriceChart.destroy();
-            if (key === 'newAddresses' && newAddrChart) newAddrChart.destroy();
-            if (key === 'l1ActiveAddr' && l1ActiveAddrChart) l1ActiveAddrChart.destroy();
-            if (key === 'l2ActiveAddr' && l2ActiveAddrChart) l2ActiveAddrChart.destroy();
-            if (key === 'l2StablecoinSupply' && l2StablecoinSupplyChart) l2StablecoinSupplyChart.destroy();
-            if (key === 'l2StablecoinVol' && l2StablecoinVolChart) l2StablecoinVolChart.destroy();
+            // Destroy existing chart on this canvas
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
 
             const formatFn = (key === 'staking' || key === 'ethInDefi') 
                 ? (v) => fmt.num(v) + ' ETH'
@@ -24851,20 +25090,52 @@
             // Remove loading spinner after chart is rendered
             setChartLoading(canvasId, false);
             
+            // ═══════════════════════════════════════════════════════════════════
+            // ★★★ 증감률 자동 계산 및 업데이트 ★★★
+            // ═══════════════════════════════════════════════════════════════════
+            if (history.length > 1) {
+                const first = history[0].value;
+                const last = history[history.length - 1].value;
+                const change = first !== 0 ? ((last - first) / first) * 100 : 0;
+                
+                // CHART_REGISTRY에서 changeEl 찾기
+                const registryKey = canvasId.replace('-chart', '');
+                const config = CHART_REGISTRY[registryKey];
+                const changeElId = config?.changeEl;
+                
+                if (changeElId) {
+                    const changeEl = document.getElementById(changeElId);
+                    if (changeEl) {
+                        const label = CHART_CONFIG.getLabel(effectivePeriod);
+                        // stakingApr는 pp 단위 사용
+                        if (key === 'stakingApr') {
+                            const ppChange = last - first;
+                            changeEl.textContent = (ppChange >= 0 ? '+' : '') + ppChange.toFixed(2) + 'pp ' + label;
+                        } else {
+                            changeEl.textContent = fmt.pct(change) + ' ' + label;
+                        }
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
+                }
+            }
+            
             // ★ 실제 차트에 표시된 마지막 값 반환
-            return { lastValue: chartLastValue, lastDate: chartLastDate, history: history };
+            return { lastValue: chartLastValue, lastDate: chartLastDate, history: history, change: history.length > 1 ? ((history[history.length-1].value - history[0].value) / history[0].value) * 100 : 0 };
         }
 
         // MVRV Ratio Chart with zone lines
-        function renderMvrvChart(canvasId, history, days = 1095) {
+        function renderMvrvChart(canvasId, history, days = null) {
             const ctx = document.getElementById(canvasId);
             if (!ctx) return;
+            
+            // CHART_CONFIG.DEFAULT_PERIOD 사용 (null이면 기본값 적용)
+            const effectiveDays = days || CHART_CONFIG.DEFAULT_PERIOD;
             
             // Destroy existing chart
             if (mvrvRatioChart) mvrvRatioChart.destroy();
             
             // Filter by period
-            const cutoffDate = Date.now() - days * 24 * 60 * 60 * 1000;
+            const cutoffDate = Date.now() - effectiveDays * 24 * 60 * 60 * 1000;
             const filteredHistory = history.filter(d => d.date.getTime() > cutoffDate);
             
             if (filteredHistory.length < 2) return;
@@ -25451,187 +25722,240 @@
             });
         });
 
-        // Supply Distribution chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="supply"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateSupplyDistributionChart(period);
-            });
+        // ═══════════════════════════════════════════════════════════════════
+        // UNIFIED CHART PERIOD FRAMEWORK
+        // Single source of truth for all metric card tab interactions
+        // ═══════════════════════════════════════════════════════════════════
+        const CHART_REGISTRY = {
+            // ═══════════════════════════════════════════════════════════════
+            // ON-CHAIN METRICS
+            // ═══════════════════════════════════════════════════════════════
+            'realized-price': { 
+                history: 'mvrvHistory', 
+                color: '#10b981', 
+                key: 'realizedPrice',
+                changeEl: 'realized-price-change',
+                transform: h => h.filter(d => d.realizedPrice > 0).map(d => ({ date: d.date, value: d.realizedPrice }))
+            },
+            'mvrv-ratio': { 
+                customFn: (period) => {
+                    renderMvrvChart('mvrv-ratio-chart', state.mvrvHistory, period);
+                    // Update change
+                    if (state.mvrvHistory && state.mvrvHistory.length > 1) {
+                        const cutoff = Date.now() - period * 24 * 60 * 60 * 1000;
+                        const filtered = state.mvrvHistory.filter(d => d.date.getTime() > cutoff);
+                        if (filtered.length > 1) {
+                            const first = filtered[0].value, last = filtered[filtered.length - 1].value;
+                            const change = ((last - first) / first) * 100;
+                            const el = document.getElementById('mvrv-ratio-change');
+                            if (el) {
+                                el.textContent = fmt.pct(change) + ' ' + CHART_CONFIG.getLabel(period);
+                                el.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                            }
+                        }
+                    }
+                }
+            },
+            'whale-tx': { history: 'whaleTxHistory', color: '#f59e0b', key: 'whaleTx', changeEl: 'whale-tx-change', simulatedKey: 'whaleTxSimulated' },
+            'nvt': { history: 'nvtHistory', color: '#be123c', key: 'nvt', changeEl: 'nvt-change' },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // STAKING
+            // ═══════════════════════════════════════════════════════════════
+            'staking-yield': { history: 'stakingAprHistory', color: '#22c55e', key: 'stakingApr', changeEl: 'staking-yield-change' },
+            'staking': { history: 'stakingHistory', color: '#6366f1', key: 'staking', changeEl: 'staking-change', simulatedKey: 'stakingSimulated' },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // DeFi TVL
+            // ═══════════════════════════════════════════════════════════════
+            'tvl': { history: 'tvlHistory', color: '#10b981', key: 'tvl', changeEl: 'tvl-change' },
+            'l2': { history: 'l2History', color: '#8b5cf6', key: 'l2', changeEl: 'l2-change' },
+            'dex': { history: 'dexHistory', color: '#06b6d4', key: 'dex', changeEl: 'dex-change' },
+            'fees': { history: 'feesHistory', color: '#f59e0b', key: 'fees', changeEl: 'fees-change' },
+            'stables': { history: 'stablesHistory', color: '#eab308', key: 'stables', changeEl: 'stables-change' },
+            'app-capital': { history: 'appCapitalHistory', color: '#ec4899', key: 'appCapital', changeEl: 'app-capital-change' },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // ADDRESSES
+            // ═══════════════════════════════════════════════════════════════
+            'new-addr': { history: 'newAddressesHistory', color: '#22c55e', key: 'newAddresses', changeEl: 'new-addr-change' },
+            'l1-active-addr': { history: 'l1ActiveAddrHistory', color: '#a855f7', key: 'l1ActiveAddr', changeEl: 'l1-active-addr-change' },
+            'l2-active-addr': { history: 'l2ActiveAddrHistory', color: '#ec4899', key: 'l2ActiveAddr', changeEl: 'l2-active-addr-change' },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // TRANSACTIONS
+            // ═══════════════════════════════════════════════════════════════
+            'tx-eth': { history: 'txEthHistory', color: '#14b8a6', key: 'txEth', changeEl: 'tx-eth-change', simulatedKey: 'txSimulated' },
+            'tx-total': { history: 'txTotalHistory', color: '#6366f1', key: 'txTotal', changeEl: 'tx-total-change', simulatedKey: 'txSimulated' },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // VOLUME
+            // ═══════════════════════════════════════════════════════════════
+            'l1-volume': { history: 'l1VolumeHistory', color: '#3b82f6', key: 'l1Volume', changeEl: 'l1-volume-change' },
+            'l1-total-volume': { history: 'l1TotalVolumeHistory', color: '#3b82f6', key: 'l1TotalVolume', changeEl: 'l1-total-volume-change' },
+            'l2-volume': { history: 'l2VolumeHistory', color: '#8b5cf6', key: 'l2Volume', changeEl: 'l2-volume-change' },
+            'l2-total-volume': { history: 'l2TotalVolumeHistory', color: '#8b5cf6', key: 'l2TotalVolume', changeEl: 'l2-total-volume-change' },
+            'bridge-volume': { history: 'bridgeVolumeHistory', color: '#14b8a6', key: 'bridgeVolume', changeEl: 'bridge-volume-change' },
+            'stablecoin-vol': { history: 'stablecoinVolumeHistory', color: '#22c55e', key: 'stablecoinVol', changeEl: 'stablecoin-vol-change' },
+            'l2-stablecoin-vol': { history: 'l2StablecoinVolumeHistory', color: '#f59e0b', key: 'l2StablecoinVol', changeEl: 'l2-stablecoin-vol-change', customFn: (period) => updateL2StablecoinVolChart(period) },
+            'l2-stablecoin-supply': { history: 'l2StablecoinSupplyHistory', color: '#22c55e', key: 'l2StablecoinSupply', changeEl: 'l2-stablecoin-supply-change' },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // GAS & BLOBS
+            // ═══════════════════════════════════════════════════════════════
+            'gas-price': { customFn: (period) => updateGasPriceChart(period) },
+            'gasPrice': { customFn: (period) => updateGasPriceChart(period) },
+            'gas-utilization': { customFn: (period) => updateGasUtilizationChart(period) },
+            'blob-fees': { customFn: (period) => updateBlobFeesChart(period) },
+            'blobFees': { customFn: (period) => updateBlobFeesChart(period) },
+            'blob-count': { customFn: (period) => updateBlobCountChart(period) },
+            'blobCount': { customFn: (period) => updateBlobCountChart(period) },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // SUPPLY DYNAMICS
+            // ═══════════════════════════════════════════════════════════════
+            'daily-burn': { customFn: (period) => updateDailyBurnChart(period) },
+            'daily-issuance': { customFn: (period) => updateDailyIssuanceChart(period) },
+            'net-supply': { customFn: (period) => updateNetSupplyChart(period) },
+            'supply': { customFn: (period) => updateSupplyDistributionChart(period) },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // DERIVATIVES & MARKET SENTIMENT
+            // ═══════════════════════════════════════════════════════════════
+            'feargreed': { customFn: (period) => updateFearGreedChart(period) },
+            'funding': { customFn: (period) => updateFundingChart(period) },
+            'open-interest': { customFn: (period) => updateOpenInterestChartWithPeriod(period) },
+            'openInterest': { customFn: (period) => updateOpenInterestChartWithPeriod(period) },
+            'reserve': { customFn: (period) => updateReserveChartWithPeriod(period) },
+            'volatility': { customFn: (period) => updateVolatilityChart(period) },
+            'stablecoin': { customFn: (period) => updateStablecoinChart(period) },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // MARKET
+            // ═══════════════════════════════════════════════════════════════
+            'dominance': { customFn: (period) => updateDominanceChartWithPeriod(period) },
+            'ethbtc': { customFn: (period) => updateEthBtcChartWithPeriod(period) },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // LENDING
+            // ═══════════════════════════════════════════════════════════════
+            'lending': { customFn: (period) => updateLendingChart(period) },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // ADDITIONAL ALIASES (data-chart attribute values)
+            // ═══════════════════════════════════════════════════════════════
+            'l2StablecoinVol': { customFn: (period) => updateL2StablecoinVolChart(period) }
+        };
+
+        // Helper function to update chart with period
+        function updateChartWithPeriod(chartKey, period) {
+            const config = CHART_REGISTRY[chartKey];
+            if (!config) {
+                console.warn('[updateChartWithPeriod] No config found for chart:', chartKey);
+                return;
+            }
+
+            console.log('[updateChartWithPeriod]', chartKey, 'period:', period, 'hasCustomFn:', !!config.customFn);
+
+            // Use custom function if defined
+            if (config.customFn) {
+                config.customFn(period);
+                return;
+            }
+
+            // Standard updateMetricChart flow
+            const canvasId = chartKey + '-chart';
+            let history = state[config.history];
+            
+            if (!history || history.length === 0) {
+                console.warn('[updateChartWithPeriod] No history for:', chartKey, config.history);
+                return;
+            }
+
+            console.log('[updateChartWithPeriod]', chartKey, 'history length:', history.length);
+
+            // Apply transform if defined
+            if (config.transform) {
+                history = config.transform(history);
+            }
+
+            // Update chart
+            updateMetricChart(canvasId, null, history, config.color, config.key, period);
+
+            // Update change element with est badge if simulated
+            if (config.changeEl) {
+                const changeEl = document.getElementById(config.changeEl);
+                if (changeEl) {
+                    const cutoff = Date.now() - period * 24 * 60 * 60 * 1000;
+                    const filtered = history.filter(d => d.date && d.date.getTime() > cutoff);
+                    if (filtered.length > 1) {
+                        const first = filtered[0].value;
+                        const last = filtered[filtered.length - 1].value;
+                        const change = first !== 0 ? ((last - first) / first) * 100 : 0;
+                        
+                        // Check if using simulated data for this period (1Y or 3Y with simulated key)
+                        const isSimulated = config.simulatedKey && state[config.simulatedKey] && period > 90;
+                        const estBadge = isSimulated ? '<span class="est-badge">est</span>' : '';
+                        
+                        changeEl.innerHTML = fmt.pct(change) + ' ' + CHART_CONFIG.getLabel(period) + estBadge;
+                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    }
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT DELEGATION: Unified tab click handler for ALL metric cards
+        // Uses event delegation so it works regardless of DOM load timing
+        // ═══════════════════════════════════════════════════════════════════
+        document.addEventListener('click', function(e) {
+            const tab = e.target.closest('.metric-tab');
+            if (!tab) return;
+            
+            console.log('[Event Delegation] Tab clicked:', tab.textContent.trim());
+            
+            const tabContainer = tab.closest('.metric-tabs');
+            if (!tabContainer) {
+                console.log('[Event Delegation] No tabContainer');
+                return;
+            }
+            
+            const card = tabContainer.closest('.metric-card');
+            if (!card) {
+                console.log('[Event Delegation] No card');
+                return;
+            }
+            
+            const canvas = card.querySelector('canvas');
+            if (!canvas) {
+                console.log('[Event Delegation] No canvas');
+                return;
+            }
+            
+            // Update active state
+            tabContainer.querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Handle 'all' as string or parse as integer
+            const periodRaw = tab.dataset.period;
+            const period = periodRaw === 'all' ? 'all' : parseInt(periodRaw);
+            const canvasId = canvas.id;
+            const chartKey = canvasId.replace('-chart', '');
+            const dataChart = tabContainer.dataset.chart;
+            
+            console.log('[Event Delegation] canvasId:', canvasId, 'chartKey:', chartKey, 'dataChart:', dataChart, 'period:', period);
+            
+            // Try chart key from canvas id first, then data-chart attribute
+            const key = CHART_REGISTRY[chartKey] ? chartKey : (CHART_REGISTRY[dataChart] ? dataChart : null);
+            
+            if (key) {
+                console.log('[Tab Click]', key, 'period:', period);
+                updateChartWithPeriod(key, period);
+            } else {
+                console.warn('[Tab Click] No registry entry for:', chartKey, 'or', dataChart);
+            }
         });
 
-        // DeFi Lending chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="lending"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateLendingChart(period);
-            });
-        });
-
-        // Funding Rate chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="funding"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateFundingChart(period);
-            });
-        });
-
-        // Volatility chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="volatility"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateVolatilityChart(period);
-            });
-        });
-
-        // Stablecoin chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="stablecoin"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateStablecoinChart(period);
-            });
-        });
-
-        // Fear & Greed chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="feargreed"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateFearGreedChart(period);
-            });
-        });
-
-        // Dominance chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="dominance"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateDominanceChartWithPeriod(period);
-            });
-        });
-
-        // ETH/BTC chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="ethbtc"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateEthBtcChartWithPeriod(period);
-            });
-        });
-
-        // Exchange Reserve chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="reserve"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateReserveChartWithPeriod(period);
-            });
-        });
-
-        // Open Interest chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="openInterest"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateOpenInterestChartWithPeriod(period);
-            });
-        });
-
-        // Gas Price chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="gasPrice"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateGasPriceChart(period);
-            });
-        });
-
-        // Blob Fees chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="blobFees"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = tab.dataset.period === 'all' ? 'all' : parseInt(tab.dataset.period);
-                updateBlobFeesChart(period);
-            });
-        });
-
-        // Blob Count chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="blobCount"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = tab.dataset.period === 'all' ? 'all' : parseInt(tab.dataset.period);
-                updateBlobCountChart(period);
-            });
-        });
-
-        // Gas Utilization chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="gas-utilization"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateGasUtilizationChart(period);
-            });
-        });
-
-        // Daily Burn chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="daily-burn"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateDailyBurnChart(period);
-            });
-        });
-
-        // Daily Issuance chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="daily-issuance"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateDailyIssuanceChart(period);
-            });
-        });
-
-        // Net Supply chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="net-supply"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateNetSupplyChart(period);
-            });
-        });
-
-        // L2 Stablecoin Volume chart tabs
-        document.querySelectorAll('.metric-tabs[data-chart="l2StablecoinVol"] .metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                tab.closest('.metric-tabs').querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const period = parseInt(tab.dataset.period);
-                updateL2StablecoinVolChart(period);
-            });
-        });
-
-        // Dominance 차트 기간별 업데이트
         function updateDominanceChartWithPeriod(days) {
             const ctx = document.getElementById('dominance-chart');
             if (!ctx || !state.dominanceHistory || state.dominanceHistory.length === 0) return;
@@ -25641,7 +25965,8 @@
             
             if (filtered.length === 0) return;
             
-            if (dominanceChart) dominanceChart.destroy();
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
             dominanceChart = new Chart(ctx.getContext('2d'), chartConfig(
                 '#0891b2',
                 filtered.map(d => d.value),
@@ -25657,7 +25982,7 @@
             const change = ((last - first) / first) * 100;
             const changeEl = document.getElementById('dominance-change');
             if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
+                const label = CHART_CONFIG.getLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + label;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -25673,7 +25998,8 @@
             
             if (filtered.length === 0) return;
             
-            if (ethbtcChart) ethbtcChart.destroy();
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
             ethbtcChart = new Chart(ctx.getContext('2d'), chartConfig(
                 '#f7931a',
                 filtered.map(d => d.value),
@@ -25689,7 +26015,7 @@
             const change = ((last - first) / first) * 100;
             const changeEl = document.getElementById('ethbtc-change');
             if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
+                const label = CHART_CONFIG.getLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + label;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -25697,15 +26023,30 @@
 
         // Exchange Reserve 차트 기간별 업데이트
         function updateReserveChartWithPeriod(days) {
+            console.log('[updateReserveChartWithPeriod] days:', days, 'history length:', state.reserveHistory?.length);
             const ctx = document.getElementById('reserve-chart');
-            if (!ctx || !state.reserveHistory || state.reserveHistory.length === 0) return;
+            if (!ctx || !state.reserveHistory || state.reserveHistory.length === 0) {
+                console.warn('[updateReserveChartWithPeriod] No ctx or history');
+                return;
+            }
+            
+            // Debug: show date range of data
+            const firstDate = state.reserveHistory[0]?.date;
+            const lastDate = state.reserveHistory[state.reserveHistory.length - 1]?.date;
+            console.log('[updateReserveChartWithPeriod] Data range:', firstDate?.toISOString?.() || firstDate, 'to', lastDate?.toISOString?.() || lastDate);
             
             const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+            console.log('[updateReserveChartWithPeriod] Cutoff:', new Date(cutoffDate).toISOString());
+            
             const filtered = state.reserveHistory.filter(d => d.date.getTime() > cutoffDate);
+            console.log('[updateReserveChartWithPeriod] filtered length:', filtered.length);
             
             if (filtered.length === 0) return;
             
-            if (reserveChart) reserveChart.destroy();
+            // Destroy existing chart using Chart.getChart() for reliability
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
+            
             reserveChart = new Chart(ctx.getContext('2d'), chartConfig(
                 '#d97706',
                 filtered.map(d => d.value),
@@ -25715,14 +26056,16 @@
                 filtered.map(d => d.date)
             ));
             
-            // 변화율 업데이트
+            // 변화율 업데이트 with est badge if simulated
             const first = filtered[0].value;
             const last = filtered[filtered.length - 1].value;
             const change = ((last - first) / first) * 100;
             const changeEl = document.getElementById('reserve-change');
             if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
-                changeEl.textContent = fmt.pct(change) + ' ' + label;
+                const label = CHART_CONFIG.getLabel(days);
+                const isSimulated = state.reserveSimulated && days > 90;
+                const estBadge = isSimulated ? '<span class="est-badge">est</span>' : '';
+                changeEl.innerHTML = fmt.pct(change) + ' ' + label + estBadge;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
         }
@@ -25738,7 +26081,8 @@
             
             if (filtered.length === 0) return;
             
-            if (openInterestChart) openInterestChart.destroy();
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
             openInterestChart = new Chart(ctx.getContext('2d'), chartConfig(
                 '#8b5cf6',
                 filtered.map(d => d.value),
@@ -25754,7 +26098,7 @@
             const change = ((last - first) / first) * 100;
             const changeEl = document.getElementById('open-interest-change');
             if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
+                const label = CHART_CONFIG.getLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + label;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -25770,7 +26114,8 @@
             
             if (filtered.length === 0) return;
             
-            if (l2StablecoinVolChart) l2StablecoinVolChart.destroy();
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
             l2StablecoinVolChart = new Chart(ctx.getContext('2d'), chartConfig(
                 '#f59e0b',
                 filtered.map(d => d.value),
@@ -25786,192 +26131,12 @@
             const change = ((last - first) / first) * 100;
             const changeEl = document.getElementById('l2-stablecoin-vol-change');
             if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
+                const label = CHART_CONFIG.getLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + label;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
         }
 
-        // Metric chart tabs
-        document.querySelectorAll('.metric-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const card = tab.closest('.metric-card');
-                const metric = card.dataset.metric;
-                const period = parseInt(tab.dataset.period);
-                const periodLabel = period === 1095 ? '3Y' : period === 365 ? 'YoY' : '90D';
-                
-                // Update active state
-                card.querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                // Filter history based on period
-                // Use daily data for 30D/90D, weekly data for 1Y
-                let history;
-                let changeElId;
-                const cutoffDate = Date.now() - (period * 24 * 60 * 60 * 1000);
-                const useDaily = period <= 90;
-                
-                log(`Tab clicked: ${metric}, period: ${period}, useDaily: ${useDaily}`);
-                
-                let result;
-                if (metric === 'tvl') {
-                    const hasDaily = state.tvlHistoryDaily && state.tvlHistoryDaily.length > 0;
-                    log(`TVL - hasDaily: ${hasDaily}, dailyLen: ${state.tvlHistoryDaily?.length}, weeklyLen: ${state.tvlHistory?.length}`);
-                    const sourceData = useDaily && hasDaily ? state.tvlHistoryDaily : state.tvlHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    log(`TVL - filtered points: ${history.length}`);
-                    result = updateMetricChart('tvl-chart', tvlChart, history, '#10b981', 'tvl');
-                    changeElId = 'tvl-change';
-                } else if (metric === 'staking') {
-                    history = state.stakingHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('staking-chart', stakingChart, history, '#6366f1', 'staking');
-                    changeElId = 'staking-change';
-                } else if (metric === 'l2') {
-                    const sourceData = useDaily && state.l2HistoryDaily && state.l2HistoryDaily.length > 0 
-                        ? state.l2HistoryDaily : state.l2History;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-chart', l2Chart, history, '#7c3aed', 'l2');
-                    changeElId = 'l2-change';
-                } else if (metric === 'dex') {
-                    const sourceData = useDaily && state.dexHistoryDaily && state.dexHistoryDaily.length > 0 
-                        ? state.dexHistoryDaily : state.dexHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('dex-chart', dexChart, history, '#06b6d4', 'dex');
-                    changeElId = 'dex-change';
-                } else if (metric === 'fees') {
-                    const sourceData = useDaily && state.feesHistoryDaily && state.feesHistoryDaily.length > 0 
-                        ? state.feesHistoryDaily : state.feesHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('fees-chart', feesChart, history, '#f97316', 'fees');
-                    changeElId = 'fees-change';
-                } else if (metric === 'stables') {
-                    history = state.stablesHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('stables-chart', stablesChart, history, '#eab308', 'stables');
-                    changeElId = 'stables-change';
-                } else if (metric === 'txEth') {
-                    history = state.txEthHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('tx-eth-chart', txEthChart, history, '#14b8a6', 'txEth');
-                    changeElId = 'tx-eth-change';
-                } else if (metric === 'txTotal') {
-                    history = state.txTotalHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('tx-total-chart', txTotalChart, history, '#6366f1', 'txTotal');
-                    changeElId = 'tx-total-change';
-                } else if (metric === 'nvt') {
-                    history = state.nvtHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('nvt-chart', nvtChart, history, '#be123c', 'nvt');
-                    changeElId = 'nvt-change';
-                } else if (metric === 'activeAddr') {
-                    history = state.activeAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('active-addr-chart', activeAddrChart, history, '#a855f7', 'activeAddr');
-                    changeElId = 'active-addr-change';
-                } else if (metric === 'ethInDefi') {
-                    history = state.ethInDefiHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('eth-defi-chart', ethDefiChart, history, '#06b6d4', 'ethInDefi');
-                    changeElId = 'eth-defi-change';
-                } else if (metric === 'commitmentRatio') {
-                    history = state.commitmentRatioHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('commitment-ratio-chart', commitmentRatioChart, history, '#f59e0b', 'commitmentRatio');
-                    changeElId = 'commitment-ratio-change';
-                } else if (metric === 'appCapital') {
-                    history = state.appCapitalHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('app-capital-chart', appCapitalChart, history, '#ec4899', 'appCapital');
-                    changeElId = 'app-capital-change';
-                } else if (metric === 'stakingApr') {
-                    history = state.stakingAprHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('staking-yield-chart', stakingAprChart, history, '#10b981', 'stakingApr');
-                    changeElId = 'staking-yield-change';
-                } else if (metric === 'l1Volume') {
-                    history = state.l1VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l1-volume-chart', l1VolumeChart, history, '#3b82f6', 'l1Volume');
-                    changeElId = 'l1-volume-change';
-                } else if (metric === 'l1TotalVolume') {
-                    history = state.l1TotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, history, '#06b6d4', 'l1TotalVolume');
-                    changeElId = 'l1-total-volume-change';
-                } else if (metric === 'l2Volume') {
-                    history = state.l2VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-volume-chart', l2VolumeChart, history, '#8b5cf6', 'l2Volume');
-                    changeElId = 'l2-volume-change';
-                } else if (metric === 'l2TotalVolume') {
-                    history = state.l2TotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, history, '#f59e0b', 'l2TotalVolume');
-                    changeElId = 'l2-total-volume-change';
-                } else if (metric === 'bridgeVolume') {
-                    history = state.bridgeVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('bridge-volume-chart', bridgeVolumeChart, history, '#06b6d4', 'bridgeVolume');
-                    changeElId = 'bridge-volume-change';
-                } else if (metric === 'stablecoinVol') {
-                    history = state.stablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, history, '#eab308', 'stablecoinVol');
-                    changeElId = 'stablecoin-vol-change';
-                } else if (metric === 'whaleTx') {
-                    history = state.whaleTxHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('whale-tx-chart', whaleTxChart, history, '#f59e0b', 'whaleTx');
-                    changeElId = 'whale-tx-change';
-                } else if (metric === 'realizedPrice') {
-                    const realizedPriceHistory = state.mvrvHistory
-                        .filter(d => d.realizedPrice > 0 && d.date.getTime() > cutoffDate)
-                        .map(d => ({ date: d.date, value: d.realizedPrice }));
-                    history = realizedPriceHistory;
-                    result = updateMetricChart('realized-price-chart', realizedPriceChart, history, '#10b981', 'realizedPrice');
-                    changeElId = 'realized-price-change';
-                } else if (metric === 'mvrvRatio') {
-                    history = state.mvrvHistory.filter(d => d.date.getTime() > cutoffDate);
-                    renderMvrvChart('mvrv-ratio-chart', history, period);
-                    changeElId = 'mvrv-ratio-change';
-                } else if (metric === 'newAddresses') {
-                    history = state.newAddressesHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('new-addr-chart', newAddrChart, history, '#22c55e', 'newAddresses');
-                    changeElId = 'new-addr-change';
-                } else if (metric === 'l1ActiveAddr') {
-                    history = state.l1ActiveAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, history, '#a855f7', 'l1ActiveAddr');
-                    changeElId = 'l1-active-addr-change';
-                } else if (metric === 'l2ActiveAddr') {
-                    history = state.l2ActiveAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, history, '#ec4899', 'l2ActiveAddr');
-                    changeElId = 'l2-active-addr-change';
-                } else if (metric === 'l2StablecoinSupply') {
-                    history = state.l2StablecoinSupplyHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, history, '#22c55e', 'l2StablecoinSupply');
-                    changeElId = 'l2-stablecoin-supply-change';
-                } else if (metric === 'l2StablecoinVol') {
-                    history = state.l2StablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, history, '#f59e0b', 'l2StablecoinVol');
-                    changeElId = 'l2-stablecoin-vol-change';
-                }
-                
-                // Use chart's actual history (after filtering incomplete data)
-                if (result && result.history) history = result.history;
-                
-                // Update change percentage based on selected period
-                // Use 7-day average to reduce outlier impact
-                if (history && history.length > 1 && changeElId) {
-                    const windowSize = Math.max(1, Math.min(7, Math.floor(history.length / 4)));
-                    const firstWindow = history.slice(0, windowSize);
-                    const lastWindow = history.slice(-windowSize);
-                    const first = firstWindow.reduce((sum, d) => sum + d.value, 0) / firstWindow.length;
-                    const last = lastWindow.reduce((sum, d) => sum + d.value, 0) / lastWindow.length;
-                    
-                    // For stakingApr, show change in percentage points (pp)
-                    if (metric === 'stakingApr' || metric === 'commitmentRatio') {
-                        const change = last - first;
-                        const changeEl = document.getElementById(changeElId);
-                        if (changeEl) {
-                            changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + 'pp ' + periodLabel;
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
-                    } else {
-                        const change = first !== 0 ? ((last - first) / Math.abs(first)) * 100 : 0;
-                        const changeEl = document.getElementById(changeElId);
-                        if (changeEl) {
-                            changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
-                    }
-                }
-            });
-        });
 
         // Main - Optimized Parallel Loading with Proper Dependencies
         // 동시 호출 수 제한 (느린 네트워크 대응)
@@ -26120,16 +26285,23 @@
                         const el = document.getElementById(elementId);
                         if (!el || !history || history.length < 2) return;
                         
-                        const windowSize = Math.max(1, Math.min(7, Math.floor(history.length / 4)));
-                        const firstWindow = history.slice(0, windowSize);
-                        const lastWindow = history.slice(-windowSize);
+                        // CHART_CONFIG.DEFAULT_PERIOD 기준으로 필터링 (options.days로 조절 가능)
+                        const days = options.days || CHART_CONFIG.DEFAULT_PERIOD;
+                        const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+                        const filteredHistory = history.filter(d => d.date && d.date.getTime() > cutoffDate);
+                        
+                        if (filteredHistory.length < 2) return;
+                        
+                        const windowSize = Math.max(1, Math.min(7, Math.floor(filteredHistory.length / 4)));
+                        const firstWindow = filteredHistory.slice(0, windowSize);
+                        const lastWindow = filteredHistory.slice(-windowSize);
                         const first = firstWindow.reduce((sum, d) => sum + d.value, 0) / firstWindow.length;
                         const last = lastWindow.reduce((sum, d) => sum + d.value, 0) / lastWindow.length;
                         
                         if (first === 0 || first === null || first === undefined || isNaN(first)) return;
                         
                         const change = ((last - first) / Math.abs(first)) * 100;
-                        const label = options.label || '3Y';
+                        const label = options.label || CHART_CONFIG.defaultLabel;
                         const suffix = options.suffix || '';
                         const isPercentagePoint = options.pp || false;
                         
@@ -26183,7 +26355,7 @@
                     setEl('current-price', '$' + state.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                     setEl('summary-current-price', '$' + state.price.toLocaleString(undefined, {maximumFractionDigits: 0}));
                     setEl('market-cap', '$' + (state.marketCap / 1e9).toFixed(0) + 'B');
-                    safeCall(() => updateCombinedPriceVolumeChart(1095), 'price'); // 기본 3Y로 변경
+                    safeCall(() => updateCombinedPriceVolumeChart(CHART_CONFIG.DEFAULT_PERIOD), 'price'); // 기본 3Y로 변경
                     setDataSource('price-chart', priceSource, 'Binance');
                 }
                 
@@ -26348,7 +26520,7 @@
                 }
                 if (state.openInterest > 0) {
                     setEl('open-interest-value', '$' + (state.openInterest / 1e9).toFixed(2) + 'B');
-                    safeCall(() => updateOpenInterestChartWithPeriod(1095), 'openInterest');
+                    safeCall(() => updateOpenInterestChartWithPeriod(90), 'openInterest');
                     setDataSource('open-interest-chart', openInterestSource, 'CryptoQuant');
                     setChange('open-interest-change', state.openInterestHistory);
                 } else {
@@ -26427,7 +26599,7 @@
                     state.dominanceHistory = simpleHistory(9, 365);
                 }
                 setEl('eth-dominance', state.currentDominance.toFixed(1) + '%');
-                safeCall(() => updateDominanceChartWithPeriod(1095), 'dominance');
+                safeCall(() => updateDominanceChartWithPeriod(CHART_CONFIG.DEFAULT_PERIOD), 'dominance');
                 setDataSource('dominance-chart', dominanceSource, 'CoinGecko');
                 
                 let ethbtcSource = 'fallback';
@@ -26442,7 +26614,7 @@
                     state.ethbtcHistory = simpleHistory(0.035, 365);
                 }
                 setEl('eth-btc', state.ethBtcRatio.toFixed(5));
-                safeCall(() => updateEthBtcChartWithPeriod(1095), 'ethbtc');
+                safeCall(() => updateEthBtcChartWithPeriod(CHART_CONFIG.DEFAULT_PERIOD), 'ethbtc');
                 setDataSource('ethbtc-chart', ethbtcSource, 'Binance');
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -26525,10 +26697,10 @@
                     setEl('net-supply-change', (state.netSupplyChange >= 0 ? '+' : '') + state.netSupplyChange.toFixed(2) + '%/yr');
                     
                     // 차트 렌더링
-                    safeCall(() => updateGasUtilizationChart(1095), 'gasUtil');
-                    safeCall(() => updateDailyBurnChart(1095), 'burn');
-                    safeCall(() => updateDailyIssuanceChart(1095), 'issuance');
-                    safeCall(() => updateNetSupplyChart(1095), 'netSupply');
+                    safeCall(() => updateGasUtilizationChart(CHART_CONFIG.DEFAULT_PERIOD), 'gasUtil');
+                    safeCall(() => updateDailyBurnChart(CHART_CONFIG.DEFAULT_PERIOD), 'burn');
+                    safeCall(() => updateDailyIssuanceChart(CHART_CONFIG.DEFAULT_PERIOD), 'issuance');
+                    safeCall(() => updateNetSupplyChart(CHART_CONFIG.DEFAULT_PERIOD), 'netSupply');
                     setDataSource('gas-utilization-chart', supplySource);
                     setDataSource('daily-burn-chart', supplySource);
                     setDataSource('daily-issuance-chart', 'beaconchain');
@@ -26925,7 +27097,7 @@
                 if (!state.supabaseDominanceHistory?.length || state.supabaseDominanceHistory.length < MIN_DATA_POINTS ||
                     !state.supabaseEthBtcHistory?.length || state.supabaseEthBtcHistory.length < MIN_DATA_POINTS) {
                     log('   → Dominance/ETH-BTC data missing, fetching from API');
-                    apiCalls.push(fetchDominanceAndEthBtc(1095));
+                    apiCalls.push(fetchDominanceAndEthBtc(CHART_CONFIG.DEFAULT_PERIOD));
                 }
                 
                 // Fear & Greed - 항상 호출 (fgHistory 설정 필요)
@@ -28093,7 +28265,7 @@ Check out ETHval 👇`;
         }
         
         // Store current period for reuse
-        let currentHistoricalPeriod = 365; // Default to 1Y, will be updated based on auth state
+        let currentHistoricalPeriod = 90; // Default to 90D
         
         // Render main historical chart
         function renderHistoricalMainChart(period = null) {
@@ -28461,7 +28633,7 @@ Check out ETHval 👇`;
                 if (!data || data.length === 0) continue;
                 
                 // Initialize period if not set
-                if (!modelChartPeriods[model]) modelChartPeriods[model] = 1095;
+                if (!modelChartPeriods[model]) modelChartPeriods[model] = CHART_CONFIG.DEFAULT_PERIOD;
                 
                 const latestValue = data[data.length - 1]?.value || 0;
                 const diff = state.price > 0 ? ((latestValue - state.price) / state.price) * 100 : 0;
