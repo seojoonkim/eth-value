@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHval Admin v7.7 - Compact</title>
+    <title>ETHval Admin v7.8 - CryptoQuant</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -79,7 +79,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚡ ETHval Admin <span class="badge">v7.7</span></h1>
+            <h1>⚡ ETHval Admin <span class="badge">v7.8</span></h1>
             <div class="header-actions">
                 <div class="connection-status" id="connStatus" onclick="showConfig()">
                     <span>●</span>
@@ -335,6 +335,10 @@
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">Anthropic API Key <span style="font-weight: normal; opacity: 0.7;">(for AI Commentary - console.anthropic.com)</span></label>
                         <input type="password" id="configAnthropicKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="sk-ant-api03-...">
                     </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">CryptoQuant API Key <span style="font-weight: normal; opacity: 0.7;">(for Funding Rate - cryptoquant.com)</span></label>
+                        <input type="password" id="configCryptoQuantKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="Premium/Institutional plan required">
+                    </div>
                     
                     <!-- Cloud Sync Section -->
                     <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
@@ -364,6 +368,7 @@
         let ETHERSCAN_API_KEY = localStorage.getItem('ethval_etherscan_key') || '';
         let DUNE_API_KEY = localStorage.getItem('ethval_dune_key') || '';
         let ANTHROPIC_API_KEY = localStorage.getItem('ethval_anthropic_key') || '';
+        let CRYPTOQUANT_API_KEY = localStorage.getItem('cryptoquant_api_key') || '';
         
         // Dune Query IDs
         const DUNE_ETH_PRICE_QUERY_ID = 6390291;      // ETHval - ETH Daily Price
@@ -982,6 +987,7 @@
             document.getElementById('configEtherscanKey').value = ETHERSCAN_API_KEY;
             document.getElementById('configDuneKey').value = DUNE_API_KEY;
             document.getElementById('configAnthropicKey').value = ANTHROPIC_API_KEY;
+            document.getElementById('configCryptoQuantKey').value = CRYPTOQUANT_API_KEY;
             document.getElementById('configModal').classList.add('show');
         }
         
@@ -995,6 +1001,7 @@
             const etherscanKey = document.getElementById('configEtherscanKey').value.trim();
             const duneKey = document.getElementById('configDuneKey').value.trim();
             const anthropicKey = document.getElementById('configAnthropicKey').value.trim();
+            const cryptoquantKey = document.getElementById('configCryptoQuantKey').value.trim();
             
             if (!url || !key) {
                 alert('Supabase URL and Key are required!');
@@ -1006,6 +1013,7 @@
             if (etherscanKey) localStorage.setItem('ethval_etherscan_key', etherscanKey);
             if (duneKey) localStorage.setItem('ethval_dune_key', duneKey);
             if (anthropicKey) localStorage.setItem('ethval_anthropic_key', anthropicKey);
+            if (cryptoquantKey) localStorage.setItem('cryptoquant_api_key', cryptoquantKey);
             
             location.reload();
         }
@@ -1097,7 +1105,8 @@
                 supabase_key: key,
                 etherscan_key: document.getElementById('configEtherscanKey').value.trim(),
                 dune_key: document.getElementById('configDuneKey').value.trim(),
-                anthropic_key: document.getElementById('configAnthropicKey').value.trim()
+                anthropic_key: document.getElementById('configAnthropicKey').value.trim(),
+                cryptoquant_key: document.getElementById('configCryptoQuantKey').value.trim()
             };
             
             try {
@@ -1193,6 +1202,7 @@
                 document.getElementById('configEtherscanKey').value = config.etherscan_key || '';
                 document.getElementById('configDuneKey').value = config.dune_key || '';
                 document.getElementById('configAnthropicKey').value = config.anthropic_key || '';
+                document.getElementById('configCryptoQuantKey').value = config.cryptoquant_key || '';
                 
                 alert('✅ 설정을 불러왔습니다!\n\n"Save & Reload"를 눌러 적용하세요.');
             } catch (e) {
@@ -1218,7 +1228,7 @@
             eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
             
             // --- 🟡 Binance ---
-            funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8', expectedDays: 1095, phase: 1, source: '🟡 Binance' },
+            funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8', expectedDays: 1095, phase: 1, source: '🟠 CryptoQuant' },
             
             // --- 🦙 DefiLlama ---
             ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
@@ -2379,43 +2389,55 @@
                 }
             },
 
-            // 14. Funding Rate - HAS source, pagination for 3 years
+            // 14. Funding Rate - CryptoQuant API (유료 계정 필요)
             async funding_rate() {
-                const allData = [];
-                const now = Date.now();
-                const threeYearsAgo = now - (1095 * 24 * 60 * 60 * 1000);
-                
-                let startTime = threeYearsAgo;
-                while (startTime < now) {
-                    const url = `https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&startTime=${startTime}&limit=1000`;
-                    const data = await fetchJSON(url);
-                    if (!data || data.length === 0) break;
-                    
-                    allData.push(...data);
-                    startTime = data[data.length - 1].fundingTime + 1;
-                    if (data.length < 1000) break;
-                    await new Promise(r => setTimeout(r, 100));
+                const apiKey = localStorage.getItem('cryptoquant_api_key');
+                if (!apiKey) {
+                    log('  ⚠️ CryptoQuant API key not set. Click Config to add it.', 'warn');
+                    return 0;
                 }
                 
-                log(`  📦 Got ${allData.length} funding records`, 'info');
-                if (allData.length === 0) return 0;
-                
-                // Aggregate by date
-                const byDate = new Map();
-                allData.forEach(d => {
-                    const date = new Date(d.fundingTime).toISOString().split('T')[0];
-                    if (!byDate.has(date)) byDate.set(date, []);
-                    byDate.get(date).push(parseFloat(d.fundingRate));
-                });
-                
-                const records = [];
-                byDate.forEach((rates, date) => {
-                    records.push({ date, timestamp: Date.now(), funding_rate: parseFloat((rates.reduce((a,b)=>a+b,0)/rates.length).toFixed(8)), source: 'binance' });
-                });
-                
-                const { error } = await batchUpsert('historical_funding_rate', records);
-                if (error) log(`  ❌ ${error.message}`, 'error');
-                return error ? 0 : records.length;
+                try {
+                    // CryptoQuant API: ETH Derivatives Funding Rates
+                    const response = await fetch(
+                        'https://api.cryptoquant.com/v1/eth/derivatives/funding-rates?window=day&limit=1095',
+                        { 
+                            headers: { 
+                                'Authorization': `Bearer ${apiKey}`,
+                                'Accept': 'application/json'
+                            } 
+                        }
+                    );
+                    
+                    if (!response.ok) {
+                        throw new Error(`CryptoQuant API: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const rows = data?.result?.data || data?.data || data;
+                    
+                    if (!Array.isArray(rows) || rows.length === 0) {
+                        throw new Error('No data from CryptoQuant');
+                    }
+                    
+                    log(`  📦 Got ${rows.length} funding records from CryptoQuant`, 'info');
+                    
+                    const records = rows.map(row => ({
+                        date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
+                        timestamp: Date.now(),
+                        funding_rate: parseFloat(row.funding_rate || row.fundingRate || row.value || 0),
+                        source: 'cryptoquant'
+                    })).filter(r => r.date && !isNaN(r.funding_rate));
+                    
+                    if (records.length === 0) return 0;
+                    
+                    const { error } = await batchUpsert('historical_funding_rate', records);
+                    if (error) log(`  ❌ ${error.message}`, 'error');
+                    return error ? 0 : records.length;
+                } catch (e) {
+                    log(`  ❌ CryptoQuant error: ${e.message}`, 'error');
+                    return 0;
+                }
             },
 
             // 15. Exchange Reserve - HAS source

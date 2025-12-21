@@ -1,7 +1,8 @@
 /**
- * ETHval Data Collector v7.3
- * 39개 전체 데이터셋 수집 (Dune API 포함)
- * + ETH Price, ETH/BTC를 Dune에서 수집 (Binance/CoinGecko 대체)
+ * ETHval Data Collector v7.4
+ * 39개 전체 데이터셋 수집
+ * + ETH Price, ETH/BTC: Dune API
+ * + Funding Rate: CryptoQuant API (Binance 대체)
  * + AI 일간 해설 생성 (Claude Haiku)
  * + 병렬 처리로 속도 개선
  */
@@ -12,6 +13,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DUNE_API_KEY = process.env.DUNE_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const CRYPTOQUANT_API_KEY = process.env.CRYPTOQUANT_API_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_KEY');
@@ -24,6 +26,10 @@ if (!DUNE_API_KEY) {
 
 if (!ANTHROPIC_API_KEY) {
     console.warn('⚠️ Missing ANTHROPIC_API_KEY - AI commentary will be skipped');
+}
+
+if (!CRYPTOQUANT_API_KEY) {
+    console.warn('⚠️ Missing CRYPTOQUANT_API_KEY - CryptoQuant data will be skipped');
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1528,63 +1534,66 @@ async function collect_eth_btc() {
 }
 
 // ============================================================
-// 14. Funding Rate (Binance Futures - admin.html과 동일)
+// 14. Funding Rate (CryptoQuant API - 안정적)
 // ============================================================
 async function collect_funding_rate() {
-    const allData = [];
-    const now = Date.now();
-    const threeYearsAgo = now - (1095 * 24 * 60 * 60 * 1000);
+    if (!CRYPTOQUANT_API_KEY) {
+        return result.skip('No CryptoQuant API key');
+    }
     
     try {
-        let startTime = threeYearsAgo;
-        while (startTime < now) {
-            const url = `https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&startTime=${startTime}&limit=1000`;
-            const data = await fetchJSON(url);
-            if (!data || data.length === 0) break;
-            
-            allData.push(...data);
-            startTime = data[data.length - 1].fundingTime + 1;
-            if (data.length < 1000) break;
-            await sleep(100);
+        // CryptoQuant API: ETH Derivatives Funding Rates
+        // Endpoint: /v1/eth/derivatives/funding-rates
+        // Params: window=day, limit=1095 (3년)
+        const response = await fetch(
+            'https://api.cryptoquant.com/v1/eth/derivatives/funding-rates?window=day&limit=1095',
+            { 
+                headers: { 
+                    'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
+                    'Accept': 'application/json'
+                } 
+            }
+        );
+        
+        if (!response.ok) {
+            throw new Error(`CryptoQuant API error: ${response.status}`);
         }
         
-        if (allData.length > 0) {
-            // Aggregate by date
-            const byDate = new Map();
-            allData.forEach(d => {
-                const date = new Date(d.fundingTime).toISOString().split('T')[0];
-                if (!byDate.has(date)) byDate.set(date, []);
-                byDate.get(date).push(parseFloat(d.fundingRate));
-            });
-            
-            const records = [];
-            byDate.forEach((rates, date) => {
-                records.push({
-                    date,
-                    timestamp: Date.now(),
-                    funding_rate: parseFloat((rates.reduce((a,b)=>a+b,0)/rates.length).toFixed(8)),
-                    source: 'binance'
-                });
-            });
-            
+        const data = await response.json();
+        
+        // CryptoQuant 응답 형식에 맞게 파싱
+        // 예상 응답: { result: { data: [{ date, funding_rate }, ...] } }
+        const rows = data?.result?.data || data?.data || data;
+        
+        if (!Array.isArray(rows) || rows.length === 0) {
+            throw new Error('No data from CryptoQuant');
+        }
+        
+        const records = rows.map(row => ({
+            date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
+            funding_rate: parseFloat(row.funding_rate || row.fundingRate || row.value || 0),
+            source: 'cryptoquant'
+        })).filter(r => r.date && !isNaN(r.funding_rate));
+        
+        if (records.length > 100) {
             const saved = await upsertBatch('historical_funding_rate', records);
             return result.ok(saved);
         }
+        
+        throw new Error('Insufficient data');
     } catch (e) {
-        // API 차단됨
+        // 실패 시 기존 데이터 유지
+        const { data: existing } = await supabase
+            .from('historical_funding_rate')
+            .select('date')
+            .order('date', { ascending: false })
+            .limit(1);
+        
+        if (existing?.length > 0) {
+            return result.skip(`CryptoQuant error: ${e.message}`);
+        }
+        return result.fail(e.message);
     }
-    
-    // 실패 시 기존 데이터 유지
-    const { data: existing } = await supabase
-        .from('historical_funding_rate')
-        .select('date')
-        .order('date', { ascending: false })
-        .limit(1);
-    
-    if (existing?.length > 0) {
-        return result.skip('API blocked, using existing');
-    }
-    return result.fail('No data available');
 }
 
 // ============================================================
