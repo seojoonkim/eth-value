@@ -18424,7 +18424,7 @@
 
         // Formatters
         const fmt = {
-            usd: (n, d=1) => n >= 1e12 ? '$'+(n/1e12).toFixed(d)+'T' : n >= 1e9 ? '$'+(n/1e9).toFixed(d)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(d)+'M' : '$'+n.toFixed(d),
+            usd: (n, d=1) => n >= 1e12 ? '$'+(n/1e12).toFixed(d)+'T' : n >= 1e9 ? '$'+(n/1e9).toFixed(d)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(d)+'M' : n >= 1e3 ? '$'+(n/1e3).toFixed(d)+'K' : '$'+n.toFixed(d),
             num: (n, d=1) => n >= 1e9 ? (n/1e9).toFixed(d)+'B' : n >= 1e6 ? (n/1e6).toFixed(d)+'M' : n >= 1e3 ? (n/1e3).toFixed(d)+'K' : n.toFixed(d),
             pct: (n) => (n >= 0 ? '+' : '') + n.toFixed(1) + '%',
             price: (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
@@ -25980,7 +25980,7 @@
                     state.feesHistory = simpleHistory(12e6);
                     log(`   Fees: No Supabase data, using fallback`);
                 }
-                setEl('fees-value', '$' + (state.fees / 1e6).toFixed(1) + 'M');
+                setEl('fees-value', fmt.usd(state.fees));
                 safeCall(() => updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees'), 'fees');
                 setDataSource('fees-chart', feesSource, 'DefiLlama');
                 setChange('fees-change', state.feesHistory);
