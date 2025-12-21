@@ -5257,7 +5257,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             return prompt;
         }
         
-        async function generateCommentaryWithClaude(sectionKey, metricsData, lang = 'en') {
+        async function generateCommentaryWithClaude(sectionKey, metricsData, lang = 'en', existingScores = null) {
             if (!ANTHROPIC_API_KEY) {
                 throw new Error('No Anthropic API key configured. Add it in API Config section.');
             }
@@ -5278,7 +5278,12 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                 ja: 'Write in Japanese (日本語で作成). Use natural Japanese financial terminology.'
             };
             
-            const systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
+            const isEnglish = (lang === 'en');
+            let systemPrompt, userPrompt;
+            
+            if (isEnglish) {
+                // 영어: 점수 + 본문 생성
+                systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
 STRICT OUTPUT FORMAT:
 You must output a JSON object with scores AND 3 paragraphs separated by ||| (three pipe characters).
@@ -5288,16 +5293,8 @@ REQUIRED JSON FORMAT (output ONLY this, no markdown):
 
 SCORE DEFINITIONS (0-100 scale, 50 is neutral):
 - Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
-  * Based on: Fear & Greed Index, Funding Rate, market sentiment indicators
-  * Low score = market fear/cooling, High score = market greed/overheating
-  
 - Score 2 (90-Day Trend - Momentum): 0-44=downtrend, 45-55=sideways, 56-100=uptrend  
-  * Based on: 90-day price change, MVRV change, volume trends
-  * Low score = bearish momentum, High score = bullish momentum
-  
 - Score 3 (Valuation - Bullish/Bearish Signal): 0-44=bearish, 45-55=neutral, 56-100=bullish
-  * Based on: MVRV vs historical, realized price vs current, valuation models
-  * Low score = overvalued/bearish, High score = undervalued/bullish
 
 CRITICAL RULES:
 - ${langInstructions[lang]}
@@ -5305,26 +5302,46 @@ CRITICAL RULES:
 - scores array must have exactly 3 integers between 0-100
 - text field contains 3 paragraphs separated by |||
 - EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
-- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
-- Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
-- Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
-- Be specific with numbers from the data provided
-- Professional analyst tone
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively only
+- ⚠️ DO NOT include any specific percentages, dollar amounts, ratios, or numerical values
+- ⚠️ Use descriptive words: "significantly increased", "sharply declined", "remained stable"
+- Professional analyst tone, qualitative analysis only
 - Minimum 180 words per paragraph`;
 
-            const userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
+                userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
 
 ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
 IMPORTANT REQUIREMENTS:
 1. Each paragraph MUST contain exactly 5 sentences
 2. Scores must reflect the actual data objectively
-3. Output format: {"scores":[X,Y,Z],"text":"para1|||para2|||para3"}
+3. NO NUMBERS in the text paragraphs
+4. Output format: {"scores":[X,Y,Z],"text":"para1|||para2|||para3"}`;
+            } else {
+                // 다른 언어: 본문만 생성
+                systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
-Remember: Score meanings
-- Current Status: cold(0-44) / neutral(45-55) / hot(56-100)
-- 90-Day Trend: down(0-44) / sideways(45-55) / up(56-100)
-- Valuation: bearish(0-44) / neutral(45-55) / bullish(56-100)`;
+OUTPUT FORMAT:
+Write exactly 3 paragraphs separated by ||| (three pipe characters).
+Output ONLY the text, no JSON, no scores.
+
+CRITICAL RULES:
+- ${langInstructions[lang]}
+- EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively only
+- ⚠️ Use descriptive words only (상승/하락/횡보, 上涨/下跌, 上昇/下落)
+- Professional analyst tone
+- Minimum 180 words per paragraph`;
+
+                userPrompt = `Analyze these ${section.title} metrics. Output ONLY 3 paragraphs separated by |||
+
+${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
+
+IMPORTANT: 
+1. Each paragraph MUST contain exactly 5 sentences
+2. Output format: para1|||para2|||para3 (no JSON, no scores)
+3. NO NUMBERS in the text`;
+            }
             
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
@@ -5350,8 +5367,10 @@ Remember: Score meanings
             const result = await response.json();
             const content = result.content?.[0]?.text || null;
             
-            // Parse JSON response
-            if (content) {
+            if (!content) return null;
+            
+            if (isEnglish) {
+                // 영어: JSON 파싱 (scores + text)
                 try {
                     const parsed = JSON.parse(content);
                     return {
@@ -5359,15 +5378,19 @@ Remember: Score meanings
                         text: parsed.text || content
                     };
                 } catch (e) {
-                    // Fallback: return as text if JSON parsing fails
                     console.warn('JSON parse failed, using text fallback');
                     return {
                         scores: [50, 50, 50],
                         text: content
                     };
                 }
+            } else {
+                // 다른 언어: 텍스트만 반환 (기존 scores 사용)
+                return {
+                    scores: existingScores || [50, 50, 50],
+                    text: content
+                };
             }
-            return null;
         }
         
         async function saveCommentaryToSupabase(sectionKey, commentaries, scores, metricsData) {
@@ -5425,33 +5448,35 @@ Remember: Score meanings
                 commentaryLog(`  ✓ Fetched ${Object.keys(metricsData).length} metric groups`, 'success');
                 
                 // Generate for all languages
+                // 영어 먼저 생성해서 점수 확정
                 const commentaries = {};
                 let scores = [50, 50, 50];
                 
-                for (const lang of LANGUAGES) {
-                    commentaryLog(`  Generating ${lang.toUpperCase()}...`);
-                    const result = await generateCommentaryWithClaude(sectionKey, metricsData, lang);
+                // 1. 영어 먼저 (점수 포함)
+                commentaryLog(`  Generating EN (with scores)...`);
+                const enResult = await generateCommentaryWithClaude(sectionKey, metricsData, 'en', null);
+                if (enResult) {
+                    commentaries.en = enResult.text;
+                    scores = enResult.scores;
+                    const hasDelimiter = enResult.text.includes('|||');
+                    commentaryLog(`  ✓ EN: ${enResult.text.length} chars, scores: [${scores.join(',')}] ${hasDelimiter ? '✓' : '⚠️ NO |||'}`, hasDelimiter ? 'success' : 'warning');
+                } else {
+                    throw new Error('Failed to generate English commentary');
+                }
+                await new Promise(r => setTimeout(r, 500));
+                
+                // 2. 다른 언어 (영어 점수 전달)
+                for (const lang of ['ko', 'zh', 'ja']) {
+                    commentaryLog(`  Generating ${lang.toUpperCase()} (text only)...`);
+                    const result = await generateCommentaryWithClaude(sectionKey, metricsData, lang, scores);
                     if (result) {
                         commentaries[lang] = result.text;
-                        // Use scores from English (primary)
-                        if (lang === 'en') {
-                            scores = result.scores;
-                        }
-                        // ||| 구분자 확인
                         const hasDelimiter = result.text.includes('|||');
-                        const sectionCount = hasDelimiter ? result.text.split('|||').length : 1;
-                        commentaryLog(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars, scores: [${result.scores.join(',')}], ${sectionCount} sections ${hasDelimiter ? '✓' : '⚠️ NO |||'}`, hasDelimiter ? 'success' : 'warning');
-                        if (!hasDelimiter) {
-                            commentaryLog(`    Preview: ${result.text.substring(0, 100)}...`, 'warning');
-                        }
+                        commentaryLog(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars ${hasDelimiter ? '✓' : '⚠️ NO |||'}`, hasDelimiter ? 'success' : 'warning');
                     } else {
                         commentaryLog(`  ⚠️ ${lang.toUpperCase()}: Failed`, 'warning');
                     }
                     await new Promise(r => setTimeout(r, 500));
-                }
-                
-                if (!commentaries.en) {
-                    throw new Error('Failed to generate English commentary');
                 }
                 
                 // Save to Supabase (with scores)
@@ -5611,27 +5636,33 @@ Remember: Score meanings
                         commentaryLog(`  ✓ Fetched ${Object.keys(metricsData).length} metric groups`, 'success');
                         
                         // Generate for all languages
+                        // 영어 먼저 생성해서 점수 확정
                         const commentaries = {};
                         let scores = [50, 50, 50];
                         
-                        for (const lang of LANGUAGES) {
-                            const result = await generateCommentaryWithClaude(sectionKey, metricsData, lang);
+                        // 1. 영어 먼저 (점수 포함)
+                        const enResult = await generateCommentaryWithClaude(sectionKey, metricsData, 'en', null);
+                        if (enResult) {
+                            commentaries.en = enResult.text;
+                            scores = enResult.scores;
+                            commentaryLog(`  ✓ EN: ${enResult.text.length} chars, scores: [${scores.join(',')}]`, 'success');
+                        } else {
+                            commentaryLog(`  ❌ Failed to generate English`, 'error');
+                            failed++;
+                            continue;
+                        }
+                        await new Promise(r => setTimeout(r, 500));
+                        
+                        // 2. 다른 언어 (영어 점수 전달)
+                        for (const lang of ['ko', 'zh', 'ja']) {
+                            const result = await generateCommentaryWithClaude(sectionKey, metricsData, lang, scores);
                             if (result) {
                                 commentaries[lang] = result.text;
-                                if (lang === 'en') {
-                                    scores = result.scores;
-                                }
-                                commentaryLog(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars, scores: [${result.scores.join(',')}]`, 'success');
+                                commentaryLog(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars`, 'success');
                             } else {
                                 commentaryLog(`  ⚠️ ${lang.toUpperCase()}: Failed`, 'warning');
                             }
                             await new Promise(r => setTimeout(r, 500));
-                        }
-                        
-                        if (!commentaries.en) {
-                            commentaryLog(`  ❌ Failed to generate English`, 'error');
-                            failed++;
-                            continue;
                         }
                         
                         // Save (with scores)

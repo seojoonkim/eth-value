@@ -760,7 +760,7 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
  * Call Claude Haiku API to generate commentary
  * @param {string} lang - Language code: 'en', 'ko', 'zh', 'ja'
  */
-async function generateCommentary(sectionKey, metricsData, lang = 'en') {
+async function generateCommentary(sectionKey, metricsData, lang = 'en', existingScores = null) {
     if (!ANTHROPIC_API_KEY) return null;
     
     const section = COMMENTARY_SECTIONS[sectionKey];
@@ -803,7 +803,15 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
     
     const config = langConfig[lang] || langConfig.en;
     
-    const systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
+    // 영어: 점수 + 본문 생성 / 다른 언어: 본문만 생성
+    const isEnglish = (lang === 'en');
+    
+    let systemPrompt;
+    let userPrompt;
+    
+    if (isEnglish) {
+        // 영어: 점수 + 본문 생성
+        systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
 STRICT OUTPUT FORMAT:
 You must output a JSON object with scores AND 3 paragraphs separated by ||| (three pipe characters).
@@ -833,13 +841,13 @@ CRITICAL RULES:
 - Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
 - Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
 - Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
-- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively (상승/하락/횡보, rising/falling/stable, etc.)
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively (rising/falling/stable, etc.)
 - ⚠️ DO NOT include any specific percentages, dollar amounts, ratios, or numerical values in the paragraphs
 - ⚠️ Use descriptive words instead: "significantly increased", "sharply declined", "remained stable", "moderate growth"
 - Professional analyst tone, qualitative analysis only
 - Minimum 180 words per paragraph`;
 
-    const userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
+        userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
 
 ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
@@ -852,6 +860,38 @@ Remember: Score meanings
 - Current Status: cold(0-44) / neutral(45-55) / hot(56-100)
 - 90-Day Trend: down(0-44) / sideways(45-55) / up(56-100)
 - Valuation: bearish(0-44) / neutral(45-55) / bullish(56-100)`;
+    } else {
+        // 다른 언어: 본문만 생성 (점수는 영어에서 이미 생성됨)
+        systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
+
+OUTPUT FORMAT:
+Write exactly 3 paragraphs separated by ||| (three pipe characters).
+Output ONLY the text, no JSON, no scores.
+
+Example output format:
+paragraph1 text here|||paragraph2 text here|||paragraph3 text here
+
+CRITICAL RULES:
+- ${config.instruction}
+- EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
+- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
+- Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
+- Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively (상승/하락/횡보, 上涨/下跌/横盘, 上昇/下落/横ばい)
+- ⚠️ DO NOT include any specific percentages, dollar amounts, ratios, or numerical values
+- ⚠️ Use descriptive words only
+- Professional analyst tone, qualitative analysis only
+- Minimum 180 words per paragraph`;
+
+        userPrompt = `Analyze these ${section.title} metrics. Output ONLY 3 paragraphs separated by |||
+
+${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
+
+IMPORTANT: 
+1. Each paragraph MUST contain exactly 5 sentences
+2. Output format: para1|||para2|||para3 (no JSON, no scores)
+3. NO NUMBERS in the text - use qualitative descriptions only`;
+    }
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -880,8 +920,10 @@ Remember: Score meanings
         const result = await response.json();
         const content = result.content?.[0]?.text || null;
         
-        // Parse JSON response
-        if (content) {
+        if (!content) return null;
+        
+        if (isEnglish) {
+            // 영어: JSON 파싱 (scores + text)
             try {
                 const parsed = JSON.parse(content);
                 return {
@@ -889,15 +931,19 @@ Remember: Score meanings
                     text: parsed.text || content
                 };
             } catch (e) {
-                // Fallback: return as text if JSON parsing fails
                 console.warn('  JSON parse failed, using text fallback');
                 return {
                     scores: [50, 50, 50],
                     text: content
                 };
             }
+        } else {
+            // 다른 언어: 텍스트만 반환 (기존 scores 사용)
+            return {
+                scores: existingScores || [50, 50, 50],
+                text: content
+            };
         }
-        return null;
         
     } catch (e) {
         console.error(`  Claude API call failed:`, e.message);
@@ -969,29 +1015,36 @@ async function generateAllCommentaries() {
         console.log(`  ✓ Fetched ${Object.keys(metricsData).length} metric groups`);
         
         // Generate commentary for each language
+        // 영어 먼저 생성해서 점수 확정, 다른 언어는 같은 점수 사용
         const commentaries = {};
         let scores = [50, 50, 50]; // Default scores
         
-        for (const lang of LANGUAGES) {
-            const result = await generateCommentary(sectionKey, metricsData, lang);
+        // 1. 영어 먼저 생성 (점수 포함)
+        const enResult = await generateCommentary(sectionKey, metricsData, 'en', null);
+        if (enResult) {
+            commentaries.en = enResult.text;
+            scores = enResult.scores;
+            console.log(`  ✓ EN: ${enResult.text.length} chars, scores: [${scores.join(',')}]`);
+        } else {
+            console.log(`  ❌ Failed to generate English commentary`);
+            failed++;
+            continue;
+        }
+        await sleep(500);
+        
+        // 2. 다른 언어 생성 (영어 점수 전달, 본문만 생성)
+        for (const lang of ['ko', 'zh', 'ja']) {
+            const result = await generateCommentary(sectionKey, metricsData, lang, scores);
             if (result) {
                 commentaries[lang] = result.text;
-                // Use scores from English (primary) or first successful result
-                if (lang === 'en' || !scores) {
-                    scores = result.scores;
-                }
-                console.log(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars, scores: [${result.scores.join(',')}]`);
+                console.log(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars`);
             } else {
                 console.log(`  ⚠️ ${lang.toUpperCase()}: Failed`);
             }
             await sleep(500); // Rate limit between API calls
         }
         
-        // Need at least English version
-        if (!commentaries.en) {
-            console.log(`  ❌ Failed to generate English commentary`);
-            failed++;
-            continue;
+        // Need at least English version (already checked above);
         }
         
         // Save to Supabase (with scores)
