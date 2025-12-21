@@ -334,7 +334,21 @@
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">Anthropic API Key <span style="font-weight: normal; opacity: 0.7;">(for AI Commentary - console.anthropic.com)</span></label>
                         <input type="password" id="configAnthropicKey" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="sk-ant-api03-...">
                     </div>
-                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    
+                    <!-- Cloud Sync Section -->
+                    <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">☁️ Cloud Sync <span style="font-weight: normal; opacity: 0.7;">(암호화 저장)</span></label>
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                            <input type="password" id="cloudPassword" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);" placeholder="패스워드 입력...">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn" style="flex: 1; background: #3b82f6;" onclick="loadFromCloud()">📥 불러오기</button>
+                            <button class="btn" style="flex: 1; background: #8b5cf6;" onclick="saveToCloud()">📤 저장하기</button>
+                        </div>
+                        <p style="font-size: 11px; opacity: 0.6; margin-top: 8px; margin-bottom: 0;">패스워드로 암호화하여 Supabase에 저장. 다른 기기에서 패스워드로 복원 가능.</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
                         <button class="btn btn-secondary" onclick="closeConfigModal()">Cancel</button>
                         <button class="btn btn-success" onclick="saveConfig()">💾 Save & Reload</button>
                     </div>
@@ -989,6 +1003,201 @@
             if (anthropicKey) localStorage.setItem('ethval_anthropic_key', anthropicKey);
             
             location.reload();
+        }
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // Cloud Sync - 암호화하여 Supabase에 저장/불러오기
+        // ═══════════════════════════════════════════════════════════════════
+        
+        // AES-GCM 암호화를 위한 키 생성
+        async function deriveKey(password, salt) {
+            const encoder = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw',
+                encoder.encode(password),
+                'PBKDF2',
+                false,
+                ['deriveKey']
+            );
+            return crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt: salt,
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+        }
+        
+        // 암호화
+        async function encryptConfig(config, password) {
+            const encoder = new TextEncoder();
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const key = await deriveKey(password, salt);
+            
+            const encrypted = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                encoder.encode(JSON.stringify(config))
+            );
+            
+            return {
+                encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+                salt: btoa(String.fromCharCode(...salt)),
+                iv: btoa(String.fromCharCode(...iv))
+            };
+        }
+        
+        // 복호화
+        async function decryptConfig(encryptedData, password) {
+            const decoder = new TextDecoder();
+            const salt = new Uint8Array(atob(encryptedData.salt).split('').map(c => c.charCodeAt(0)));
+            const iv = new Uint8Array(atob(encryptedData.iv).split('').map(c => c.charCodeAt(0)));
+            const encrypted = new Uint8Array(atob(encryptedData.encrypted).split('').map(c => c.charCodeAt(0)));
+            
+            const key = await deriveKey(password, salt);
+            
+            const decrypted = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                encrypted
+            );
+            
+            return JSON.parse(decoder.decode(decrypted));
+        }
+        
+        // 클라우드에 저장
+        async function saveToCloud() {
+            const password = document.getElementById('cloudPassword').value;
+            if (!password || password.length < 4) {
+                alert('패스워드를 4자 이상 입력해주세요.');
+                return;
+            }
+            
+            const url = document.getElementById('configSupabaseUrl').value.trim();
+            const key = document.getElementById('configSupabaseKey').value.trim();
+            
+            if (!url || !key) {
+                alert('Supabase URL과 Key를 먼저 입력해주세요.');
+                return;
+            }
+            
+            const config = {
+                supabase_url: url,
+                supabase_key: key,
+                etherscan_key: document.getElementById('configEtherscanKey').value.trim(),
+                dune_key: document.getElementById('configDuneKey').value.trim(),
+                anthropic_key: document.getElementById('configAnthropicKey').value.trim()
+            };
+            
+            try {
+                const { encrypted, salt, iv } = await encryptConfig(config, password);
+                
+                const response = await fetch(`${url}/rest/v1/admin_config?id=eq.default`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': key,
+                        'Authorization': `Bearer ${key}`
+                    }
+                });
+                
+                const existing = await response.json();
+                
+                const method = existing && existing.length > 0 ? 'PATCH' : 'POST';
+                const endpoint = existing && existing.length > 0 
+                    ? `${url}/rest/v1/admin_config?id=eq.default`
+                    : `${url}/rest/v1/admin_config`;
+                
+                const saveResponse = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'apikey': key,
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        id: 'default',
+                        encrypted_config: encrypted,
+                        salt: salt,
+                        iv: iv,
+                        updated_at: new Date().toISOString()
+                    })
+                });
+                
+                if (saveResponse.ok || saveResponse.status === 201 || saveResponse.status === 204) {
+                    alert('✅ 클라우드에 저장되었습니다!\n\n다른 기기에서 같은 패스워드로 불러올 수 있습니다.');
+                } else {
+                    throw new Error(`HTTP ${saveResponse.status}`);
+                }
+            } catch (e) {
+                console.error('Cloud save error:', e);
+                alert('❌ 저장 실패: ' + e.message + '\n\nadmin_config 테이블이 생성되었는지 확인해주세요.');
+            }
+        }
+        
+        // 클라우드에서 불러오기
+        async function loadFromCloud() {
+            const password = document.getElementById('cloudPassword').value;
+            if (!password) {
+                alert('패스워드를 입력해주세요.');
+                return;
+            }
+            
+            // 먼저 Supabase URL/Key가 있는지 확인 (localStorage 또는 input)
+            let url = document.getElementById('configSupabaseUrl').value.trim() || localStorage.getItem('ethval_supabase_url');
+            let key = document.getElementById('configSupabaseKey').value.trim() || localStorage.getItem('ethval_supabase_key');
+            
+            if (!url || !key) {
+                alert('Supabase URL과 Key를 먼저 입력해주세요.\n\n(최소한 이 두 값은 필요합니다)');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${url}/rest/v1/admin_config?id=eq.default`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': key,
+                        'Authorization': `Bearer ${key}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!data || data.length === 0) {
+                    alert('❌ 저장된 설정이 없습니다.');
+                    return;
+                }
+                
+                const encryptedData = {
+                    encrypted: data[0].encrypted_config,
+                    salt: data[0].salt,
+                    iv: data[0].iv
+                };
+                
+                const config = await decryptConfig(encryptedData, password);
+                
+                // 폼에 값 채우기
+                document.getElementById('configSupabaseUrl').value = config.supabase_url || '';
+                document.getElementById('configSupabaseKey').value = config.supabase_key || '';
+                document.getElementById('configEtherscanKey').value = config.etherscan_key || '';
+                document.getElementById('configDuneKey').value = config.dune_key || '';
+                document.getElementById('configAnthropicKey').value = config.anthropic_key || '';
+                
+                alert('✅ 설정을 불러왔습니다!\n\n"Save & Reload"를 눌러 적용하세요.');
+            } catch (e) {
+                console.error('Cloud load error:', e);
+                if (e.message.includes('decrypt')) {
+                    alert('❌ 패스워드가 틀렸습니다.');
+                } else {
+                    alert('❌ 불러오기 실패: ' + e.message);
+                }
+            }
         }
 
         // ═══════════════════════════════════════════════════════════════════
