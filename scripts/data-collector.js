@@ -696,7 +696,7 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
             prompt += `  └ staking_apr: ${data.latest.lido_apr?.toFixed(2) || 'N/A'}%\n`;
         }
         if (data.latest.gas_utilization !== undefined) {
-            prompt += `  └ gas_utilization: ${(data.latest.gas_utilization * 100)?.toFixed(1) || 'N/A'}%\n`;
+            prompt += `  └ gas_utilization: ${data.latest.gas_utilization?.toFixed(1) || 'N/A'}%\n`;
         }
         if (data.latest.blob_fee_eth !== undefined) {
             prompt += `  └ blob_fees: ${data.latest.blob_fee_eth?.toFixed(4) || 'N/A'} ETH\n`;

@@ -5052,7 +5052,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
                     prompt += `  └ Staking APY: ${data.latest.apy?.toFixed(2) || 'N/A'}%\n`;
                 }
                 if (data.latest.gas_utilization !== undefined) {
-                    prompt += `  └ Gas Utilization: ${(data.latest.gas_utilization * 100)?.toFixed(1) || 'N/A'}%\n`;
+                    prompt += `  └ Gas Utilization: ${data.latest.gas_utilization?.toFixed(1) || 'N/A'}%\n`;
                 }
                 if (data.latest.blob_fee_eth !== undefined) {
                     prompt += `  └ Blob Fees: ${data.latest.blob_fee_eth?.toFixed(4) || 'N/A'} ETH\n`;
