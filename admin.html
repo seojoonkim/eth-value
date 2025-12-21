@@ -5214,7 +5214,7 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             
             const langInstructions = {
                 en: 'Write in English.',
-                ko: 'Write in Korean (한국어로 작성). Use natural Korean financial terminology.',
+                ko: 'Write in Korean (한국어로 작성). Use natural Korean financial terminology. For crypto terms, write Korean first then English in parentheses.',
                 zh: 'Write in Simplified Chinese (用简体中文写). Use natural Chinese financial terminology.',
                 ja: 'Write in Japanese (日本語で作成). Use natural Japanese financial terminology.'
             };
@@ -5222,39 +5222,50 @@ When you see data, check the VALUE RANGE to identify which metric it is!`,
             const systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
 STRICT OUTPUT FORMAT:
-You must write exactly 3 paragraphs separated by ||| (three pipe characters).
+You must output a JSON object with scores AND 3 paragraphs separated by ||| (three pipe characters).
 
-Example output structure:
-First sentence about current status (today's spot data). Second sentence with specific data point. Third sentence about 7-day short-term movement (minor). Fourth sentence with interpretation or significance.
-|||
-First sentence about 90-day trends. Second sentence with percentage changes over 90 days. Third sentence analyzing the medium-term trend direction. Fourth sentence explaining what this means.
-|||
-First sentence about valuation implications. Second sentence connecting metrics to value. Third sentence with outlook or prediction. Fourth sentence with investor guidance.
+REQUIRED JSON FORMAT (output ONLY this, no markdown):
+{"scores":[X,Y,Z],"text":"paragraph1|||paragraph2|||paragraph3"}
+
+SCORE DEFINITIONS (0-100 scale, 50 is neutral):
+- Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
+  * Based on: Fear & Greed Index, Funding Rate, market sentiment indicators
+  * Low score = market fear/cooling, High score = market greed/overheating
+  
+- Score 2 (90-Day Trend - Momentum): 0-44=downtrend, 45-55=sideways, 56-100=uptrend  
+  * Based on: 90-day price change, MVRV change, volume trends
+  * Low score = bearish momentum, High score = bullish momentum
+  
+- Score 3 (Valuation - Bullish/Bearish Signal): 0-44=bearish, 45-55=neutral, 56-100=bullish
+  * Based on: MVRV vs historical, realized price vs current, valuation models
+  * Low score = overvalued/bearish, High score = undervalued/bullish
 
 CRITICAL RULES:
 - ${langInstructions[lang]}
-- Write ONLY the 3 paragraphs with ||| separators between them
-- NO headers, NO titles, NO section labels
-- EACH PARAGRAPH MUST HAVE EXACTLY 4 SENTENCES - this is mandatory, count them
-- The separator ||| must be on its own line between paragraphs
-- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context as minor detail
-- Paragraph 2 (Trend): Focus on 90-DAY trends (not 30-day), aligns with chart's 90D view
+- Output ONLY valid JSON, no markdown code blocks
+- scores array must have exactly 3 integers between 0-100
+- text field contains 3 paragraphs separated by |||
+- EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
+- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
+- Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
+- Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
 - Be specific with numbers from the data provided
 - Professional analyst tone
-- Minimum 150 words per paragraph`;
+- Minimum 180 words per paragraph`;
 
-            const userPrompt = `Analyze these ${section.title} metrics. Output exactly 3 paragraphs separated by |||
+            const userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
 
 ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
-IMPORTANT: Each paragraph MUST contain exactly 4 sentences. This is a strict requirement.
+IMPORTANT REQUIREMENTS:
+1. Each paragraph MUST contain exactly 5 sentences
+2. Scores must reflect the actual data objectively
+3. Output format: {"scores":[X,Y,Z],"text":"para1|||para2|||para3"}
 
-Output format:
-[Paragraph 1 - current status: TODAY's spot data (major) + 7-day movement (minor) - 4 sentences]
-|||
-[Paragraph 2 - 90-day trends - 4 sentences]  
-|||
-[Paragraph 3 - valuation insight - 4 sentences]`;
+Remember: Score meanings
+- Current Status: cold(0-44) / neutral(45-55) / hot(56-100)
+- 90-Day Trend: down(0-44) / sideways(45-55) / up(56-100)
+- Valuation: bearish(0-44) / neutral(45-55) / bullish(56-100)`;
             
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
@@ -5266,7 +5277,7 @@ Output format:
                 },
                 body: JSON.stringify({
                     model: 'claude-3-5-haiku-20241022',
-                    max_tokens: 2500,
+                    max_tokens: 3000,
                     system: systemPrompt,
                     messages: [{ role: 'user', content: userPrompt }]
                 })
@@ -5278,10 +5289,29 @@ Output format:
             }
             
             const result = await response.json();
-            return result.content?.[0]?.text || null;
+            const content = result.content?.[0]?.text || null;
+            
+            // Parse JSON response
+            if (content) {
+                try {
+                    const parsed = JSON.parse(content);
+                    return {
+                        scores: parsed.scores || [50, 50, 50],
+                        text: parsed.text || content
+                    };
+                } catch (e) {
+                    // Fallback: return as text if JSON parsing fails
+                    console.warn('JSON parse failed, using text fallback');
+                    return {
+                        scores: [50, 50, 50],
+                        text: content
+                    };
+                }
+            }
+            return null;
         }
         
-        async function saveCommentaryToSupabase(sectionKey, commentaries, metricsData) {
+        async function saveCommentaryToSupabase(sectionKey, commentaries, scores, metricsData) {
             const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             const today = new Date().toISOString().split('T')[0];
             const now = new Date().toISOString();
@@ -5296,6 +5326,7 @@ Output format:
                         commentary_ko: commentaries.ko || null,
                         commentary_zh: commentaries.zh || null,
                         commentary_ja: commentaries.ja || null,
+                        scores: scores || [50, 50, 50],
                         metrics_snapshot: metricsData,
                         updated_at: now
                     }, { onConflict: 'date,section_key' });
@@ -5336,17 +5367,23 @@ Output format:
                 
                 // Generate for all languages
                 const commentaries = {};
+                let scores = [50, 50, 50];
+                
                 for (const lang of LANGUAGES) {
                     commentaryLog(`  Generating ${lang.toUpperCase()}...`);
-                    const commentary = await generateCommentaryWithClaude(sectionKey, metricsData, lang);
-                    if (commentary) {
-                        commentaries[lang] = commentary;
+                    const result = await generateCommentaryWithClaude(sectionKey, metricsData, lang);
+                    if (result) {
+                        commentaries[lang] = result.text;
+                        // Use scores from English (primary)
+                        if (lang === 'en') {
+                            scores = result.scores;
+                        }
                         // ||| 구분자 확인
-                        const hasDelimiter = commentary.includes('|||');
-                        const sectionCount = hasDelimiter ? commentary.split('|||').length : 1;
-                        commentaryLog(`  ✓ ${lang.toUpperCase()}: ${commentary.length} chars, ${sectionCount} sections ${hasDelimiter ? '✓' : '⚠️ NO |||'}`, hasDelimiter ? 'success' : 'warning');
+                        const hasDelimiter = result.text.includes('|||');
+                        const sectionCount = hasDelimiter ? result.text.split('|||').length : 1;
+                        commentaryLog(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars, scores: [${result.scores.join(',')}], ${sectionCount} sections ${hasDelimiter ? '✓' : '⚠️ NO |||'}`, hasDelimiter ? 'success' : 'warning');
                         if (!hasDelimiter) {
-                            commentaryLog(`    Preview: ${commentary.substring(0, 100)}...`, 'warning');
+                            commentaryLog(`    Preview: ${result.text.substring(0, 100)}...`, 'warning');
                         }
                     } else {
                         commentaryLog(`  ⚠️ ${lang.toUpperCase()}: Failed`, 'warning');
@@ -5358,9 +5395,10 @@ Output format:
                     throw new Error('Failed to generate English commentary');
                 }
                 
-                // Save to Supabase
+                // Save to Supabase (with scores)
                 commentaryLog('  Saving to Supabase...');
-                const saved = await saveCommentaryToSupabase(sectionKey, commentaries, metricsData);
+                commentaryLog(`  Scores: [${scores.join(', ')}]`);
+                const saved = await saveCommentaryToSupabase(sectionKey, commentaries, scores, metricsData);
                 if (saved) {
                     commentaryLog(`✅ Successfully saved ${sectionKey}!`, 'success');
                     setCommentaryStatus('Completed', '#3fb950');
@@ -5515,11 +5553,16 @@ Output format:
                         
                         // Generate for all languages
                         const commentaries = {};
+                        let scores = [50, 50, 50];
+                        
                         for (const lang of LANGUAGES) {
-                            const commentary = await generateCommentaryWithClaude(sectionKey, metricsData, lang);
-                            if (commentary) {
-                                commentaries[lang] = commentary;
-                                commentaryLog(`  ✓ ${lang.toUpperCase()}: ${commentary.length} chars`, 'success');
+                            const result = await generateCommentaryWithClaude(sectionKey, metricsData, lang);
+                            if (result) {
+                                commentaries[lang] = result.text;
+                                if (lang === 'en') {
+                                    scores = result.scores;
+                                }
+                                commentaryLog(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars, scores: [${result.scores.join(',')}]`, 'success');
                             } else {
                                 commentaryLog(`  ⚠️ ${lang.toUpperCase()}: Failed`, 'warning');
                             }
@@ -5532,8 +5575,8 @@ Output format:
                             continue;
                         }
                         
-                        // Save
-                        const saved = await saveCommentaryToSupabase(sectionKey, commentaries, metricsData);
+                        // Save (with scores)
+                        const saved = await saveCommentaryToSupabase(sectionKey, commentaries, scores, metricsData);
                         if (saved) {
                             commentaryLog(`  ✅ Saved!`, 'success');
                             success++;

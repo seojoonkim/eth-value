@@ -709,39 +709,50 @@ async function generateCommentary(sectionKey, metricsData, lang = 'en') {
     const systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
 STRICT OUTPUT FORMAT:
-You must write exactly 3 paragraphs separated by ||| (three pipe characters).
+You must output a JSON object with scores AND 3 paragraphs separated by ||| (three pipe characters).
 
-Example output structure:
-First sentence about current status (today's spot data). Second sentence with specific data point. Third sentence about 7-day short-term movement (minor). Fourth sentence with interpretation or significance.
-|||
-First sentence about 90-day trends. Second sentence with percentage changes over 90 days. Third sentence analyzing the medium-term trend direction. Fourth sentence explaining what this means.
-|||
-First sentence about valuation implications. Second sentence connecting metrics to value. Third sentence with outlook or prediction. Fourth sentence with investor guidance.
+REQUIRED JSON FORMAT (output ONLY this, no markdown):
+{"scores":[X,Y,Z],"text":"paragraph1|||paragraph2|||paragraph3"}
+
+SCORE DEFINITIONS (0-100 scale, 50 is neutral):
+- Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
+  * Based on: Fear & Greed Index, Funding Rate, market sentiment indicators
+  * Low score = market fear/cooling, High score = market greed/overheating
+  
+- Score 2 (90-Day Trend - Momentum): 0-44=downtrend, 45-55=sideways, 56-100=uptrend  
+  * Based on: 90-day price change, MVRV change, volume trends
+  * Low score = bearish momentum, High score = bullish momentum
+  
+- Score 3 (Valuation - Bullish/Bearish Signal): 0-44=bearish, 45-55=neutral, 56-100=bullish
+  * Based on: MVRV vs historical, realized price vs current, valuation models
+  * Low score = overvalued/bearish, High score = undervalued/bullish
 
 CRITICAL RULES:
 - ${config.instruction}
-- Write ONLY the 3 paragraphs with ||| separators between them
-- NO headers, NO titles, NO section labels
-- EACH PARAGRAPH MUST HAVE EXACTLY 4 SENTENCES - this is mandatory, count them
-- The separator ||| must be on its own line between paragraphs
-- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context as minor detail
-- Paragraph 2 (Trend): Focus on 90-DAY trends (not 30-day), aligns with chart's 90D view
+- Output ONLY valid JSON, no markdown code blocks
+- scores array must have exactly 3 integers between 0-100
+- text field contains 3 paragraphs separated by |||
+- EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
+- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
+- Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
+- Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
 - Be specific with numbers from the data provided
 - Professional analyst tone
-- Minimum 150 words per paragraph`;
+- Minimum 180 words per paragraph`;
 
-    const userPrompt = `Analyze these ${section.title} metrics. Output exactly 3 paragraphs separated by |||
+    const userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores and text.
 
 ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
-IMPORTANT: Each paragraph MUST contain exactly 4 sentences. This is a strict requirement.
+IMPORTANT REQUIREMENTS:
+1. Each paragraph MUST contain exactly 5 sentences
+2. Scores must reflect the actual data objectively
+3. Output format: {"scores":[X,Y,Z],"text":"para1|||para2|||para3"}
 
-Output format:
-[Paragraph 1 - current status: TODAY's spot data (major) + 7-day movement (minor) - 4 sentences]
-|||
-[Paragraph 2 - 90-day trends - 4 sentences]  
-|||
-[Paragraph 3 - valuation insight - 4 sentences]`;
+Remember: Score meanings
+- Current Status: cold(0-44) / neutral(45-55) / hot(56-100)
+- 90-Day Trend: down(0-44) / sideways(45-55) / up(56-100)
+- Valuation: bearish(0-44) / neutral(45-55) / bullish(56-100)`;
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -753,7 +764,7 @@ Output format:
             },
             body: JSON.stringify({
                 model: 'claude-3-5-haiku-20241022',
-                max_tokens: 2500,
+                max_tokens: 3000,
                 messages: [
                     { role: 'user', content: userPrompt }
                 ],
@@ -768,7 +779,26 @@ Output format:
         }
         
         const result = await response.json();
-        return result.content?.[0]?.text || null;
+        const content = result.content?.[0]?.text || null;
+        
+        // Parse JSON response
+        if (content) {
+            try {
+                const parsed = JSON.parse(content);
+                return {
+                    scores: parsed.scores || [50, 50, 50],
+                    text: parsed.text || content
+                };
+            } catch (e) {
+                // Fallback: return as text if JSON parsing fails
+                console.warn('  JSON parse failed, using text fallback');
+                return {
+                    scores: [50, 50, 50],
+                    text: content
+                };
+            }
+        }
+        return null;
         
     } catch (e) {
         console.error(`  Claude API call failed:`, e.message);
@@ -777,9 +807,9 @@ Output format:
 }
 
 /**
- * Save commentary to Supabase (with multilingual support)
+ * Save commentary to Supabase (with multilingual support and scores)
  */
-async function saveCommentary(sectionKey, commentaries, metricsSnapshot) {
+async function saveCommentary(sectionKey, commentaries, scores, metricsSnapshot) {
     const today = new Date().toISOString().split('T')[0];
     
     try {
@@ -792,6 +822,7 @@ async function saveCommentary(sectionKey, commentaries, metricsSnapshot) {
                 commentary_ko: commentaries.ko || null,
                 commentary_zh: commentaries.zh || null,
                 commentary_ja: commentaries.ja || null,
+                scores: scores || [50, 50, 50],
                 metrics_snapshot: metricsSnapshot,
                 created_at: new Date().toISOString()
             }, { onConflict: 'date,section_key' });
@@ -840,11 +871,17 @@ async function generateAllCommentaries() {
         
         // Generate commentary for each language
         const commentaries = {};
+        let scores = [50, 50, 50]; // Default scores
+        
         for (const lang of LANGUAGES) {
-            const commentary = await generateCommentary(sectionKey, metricsData, lang);
-            if (commentary) {
-                commentaries[lang] = commentary;
-                console.log(`  ✓ ${lang.toUpperCase()}: ${commentary.length} chars`);
+            const result = await generateCommentary(sectionKey, metricsData, lang);
+            if (result) {
+                commentaries[lang] = result.text;
+                // Use scores from English (primary) or first successful result
+                if (lang === 'en' || !scores) {
+                    scores = result.scores;
+                }
+                console.log(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars, scores: [${result.scores.join(',')}]`);
             } else {
                 console.log(`  ⚠️ ${lang.toUpperCase()}: Failed`);
             }
@@ -858,8 +895,8 @@ async function generateAllCommentaries() {
             continue;
         }
         
-        // Save to Supabase
-        const saved = await saveCommentary(sectionKey, commentaries, metricsData);
+        // Save to Supabase (with scores)
+        const saved = await saveCommentary(sectionKey, commentaries, scores, metricsData);
         if (saved) {
             console.log(`  ✅ Saved to Supabase (${Object.keys(commentaries).length} languages)`);
             success++;
@@ -1535,44 +1572,37 @@ async function collect_eth_btc() {
 }
 
 // ============================================================
-// 14. Funding Rate (CryptoQuant API - 안정적)
+// 14. Funding Rate (CryptoQuant API via Cloudflare Proxy)
 // ============================================================
 async function collect_funding_rate() {
-    if (!CRYPTOQUANT_API_KEY) {
-        return result.skip('No CryptoQuant API key');
-    }
+    const PROXY_URL = 'https://cryptoquant-proxy.seojoon-kim.workers.dev';
     
     try {
-        // CryptoQuant API: ETH Funding Rates
-        // https://api.cryptoquant.com/v1/eth/market-data/funding-rates?window=day&exchange=all_exchange
         const response = await fetch(
-            'https://api.cryptoquant.com/v1/eth/market-data/funding-rates?window=day&exchange=all_exchange&limit=1095',
-            { 
-                headers: { 
-                    'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
-                    'Accept': 'application/json'
-                } 
-            }
+            `${PROXY_URL}/?endpoint=/v1/eth/market-data/funding-rates&window=day&exchange=all_exchange&limit=1095`
         );
         
         if (!response.ok) {
-            throw new Error(`CryptoQuant API error: ${response.status}`);
+            throw new Error(`Proxy error: ${response.status}`);
         }
         
         const data = await response.json();
         
-        // CryptoQuant 응답 형식: { status: {...}, result: { data: [...] } }
-        const rows = data?.result?.data || data?.data || data;
+        if (data.status?.code !== 200) {
+            throw new Error(data.status?.message || 'API error');
+        }
         
-        if (!Array.isArray(rows) || rows.length === 0) {
+        const rows = data?.result?.data || [];
+        
+        if (rows.length === 0) {
             throw new Error('No data from CryptoQuant');
         }
         
         console.log(`  📦 Got ${rows.length} funding rate records from CryptoQuant`);
         
         const records = rows.map(row => ({
-            date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
-            funding_rate: parseFloat(row.funding_rates || row.funding_rate || row.value || 0),
+            date: row.date,
+            funding_rate: parseFloat(row.funding_rates || 0),
             source: 'cryptoquant'
         })).filter(r => r.date && !isNaN(r.funding_rate));
         
@@ -1584,57 +1614,42 @@ async function collect_funding_rate() {
         throw new Error('Insufficient data');
     } catch (e) {
         console.log(`  ❌ funding_rate: ${e.message}`);
-        // 실패 시 기존 데이터 유지
-        const { data: existing } = await supabase
-            .from('historical_funding_rate')
-            .select('date')
-            .order('date', { ascending: false })
-            .limit(1);
-        
-        if (existing?.length > 0) {
-            return result.skip(`CryptoQuant error: ${e.message}`);
-        }
         return result.fail(e.message);
     }
 }
 
 // ============================================================
-// 15. Exchange Reserve (CryptoQuant API - 거래소 ETH 보유량)
+// 15. Exchange Reserve (CryptoQuant API via Cloudflare Proxy)
 // ============================================================
 async function collect_exchange_reserve() {
-    if (!CRYPTOQUANT_API_KEY) {
-        return result.skip('No CryptoQuant API key');
-    }
+    const PROXY_URL = 'https://cryptoquant-proxy.seojoon-kim.workers.dev';
     
     try {
-        // CryptoQuant API: ETH Exchange Reserve
-        // https://api.cryptoquant.com/v1/eth/exchange-flows/reserve?window=day&exchange=all_exchange
         const response = await fetch(
-            'https://api.cryptoquant.com/v1/eth/exchange-flows/reserve?window=day&exchange=all_exchange&limit=1095',
-            { 
-                headers: { 
-                    'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
-                    'Accept': 'application/json'
-                } 
-            }
+            `${PROXY_URL}/?endpoint=/v1/eth/exchange-flows/reserve&window=day&exchange=all_exchange&limit=1095`
         );
         
         if (!response.ok) {
-            throw new Error(`CryptoQuant API error: ${response.status}`);
+            throw new Error(`Proxy error: ${response.status}`);
         }
         
         const data = await response.json();
-        const rows = data?.result?.data || data?.data || data;
         
-        if (!Array.isArray(rows) || rows.length === 0) {
+        if (data.status?.code !== 200) {
+            throw new Error(data.status?.message || 'API error');
+        }
+        
+        const rows = data?.result?.data || [];
+        
+        if (rows.length === 0) {
             throw new Error('No data from CryptoQuant');
         }
         
         console.log(`  📦 Got ${rows.length} exchange reserve records from CryptoQuant`);
         
         const records = rows.map(row => ({
-            date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
-            reserve_eth: parseFloat(row.reserve || row.value || 0),
+            date: row.date,
+            reserve_eth: parseFloat(row.reserve || 0),
             source: 'cryptoquant'
         })).filter(r => r.date && !isNaN(r.reserve_eth) && r.reserve_eth > 0);
         
@@ -1646,16 +1661,6 @@ async function collect_exchange_reserve() {
         throw new Error('Insufficient data');
     } catch (e) {
         console.log(`  ❌ exchange_reserve: ${e.message}`);
-        // 실패 시 기존 데이터 유지
-        const { data: existing } = await supabase
-            .from('historical_exchange_reserve')
-            .select('date')
-            .order('date', { ascending: false })
-            .limit(1);
-        
-        if (existing?.length > 0) {
-            return result.skip(`CryptoQuant error: ${e.message}`);
-        }
         return result.fail(e.message);
     }
 }
@@ -1733,42 +1738,37 @@ async function collect_eth_dominance() {
 }
 
 // ============================================================
-// 16-2. Open Interest (CryptoQuant API - 신규)
+// 16-2. Open Interest (CryptoQuant API via Cloudflare Proxy)
 // ============================================================
 async function collect_open_interest() {
-    if (!CRYPTOQUANT_API_KEY) {
-        return result.skip('No CryptoQuant API key');
-    }
+    const PROXY_URL = 'https://cryptoquant-proxy.seojoon-kim.workers.dev';
     
     try {
-        // CryptoQuant API: ETH Open Interest
-        // https://api.cryptoquant.com/v1/eth/market-data/open-interest?window=day&exchange=all_exchange&symbol=all_symbol
         const response = await fetch(
-            'https://api.cryptoquant.com/v1/eth/market-data/open-interest?window=day&exchange=all_exchange&symbol=all_symbol&limit=1095',
-            { 
-                headers: { 
-                    'Authorization': `Bearer ${CRYPTOQUANT_API_KEY}`,
-                    'Accept': 'application/json'
-                } 
-            }
+            `${PROXY_URL}/?endpoint=/v1/eth/market-data/open-interest&window=day&exchange=all_exchange&symbol=all_symbol&limit=1095`
         );
         
         if (!response.ok) {
-            throw new Error(`CryptoQuant API error: ${response.status}`);
+            throw new Error(`Proxy error: ${response.status}`);
         }
         
         const data = await response.json();
-        const rows = data?.result?.data || data?.data || data;
         
-        if (!Array.isArray(rows) || rows.length === 0) {
+        if (data.status?.code !== 200) {
+            throw new Error(data.status?.message || 'API error');
+        }
+        
+        const rows = data?.result?.data || [];
+        
+        if (rows.length === 0) {
             throw new Error('No data from CryptoQuant');
         }
         
         console.log(`  📦 Got ${rows.length} open interest records from CryptoQuant`);
         
         const records = rows.map(row => ({
-            date: row.date || new Date(row.datetime || row.timestamp).toISOString().split('T')[0],
-            open_interest: parseFloat(row.open_interest || row.value || 0),
+            date: row.date,
+            open_interest: parseFloat(row.open_interest || 0),
             source: 'cryptoquant'
         })).filter(r => r.date && !isNaN(r.open_interest) && r.open_interest > 0);
         
@@ -1780,16 +1780,6 @@ async function collect_open_interest() {
         throw new Error('Insufficient data');
     } catch (e) {
         console.log(`  ❌ open_interest: ${e.message}`);
-        // 실패 시 기존 데이터 유지
-        const { data: existing } = await supabase
-            .from('historical_open_interest')
-            .select('date')
-            .order('date', { ascending: false })
-            .limit(1);
-        
-        if (existing?.length > 0) {
-            return result.skip(`CryptoQuant error: ${e.message}`);
-        }
         return result.fail(e.message);
     }
 }
@@ -1861,18 +1851,40 @@ async function collect_volatility() {
 
 // ============================================================
 // 20. NVT Ratio (calculated)
+// NVT = Market Cap / Daily On-chain Volume (7-day avg)
 // ============================================================
 async function collect_nvt() {
     const { data: prices } = await supabase.from('historical_eth_price').select('date, close, volume').order('date');
-    if (!prices) return 0;
+    if (!prices || prices.length < 7) return 0;
     
     const ETH_SUPPLY = 120400000;
     const records = [];
-    for (const p of prices) {
+    
+    for (let i = 6; i < prices.length; i++) {
+        const p = prices[i];
         if (!p.volume || p.volume === 0) continue;
+        
+        // 7일 평균 거래량 계산
+        let sum = 0;
+        let count = 0;
+        for (let j = i - 6; j <= i; j++) {
+            if (prices[j].volume && prices[j].volume > 0) {
+                sum += parseFloat(prices[j].volume);
+                count++;
+            }
+        }
+        
+        if (count === 0) continue;
+        const avgVolume = sum / count;
+        
         const mcap = p.close * ETH_SUPPLY;
-        const nvt = mcap / (p.volume * p.close); // Simplified
-        if (nvt > 0 && nvt < 1000) {
+        // volume이 USD 단위라면 직접 나눔
+        // volume이 ETH 단위라면 * close로 USD 변환
+        const volumeUsd = avgVolume > 1000000000 ? avgVolume : avgVolume * p.close;
+        
+        const nvt = mcap / volumeUsd;
+        
+        if (nvt > 0 && nvt < 500) {
             records.push({
                 date: p.date,
                 nvt_ratio: parseFloat(nvt.toFixed(2)),
@@ -1880,6 +1892,8 @@ async function collect_nvt() {
             });
         }
     }
+    
+    console.log(`  📦 Calculated ${records.length} NVT records`);
     return await upsertBatch('historical_nvt', records);
 }
 
