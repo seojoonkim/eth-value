@@ -3305,7 +3305,7 @@
         .method-desc {
             color: var(--text-body);
             line-height: 1.65;
-            font-size: var(--font-body);
+            font-size: 14px;
         }
 
         .method-meta {
@@ -3331,7 +3331,7 @@
         }
 
         .method-note {
-            font-size: 10px;
+            font-size: 12px;
             padding: 6px 8px;
             color: var(--text-muted);
             line-height: 1.4;
@@ -6298,12 +6298,12 @@
         }
 
         .method-chart-area {
-            height: 120px;
+            height: 130px;
         }
 
         @media (max-width: 768px) {
             .method-chart-area {
-                height: 90px;
+                height: 105px;
             }
         }
 
@@ -8307,7 +8307,7 @@
             }
             
             .method-note {
-                font-size: var(--font-caption);
+                font-size: 12px;
             }
             
             .method-footer {
@@ -14974,13 +14974,13 @@
                         ${isLoggedIn && userHasVoted ? `
                             <div class="vote-status-badge voted">
                                 <span class="vote-status-icon">✓</span>
-                                You rated ${ratings.userRating}★
+                                ${t('card.youRated', 'You rated')} ${ratings.userRating}★
                             </div>
                         ` : ''}
                         ${isLoggedIn && !userHasVoted ? `
                             <div class="vote-status-badge not-voted">
                                 <span class="vote-status-icon">⭐</span>
-                                Not rated yet
+                                ${t('card.notRatedYet', 'Not rated yet')}
                             </div>
                         ` : ''}
                     </div>
@@ -16832,6 +16832,8 @@
                 'modal.confidence_singular': 'rating',
                 'modal.people': 'participants',
                 'modal.person': 'participant',
+                'card.youRated': 'You rated',
+                'card.notRatedYet': 'Not rated yet',
                 'alert.deleteTitle': 'Delete Comment',
                 'alert.deleteMessage': 'Are you sure you want to delete this comment?',
                 'alert.cancel': 'Cancel',
@@ -17231,6 +17233,8 @@
                 'modal.confidence_singular': '평가',
                 'modal.people': '명 참여',
                 'modal.person': '명 참여',
+                'card.youRated': '평가 완료',
+                'card.notRatedYet': '미평가',
                 'alert.deleteTitle': '댓글 삭제',
                 'alert.deleteMessage': '이 댓글을 삭제하시겠습니까?',
                 'alert.cancel': '취소',
@@ -17618,6 +17622,8 @@
                 'modal.confidence_singular': '评价',
                 'modal.people': '人参与',
                 'modal.person': '人参与',
+                'card.youRated': '已评分',
+                'card.notRatedYet': '未评分',
                 'alert.deleteTitle': '删除评论',
                 'alert.deleteMessage': '确定要删除此评论吗？',
                 'alert.cancel': '取消',
@@ -18008,6 +18014,8 @@
                 'modal.confidence_singular': '評価',
                 'modal.people': '人参加',
                 'modal.person': '人参加',
+                'card.youRated': '評価済み',
+                'card.notRatedYet': '未評価',
                 'alert.deleteTitle': 'コメントを削除',
                 'alert.deleteMessage': 'このコメントを削除しますか？',
                 'alert.cancel': 'キャンセル',
