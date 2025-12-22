@@ -1187,7 +1187,11 @@ const DUNE_QUERIES = {
     NEW_ADDR: 6352513,
     MVRV: 6354057,
     STABLECOIN_VOL: 6353868,
-    GAS_PRICE: 6354506  // Daily average gas price
+    GAS_PRICE: 6354506,  // Daily average gas price
+    
+    // New queries
+    L2_DEX_VOLUME: 6395472,       // L2 DEX Volume (all chains)
+    BRIDGE_TOTAL_VOLUME: 6395474  // Bridge Total Volume (ETH + ERC-20)
 };
 
 // ============================================================
@@ -2500,6 +2504,68 @@ async function collect_dune_bridge() {
     return result.ok(saved);
 }
 
+// 35-1. L2 DEX Volume (Dune)
+async function collect_dune_l2_dex_volume() {
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.L2_DEX_VOLUME, 15000);
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.L2_DEX_VOLUME);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
+    
+    const records = rows.map(r => {
+        let dateStr = r.date || r.block_date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            blockchain: r.blockchain || 'unknown',
+            dex_volume_usd: parseFloat(r.dex_volume_usd || 0)
+        };
+    }).filter(r => r.date && r.dex_volume_usd > 0);
+    
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_l2_dex_volume', records, 'date,blockchain');
+    return result.ok(saved);
+}
+
+// 35-2. Bridge Total Volume (Dune) - ETH + ERC-20 tokens
+async function collect_dune_bridge_total_volume() {
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
+    
+    const rows = await fetchDuneResults(DUNE_QUERIES.BRIDGE_TOTAL_VOLUME, 15000);
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.BRIDGE_TOTAL_VOLUME);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
+    
+    const records = rows.map(r => {
+        let dateStr = r.date || r.block_date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            destination_chain: r.destination_chain || 'unknown',
+            bridge_volume_usd: parseFloat(r.bridge_volume_usd || 0)
+        };
+    }).filter(r => r.date && r.bridge_volume_usd > 0);
+    
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_bridge_total_volume', records, 'date,destination_chain');
+    return result.ok(saved);
+}
+
 // 36. Whale Transactions (Dune)
 async function collect_dune_whale() {
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
@@ -2799,6 +2865,8 @@ async function main() {
             collect_dune_active_addr(),
             collect_dune_l2_addr(),
             collect_dune_bridge(),
+            collect_dune_l2_dex_volume(),
+            collect_dune_bridge_total_volume(),
             collect_dune_whale(),
             collect_dune_new_addr(),
             collect_dune_mvrv(),
@@ -2806,7 +2874,7 @@ async function main() {
             collect_dune_gas_price()
         ]);
         
-        const duneNames = ['dune_blob', 'dune_active_addr', 'dune_l2_addr', 'dune_bridge', 'dune_whale', 'dune_new_addr', 'dune_mvrv', 'dune_stablecoin_vol', 'dune_gas_price'];
+        const duneNames = ['dune_blob', 'dune_active_addr', 'dune_l2_addr', 'dune_bridge', 'dune_l2_dex_volume', 'dune_bridge_total_volume', 'dune_whale', 'dune_new_addr', 'dune_mvrv', 'dune_stablecoin_vol', 'dune_gas_price'];
         duneResults.forEach((res, i) => {
             results[duneNames[i]] = wrapResult(res, true);
             const r = results[duneNames[i]];

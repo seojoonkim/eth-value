@@ -1250,7 +1250,9 @@
             l1_total_volume: { name: 'L1 Total Volume', icon: '📊', table: 'historical_l1_total_volume', valueField: 'total_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (ETH + all ERC-20 tokens)' },
             l1_eth_transfer: { name: 'L1 ETH Transfer', icon: '💸', table: 'historical_l1_total_volume', valueField: 'eth_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Native ETH transfers only. Now from L1 Total Volume table.' },
             l2_total_volume: { name: 'L2 Total Volume', icon: '📈', table: 'historical_l2_total_volume', valueField: 'total_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (Native + all tokens) across 8 L2s' },
-            bridge_volume: { name: 'Bridge Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
+            bridge_volume: { name: 'Bridge ETH Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
+            l2_dex_volume: { name: 'L2 DEX Volume', icon: '🔄', table: 'historical_l2_dex_volume', valueField: 'dex_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Daily DEX trading volume on L2s' },
+            bridge_total_volume: { name: 'Bridge Total Volume', icon: '🌐', table: 'historical_bridge_total_volume', valueField: 'bridge_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'All assets bridged to L2s (ETH + ERC-20)' },
             whale_tx: { name: 'Whale TX', icon: '🐋', table: 'historical_whale_tx', valueField: 'whale_tx_count', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
             mvrv_ratio: { name: 'MVRV Ratio', icon: '📊', table: 'historical_mvrv', valueField: 'mvrv_ratio', format: 'ratio', expectedDays: 2878, phase: 1, source: '🔶 Dune' },
             stablecoin_volume: { name: 'Stablecoin Vol', icon: '💵', table: 'historical_stablecoin_volume', valueField: 'daily_volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
@@ -3129,8 +3131,7 @@
                         .select('date, chain, tx_count').order('date', { ascending: false }).limit(8000);
                     if (!txs?.length) return 0;
                     const records = txs.map(t => ({
-                        date: t.date,
-                        chain: t.chain,
+                        date: t.date, timestamp: Date.now(), chain: t.chain,
                         active_addresses: Math.floor(t.tx_count * 0.3),
                         source: 'estimated'
                     }));
@@ -3176,6 +3177,7 @@
                             
                             return {
                                 date: dateStr,
+                                timestamp: new Date(dateStr).getTime(),
                                 chain: row.chain,
                                 active_addresses: parseInt(row.active_addresses) || 0,
                                 source: 'dune'
@@ -3607,6 +3609,104 @@
                         }
                         
                         log(`  ✅ Bridge Volume: ${records.length} records saved from Dune`, 'success');
+                        return records.length;
+                    }
+                    
+                    log('  ⚠️ No data from Dune', 'warn');
+                    return 0;
+                } catch (e) {
+                    log(`  ❌ Dune API error: ${e.message}`, 'error');
+                    return 0;
+                }
+            },
+
+            // L2 DEX Volume - Dune API (Daily DEX trading volume on L2s)
+            async l2_dex_volume() {
+                log('  🔍 Fetching L2 DEX Volume...', 'info');
+                
+                const DUNE_L2_DEX_VOLUME_QUERY_ID = 6395472;
+                
+                try {
+                    const allRows = await fetchDuneWithRefresh(DUNE_L2_DEX_VOLUME_QUERY_ID, 'date');
+                    if (allRows.length > 0) {
+                        log(`  📊 Got ${allRows.length} L2 DEX Volume records`, 'info');
+                        
+                        const records = allRows.map(row => {
+                            let dateStr = row.date;
+                            if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                                dateStr = dateStr.split(' ')[0];
+                            }
+                            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                                dateStr = dateStr.split('T')[0];
+                            }
+                            
+                            return {
+                                date: dateStr,
+                                blockchain: row.blockchain || 'unknown',
+                                dex_volume_usd: parseFloat(row.dex_volume_usd) || 0
+                            };
+                        }).filter(r => r.dex_volume_usd > 0);
+                        
+                        if (records.length > 0) {
+                            log(`  📅 Sample: ${records[0].date} ${records[0].blockchain} = $${(records[0].dex_volume_usd / 1e6).toFixed(2)}M`, 'info');
+                        }
+                        
+                        const { error } = await batchUpsert('historical_l2_dex_volume', records, 'date,blockchain');
+                        if (error) {
+                            log(`  ❌ Save error: ${error.message}`, 'error');
+                            return 0;
+                        }
+                        
+                        log(`  ✅ L2 DEX Volume: ${records.length} records saved from Dune`, 'success');
+                        return records.length;
+                    }
+                    
+                    log('  ⚠️ No data from Dune', 'warn');
+                    return 0;
+                } catch (e) {
+                    log(`  ❌ Dune API error: ${e.message}`, 'error');
+                    return 0;
+                }
+            },
+
+            // Bridge Total Volume - Dune API (ETH + ERC-20 tokens bridged to L2s)
+            async bridge_total_volume() {
+                log('  🔍 Fetching Bridge Total Volume...', 'info');
+                
+                const DUNE_BRIDGE_TOTAL_VOLUME_QUERY_ID = 6395474;
+                
+                try {
+                    const allRows = await fetchDuneWithRefresh(DUNE_BRIDGE_TOTAL_VOLUME_QUERY_ID, 'date');
+                    if (allRows.length > 0) {
+                        log(`  📊 Got ${allRows.length} Bridge Total Volume records`, 'info');
+                        
+                        const records = allRows.map(row => {
+                            let dateStr = row.date;
+                            if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                                dateStr = dateStr.split(' ')[0];
+                            }
+                            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                                dateStr = dateStr.split('T')[0];
+                            }
+                            
+                            return {
+                                date: dateStr,
+                                destination_chain: row.destination_chain || 'unknown',
+                                bridge_volume_usd: parseFloat(row.bridge_volume_usd) || 0
+                            };
+                        }).filter(r => r.bridge_volume_usd > 0);
+                        
+                        if (records.length > 0) {
+                            log(`  📅 Sample: ${records[0].date} ${records[0].destination_chain} = $${(records[0].bridge_volume_usd / 1e6).toFixed(2)}M`, 'info');
+                        }
+                        
+                        const { error } = await batchUpsert('historical_bridge_total_volume', records, 'date,destination_chain');
+                        if (error) {
+                            log(`  ❌ Save error: ${error.message}`, 'error');
+                            return 0;
+                        }
+                        
+                        log(`  ✅ Bridge Total Volume: ${records.length} records saved from Dune`, 'success');
                         return records.length;
                     }
                     
@@ -4314,78 +4414,7 @@
                     open_interest: 'historical_open_interest',  // open_interest
                     exchange_reserve: 'historical_exchange_reserve',  // reserve_eth
                     whale_tx: 'historical_whale_tx'  // whale_tx_count
-                },
-                context: `=== SECTION PURPOSE ===
-This section measures INVESTOR BEHAVIOR and MARKET PSYCHOLOGY.
-Goal: Determine if investors are greedy/fearful, accumulating/distributing.
-
-=== METRICS & INTERPRETATION ===
-
-1. Realized Price ($): Average cost basis of all ETH holders
-   - Current Price > Realized Price → Most holders in profit → Potential selling pressure
-   - Current Price < Realized Price → Most holders at loss → Potential accumulation zone
-   - PERCENTILE GUIDE: Low percentile = realized price near current price = less profit buffer
-   
-2. MVRV Ratio (Market Value / Realized Value):
-   - MVRV > 3.0 → OVERHEATED, high risk of correction (historically tops)
-   - MVRV 1.0-3.0 → Normal range
-   - MVRV < 1.0 → UNDERVALUED, historically good buying opportunity
-   - ↑ Rising MVRV = Growing unrealized profits = Increasing greed
-   - ↓ Falling MVRV = Shrinking profits = Decreasing confidence
-   - PERCENTILE GUIDE: <25% = undervalued, >75% = overvalued
-
-3. Fear & Greed Index (0-100):
-   - 0-25: Extreme Fear → Contrarian BUY signal
-   - 25-45: Fear
-   - 45-55: Neutral
-   - 55-75: Greed
-   - 75-100: Extreme Greed → Contrarian SELL signal
-   - PERCENTILE GUIDE: Compare current fear/greed to historical distribution
-
-4. Funding Rate (%):
-   - Positive → Longs pay shorts → Bullish sentiment, but crowded
-   - Negative → Shorts pay longs → Bearish sentiment
-   - Extreme positive (>0.1%) → Overleveraged longs, risk of long squeeze
-   - Extreme negative (<-0.1%) → Overleveraged shorts, risk of short squeeze
-   - PERCENTILE GUIDE: High percentile = extremely bullish positioning
-
-5. Open Interest ($B): Total value of outstanding futures contracts
-   - ↑ Rising OI + Rising Price → New money entering, trend confirmation
-   - ↑ Rising OI + Falling Price → Shorts building, bearish
-   - ↓ Falling OI + Falling Price → Longs closing, capitulation
-   - ↓ Falling OI + Rising Price → Shorts covering, short squeeze
-   - PERCENTILE GUIDE: High percentile = lots of leverage in system
-
-6. Exchange ETH Reserve: ETH held on exchanges
-   - ↓ Decreasing → ETH moving to cold storage → BULLISH (accumulation)
-   - ↑ Increasing → ETH moving to exchanges → BEARISH (preparation to sell)
-   - Multi-year downtrend is bullish long-term signal
-   - PERCENTILE GUIDE: Low percentile = supply squeeze potential
-
-7. Whale Transactions (>$100k): Large holder activity
-   - ↑ Spike in whale tx → Big players active, watch price direction
-   - Whale tx + Price drop → Possible distribution
-   - Whale tx + Price rise → Possible accumulation
-   - PERCENTILE GUIDE: High percentile = smart money very active
-
-=== COMBINED SIGNAL PATTERNS (MUST analyze these combinations) ===
-
-BULLISH COMBINATION:
-- Low exchange reserves + Rising whale activity + MVRV < 2 + Fear & Greed < 40
-- Interpretation: Smart money accumulating while retail is fearful
-
-BEARISH COMBINATION:
-- Rising exchange reserves + High OI + Extreme greed + MVRV > 2.5
-- Interpretation: Overheated market with distribution signals
-
-NEUTRAL/UNCERTAIN:
-- Mixed signals across metrics require careful weighing
-
-=== WRITING REQUIREMENTS ===
-- MUST mention ALL 7 metrics in your analysis
-- MUST explain how metrics relate to each other (e.g., "while MVRV suggests X, exchange reserves indicate Y")
-- MUST use percentile context (e.g., "at the 15th percentile of its 3-year range")
-- DO NOT write generic market commentary without specific data references`
+                }
             },
             // 02.2 시장 포지션 - 5개 차트
             // Charts: ETH/BTC Ratio, ETH Dominance, Stablecoin Mcap, Volatility, NVT Ratio
@@ -4399,66 +4428,7 @@ NEUTRAL/UNCERTAIN:
                     stablecoins: 'historical_stablecoins',  // total_mcap (전체 스테이블코인)
                     volatility: 'historical_volatility',  // volatility_30d
                     nvt: 'historical_nvt'  // nvt_ratio
-                },
-                context: `=== SECTION PURPOSE ===
-This section measures ETH's RELATIVE POSITION in the crypto market.
-Goal: Understand ETH's strength vs BTC, market share, and valuation efficiency.
-
-=== METRICS & INTERPRETATION ===
-
-1. ETH/BTC Ratio: ETH price in BTC terms
-   - ↑ Rising → ETH outperforming BTC → "Alt season" indicator
-   - ↓ Falling → BTC outperforming ETH → Risk-off, BTC dominance
-   - Historical range: 0.02 - 0.08 BTC
-   - Below 0.04 = historically undervalued vs BTC
-   - Above 0.06 = historically strong vs BTC
-   - PERCENTILE GUIDE: <25% = historically weak vs BTC, >75% = strong
-
-2. ETH Dominance (%): ETH market cap / Total crypto market cap
-   - ↑ Rising dominance → Capital flowing into ETH
-   - ↓ Falling dominance → Capital rotating to other assets
-   - Typical range: 15-20%
-   - PERCENTILE GUIDE: Low = ETH losing share, High = ETH gaining share
-
-3. Total Stablecoin Market Cap ($B): "Dry powder" in crypto
-   - ↑ Rising → More capital waiting on sidelines → Potential buying power
-   - ↓ Falling → Capital exiting crypto ecosystem
-   - High stablecoin mcap + low prices = bullish setup
-   - PERCENTILE GUIDE: High percentile = record capital available
-
-4. 30-Day Volatility (%):
-   - High volatility (>80%) → Unstable, risky, but opportunity for traders
-   - Low volatility (<40%) → Stable, but may precede big move
-   - Decreasing volatility often precedes breakout
-   - PERCENTILE GUIDE: Low = calm market, High = turbulent
-
-5. NVT Ratio (Network Value to Transactions):
-   - Like P/E ratio for crypto
-   - High NVT (>100) → Network overvalued relative to usage
-   - Low NVT (<50) → Network undervalued, or usage increasing
-   - ↑ Rising NVT → Price rising faster than usage → Caution
-   - ↓ Falling NVT → Usage catching up to valuation → Healthy
-   - PERCENTILE GUIDE: High = expensive vs fundamentals, Low = cheap
-
-=== COMBINED SIGNAL PATTERNS ===
-
-BULLISH SETUP:
-- Low ETH/BTC ratio + High stablecoin mcap + Low NVT + Low volatility
-- Interpretation: Undervalued ETH with capital ready to deploy
-
-BEARISH SETUP:
-- High ETH/BTC ratio + High NVT + Rising volatility + Falling dominance
-- Interpretation: Overextended with deteriorating fundamentals
-
-BREAKOUT POTENTIAL:
-- Extremely low volatility + high stablecoin mcap
-- Interpretation: Compression before expansion
-
-=== WRITING REQUIREMENTS ===
-- MUST mention ALL 5 metrics
-- MUST explain ETH's position relative to BTC AND the broader market
-- MUST discuss valuation efficiency (NVT) in context of other metrics
-- Connect stablecoin "dry powder" to potential price implications`
+                }
             },
             // 02.3 공급 역학 - 6개 차트
             // Charts: Staking Yield (APR), Staked ETH, ETH Burned, ETH Issued, Net Supply, Effective Float
@@ -4477,65 +4447,10 @@ BREAKOUT POTENTIAL:
                     eth_burnt: 'eth_burnt',
                     eth_issued: 'daily_issuance'
                 },
-                context: `=== SECTION PURPOSE ===
-This section measures ETH's SUPPLY MECHANICS and MONETARY POLICY.
-Goal: Understand inflation/deflation, staking dynamics, and supply scarcity.
-
-=== METRICS & INTERPRETATION ===
-
-1. Staking Yield/APR (%): Return for staking ETH
-   - Higher APR → More attractive to stake → More ETH locked
-   - Lower APR → Less incentive to stake → Possible unstaking
-   - Current range: 3-5% APR
-   - PERCENTILE GUIDE: High = attractive yields, Low = competitive with TradFi
-
-2. Staked ETH (M ETH): Total ETH locked in staking
-   - ↑ Rising → More ETH locked → Supply squeeze, BULLISH
-   - ↓ Falling → Unstaking pressure → More liquid supply
-   - Currently ~28% of total supply staked
-   - PERCENTILE GUIDE: High = maximum supply lockup
-
-3. ETH Burned (daily): ETH destroyed via EIP-1559 base fee
-   - ↑ High burn → High network demand → Deflationary pressure
-   - ↓ Low burn → Low network activity → Inflationary pressure
-   - PERCENTILE GUIDE: High = strong demand, Low = weak activity
-
-4. ETH Issued (daily): New ETH created for validators
-   - Relatively stable ~1,700-2,000 ETH/day
-   - More validators = slightly more issuance
-   - PERCENTILE GUIDE: Higher with more staking participation
-
-5. Net Supply Change = Burned - Issued
-   - Positive (Burn > Issue) → DEFLATIONARY → Supply shrinking → BULLISH
-   - Negative (Burn < Issue) → INFLATIONARY → Supply growing
-   - Currently slightly inflationary (~0.5%/year)
-   - PERCENTILE GUIDE: Positive values are rare and very bullish
-
-6. Effective Float = Total Supply - Staked - Contract Balances
-   - The actually tradeable ETH supply
-   - Lower float → Higher scarcity → Price sensitive to demand
-   - PERCENTILE GUIDE: Low = maximum scarcity
-
-=== COMBINED SIGNAL PATTERNS ===
-
-DEFLATIONARY BULLISH:
-- High burn + Low issuance + Rising staked ETH + Low effective float
-- Interpretation: Strong demand + shrinking supply = bullish pressure
-
-INFLATIONARY BEARISH:
-- Low burn + Rising issuance + Falling staked ETH + Rising effective float
-- Interpretation: Weak demand + growing supply = price pressure
-
-NEUTRAL MONETARY:
-- Burn ≈ Issuance, stable staking
-- Interpretation: Balanced supply dynamics
-
-=== WRITING REQUIREMENTS ===
-- MUST mention ALL 6 metrics
-- MUST calculate/discuss the burn vs issuance balance
-- MUST connect staking trends to supply scarcity
-- MUST explain what current supply dynamics mean for long-term value
-- Compare current effective float to historical levels`
+                context: `Net Supply와 Effective Float는 계산값입니다:
+- Net Supply Change = (ETH Burned - ETH Issued) / Total Supply * 365 * 100 (연간 %)
+- Effective Float = Total Supply - Staked ETH - Contract Balances
+현재 ETH는 약 +0.5%/년 인플레이션 (burn < issuance 상태).`
             },
             // 02.4 네트워크 수요 - 5개 차트
             // Charts: Gas Price, Gas Utilization, Network Fees, Blob Fees, Blob Count
@@ -4555,63 +4470,7 @@ NEUTRAL MONETARY:
                     gas_utilization: 'gas_utilization',
                     blob_count: 'blob_count',
                     blob_fees: 'blob_fee_eth'
-                },
-                context: `=== SECTION PURPOSE ===
-This section measures DEMAND FOR ETHEREUM BLOCKSPACE.
-Goal: Understand network congestion, fee revenue, and L2 data availability usage.
-
-=== METRICS & INTERPRETATION ===
-
-1. Gas Price (Gwei): Cost per unit of computation
-   - High gas (>50 gwei) → High demand, congestion → Network is valuable
-   - Low gas (<10 gwei) → Low demand → Less fee revenue
-   - Spikes during high activity (NFT mints, market volatility)
-   - PERCENTILE GUIDE: High = congested/expensive, Low = cheap/underutilized
-
-2. Gas Utilization (%): How full are blocks?
-   - >90% → Network near capacity, high demand
-   - <50% → Plenty of spare capacity
-   - EIP-1559 targets ~50% utilization
-   - PERCENTILE GUIDE: Consistently high = sustained demand
-
-3. Network Fees ($/day): Total fees paid to use Ethereum
-   - ↑ High fees → Strong demand, but expensive for users
-   - ↓ Low fees → Cheap to use, but less protocol revenue
-   - Fees go to: burn (base fee) + validators (priority fee)
-   - PERCENTILE GUIDE: High = strong demand, Low = weak activity
-
-4. Blob Fees (ETH/day): L2 data availability fees (post-Dencun)
-   - New fee market for L2 rollups to post data
-   - ↑ Rising → More L2 activity, Ethereum as DA layer
-   - Currently very cheap, but growing
-   - PERCENTILE GUIDE: High = L2 scaling pressure
-
-5. Blob Count (daily): Number of blobs posted by L2s
-   - Direct measure of L2 → L1 data posting
-   - ↑ Rising → L2s growing, using Ethereum for security
-   - Each blob = ~128KB of L2 transaction data
-   - PERCENTILE GUIDE: High = strong L2 adoption
-
-=== COMBINED SIGNAL PATTERNS ===
-
-STRONG DEMAND:
-- High gas price + High utilization + High fees + Growing blob count
-- Interpretation: Network at capacity, strong fundamentals
-
-HEALTHY L2 MIGRATION:
-- Low gas price + Moderate utilization + Rising blob count + Rising blob fees
-- Interpretation: L2s absorbing activity, L1 becoming settlement layer
-
-WEAK DEMAND:
-- Low gas + Low utilization + Low fees + Flat blob count
-- Interpretation: Network underutilized, may need catalysts
-
-=== WRITING REQUIREMENTS ===
-- MUST mention ALL 5 metrics
-- MUST analyze the relationship between gas price, utilization, and fees
-- MUST discuss blob metrics as indicator of L2 health
-- MUST explain what fee levels mean for ETH burn and validator economics
-- Low L1 fees + high blob activity is POSITIVE (successful scaling)`
+                }
             },
             // 02.5 사용자 활동 - 5개 차트
             // Charts: New Addresses, L1 Active Addresses, L2 Active Addresses, L1 Transactions, L2 Transactions
@@ -4625,72 +4484,7 @@ WEAK DEMAND:
                     l2_addresses: 'historical_l2_addresses',  // active_addresses (aggregate)
                     transactions: 'historical_transactions',  // tx_count
                     l2_transactions: 'historical_l2_transactions'  // tx_count (aggregate)
-                },
-                context: `=== SECTION PURPOSE ===
-This section measures USER ADOPTION and NETWORK USAGE.
-Goal: Track user growth, retention, and L1/L2 activity distribution.
-
-⚠️ THIS SECTION IS ABOUT COUNTS (users, transactions), NOT VALUE/VOLUME ⚠️
-⚠️ DO NOT MENTION transaction volume, fees, or USD values ⚠️
-
-=== METRICS & INTERPRETATION ===
-
-1. New Addresses (daily): Newly created wallet addresses
-   - ↑ Rising → New users entering ecosystem → GROWTH
-   - ↓ Falling → Fewer new users → Slowing adoption
-   - Spikes often correlate with market rallies or major events
-   - PERCENTILE GUIDE: High = strong user acquisition
-
-2. L1 Active Addresses (daily): Unique addresses active on mainnet
-   - ↑ Rising → More users engaging with L1 directly
-   - ↓ Falling → Users migrating to L2s OR leaving
-   - Typical range: 400k-600k daily
-   - PERCENTILE GUIDE: Compare to L2 growth for context
-
-3. L2 Active Addresses (daily): Unique addresses on L2s combined
-   - ↑ Rising → L2 adoption growing → Scaling success
-   - Includes: Arbitrum, Optimism, Base, zkSync, etc.
-   - L2 addresses often > L1 now
-   - PERCENTILE GUIDE: High = L2 scaling working
-
-4. L1 Transactions (daily): Transaction COUNT on mainnet
-   - NOT volume/value - just number of transactions
-   - ↑ Rising → More L1 activity
-   - ↓ Falling → Activity moving to L2s
-   - PERCENTILE GUIDE: Context matters - see L2 tx
-
-5. L2 Transactions (daily): Transaction COUNT on L2s
-   - ↑ Rising → L2 scaling working → BULLISH
-   - L2 tx often 5-10x L1 tx count now
-   - Lower cost = more transactions possible
-   - PERCENTILE GUIDE: High = successful scaling
-
-=== CRITICAL INTERPRETATION ===
-L1 activity declining + L2 activity rising = POSITIVE (scaling working)
-L1 declining + L2 declining = NEGATIVE (users leaving)
-L1 rising + L2 rising = VERY POSITIVE (ecosystem growing)
-
-=== COMBINED SIGNAL PATTERNS ===
-
-HEALTHY GROWTH:
-- Rising new addresses + Rising L2 active addresses + Rising L2 tx
-- Interpretation: Users joining AND using the ecosystem
-
-SUCCESSFUL MIGRATION:
-- Flat/falling L1 metrics + Rising L2 metrics + Rising new addresses
-- Interpretation: L2 absorbing growth, scaling working as intended
-
-CONCERNING DECLINE:
-- Falling new addresses + Falling L1 AND L2 activity
-- Interpretation: Users leaving ecosystem - investigate causes
-
-=== WRITING REQUIREMENTS ===
-- MUST mention ALL 5 metrics
-- MUST discuss L1 vs L2 balance (not L1 in isolation)
-- MUST calculate total ecosystem activity (L1 + L2)
-- MUST explain new address trends as leading indicator
-- DO NOT say "L1 declining" without mentioning L2 context
-- DO NOT mention transaction volume or fees (wrong section)`
+                }
             },
             // 02.6 예치 자본 - 6개 차트
             // Charts: L1 TVL, L2 TVL, DeFi Lending TVL, L1 Stablecoin Supply, L2 Stablecoin Supply, App Capital
@@ -4708,74 +4502,7 @@ CONCERNING DECLINE:
                 },
                 fieldOverrides: {
                     l2_stablecoins: 'total'
-                },
-                context: `=== SECTION PURPOSE ===
-This section measures CAPITAL COMMITTED to the Ethereum ecosystem.
-Goal: Track DeFi health, capital retention, and ecosystem stickiness.
-
-=== METRICS & INTERPRETATION ===
-
-1. L1 TVL (Total Value Locked): USD locked in L1 DeFi protocols
-   - ↑ Rising → Capital entering DeFi → Confidence in ecosystem
-   - ↓ Falling → Capital exiting → Risk-off or migration to L2
-   - Includes: Lido, Aave, MakerDAO, Uniswap, etc.
-   - PERCENTILE GUIDE: High = strong capital commitment
-
-2. L2 TVL: USD locked in L2 DeFi protocols
-   - ↑ Rising → L2 DeFi maturing → Ecosystem expanding
-   - Arbitrum, Optimism, Base leading
-   - Growing faster than L1 = healthy migration
-   - PERCENTILE GUIDE: Track growth rate vs L1
-
-3. DeFi Lending TVL: Capital in lending protocols (Aave, Compound)
-   - ↑ Rising → More borrowing/lending → DeFi usage growing
-   - ↓ Falling → Deleveraging → Risk reduction
-   - Key health metric for DeFi ecosystem
-   - PERCENTILE GUIDE: High = active lending market
-
-4. L1 Stablecoin Supply: Stablecoins on Ethereum mainnet
-   - ↑ Rising → More "dry powder" → Potential buying power
-   - ↓ Falling → Capital leaving OR moving to L2s
-   - USDT, USDC, DAI are major ones
-   - PERCENTILE GUIDE: High = lots of capital ready to deploy
-
-5. L2 Stablecoin Supply: Stablecoins on L2 networks
-   - ↑ Rising → L2 economy growing, capital migrating
-   - Fast-growing metric as L2s mature
-   - Base and Arbitrum leading
-   - PERCENTILE GUIDE: High = L2 maturity
-
-6. App Capital: = Staked ETH + DeFi TVL (in ETH terms)
-   - Comprehensive measure of ETH committed to ecosystem
-   - Higher = more "skin in the game"
-   - Used in App Capital valuation model
-   - PERCENTILE GUIDE: High = strong ecosystem commitment
-
-=== COMBINED SIGNAL PATTERNS ===
-
-CAPITAL INFLOW:
-- Rising L1 TVL + Rising L2 TVL + Rising stablecoin supplies
-- Interpretation: Fresh capital entering ecosystem across all layers
-
-HEALTHY MIGRATION:
-- Flat/falling L1 TVL + Rising L2 TVL + Rising L2 stablecoins
-- Interpretation: Capital moving to L2s (positive for scaling thesis)
-
-CAPITAL OUTFLOW:
-- Falling L1 TVL + Falling L2 TVL + Falling stablecoin supplies
-- Interpretation: Capital leaving ecosystem - risk-off environment
-
-DEFI HEALTH CHECK:
-- Lending TVL vs Total TVL ratio shows DeFi leverage levels
-- High lending = more leverage in system
-
-=== WRITING REQUIREMENTS ===
-- MUST mention ALL 6 metrics
-- MUST discuss L1 vs L2 capital distribution
-- MUST analyze total ecosystem capital (L1 + L2)
-- MUST connect stablecoin supply to potential buying power
-- MUST explain what App Capital level means for valuation
-- Calculate and mention L2/L1 TVL ratio trends`
+                }
             },
             // 02.7 결제량 - 6개 차트
             // NOTE: L1/L2 Volume은 전체 토큰 전송 포함, L1/L2 ETH Transfer는 ETH만
@@ -4786,102 +4513,46 @@ DEFI HEALTH CHECK:
                 title_ko: '결제량',
                 charts: ['L1 Total Volume', 'L1 Stablecoin Volume', 'L1 ETH Transfer', 'L2 Total Volume', 'L2 Stablecoin Volume', 'L2 ETH Transfer', 'L1 DEX Volume', 'Bridge Volume'],
                 // AI에게 전달할 컨텍스트: 각 지표의 정확한 정의
-                context: `=== SECTION PURPOSE ===
-This section measures VALUE TRANSFERRED on Ethereum networks.
-Goal: Track economic activity, settlement layer usage, and value flows.
-
-⚠️ CRITICAL: 8 DIFFERENT METRICS WITH VERY DIFFERENT SCALES ⚠️
+                context: `⚠️ CRITICAL: 8 DIFFERENT METRICS - DO NOT CONFUSE ⚠️
 
 === SIZE REFERENCE (biggest to smallest) ===
-1. L1 Total Volume: $100-600B/day ← BIGGEST (all transfers)
-2. L2 Total Volume: $50-300B/day
-3. L1 Stablecoin Volume: $80-200B/day
-4. L2 Stablecoin Volume: $70-100B/day
-5. L1 ETH Transfer: $5-10B/day ← Much smaller!
-6. L1 DEX Volume: $1-3B/day (weekly data)
-7. L2 ETH Transfer: $200-500M/day (excl Mantle)
-8. Bridge Volume: $10-50M/day ← Smallest
+1. L1 전체 볼륨 (L1 Total Volume): $100-600B/day ← BIGGEST
+2. L2 전체 볼륨 (L2 Total Volume): $50-300B/day
+3. L1 스테이블코인 볼륨: $80-200B/day
+4. L2 스테이블코인 볼륨: $70-100B/day
+5. L1 ETH 전송량 (L1 ETH Transfer): $5-10B/day ← MUCH SMALLER!
+6. L1 DEX 볼륨: $1-3B/day
+7. L2 ETH 전송량 (L2 ETH Transfer): $200-500M/day (Mantle 제외)
+8. 브릿지 볼륨: $10-50M/day
 
-=== METRICS & INTERPRETATION ===
+=== THE KEY DISTINCTION ===
+❌ WRONG: "L1 전체 볼륨이 $7B" (X)
+✅ RIGHT: "L1 ETH 전송량이 $7B, L1 전체 볼륨은 $200B+" (O)
 
-1. L1 Total Volume ($100-600B): ALL value transferred on L1
-   - Broadest measure of L1 economic activity
-   - ↑ Rising → More economic activity on mainnet
-   - PERCENTILE GUIDE: High = strong L1 usage
+• "L1 전체 볼륨" = ETH + 모든 토큰 = $100B+ (큰 숫자)
+• "L1 ETH 전송량" = 네이티브 ETH만 = $5-10B (작은 숫자)
 
-2. L1 ETH Transfer ($5-10B): Only native ETH transfers
-   - ↑ Rising → ETH being used as money
-   - Used in "Settlement Layer" valuation model
-   - PERCENTILE GUIDE: High = ETH as value transfer
+이 두 지표의 차이는 10배~50배입니다!
 
-3. L1 Stablecoin Volume ($80-200B): USDT, USDC, DAI transfers
-   - Key measure of "dollar" activity
-   - ↑ Rising → Ethereum as USD payment rail
-   - PERCENTILE GUIDE: High = stablecoin dominance
+=== WHAT EACH METRIC MEASURES ===
+• L1 Total Volume: L1의 모든 온체인 전송 (ETH + 모든 ERC-20)
+• L1 ETH Transfer: L1의 네이티브 ETH 전송만 (토큰 제외)
+• L1 Stablecoin Volume: L1의 스테이블코인 전송만
+• L2 Total Volume: L2 8개 체인의 모든 전송
+• L2 ETH Transfer: L2의 ETH 전송만 (Mantle MNT 제외, Settlement Layer용)
+• L2 Stablecoin Volume: L2의 스테이블코인만
+• L1 DEX Volume: L1 DEX 거래량 (주간 데이터)
+• Bridge Volume: 브릿지 전송량
 
-4. L2 Total Volume ($50-300B): All L2 value transfers
-   - ↑ Rising → L2 economy growing
-   - L2/L1 ratio increasing = scaling success
-   - PERCENTILE GUIDE: Compare growth rate to L1
-
-5. L2 ETH Transfer ($200-500M): Native ETH on L2s
-   - Used in Settlement Layer model for L2
-   - Lower than L1 but growing
-   - PERCENTILE GUIDE: High = L2 ETH usage
-
-6. L2 Stablecoin Volume ($70-100B): Stablecoins on L2s
-   - ↑ Rising → L2s as payment networks
-   - Base and Arbitrum leading
-   - PERCENTILE GUIDE: High = L2 stablecoin adoption
-
-7. L1 DEX Volume ($1-3B weekly): On-chain trading
-   - Measures DEX vs CEX activity
-   - ↑ Rising → More on-chain trading
-   - PERCENTILE GUIDE: High = DEX strength
-
-8. Bridge Volume ($10-50M): Cross-chain transfers
-   - Low = capital staying on Ethereum
-   - High = cross-chain activity
-   - PERCENTILE GUIDE: Context-dependent
-
-=== KEY DISTINCTION - DO NOT CONFUSE ===
-"L1 Total Volume" ($200B) ≠ "L1 ETH Transfer" ($7B)
-- Total = ALL tokens + ETH (10-50x larger)
-- ETH Transfer = only native ETH
-- Always specify which metric you're discussing!
-
-=== COMBINED SIGNAL PATTERNS ===
-
-STRONG SETTLEMENT LAYER:
-- High L1 Total Volume + High stablecoin volume + Growing L2 volumes
-- Interpretation: Ethereum dominant as settlement infrastructure
-
-L2 MIGRATION SUCCESS:
-- Flat L1 volumes + Rising L2 volumes + Low bridge outflow
-- Interpretation: Activity shifting to L2s (positive scaling signal)
-
-STABLECOIN DOMINANCE:
-- Stablecoin volume > ETH transfer volume
-- Interpretation: USD denomination preferred, institutional usage
-
-DEX STRENGTH:
-- Rising DEX volume + Rising total volume
-- Interpretation: On-chain trading gaining share from CEXs
-
-=== WRITING REQUIREMENTS ===
-- MUST mention ALL 8 metrics with correct scale context
-- MUST distinguish between Total Volume and ETH Transfer (10-50x difference!)
-- MUST discuss L1 vs L2 volume distribution
-- MUST analyze stablecoin's role in total volume
-- MUST explain what bridge volume indicates
-- ALWAYS clarify which specific metric you're referencing
-- DO NOT confuse L1 Total ($200B) with L1 ETH Transfer ($7B)`,
+When you see data, check the VALUE RANGE to identify which metric it is!`,
                 tables: {
                     l1_eth_transfer: 'historical_l1_total_volume',  // eth_volume_usd (L1 ETH Transfer - native ETH only, ~$7B)
                     l1_total_volume: 'historical_l1_total_volume',  // total_volume_usd (ETH + all tokens, ~$200B)
                     l2_native_transfer: 'historical_l2_total_volume',  // native_volume_usd (L2 ETH Transfer - excl Mantle, ~$300M)
                     l2_total_volume: 'historical_l2_total_volume',  // total_volume_usd (Native + all tokens, ~$100B)
                     bridge_volume: 'historical_bridge_volume',  // bridge_volume_eth (aggregate)
+                    l2_dex_volume: 'historical_l2_dex_volume',  // dex_volume_usd (aggregate)
+                    bridge_total_volume: 'historical_bridge_total_volume',  // bridge_volume_usd (aggregate)
                     stablecoin_volume: 'historical_stablecoin_volume',  // daily_volume (~$80B)
                     l2_stablecoin_volume: 'historical_l2_stablecoin_volume',  // total_volume (~$77B)
                     dex_volume: 'historical_dex_volume'  // volume (~$2B weekly)
@@ -4986,6 +4657,8 @@ DEX STRENGTH:
                 'historical_l2_transactions': 'tx_count',
                 // REMOVED: 'historical_l2_tx_volume' - now using historical_l2_total_volume.native_volume_usd
                 'historical_bridge_volume': 'bridge_volume_eth',
+                'historical_l2_dex_volume': 'dex_volume_usd',
+                'historical_bridge_total_volume': 'bridge_volume_usd',
                 'historical_whale_tx': 'whale_tx_count',
                 'historical_mvrv': 'mvrv_ratio',
                 'historical_stablecoin_volume': 'daily_volume',
@@ -5137,6 +4810,68 @@ DEX STRENGTH:
                                 latest: { date: latestDate, bridge_volume_eth: byDate[latestDate] },
                                 all90d: dates.map(d => ({ date: d, bridge_volume_eth: byDate[d] })),
                                 ninetyDaysAgo: dates.length > 90 ? { date: dates[90], bridge_volume_eth: byDate[dates[90]] } : null
+                            };
+                        }
+                        continue;
+                    }
+                    
+                    // Special handling for L2 DEX Volume (stored by blockchain)
+                    if (tableName === 'historical_l2_dex_volume') {
+                        const { data: recent } = await client
+                            .from(tableName)
+                            .select('date, dex_volume_usd')
+                            .gte('date', ninetyFiveDaysAgo)
+                            .order('date', { ascending: false });
+                        
+                        if (recent && recent.length > 0) {
+                            const byDate = {};
+                            for (const r of recent) {
+                                if (!byDate[r.date]) byDate[r.date] = 0;
+                                byDate[r.date] += parseFloat(r.dex_volume_usd || 0);
+                            }
+                            let dates = Object.keys(byDate).sort().reverse();
+                            
+                            if (dates.length > 2) {
+                                dates = dates.slice(1);
+                            }
+                            
+                            const latestDate = dates[0];
+                            
+                            metricsData[metricKey] = {
+                                latest: { date: latestDate, dex_volume_usd: byDate[latestDate] },
+                                all90d: dates.map(d => ({ date: d, dex_volume_usd: byDate[d] })),
+                                ninetyDaysAgo: dates.length > 90 ? { date: dates[90], dex_volume_usd: byDate[dates[90]] } : null
+                            };
+                        }
+                        continue;
+                    }
+                    
+                    // Special handling for Bridge Total Volume (stored by destination_chain)
+                    if (tableName === 'historical_bridge_total_volume') {
+                        const { data: recent } = await client
+                            .from(tableName)
+                            .select('date, bridge_volume_usd')
+                            .gte('date', ninetyFiveDaysAgo)
+                            .order('date', { ascending: false });
+                        
+                        if (recent && recent.length > 0) {
+                            const byDate = {};
+                            for (const r of recent) {
+                                if (!byDate[r.date]) byDate[r.date] = 0;
+                                byDate[r.date] += parseFloat(r.bridge_volume_usd || 0);
+                            }
+                            let dates = Object.keys(byDate).sort().reverse();
+                            
+                            if (dates.length > 2) {
+                                dates = dates.slice(1);
+                            }
+                            
+                            const latestDate = dates[0];
+                            
+                            metricsData[metricKey] = {
+                                latest: { date: latestDate, bridge_volume_usd: byDate[latestDate] },
+                                all90d: dates.map(d => ({ date: d, bridge_volume_usd: byDate[d] })),
+                                ninetyDaysAgo: dates.length > 90 ? { date: dates[90], bridge_volume_usd: byDate[dates[90]] } : null
                             };
                         }
                         continue;
@@ -5373,7 +5108,9 @@ DEX STRENGTH:
                     { field: 'total', label: 'total' },  // l2_stablecoin_daily
                     { field: 'daily_volume', label: 'Daily Volume' },  // stablecoin_volume
                     { field: 'tx_volume_usd', label: 'TX Volume USD' },  // l2_tx_volume
-                    { field: 'bridge_volume_eth', label: 'Bridge Volume' },  // bridge_volume
+                    { field: 'bridge_volume_eth', label: 'Bridge ETH Volume' },  // bridge_volume
+                    { field: 'dex_volume_usd', label: 'DEX Volume USD' },  // l2_dex_volume
+                    { field: 'bridge_volume_usd', label: 'Bridge Volume USD' },  // bridge_total_volume
                     // 일반적인 필드명 (여러 테이블에서 공유)
                     { field: 'volume', label: 'Volume' },  // dex_volume
                     { field: 'fees', label: 'Fees' },  // protocol_fees
@@ -5771,7 +5508,7 @@ DEX STRENGTH:
             
             if (isEnglish) {
                 // 영어: 점수 + reasoning + 본문 생성
-                systemPrompt = `You are an expert Ethereum on-chain analyst writing for ETHval.io. Write data-driven analysis for the "${section.title}" section.
+                systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
 STRICT OUTPUT FORMAT:
 You must output a JSON object with scores, reasoning for each score, AND 3 paragraphs.
@@ -5780,89 +5517,78 @@ REQUIRED JSON FORMAT (output ONLY this, no markdown):
 {"scores":[X,Y,Z],"reasoning":["reason for score1","reason for score2","reason for score3"],"text":"paragraph1|||paragraph2|||paragraph3"}
 
 SCORE DEFINITIONS (0-100 scale, 50 is neutral):
-- Score 1 (Current Status): 0-44=weak/cold, 45-55=neutral, 56-100=strong/hot
-- Score 2 (90-Day Trend): 0-44=downtrend, 45-55=sideways, 56-100=uptrend  
-- Score 3 (Valuation Signal): 0-44=bearish, 45-55=neutral, 56-100=bullish
-  * Percentile < 25% = UNDERVALUED → Bullish (70-90)
-  * Percentile > 75% = OVERVALUED → Bearish (10-30)
+- Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
+  * Based on: Fear & Greed Index, Funding Rate, current percentile vs historical
+  
+- Score 2 (90-Day Trend - Momentum): 0-44=downtrend, 45-55=sideways, 56-100=uptrend  
+  * Based on: 90-day % changes in the data
+  * Changes > +20% → high score (70-90), Changes < -20% → low score (10-30)
+  
+- Score 3 (Valuation - Bullish/Bearish Signal): 0-44=bearish, 45-55=neutral, 56-100=bullish
+  * IMPORTANT: Use the "Current Percentile" data provided
+  * Percentile < 25% (bottom quartile) = UNDERVALUED → Bullish score (70-90)
+  * Percentile 25-50% = Slightly undervalued → Score 55-70
+  * Percentile 50-75% = Slightly overvalued → Score 30-45
+  * Percentile > 75% (top quartile) = OVERVALUED → Bearish score (10-30)
 
-CRITICAL WRITING RULES:
-1. 📊 DATA-DRIVEN: Every claim must reference specific metrics from the data provided
-2. 📈 COMPREHENSIVE: MUST discuss ALL charts in this section (${section.charts.join(', ')})
-3. 🔗 CONNECTED: Explain how different metrics relate to each other
-4. ❌ NO GENERIC STATEMENTS like "the market shows mixed signals" without specific data backing
-5. ❌ NO NUMBERS in text (use "historically low", "above average", "at 3-year highs")
-6. ✅ USE PERCENTILES: "currently in the bottom quartile of 3-year range" or "near historical highs"
+REASONING FORMAT:
+- Each reasoning string should be 1-2 sentences explaining why you chose that score
+- Include specific data points that influenced the score (percentiles, % changes)
+- Example: "Score 65: Fear & Greed at 72 (75th percentile) indicates greed, Funding Rate positive"
+- Example: "Score 28: 90d change of -35% across key metrics shows strong downtrend"
 
-PARAGRAPH STRUCTURE:
-- Paragraph 1 (CURRENT STATE): Describe current values of ALL metrics relative to historical ranges. Use percentiles to contextualize. Cover at least 4-5 metrics.
-- Paragraph 2 (90-DAY TRENDS): Analyze how ALL metrics have changed over 90 days. Note correlations and divergences between metrics. Identify strongest/weakest performers.
-- Paragraph 3 (IMPLICATIONS): Synthesize what these data points mean for Ethereum's valuation. Connect this section's metrics to broader investment thesis.
+SCORING GUIDELINES USING HISTORICAL CONTEXT:
+- The data includes "Current Percentile" for each metric (0-100%)
+- Percentile shows where current value sits in 3-year history
+- For VALUATION score: Lower percentile = more undervalued = HIGHER score (inverted!)
+- For SENTIMENT score: Use Fear & Greed percentile directly
+- For TREND score: Focus on 90-day % change direction and magnitude
 
-EXAMPLE OF GOOD DATA-DRIVEN WRITING:
-"Exchange reserves have declined to levels not seen since early last year, placing current holdings in the bottom decile of the three-year range. Meanwhile, whale transaction counts have surged above their historical median, while the MVRV ratio hovers near fair value territory. The combination of shrinking exchange supply and elevated large-holder activity suggests accumulation behavior, particularly notable given that open interest remains subdued relative to historical peaks."
-
-EXAMPLE OF BAD GENERIC WRITING (AVOID):
-"The market is showing signs of both bullish and bearish sentiment. Some metrics are up while others are down. Investors should watch these indicators closely."
-
-REQUIRED:
+CRITICAL RULES:
 - ${langInstructions[lang]}
 - Output ONLY valid JSON, no markdown code blocks
-- Each paragraph MUST have exactly 5 sentences
-- Each paragraph minimum 180 words
-- Reference specific metrics and their percentile positions
-- Explain cause-and-effect relationships between metrics`;
+- scores array must have exactly 3 integers between 0-100
+- reasoning array must have exactly 3 strings explaining each score
+- text field contains 3 paragraphs separated by |||
+- EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT paragraphs - describe trends qualitatively only
+- ⚠️ Use descriptive words: "historically low", "near all-time highs", "below median"
+- Professional analyst tone, qualitative analysis only
+- Minimum 180 words per paragraph`;
 
-                userPrompt = `Analyze these ${section.title} metrics comprehensively. You MUST discuss ALL of these charts: ${section.charts.join(', ')}.
+                userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores, reasoning, and text.
 
-${section.context ? `=== SECTION CONTEXT & INTERPRETATION GUIDE ===\n${section.context}\n\n` : ''}=== CURRENT DATA ===
-${metricsPrompt}
+${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
-REQUIREMENTS:
-1. Discuss EVERY metric listed above - do not skip any
-2. Reference specific percentile positions (e.g., "in the 23rd percentile", "above the 75th percentile")
-3. Explain relationships between metrics (e.g., "declining reserves combined with rising whale activity suggests...")
-4. Each paragraph must have exactly 5 sentences
-5. NO NUMBERS in the text - describe qualitatively using percentiles and relative terms
-6. Output format: {"scores":[X,Y,Z],"reasoning":["...","...","..."],"text":"para1|||para2|||para3"}`;
+IMPORTANT REQUIREMENTS:
+1. Each paragraph MUST contain exactly 5 sentences
+2. Provide clear reasoning for each score using the data above
+3. NO NUMBERS in the text paragraphs
+4. Output format: {"scores":[X,Y,Z],"reasoning":["...","...","..."],"text":"para1|||para2|||para3"}`;
             } else {
                 // 다른 언어: 본문만 생성
-                systemPrompt = `You are an expert Ethereum on-chain analyst writing for ETHval.io. Write data-driven analysis for the "${section.title}" section.
+                systemPrompt = `You are an expert Ethereum market analyst. Write analysis for the "${section.title}" section.
 
 OUTPUT FORMAT:
 Write exactly 3 paragraphs separated by ||| (three pipe characters).
 Output ONLY the text, no JSON, no scores.
 
-CRITICAL WRITING RULES:
-1. 📊 DATA-DRIVEN: Every claim must reference specific metrics from the data
-2. 📈 COMPREHENSIVE: MUST discuss ALL charts: ${section.charts.join(', ')}
-3. 🔗 CONNECTED: Explain how different metrics relate to each other
-4. ❌ NO GENERIC STATEMENTS without specific data backing
-5. ❌ NO NUMBERS in text (use "역대 최저 수준", "평균 이상", "3년 최고치 근처" etc.)
-6. ✅ USE PERCENTILES: "3년 범위 하위 사분위" or "역사적 고점 부근"
-
-PARAGRAPH STRUCTURE:
-- Paragraph 1: Current state of ALL metrics vs historical ranges
-- Paragraph 2: 90-day trend analysis for ALL metrics with correlations
-- Paragraph 3: Investment implications synthesizing all data points
-
-LANGUAGE RULES:
+CRITICAL RULES:
 - ${langInstructions[lang]}
 - EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES
+- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively only
+- ⚠️ Use descriptive words only (상승/하락/횡보, 上涨/下跌, 上昇/下落)
 - Professional analyst tone
 - Minimum 180 words per paragraph`;
 
-                userPrompt = `Analyze these ${section.title} metrics comprehensively. You MUST discuss ALL of these charts: ${section.charts.join(', ')}.
+                userPrompt = `Analyze these ${section.title} metrics. Output ONLY 3 paragraphs separated by |||
 
-${section.context ? `=== SECTION CONTEXT ===\n${section.context}\n\n` : ''}=== CURRENT DATA ===
-${metricsPrompt}
+${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
-REQUIREMENTS:
-1. Discuss EVERY metric - do not skip any
-2. Reference percentile positions qualitatively
-3. Each paragraph must have exactly 5 sentences
-4. NO NUMBERS in the text
-5. Output format: para1|||para2|||para3 (no JSON, no scores)`;
+IMPORTANT: 
+1. Each paragraph MUST contain exactly 5 sentences
+2. Output format: para1|||para2|||para3 (no JSON, no scores)
+3. NO NUMBERS in the text`;
             }
             
             const response = await fetch('https://api.anthropic.com/v1/messages', {
