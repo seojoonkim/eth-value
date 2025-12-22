@@ -11510,7 +11510,7 @@
                     </svg>
                 </div>
                 <span class="logo-text">ETHval</span>
-                <span class="version-badge">v0.5.4</span>
+                <span class="version-badge">v0.5.5</span>
             </div>
             <nav class="nav-bar-inline">
                 <a class="nav-item active" href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'instant'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); this.classList.add('active');" data-i18n="nav.overview">Overview</a>
@@ -15251,7 +15251,7 @@
                 },
                 'ethMonetary': {
                     formula: '(L1 ETH + L2 ETH) × 365 ÷ ETH Velocity ÷ Supply',
-                    desc: t('method.ethMonetary.desc', 'Applies the Equation of Exchange (MV=PQ) to ETH token transfers only, measuring ETH direct monetary role. Velocity = 6 is derived from empirical data: direct calculation of ETH annual turnover (Daily Volume $5.85B ÷ Market Cap $366B × 365 ≈ 5.8), aligned with USD M1 velocity (~5.5x post-2020), and validated by academic research showing BTC velocity at 4.1% and ETH at 3.6% annually.'),
+                    desc: t('method.ethMonetary.desc', "Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value."),
                     reliability: 2,
                     caveat: t('method.ethMonetary.note', 'Velocity = 6: Empirically derived from ETH transfer data, benchmarked to USD M1 (~5.5x)'),
                     sources: [
@@ -15261,9 +15261,9 @@
                 },
                 'ecosystemSettlement': {
                     formula: '(L1 Total Vol + L2 Total Vol) × 365 ÷ Ecosystem Velocity ÷ Supply',
-                    desc: t('method.ecosystemSettlement.desc', 'Applies the MV=PQ equation to Ethereum entire ecosystem transaction volume (all tokens). Velocity = 150 derived through three converging methodologies: (1) Stablecoin benchmark (~80/year) × 2 for DeFi = 160; (2) BlockSci academic adjustment: raw velocity 785 ÷ 4x self-churn = 196; (3) Bot activity removal (70-93% per Visa) = 55-236. Selected 150 as mid-range (lower velocity = higher fair value).'),
+                    desc: t('method.ecosystemSettlement.desc', "Measures Ethereum as settlement infrastructure using MV=PQ. Counts ALL token activity across the ecosystem: stablecoins, DeFi tokens, NFTs — not just native ETH. This captures Ethereum's total economic throughput as a global settlement layer. Velocity = 150 is derived from stablecoin turnover (~80x/year per McKinsey), adjusted upward for high-frequency DeFi swaps and downward for bot/MEV removal (70-93% per Visa research). Higher velocity than ETH Monetary reflects faster-moving token economy. This model values Ethereum's role as the backbone for all on-chain economic activity."),
                     reliability: 2,
-                    caveat: t('method.ecosystemSettlement.note', 'Velocity = 150: Derived from stablecoin turnover (~80) × DeFi multiplier, validated by BlockSci 4x adjustment'),
+                    caveat: t('method.ecosystemSettlement.note', 'Velocity (150): stablecoin turnover (~80/year) × 2x DeFi multiplier, validated by BlockSci 4x self-churn adjustment'),
                     sources: [
                         { name: 'Chris Burniske: Cryptoasset Valuations (MV=PQ Framework)', url: 'https://medium.com/@cburniske/cryptoasset-valuations-ac83479ffca7' },
                         { name: 'McKinsey: Stablecoin Velocity Research (2025)', url: 'https://www.mckinsey.com/industries/financial-services/our-insights/the-stable-door-opens-how-tokenized-cash-enables-next-gen-payments' },
@@ -18479,6 +18479,7 @@
         // State
         const state = {
             price: 0, marketCap: 0, volume24h: 0, circulatingSupply: 0,
+            ath: 4878, athChangePercent: 0, // ATH default value
             tvl: 0, stakedEth: 0, l2Tvl: 0, dexVolume: 0, fees: 0, stablecoins: 0,
             priceHistory: [], volumeHistory: [], tvlHistory: [], stakingHistory: [], l2History: [],
             dexHistory: [], feesHistory: [], stablesHistory: [],
@@ -20911,12 +20912,16 @@
                 
                 // ATH 데이터 처리 (null check)
                 if (md.ath && md.ath.usd) {
-                    document.getElementById('ath').textContent = fmt.price(md.ath.usd);
+                    state.ath = md.ath.usd;
+                    state.athChangePercent = md.ath_change_percentage?.usd || 0;
+                    
+                    const athEl = document.getElementById('ath');
+                    if (athEl) athEl.textContent = fmt.price(state.ath);
                     
                     const fromAthEl = document.getElementById('from-ath');
-                    if (md.ath_change_percentage && md.ath_change_percentage.usd !== undefined) {
-                        fromAthEl.textContent = fmt.pct(md.ath_change_percentage.usd);
-                        fromAthEl.className = 'price-stat-tag ' + (md.ath_change_percentage.usd >= 0 ? 'up' : 'down');
+                    if (fromAthEl) {
+                        fromAthEl.textContent = fmt.pct(state.athChangePercent);
+                        fromAthEl.className = 'price-stat-tag ' + (state.athChangePercent >= 0 ? 'up' : 'down');
                     }
                 }
 
@@ -26436,6 +26441,18 @@
                     setEl('current-price', '$' + state.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                     setEl('summary-current-price', '$' + state.price.toLocaleString(undefined, {maximumFractionDigits: 0}));
                     setEl('market-cap', '$' + (state.marketCap / 1e9).toFixed(0) + 'B');
+                    
+                    // ATH 표시 (기본값 또는 CoinGecko 값)
+                    if (state.ath > 0) {
+                        setEl('ath', '$' + state.ath.toLocaleString(undefined, {maximumFractionDigits: 0}));
+                        const athChange = ((state.price - state.ath) / state.ath) * 100;
+                        const fromAthEl = document.getElementById('from-ath');
+                        if (fromAthEl) {
+                            fromAthEl.textContent = fmt.pct(athChange);
+                            fromAthEl.className = 'price-stat-tag ' + (athChange >= 0 ? 'up' : 'down');
+                        }
+                    }
+                    
                     safeCall(() => updateCombinedPriceVolumeChart(1095), 'price'); // 기본 3Y로 변경
                     setDataSource('price-chart', priceSource, 'Binance');
                 }
