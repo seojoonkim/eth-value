@@ -2110,50 +2110,53 @@ async function collect_volatility() {
 }
 
 // ============================================================
-// 20. NVT Ratio (calculated)
-// NVT = Market Cap / Daily On-chain Volume (7-day avg)
+// 20. NVT Ratio (calculated from L1 Total Volume)
+// NVT = Market Cap / Daily On-chain Volume (USD)
+// Uses historical_l1_total_volume.eth_volume_usd
 // ============================================================
 async function collect_nvt() {
-    const { data: prices } = await supabase.from('historical_eth_price').select('date, close, volume').order('date');
-    if (!prices || prices.length < 7) return 0;
+    // Get prices
+    const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
+    if (!prices || prices.length < 7) {
+        console.log('  ⚠️ No price data for NVT calculation');
+        return 0;
+    }
     
+    // Get L1 Total Volume (eth_volume_usd)
+    const { data: volumes } = await supabase.from('historical_l1_total_volume').select('date, eth_volume_usd').order('date');
+    if (!volumes || volumes.length < 7) {
+        console.log('  ⚠️ No L1 Total Volume data for NVT calculation');
+        return 0;
+    }
+    
+    const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
     const ETH_SUPPLY = 120400000;
     const records = [];
     
-    for (let i = 6; i < prices.length; i++) {
-        const p = prices[i];
-        if (!p.volume || p.volume === 0) continue;
+    for (const vol of volumes) {
+        const price = priceMap.get(vol.date);
+        if (!price) continue;
         
-        // 7일 평균 거래량 계산
-        let sum = 0;
-        let count = 0;
-        for (let j = i - 6; j <= i; j++) {
-            if (prices[j].volume && prices[j].volume > 0) {
-                sum += parseFloat(prices[j].volume);
-                count++;
-            }
-        }
+        const volumeUsd = parseFloat(vol.eth_volume_usd) || 0;
+        if (volumeUsd <= 0) continue;
         
-        if (count === 0) continue;
-        const avgVolume = sum / count;
-        
-        const mcap = p.close * ETH_SUPPLY;
-        // volume이 USD 단위라면 직접 나눔
-        // volume이 ETH 단위라면 * close로 USD 변환
-        const volumeUsd = avgVolume > 1000000000 ? avgVolume : avgVolume * p.close;
-        
+        const mcap = price * ETH_SUPPLY;
         const nvt = mcap / volumeUsd;
+        const volumeEth = volumeUsd / price;
         
-        if (nvt > 0 && nvt < 500) {
+        if (nvt > 0 && nvt < 1000) {
             records.push({
-                date: p.date,
+                date: vol.date,
                 nvt_ratio: parseFloat(nvt.toFixed(2)),
-                market_cap: mcap
+                market_cap: parseFloat(mcap.toFixed(2)),
+                tx_volume_usd: parseFloat(volumeUsd.toFixed(2)),
+                tx_volume_eth: parseFloat(volumeEth.toFixed(2)),
+                source: 'l1_total_volume'
             });
         }
     }
     
-    console.log(`  📦 Calculated ${records.length} NVT records`);
+    console.log(`  📦 Calculated ${records.length} NVT records from L1 Total Volume`);
     return await upsertBatch('historical_nvt', records);
 }
 
