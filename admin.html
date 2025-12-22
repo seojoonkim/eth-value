@@ -1278,7 +1278,7 @@
             // ═══════════════════════════════════════════════════════════════════
             nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune', depends: ['eth_price', 'transactions'] },
             active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
-            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔶 Dune', noCollect: true },
+            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
             fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, source: '📊 alternative.me' },
             
             // ═══════════════════════════════════════════════════════════════════
@@ -3863,30 +3863,19 @@
                         row.avg_gas_price_gwei || row.gas_price_gwei || row.avg_gas_price || row.gas_price || row.median_gas_price || 0
                     );
                     
+                    // Use eth_burnt directly from Dune if available
+                    const ethBurnt = parseFloat(row.eth_burnt || 0);
+                    
                     return {
                         date: dateStr,
                         avg_gas_price_gwei: gasPrice,
                         gas_utilization: parseFloat(row.gas_utilization || row.utilization || 0),
-                        transaction_count: parseInt(row.tx_count || row.transaction_count || row.txn_count || 0)
+                        transaction_count: parseInt(row.tx_count || row.transaction_count || row.txn_count || 0),
+                        eth_burnt: ethBurnt > 0 ? parseFloat(ethBurnt.toFixed(2)) : null
                     };
                 }).filter(r => r.date && r.avg_gas_price_gwei > 0);
                 
-                const upsertRecords = records.map(r => {
-                    const avgGasPerTx = 65000;
-                    const ethBurnt = r.transaction_count > 0 
-                        ? (r.avg_gas_price_gwei * r.transaction_count * avgGasPerTx) / 1e9
-                        : null;
-                    
-                    return {
-                        date: r.date,
-                        avg_gas_price_gwei: r.avg_gas_price_gwei,
-                        gas_utilization: r.gas_utilization || null,
-                        transaction_count: r.transaction_count || null,
-                        eth_burnt: ethBurnt ? parseFloat(ethBurnt.toFixed(2)) : null
-                    };
-                });
-                
-                const { error } = await batchUpsert('historical_gas_burn', upsertRecords, 'date');
+                const { error } = await batchUpsert('historical_gas_burn', records, 'date');
                 if (error) {
                     log(`  ❌ ${error.message}`, 'error');
                     return 0;
