@@ -68,6 +68,7 @@
             /* Border Colors - 약간 더 선명하게 */
             --border: #d1d5db;
             --border-light: #e5e7eb;
+            --border-hover: #9ca3af;
             
             /* Text Colors - 3단계 (가독성 향상) */
             --text: #111827;
@@ -152,7 +153,7 @@
             --space-xl: 20px;
             
             /* Transitions */
-            --transition-fast: 0s;
+            --transition-fast: 0.2s ease;
             --transition-normal: 0s;
         }
         
@@ -167,6 +168,7 @@
             
             --border: #30363d;
             --border-light: #21262d;
+            --border-hover: #484f58;
             
             --text: #f5f7fa;
             --text-secondary: #c8d4e0;
@@ -607,23 +609,22 @@
             background: #30363d;
         }
         
-        /* Dark mode hover effects for cards */
-        body.dark .price-card:hover {
-            border-color: #484f58;
-        }
-        
-        body.dark .metric-card:hover {
-            border-color: #484f58;
-        }
-        
-        body.dark .method-card:hover {
-            border-color: #484f58;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        /* Dark mode hover effects for cards - unified */
+        body.dark .price-card:hover,
+        body.dark .metric-card:hover,
+        body.dark .method-card:hover,
+        body.dark .card:hover,
+        body.dark .chart-card:hover,
+        body.dark .category-card:hover,
+        body.dark .valuation-model:hover,
+        body.dark .sim-slider-item:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
         
         body.dark .summary-valuation-box:hover {
-            border-color: #484f58;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
         
         body.dark .community-stats-box:hover {
@@ -631,25 +632,14 @@
             border-color: rgba(124, 58, 237, 0.4);
         }
         
-        body.dark .sim-slider-item:hover {
-            border-color: #484f58;
-        }
-        
-        body.dark .card:hover {
-            border-color: #484f58;
-        }
-        
-        body.dark .valuation-model:hover {
-            border-color: #484f58;
-        }
-        
         body.dark .confirm-cancel:hover,
         body.dark .rating-btn:hover {
-            border-color: #484f58;
+            border-color: var(--border-hover);
         }
         
         body.dark .conclusion-panel:hover {
-            border-color: #484f58;
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
         
         body.dark .conclusion-verdict.bullish {
@@ -939,11 +929,12 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            transition: border-color var(--transition-fast);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .card:hover, .metric-card:hover {
-            border-color: var(--text-muted);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
         
         /* Primary Card (강조) */
@@ -1482,11 +1473,12 @@
             border-radius: var(--radius-sm);
             padding: 10px 12px;
             border: 1px solid var(--border);
-            transition: border-color var(--transition-fast);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .price-card:hover {
-            border-color: var(--text-muted);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
 
         .price-card-left {
@@ -1714,12 +1706,13 @@
             overflow: visible;
             position: relative;
             z-index: 1;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .chart-card:hover {
             z-index: 100;
-            border-color: var(--text-muted);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
 
         .chart-card-header {
@@ -2075,12 +2068,13 @@
             overflow: visible;
             position: relative;
             z-index: 1;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .metric-card:hover {
             z-index: 100;
-            border-color: var(--text-muted);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
 
         .metric-header {
@@ -2493,11 +2487,12 @@
             padding: 10px 12px;
             min-width: 0;
             overflow: hidden;
-            transition: border-color var(--transition-fast);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .valuation-model:hover {
-            border-color: var(--text-muted);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
 
         .valuation-model.skeleton {
@@ -2858,11 +2853,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: border-color var(--transition-fast);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .conclusion-panel:hover {
-            border-color: var(--text-muted);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
 
         .conclusion-label {
@@ -3113,11 +3109,12 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .category-card:hover {
-            border-color: var(--text-muted);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
 
         .category-card-header {
@@ -3251,11 +3248,12 @@
             min-width: 0;
             overflow: hidden;
             min-height: 180px;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .method-card:hover {
-            border-color: var(--text-muted);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
 
         .method-header {
@@ -6786,12 +6784,12 @@
             flex-direction: column;
             gap: 0;
             max-width: 420px;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
         .summary-valuation-box:hover {
-            border-color: var(--text-muted);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
 
         .summary-valuation-outer {
@@ -9670,8 +9668,13 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 12px 14px;
-            transition: all var(--transition-fast);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
             touch-action: pan-y;  /* Allow vertical scroll, horizontal for slider */
+        }
+        
+        .sim-slider-item:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 2px 8px var(--shadow-hover);
         }
         
         .sim-slider-item input[type="range"] {
