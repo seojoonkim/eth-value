@@ -28425,9 +28425,8 @@ Check out ETHval 👇`;
             
             const priceData = state.priceHistory.filter(d => d.date >= cutoffDate);
             
-            // Sample data for performance, but ALWAYS include the last point
-            const sampleRate = Math.max(1, Math.floor(priceData.length / 100));
-            const sampledPrice = priceData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            // No sampling - use all data points
+            const sampledPrice = priceData;
             
             // Store dates for tooltip
             const chartDates = sampledPrice.map(d => d.date);
@@ -28461,9 +28460,8 @@ Check out ETHval 👇`;
             // Calculate dynamic composite based on active models only
             const calculateDynamicComposite = () => {
                 const compositeData = [];
-                const filteredPrice = priceData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
                 
-                for (let i = 0; i < filteredPrice.length; i++) {
+                for (let i = 0; i < priceData.length; i++) {
                     let sum = 0;
                     let count = 0;
                     
@@ -28471,9 +28469,8 @@ Check out ETHval 👇`;
                         const modelData = state.historicalFairValues[model];
                         if (modelData) {
                             const filtered = modelData.filter(d => d.date >= cutoffDate);
-                            const sampled = filtered.filter((_, j, arr) => j % sampleRate === 0 || j === arr.length - 1);
-                            if (sampled[i] && sampled[i].value > 0 && isFinite(sampled[i].value)) {
-                                sum += sampled[i].value;
+                            if (filtered[i] && filtered[i].value > 0 && isFinite(filtered[i].value)) {
+                                sum += filtered[i].value;
                                 count++;
                             }
                         }
@@ -28538,12 +28535,11 @@ Check out ETHval 👇`;
                 const modelData = state.historicalFairValues[model];
                 if (modelData && modelData.length > 0) {
                     const filteredData = modelData.filter(d => d.date >= cutoffDate);
-                    const sampledModel = filteredData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
                     const btn = document.querySelector(`.legend-btn[data-model="${model}"]`);
                     
                     datasets.push({
                         label: MODEL_NAMES[model] || model,
-                        data: sampledModel.map(d => d.value),
+                        data: filteredData.map(d => d.value),
                         borderColor: MODEL_COLORS[model] || '#888',
                         backgroundColor: 'transparent',
                         borderWidth: 1,
@@ -28570,6 +28566,9 @@ Check out ETHval 👇`;
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: 0
+                    },
                     // 모바일에서 터치 이벤트 제한 - 스크롤 허용
                     events: mobile ? ['click'] : ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
                     animation: mobile ? false : {
@@ -28692,13 +28691,16 @@ Check out ETHval 👇`;
                         y: {
                             display: true,
                             position: 'right',
-                            grid: { color: document.body.classList.contains('dark') ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
+                            grid: { 
+                                color: document.body.classList.contains('dark') ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'
+                            },
                             min: 0,
                             max: state.yAxisMax || 20000,
                             ticks: {
                                 font: { size: 8 },
                                 color: colors.price,
-                                callback: v => '$' + (v/1000).toFixed(1) + 'K'
+                                stepSize: 5000,
+                                callback: v => '$' + (v/1000).toFixed(0) + 'K'
                             }
                         }
                     }
@@ -28722,7 +28724,7 @@ Check out ETHval 👇`;
             MODEL_ORDER.forEach(model => {
                 const data = state.historicalFairValues[model];
                 if (data && data.length > 0) {
-                    // Filter to current period only
+                    // Filter to current period only - no sampling
                     const periodData = data.filter(d => new Date(d.date) >= cutoffDate);
                     if (periodData.length > 0) {
                         const modelMax = Math.max(...periodData.map(d => d.value));
@@ -28732,16 +28734,14 @@ Check out ETHval 👇`;
             });
             
             // Also include price data in range calculation
-            if (state.priceHistory && state.priceHistory.length > 0) {
-                const periodPrices = state.priceHistory.filter(d => new Date(d.date) >= cutoffDate);
-                if (periodPrices.length > 0) {
-                    const priceMax = Math.max(...periodPrices.map(d => d.price));
-                    if (priceMax > maxValue) maxValue = priceMax;
-                }
+            const priceData = state.priceHistory ? state.priceHistory.filter(d => d.date >= cutoffDate) : [];
+            if (priceData.length > 0) {
+                const priceMax = Math.max(...priceData.map(d => d.price || d.value));
+                if (priceMax > maxValue && !isNaN(priceMax)) maxValue = priceMax;
             }
             
-            // Add 15% padding and round up to nearest 1000
-            return Math.ceil(maxValue * 1.15 / 1000) * 1000;
+            // Round up to nearest 5000 for clean 5K grid lines, no padding
+            return Math.ceil(maxValue / 5000) * 5000;
         }
 
         
