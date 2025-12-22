@@ -2696,7 +2696,7 @@ async function collect_dune_gas_price() {
     const rows = await fetchDuneResults(DUNE_QUERIES.GAS_PRICE, 5000);
     if (!rows || rows.length === 0) return 0;
     
-    // Update historical_gas_burn table with gas price data
+    // Update historical_gas_burn table with gas price + eth_burnt data
     const records = rows.map(r => {
         // Parse date: "2025-12-14 00:00" or "2025-12-14T00:00:00" -> "2025-12-14"
         let dateStr = r.block_date || r.date || '';
@@ -2706,43 +2706,28 @@ async function collect_dune_gas_price() {
             dateStr = dateStr.split('T')[0];
         }
         
+        // Use eth_burnt directly from Dune if available
+        const ethBurnt = parseFloat(r.eth_burnt || 0);
+        
         return {
             date: dateStr,
             avg_gas_price_gwei: parseFloat(r.avg_gas_price_gwei || r.gas_price_gwei || r.avg_gas_price || 0),
             gas_utilization: parseFloat(r.gas_utilization || r.utilization || 0),
-            transaction_count: parseInt(r.tx_count || r.transaction_count || 0)
+            transaction_count: parseInt(r.tx_count || r.transaction_count || 0),
+            eth_burnt: ethBurnt > 0 ? parseFloat(ethBurnt.toFixed(2)) : null
         };
     }).filter(r => r.date && r.avg_gas_price_gwei > 0);
     
     console.log(`  📊 Got ${records.length} records with gas price`);
     if (records.length > 0) {
         console.log(`  📅 Date range: ${records[records.length-1].date} to ${records[0].date}`);
-        console.log(`  ⛽ Sample: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(2)} Gwei`);
+        console.log(`  ⛽ Sample: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(2)} Gwei, ${records[0].eth_burnt || 0} ETH burned`);
     }
     
-    // Update existing records in historical_gas_burn (without source column)
-    let updated = 0;
-    for (const record of records) {
-        const updateData = { 
-            avg_gas_price_gwei: record.avg_gas_price_gwei
-        };
-        if (record.gas_utilization > 0) {
-            updateData.gas_utilization = record.gas_utilization;
-        }
-        if (record.transaction_count > 0) {
-            updateData.transaction_count = record.transaction_count;
-        }
-        
-        const { error } = await supabase
-            .from('historical_gas_burn')
-            .update(updateData)
-            .eq('date', record.date);
-        
-        if (!error) updated++;
-    }
-    
-    console.log(`  ✅ Updated ${updated} records in historical_gas_burn`);
-    return updated;
+    // Upsert records in historical_gas_burn
+    const saved = await upsertBatch('historical_gas_burn', records);
+    console.log(`  ✅ Saved ${saved} records to historical_gas_burn`);
+    return saved;
 }
 
 // ============================================================

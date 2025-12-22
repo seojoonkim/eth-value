@@ -2082,7 +2082,9 @@
 
             // 6. Gas & Burn - Etherscan V2 with fallback
             async gas_burn() {
-                return -1; // Data collected via Gas Price collector
+                // Gas & Burn data is collected via gas_price collector (same Dune query)
+                log('  🔄 Redirecting to gas_price collector...', 'info');
+                return await collectors.gas_price();
             },
 
             // 7. Active Addresses - Dune API (정확한 온체인 데이터)
