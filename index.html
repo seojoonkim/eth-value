@@ -3083,14 +3083,14 @@
         }
 
         .appendix-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--text);
             margin-bottom: var(--space-sm);
         }
 
         .appendix-intro {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-body);
             line-height: 1.6;
             margin-bottom: var(--space-lg);
@@ -3121,7 +3121,7 @@
         }
 
         .category-card-header {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--text);
             margin-bottom: var(--space-sm);
@@ -3135,7 +3135,7 @@
         }
 
         .category-card-desc {
-            font-size: 12px;
+            font-size: 14px;
             color: var(--text-body);
             line-height: 1.6;
             margin-bottom: var(--space-md);
@@ -3170,13 +3170,13 @@
         }
 
         .model-item-name {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text);
         }
 
         .model-item-desc {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-body);
             line-height: 1.5;
         }
@@ -3364,17 +3364,26 @@
             margin-top: 12px;
             padding-top: 10px;
             border-top: 1px solid var(--border-light);
+            overflow: hidden;
         }
 
         .method-ref-link {
-            font-size: 10px;
+            font-size: 12px;
             color: var(--text-secondary);
             text-decoration: none;
             transition: color 0.15s ease;
             line-height: 1.4;
-            display: inline-flex;
+            display: grid;
+            grid-template-columns: 12px 1fr 10px;
             align-items: center;
             gap: 4px;
+            max-width: 100%;
+        }
+        
+        .method-ref-link-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .method-ref-link::before {
@@ -13045,7 +13054,7 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://arxiv.org/abs/2404.11745" target="_blank" class="method-ref-link">arXiv: Piercing the Veil of TVL: DeFi Reappraised (2024)</a>
+                        <a href="https://arxiv.org/abs/2404.11745" target="_blank" class="method-ref-link"><span class="method-ref-link-text">arXiv: Piercing the Veil of TVL: DeFi Reappraised (2024)</span></a>
                     </div>
                     <div class="model-community" data-model="tvlMultiple"></div>
                 </div>
@@ -13088,8 +13097,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4905828" target="_blank" class="method-ref-link">SSRN: Exploring Ethereum Staking (Krause, 2024)</a>
-                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4839567" target="_blank" class="method-ref-link">SSRN: Refining Metcalfe's Law for Blockchain (Alabi & Eick, 2024)</a>
+                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4905828" target="_blank" class="method-ref-link"><span class="method-ref-link-text">SSRN: Exploring Ethereum Staking (Krause, 2024)</span></a>
+                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4839567" target="_blank" class="method-ref-link"><span class="method-ref-link-text">SSRN: Refining Metcalfe's Law for Blockchain (Alabi & Eick, 2024)</span></a>
                     </div>
                     <div class="model-community" data-model="stakingScarcity"></div>
                 </div>
@@ -13132,7 +13141,7 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://arxiv.org/abs/2404.11745" target="_blank" class="method-ref-link">arXiv: Piercing the Veil of TVL: DeFi Reappraised (2024)</a>
+                        <a href="https://arxiv.org/abs/2404.11745" target="_blank" class="method-ref-link"><span class="method-ref-link-text">arXiv: Piercing the Veil of TVL: DeFi Reappraised (2024)</span></a>
                     </div>
                     <div class="model-community" data-model="mctvl"></div>
                 </div>
@@ -13175,8 +13184,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3078248" target="_blank" class="method-ref-link">SSRN: Metcalfe's Law as a Model for Bitcoin's Value (Peterson, 2018)</a>
-                        <a href="https://royalsocietypublishing.org/doi/10.1098/rsos.180538" target="_blank" class="method-ref-link">Royal Society: Speculative Bubble and Metcalfe's Law (Wheatley et al., 2019)</a>
+                        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3078248" target="_blank" class="method-ref-link"><span class="method-ref-link-text">SSRN: Metcalfe's Law as a Model for Bitcoin's Value (Peterson, 2018)</span></a>
+                        <a href="https://royalsocietypublishing.org/doi/10.1098/rsos.180538" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Royal Society: Speculative Bubble and Metcalfe's Law (Wheatley et al., 2019)</span></a>
                     </div>
                     <div class="model-community" data-model="metcalfe"></div>
                 </div>
@@ -13219,8 +13228,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://samuelandrew.substack.com/p/crypto-dcf-non-sense" target="_blank" class="method-ref-link">Sam Andrew: Crypto DCF (Non)-Sense (2022)</a>
-                        <a href="https://www.mdpi.com/2674-1032/3/1/8" target="_blank" class="method-ref-link">MDPI: Cryptocurrency Yield Valuation Model (2024)</a>
+                        <a href="https://samuelandrew.substack.com/p/crypto-dcf-non-sense" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Sam Andrew: Crypto DCF (Non)-Sense (2022)</span></a>
+                        <a href="https://www.mdpi.com/2674-1032/3/1/8" target="_blank" class="method-ref-link"><span class="method-ref-link-text">MDPI: Cryptocurrency Yield Valuation Model (2024)</span></a>
                     </div>
                     <div class="model-community" data-model="dcf"></div>
                 </div>
@@ -13263,8 +13272,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://www.fidelitydigitalassets.com/research-and-insights/rise-layer-2-scaling-ethereum" target="_blank" class="method-ref-link">Fidelity Digital Assets: The Rise of Layer 2 Scaling on Ethereum</a>
-                        <a href="https://ietresearch.onlinelibrary.wiley.com/doi/full/10.1049/blc2.70014" target="_blank" class="method-ref-link">IET Blockchain: EIP-4844 Proto-Danksharding Analysis</a>
+                        <a href="https://www.fidelitydigitalassets.com/research-and-insights/rise-layer-2-scaling-ethereum" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Fidelity Digital Assets: The Rise of Layer 2 Scaling on Ethereum</span></a>
+                        <a href="https://ietresearch.onlinelibrary.wiley.com/doi/full/10.1049/blc2.70014" target="_blank" class="method-ref-link"><span class="method-ref-link-text">IET Blockchain: EIP-4844 Proto-Danksharding Analysis</span></a>
                     </div>
                     <div class="model-community" data-model="l2Ecosystem"></div>
                 </div>
@@ -13307,7 +13316,7 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://tokenterminal.com/resources/articles/price-to-earnings-ratio" target="_blank" class="method-ref-link">Token Terminal: Price-to-Earnings Ratio Methodology</a>
+                        <a href="https://tokenterminal.com/resources/articles/price-to-earnings-ratio" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Token Terminal: Price-to-Earnings Ratio Methodology</span></a>
                     </div>
                     <div class="model-community" data-model="ps"></div>
                 </div>
@@ -13350,8 +13359,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://www.mdpi.com/2674-1032/3/1/8" target="_blank" class="method-ref-link">MDPI: Cryptocurrency Yield Valuation Model (2024)</a>
-                        <a href="https://thedefireport.substack.com/p/ethereum-valuation-framework" target="_blank" class="method-ref-link">The DeFi Report: Ethereum Valuation Framework</a>
+                        <a href="https://www.mdpi.com/2674-1032/3/1/8" target="_blank" class="method-ref-link"><span class="method-ref-link-text">MDPI: Cryptocurrency Yield Valuation Model (2024)</span></a>
+                        <a href="https://thedefireport.substack.com/p/ethereum-valuation-framework" target="_blank" class="method-ref-link"><span class="method-ref-link-text">The DeFi Report: Ethereum Valuation Framework</span></a>
                     </div>
                     <div class="model-community" data-model="revenueYield"></div>
                 </div>
@@ -13394,8 +13403,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://pages.stern.nyu.edu/~lpedMDen/papers/liquidity_asset_pricing.pdf" target="_blank" class="method-ref-link">Amihud & Mendelson: Liquidity and Asset Prices</a>
-                        <a href="https://insights.glassnode.com/bitcoin-liquid-supply/" target="_blank" class="method-ref-link">Glassnode: Bitcoin Liquid and Illiquid Supply</a>
+                        <a href="https://pages.stern.nyu.edu/~lpedMDen/papers/liquidity_asset_pricing.pdf" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Amihud & Mendelson: Liquidity and Asset Prices</span></a>
+                        <a href="https://insights.glassnode.com/bitcoin-liquid-supply/" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Glassnode: Bitcoin Liquid and Illiquid Supply</span></a>
                     </div>
                     <div class="model-community" data-model="commitmentPremium"></div>
                 </div>
@@ -13438,8 +13447,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://yewjin.com/blog/2025/ethereum-as-financial-infra/" target="_blank" class="method-ref-link">Yewjin: Ethereum as Financial Infrastructure (TVS Framework)</a>
-                        <a href="https://medium.com/@dipanshuchaudhry9/ignore-this-ethereum-insight-at-your-own-risk-tvs-could-redefine-eth-forever-d34bfcfd278a" target="_blank" class="method-ref-link">Dipanshu: TVS Could Redefine ETH Forever</a>
+                        <a href="https://yewjin.com/blog/2025/ethereum-as-financial-infra/" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Yewjin: Ethereum as Financial Infrastructure (TVS Framework)</span></a>
+                        <a href="https://medium.com/@dipanshuchaudhry9/ignore-this-ethereum-insight-at-your-own-risk-tvs-could-redefine-eth-forever-d34bfcfd278a" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Dipanshu: TVS Could Redefine ETH Forever</span></a>
                     </div>
                     <div class="model-community" data-model="appCapital"></div>
                 </div>
@@ -13482,8 +13491,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://arxiv.org/html/2405.03357v2" target="_blank" class="method-ref-link">arXiv: Game Theory of Validator Economics (2024)</a>
-                        <a href="https://arxiv.org/html/2405.14617v1" target="_blank" class="method-ref-link">arXiv: Optimal Staking Mechanism Design (2024)</a>
+                        <a href="https://arxiv.org/html/2405.03357v2" target="_blank" class="method-ref-link"><span class="method-ref-link-text">arXiv: Game Theory of Validator Economics (2024)</span></a>
+                        <a href="https://arxiv.org/html/2405.14617v1" target="_blank" class="method-ref-link"><span class="method-ref-link-text">arXiv: Optimal Staking Mechanism Design (2024)</span></a>
                     </div>
                     <div class="model-community" data-model="validatorEcon"></div>
                 </div>
@@ -13526,8 +13535,8 @@
                         </div>
                     </div>
                     <div class="method-references">
-                        <a href="https://woobull.com/introducing-nvt-ratio-bitcoins-pe-ratio-use-it-to-detect-bubbles/" target="_blank" class="method-ref-link">Willy Woo: Introducing NVT Ratio - Bitcoin's PE Ratio (2017)</a>
-                        <a href="https://medium.com/@cburniske/cryptoasset-valuations-ac83479ffca7" target="_blank" class="method-ref-link">Chris Burniske: Cryptoasset Valuations (MV=PQ Framework)</a>
+                        <a href="https://woobull.com/introducing-nvt-ratio-bitcoins-pe-ratio-use-it-to-detect-bubbles/" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Willy Woo: Introducing NVT Ratio - Bitcoin's PE Ratio (2017)</span></a>
+                        <a href="https://medium.com/@cburniske/cryptoasset-valuations-ac83479ffca7" target="_blank" class="method-ref-link"><span class="method-ref-link-text">Chris Burniske: Cryptoasset Valuations (MV=PQ Framework)</span></a>
                     </div>
                     <div class="model-community" data-model="settlementLayer"></div>
                 </div>
@@ -15359,7 +15368,7 @@
                                 </div>
                                 ${info.sources && info.sources.length > 0 ? `
                                 <div class="method-references">
-                                    ${info.sources.map(s => `<a href="${s.url}" target="_blank" class="method-ref-link">${s.name}</a>`).join('')}
+                                    ${info.sources.map(s => `<a href="${s.url}" target="_blank" class="method-ref-link"><span class="method-ref-link-text">${s.name}</span></a>`).join('')}
                                 </div>
                                 ` : ''}
                             </div>
