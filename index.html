@@ -10769,7 +10769,7 @@
         /* 1. Onboarding Banner */
         .onboarding-banner {
             position: fixed;
-            top: 100px;
+            top: 52px;
             left: 0;
             right: 0;
             z-index: 999;
@@ -11461,6 +11461,14 @@
             background: var(--green);
         }
     </style>
+    <script>
+        // Early handler for broken Twitter avatar images (before DOM loads)
+        document.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IMG' && e.target.src.includes('twimg.com')) {
+                e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
+            }
+        }, true);
+    </script>
 </head>
 <body>
     <a id="top"></a>
@@ -12792,8 +12800,8 @@
                 <!-- Period tabs (below price) -->
                 <div class="historical-tabs-wrapper" style="position: relative; margin-bottom: 12px;">
                     <div class="historical-tabs">
-                        <button class="historical-tab" data-period="90">90D</button>
-                        <button class="historical-tab active" data-period="365" id="historical-tab-1y">1Y</button>
+                        <button class="historical-tab active" data-period="90" id="historical-tab-90d">90D</button>
+                        <button class="historical-tab" data-period="365" id="historical-tab-1y">1Y</button>
                         <button class="historical-tab gated-tab-locked" data-period="1095" id="historical-tab-3y">3Y<span class="tab-lock-badge" id="tab-3y-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
                     </div>
                 </div>
@@ -19255,10 +19263,112 @@
         }
         
         // Supabase에서 historical 데이터 로딩
+        // ═══════════════════════════════════════════════════════════════════
+        // CACHE SYSTEM: Store Supabase data in localStorage for faster reload
+        // ═══════════════════════════════════════════════════════════════════
+        const CACHE_KEY = 'ethval_cache_v1';
+        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+        
+        // Helper: Convert date strings back to Date objects in history arrays
+        function reviveDates(obj) {
+            if (!obj) return obj;
+            
+            // List of keys that contain history arrays with date fields
+            const historyKeys = [
+                'supabasePriceHistory', 'supabaseTvlHistory', 'supabaseStakingHistory',
+                'supabaseGasHistory', 'supabaseFgHistory', 'supabaseFeesHistory',
+                'supabaseEthBtcHistory', 'supabaseDominanceHistory', 'supabaseDexHistory',
+                'supabaseStablecoinHistory', 'supabaseFundingHistory', 'supabaseReserveHistory',
+                'supabaseBlobHistory', 'supabaseLendingHistory', 'supabaseVolatilityHistory',
+                'supabaseNvtHistory', 'priceHistory'
+            ];
+            
+            for (const key of historyKeys) {
+                if (obj[key] && Array.isArray(obj[key])) {
+                    obj[key] = obj[key].map(d => ({
+                        ...d,
+                        date: new Date(d.date)
+                    }));
+                }
+            }
+            
+            // Handle historicalFairValues (nested object with model keys)
+            if (obj.historicalFairValues) {
+                for (const modelKey in obj.historicalFairValues) {
+                    if (Array.isArray(obj.historicalFairValues[modelKey])) {
+                        obj.historicalFairValues[modelKey] = obj.historicalFairValues[modelKey].map(d => ({
+                            ...d,
+                            date: new Date(d.date)
+                        }));
+                    }
+                }
+            }
+            
+            return obj;
+        }
+        
+        function getCachedData() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (!cached) return null;
+                
+                const { timestamp, data } = JSON.parse(cached);
+                const age = Date.now() - timestamp;
+                
+                if (age > CACHE_TTL) {
+                    log('📦 Cache expired (' + Math.round(age/1000) + 's old)');
+                    return null;
+                }
+                
+                log('📦 Using cached data (' + Math.round(age/1000) + 's old)');
+                return reviveDates(data);
+            } catch (e) {
+                log('📦 Cache read error:', e.message);
+                return null;
+            }
+        }
+        
+        function setCachedData(data) {
+            try {
+                const cacheData = {
+                    timestamp: Date.now(),
+                    data: data
+                };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+                log('📦 Data cached successfully');
+            } catch (e) {
+                log('📦 Cache write failed:', e.message);
+            }
+        }
+        
         async function loadHistoricalFromSupabase() {
             log('📦 loadHistoricalFromSupabase called');
             log('📦 SUPABASE_CONFIG:', SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey ? 'KEY_EXISTS' : 'NO_KEY');
             
+            // ═══════════════════════════════════════════════════════════════════
+            // STEP 0: Check cache first for instant load
+            // ═══════════════════════════════════════════════════════════════════
+            const cachedData = getCachedData();
+            if (cachedData) {
+                // Apply cached data to state immediately
+                Object.assign(state, cachedData);
+                log('📦 Loaded from cache - instant display!');
+                
+                // Still fetch fresh data in background (don't await)
+                if (SUPABASE_CONFIG.url && !SUPABASE_CONFIG.url.includes('YOUR_PROJECT_ID')) {
+                    fetchFreshSupabaseData().then(() => {
+                        log('📦 Background refresh complete');
+                    }).catch(e => log('📦 Background refresh failed:', e.message));
+                }
+                
+                return true;
+            }
+            
+            // No cache - load from Supabase
+            return await fetchFreshSupabaseData();
+        }
+        
+        async function fetchFreshSupabaseData() {
             // Supabase가 설정되지 않으면 스킵
             if (!SUPABASE_CONFIG.url || SUPABASE_CONFIG.url.includes('YOUR_PROJECT_ID') || !SUPABASE_CONFIG.anonKey || SUPABASE_CONFIG.anonKey === 'YOUR_ANON_KEY') {
                 log('📦 Supabase not configured - using external APIs only');
@@ -20005,6 +20115,35 @@
                 }
                 
                 log(`📦 Supabase loading complete in ${(performance.now() - startTime).toFixed(0)}ms`);
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // Save to cache for instant reload next time
+                // ═══════════════════════════════════════════════════════════════════
+                const cacheableState = {
+                    supabasePriceHistory: state.supabasePriceHistory,
+                    supabaseTvlHistory: state.supabaseTvlHistory,
+                    supabaseStakingHistory: state.supabaseStakingHistory,
+                    supabaseGasHistory: state.supabaseGasHistory,
+                    supabaseFgHistory: state.supabaseFgHistory,
+                    supabaseFeesHistory: state.supabaseFeesHistory,
+                    supabaseEthBtcHistory: state.supabaseEthBtcHistory,
+                    supabaseDominanceHistory: state.supabaseDominanceHistory,
+                    supabaseDexHistory: state.supabaseDexHistory,
+                    supabaseStablecoinHistory: state.supabaseStablecoinHistory,
+                    supabaseFundingHistory: state.supabaseFundingHistory,
+                    supabaseReserveHistory: state.supabaseReserveHistory,
+                    supabaseBlobHistory: state.supabaseBlobHistory,
+                    supabaseLendingHistory: state.supabaseLendingHistory,
+                    supabaseVolatilityHistory: state.supabaseVolatilityHistory,
+                    supabaseNvtHistory: state.supabaseNvtHistory,
+                    historicalFairValues: state.historicalFairValues,
+                    price: state.price,
+                    tvl: state.tvl,
+                    stakedEth: state.stakedEth,
+                    stakingApr: state.stakingApr
+                };
+                setCachedData(cacheableState);
+                
                 return true;
             } catch (e) {
                 console.error('Supabase loading error:', e);
@@ -28389,7 +28528,7 @@ Check out ETHval 👇`;
         }
         
         // Store current period for reuse
-        let currentHistoricalPeriod = 365; // Default to 1Y, will be updated based on auth state
+        let currentHistoricalPeriod = 90; // Default to 90D for faster initial load
         
         // Render main historical chart
         function renderHistoricalMainChart(period = null) {
@@ -28405,12 +28544,12 @@ Check out ETHval 👇`;
                 const userRatingCount = window.userRatings ? Object.keys(window.userRatings).length : 0;
                 
                 if (!isLoggedIn || userRatingCount < 2) {
-                    // Fallback to 1Y if not authorized
-                    currentHistoricalPeriod = 365;
+                    // Fallback to 90D if not authorized for 3Y
+                    currentHistoricalPeriod = 90;
                     // Update tab UI
                     document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
-                    const tab1Y = document.getElementById('historical-tab-1y');
-                    if (tab1Y) tab1Y.classList.add('active');
+                    const tab90D = document.getElementById('historical-tab-90d');
+                    if (tab90D) tab90D.classList.add('active');
                     // Recalculate Y-axis max for fallback period
                     state.yAxisMax = calculateYAxisMax();
                 }
