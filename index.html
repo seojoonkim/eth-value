@@ -778,7 +778,7 @@
             }
             
             .metrics-subgroup-title {
-                font-size: 20px;
+                font-size: 22px;
                 font-family: var(--font-heading);
                 font-weight: 500;
             }
@@ -1139,35 +1139,27 @@
             justify-content: center;
         }
         
-        /* Hide inline nav on mobile, show old nav-bar */
+        /* 900px 이하에서 inline nav 숨기고 nav-bar 표시 */
         @media (max-width: 900px) {
             .nav-bar-inline {
                 display: none;
             }
         }
 
-        /* Navigation Bar (for mobile) */
+        /* Navigation Bar (2행 - 모바일용) */
         .nav-bar {
             display: none;
             justify-content: center;
             align-items: center;
             gap: 4px;
-            padding: 6px var(--space-xl);
-            max-width: 1400px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 8px 10px;
             background: var(--bg-card);
+            flex-wrap: wrap;
         }
         
         @media (max-width: 900px) {
             .nav-bar {
                 display: flex;
-            }
-        }
-        
-        @media (min-width: 1600px) {
-            .nav-bar {
-                padding: 6px 48px;
             }
         }
 
@@ -7686,8 +7678,8 @@
             height: 18px;
         }
 
-        /* 중간 크기 화면 (600px ~ 900px) - 가격 박스 3열 그리드 배치 */
-        @media (max-width: 900px) and (min-width: 601px) {
+        /* 중간 크기 화면 (600px ~ 1000px) - 1열 레이아웃, 가격 박스 3열 그리드 배치 */
+        @media (max-width: 1000px) and (min-width: 601px) {
             .summary-layout {
                 grid-template-columns: 1fr;
                 gap: 16px;
@@ -7733,6 +7725,13 @@
                 grid-column: 1 / -1;
                 margin-top: 8px;
                 padding-top: 12px;
+            }
+            
+            .summary-model-range-section {
+                grid-column: 1 / -1;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid var(--border);
             }
 
             .summary-content {
@@ -8070,7 +8069,7 @@
             }
 
             .section-title {
-                font-size: 26px;
+                font-size: 28px;
             }
 
             /* Price Card */
@@ -9167,11 +9166,11 @@
 
         @media (max-width: 480px) {
             .section-title {
-                font-size: 22px;
+                font-size: 24px;
             }
             
             .metrics-subgroup-title {
-                font-size: 18px;
+                font-size: 20px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -11786,6 +11785,14 @@
                 </div>
             </div>
         </header>
+        <!-- 모바일 네비게이션 바 -->
+        <nav class="nav-bar">
+            <a class="nav-item active" href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'instant'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); this.classList.add('active');" data-i18n="nav.overview">Overview</a>
+            <a class="nav-item" href="#section-metrics" data-i18n="nav.metrics">Market & Metrics</a>
+            <a class="nav-item" href="#section-valuation" data-i18n="nav.valuation">Valuation</a>
+            <a class="nav-item" href="#section-methodology" data-i18n="nav.methodology">Ratings & Discussion</a>
+            <a class="nav-item" href="#section-rankings" data-i18n="nav.rankings">Leaderboard</a>
+        </nav>
     </div>
 
     <div class="container">
@@ -17321,7 +17328,7 @@
                 'share.download': '이미지 다운로드',
                 'section.priceTitle': '시세 & 시장',
                 'section.onchainTitle': '온체인 지표 & 트렌드',
-                'section.valuationTitle': '밸류에이션 분석 & 시나리오 시뮬레이터',
+                'section.valuationTitle': '밸류에이션 분석 & 시뮬레이터',
                 'section.methodologyTitle': '평가 & 토론',
                 'section.weeklyData': '주간 데이터',
                 'section.models': '12개 모델',
