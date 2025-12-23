@@ -9850,6 +9850,17 @@
         .sim-new-val.increased { color: var(--up); }
         .sim-new-val.decreased { color: var(--down); }
         
+        .sim-change-pct {
+            font-size: 11px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            margin-left: 4px;
+        }
+        
+        .sim-change-pct.positive { color: var(--up); }
+        .sim-change-pct.negative { color: var(--down); }
+        .sim-change-pct:empty { display: none; }
+        
         .sim-reset-btn {
             display: flex;
             align-items: center;
@@ -13125,7 +13136,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <span data-i18n="gated.rateToUnlock">Rate 2+ valuation models to unlock simulator</span>
                     </div>
-                    <button class="simulator-reset-all-btn" id="simulator-reset-all"><span data-i18n="simulator.reset">↺ Reset</span></button>
+                    <button class="simulator-reset-all-btn" id="simulator-reset-all"><span data-i18n="simulator.resetAll">↺ Reset All</span></button>
                 </div>
                 
                 <!-- Price Display Row - Same as chart-price-display -->
@@ -13153,7 +13164,7 @@
                         <div class="sim-slider-item" data-param="tvl">
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Total Value Locked (TVL)</span>
-                                <span class="sim-slider-value"><span id="sim-tvl-current">$70B</span> → <span id="sim-tvl-new" class="sim-new-val">$70B</span></span>
+                                <span class="sim-slider-value"><span id="sim-tvl-current">$70B</span> → <span id="sim-tvl-new" class="sim-new-val">$70B</span> <span id="sim-tvl-change" class="sim-change-pct"></span></span>
                                 <button class="sim-reset-btn" data-reset="tvl">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
@@ -13161,14 +13172,14 @@
                                     <input type="range" class="sim-range" id="sim-tvl" min="0" max="100" step="1" value="25">
                                     <div class="sim-range-labels quarter"><span>0.1x</span><span>1x</span><span>10x</span></div>
                                 </div>
-                                <div class="sim-slider-info" data-i18n="simulator.tvl.info">More capital locked in DeFi = greater network utility. Also drives Network Fees (+50% effect). Impacts TVL-based valuations and Metcalfe effects.</div>
+                                <div class="sim-slider-info" data-i18n="simulator.tvl.info">More capital locked in DeFi = greater network utility. Drives Network Fees (+50%), Ecosystem Settlement (+50%), and Liquidity Premium. Impacts TVL Multiple, Metcalfe, and L2 Ecosystem models.</div>
                             </div>
                         </div>
                         
                         <div class="sim-slider-item" data-param="fees">
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Daily Network Fees <span style="opacity: 0.6; font-weight: 400;">(L1 + Blob)</span></span>
-                                <span class="sim-slider-value"><span id="sim-fees-current">$2.1M</span> → <span id="sim-fees-new" class="sim-new-val">$2.1M</span></span>
+                                <span class="sim-slider-value"><span id="sim-fees-current">$2.1M</span> → <span id="sim-fees-new" class="sim-new-val">$2.1M</span> <span id="sim-fees-change" class="sim-change-pct"></span></span>
                                 <button class="sim-reset-btn" data-reset="fees">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
@@ -13183,7 +13194,7 @@
                         <div class="sim-slider-item" data-param="staking">
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Staking Ratio</span>
-                                <span class="sim-slider-value"><span id="sim-staking-current">28%</span> → <span id="sim-staking-new" class="sim-new-val">28%</span></span>
+                                <span class="sim-slider-value"><span id="sim-staking-current">28%</span> → <span id="sim-staking-new" class="sim-new-val">28%</span> <span id="sim-staking-change" class="sim-change-pct"></span></span>
                                 <button class="sim-reset-btn" data-reset="staking">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
@@ -13191,14 +13202,14 @@
                                     <input type="range" class="sim-range" id="sim-staking" min="0" max="100" step="1" value="25">
                                     <div class="sim-range-labels quarter"><span>10%</span><span id="sim-staking-base-label">28%</span><span>70%</span></div>
                                 </div>
-                                <div class="sim-slider-info" data-i18n="simulator.staking.info">More staked = reduced supply. Higher ratios create scarcity premium but lower yields.</div>
+                                <div class="sim-slider-info" data-i18n="simulator.staking.info">More staked = reduced liquid supply. Impacts Staking Scarcity, Liquidity Premium, and validator APR (affects DCF and Validator Economics).</div>
                             </div>
                         </div>
                         
                         <div class="sim-slider-item" data-param="stables">
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Stablecoins on Ethereum</span>
-                                <span class="sim-slider-value"><span id="sim-stables-current">$166B</span> → <span id="sim-stables-new" class="sim-new-val">$166B</span></span>
+                                <span class="sim-slider-value"><span id="sim-stables-current">$166B</span> → <span id="sim-stables-new" class="sim-new-val">$166B</span> <span id="sim-stables-change" class="sim-change-pct"></span></span>
                                 <button class="sim-reset-btn" data-reset="stables">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
@@ -13206,14 +13217,29 @@
                                     <input type="range" class="sim-range" id="sim-stables" min="0" max="100" step="1" value="25">
                                     <div class="sim-range-labels quarter"><span>0.1x</span><span>1x</span><span>10x</span></div>
                                 </div>
-                                <div class="sim-slider-info" data-i18n="simulator.stablecoins.info">Real-world capital on Ethereum. +30% TVL/fees effect, +50% settlement volume.</div>
+                                <div class="sim-slider-info" data-i18n="simulator.stablecoins.info">Real-world capital on Ethereum. Directly drives App Capital model. Indirectly boosts TVL (+30%) and Network Fees (+30%) through DeFi activity.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="sim-slider-item" data-param="activeAddresses">
+                            <div class="sim-slider-top">
+                                <span class="sim-slider-label">L1 Daily Active Addresses</span>
+                                <span class="sim-slider-value"><span id="sim-activeAddresses-current">400K</span> → <span id="sim-activeAddresses-new" class="sim-new-val">400K</span> <span id="sim-activeAddresses-change" class="sim-change-pct"></span></span>
+                                <button class="sim-reset-btn" data-reset="activeAddresses">↺ Reset</button>
+                            </div>
+                            <div class="sim-slider-content">
+                                <div class="sim-range-container">
+                                    <input type="range" class="sim-range" id="sim-activeAddresses" min="0" max="100" step="1" value="25">
+                                    <div class="sim-range-labels quarter"><span>0.1x</span><span>1x</span><span>10x</span></div>
+                                </div>
+                                <div class="sim-slider-info" data-i18n="simulator.activeAddresses.info">Unique addresses transacting on L1. Directly drives Metcalfe's Law (n² effect). Proportionally scales Fees, ETH Monetary, and Ecosystem Settlement (2x users = 2x volume).</div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Right: Model Breakdown -->
                     <div class="simulator-result-panel">
-                        <div class="sim-section-title" data-i18n="simulator.modelBreakdown">Model Breakdown</div>
+                        <div class="sim-section-title" data-i18n="simulator.simulatedValues">Simulated Values</div>
                         <div class="sim-breakdown-grid" id="sim-breakdown"></div>
                     </div>
                 </div>
@@ -16820,17 +16846,19 @@
                 'rankings.table.votes': 'Ratings',
                 'rankings.table.userVotes': 'Ratings',
                 'rankings.table.comments': 'Comments',
-                'simulator.tvl.info': 'More capital locked in DeFi = greater network utility. Also drives Network Fees (+50% effect). Impacts TVL-based valuations and Metcalfe effects.',
+                'simulator.tvl.info': 'More capital locked in DeFi = greater network utility. Drives Network Fees (+50%), Ecosystem Settlement (+50%), and Liquidity Premium. Impacts TVL Multiple, Metcalfe, and L2 Ecosystem models.',
                 'simulator.fees.info': 'Higher fees = more economic activity. Also affected by TVL changes. Drives P/S ratio and yield valuations.',
-                'simulator.staking.info': 'More staked = reduced supply. Higher ratios create scarcity premium but lower yields.',
-                'simulator.stablecoins.info': 'Real-world capital on Ethereum. +30% TVL/fees effect, +50% settlement volume.',
+                'simulator.staking.info': 'More staked = reduced liquid supply. Impacts Staking Scarcity, Liquidity Premium, and validator APR (affects DCF and Validator Economics).',
+                'simulator.stablecoins.info': 'Real-world capital on Ethereum. Directly drives App Capital model. Indirectly boosts TVL (+30%) and Network Fees (+30%) through DeFi activity.',
+                'simulator.activeAddresses.info': 'Unique addresses transacting on L1. Directly drives Metcalfe\'s Law (n² effect). Proportionally scales Fees, ETH Monetary, and Ecosystem Settlement (2x users = 2x volume).',
                 'simulator.title': 'WHAT-IF SCENARIO SIMULATOR',
                 'simulator.reset': '↺ Reset',
+                'simulator.resetAll': '↺ Reset All',
                 'simulator.marketPrice': 'Market Price',
                 'simulator.currentFairValue': 'Current Fair Value',
                 'simulator.simulatedFairValue': 'Simulated Fair Value',
                 'simulator.scenarioVariables': 'Scenario Variables <span class=\"sim-hint\">(drag to adjust)</span>',
-                'simulator.modelBreakdown': 'Model Breakdown',
+                'simulator.simulatedValues': 'Simulated Values',
                 'section.historicalTitle': 'Historical Fair Value Analysis',
                 'summary.title': 'Overview',
                 'summary.currentPrice': 'Current Price',
@@ -17227,17 +17255,19 @@
                 'rankings.table.votes': '평가',
                 'rankings.table.userVotes': '평가',
                 'rankings.table.comments': '댓글',
-                'simulator.tvl.info': 'DeFi에 더 많은 자본이 잠김 = 더 큰 네트워크 유틸리티. 네트워크 수수료에도 영향 (+50% 효과). TVL 기반 밸류에이션과 메트칼프 효과에 반영.',
+                'simulator.tvl.info': 'DeFi에 잠긴 자본 = 네트워크 유틸리티. 수수료(+50%), Ecosystem Settlement(+50%), Liquidity Premium에 영향. TVL Multiple, Metcalfe, L2 Ecosystem 모델에 반영.',
                 'simulator.fees.info': '높은 수수료 = 활발한 경제 활동. TVL 변화에도 영향받음. P/S 비율과 수익률 밸류에이션에 반영.',
-                'simulator.staking.info': '스테이킹 증가 = 유통량 감소. 높은 비율은 희소성 프리미엄을 만들지만 수익률은 낮아짐.',
-                'simulator.stablecoins.info': '이더리움 위의 실물 자본. TVL/수수료에 +30%, 정산량에 +50% 영향.',
+                'simulator.staking.info': '스테이킹 증가 = 유동 공급량 감소. Staking Scarcity, Liquidity Premium, 검증자 APR(DCF, Validator Economics)에 영향.',
+                'simulator.stablecoins.info': '이더리움 위의 실물 자본. App Capital 모델에 직접 반영. DeFi 활동을 통해 TVL(+30%)과 수수료(+30%)에 간접 영향.',
+                'simulator.activeAddresses.info': 'L1에서 거래하는 고유 주소 수. Metcalfe 법칙(n² 효과)에 직접 반영. Fees, ETH Monetary, Ecosystem Settlement에 비례 반영 (2배 사용자 = 2배 거래량).',
                 'simulator.title': 'WHAT-IF 시나리오 시뮬레이터',
                 'simulator.reset': '↺ 초기화',
+                'simulator.resetAll': '↺ 전체 초기화',
                 'simulator.marketPrice': '시장 가격',
                 'simulator.currentFairValue': '현재 적정가치',
                 'simulator.simulatedFairValue': '시뮬레이션 적정가치',
                 'simulator.scenarioVariables': '시나리오 변수 <span class=\"sim-hint\">(드래그하여 조정)</span>',
-                'simulator.modelBreakdown': '모델별 결과',
+                'simulator.simulatedValues': '시뮬레이션 결과',
                 'section.historicalTitle': '시계열 적정가치 분석',
                 'summary.title': '개요',
                 'summary.currentPrice': '현재 가격',
@@ -17635,17 +17665,19 @@
                 'rankings.table.votes': '评价',
                 'rankings.table.userVotes': '评价',
                 'rankings.table.comments': '评论',
-                'simulator.tvl.info': 'DeFi锁定更多资本 = 更大网络效用。同时带动网络费用（+50%效果）。影响TVL相关估值和梅特卡夫效应。',
+                'simulator.tvl.info': 'DeFi锁定资本 = 网络效用。影响网络费用(+50%)、Ecosystem Settlement(+50%)和Liquidity Premium。反映在TVL Multiple、Metcalfe、L2 Ecosystem模型。',
                 'simulator.fees.info': '更高费用 = 更活跃的经济活动。也受TVL变化影响。影响P/S比率和收益率估值。',
-                'simulator.staking.info': '更多质押 = 流通量减少。较高比率创造稀缺性溢价但降低收益率。',
-                'simulator.stablecoins.info': '以太坊上的真实资本。TVL/费用+30%效果，结算量+50%效果。',
+                'simulator.staking.info': '质押增加 = 流动供应减少。影响Staking Scarcity、Liquidity Premium和验证者APR（影响DCF和Validator Economics）。',
+                'simulator.stablecoins.info': '以太坊上的真实资本。直接影响App Capital模型。通过DeFi活动间接提升TVL(+30%)和网络费用(+30%)。',
+                'simulator.activeAddresses.info': 'L1上交易的唯一地址数。直接影响梅特卡夫定律（n²效应）。按比例影响Fees、ETH Monetary、Ecosystem Settlement（2倍用户=2倍交易量）。',
                 'simulator.title': 'WHAT-IF 情景模拟器',
                 'simulator.reset': '↺ 重置',
+                'simulator.resetAll': '↺ 全部重置',
                 'simulator.marketPrice': '市场价格',
                 'simulator.currentFairValue': '当前公允价值',
                 'simulator.simulatedFairValue': '模拟公允价值',
                 'simulator.scenarioVariables': '情景变量 <span class=\"sim-hint\">(拖动调整)</span>',
-                'simulator.modelBreakdown': '模型明细',
+                'simulator.simulatedValues': '模拟结果',
                 'section.historicalTitle': '历史公允价值分析',
                 'summary.title': '概览',
                 'summary.currentPrice': '当前价格',
@@ -18035,17 +18067,19 @@
                 'rankings.table.votes': '評価',
                 'rankings.table.userVotes': '評価',
                 'rankings.table.comments': 'コメント',
-                'simulator.tvl.info': 'DeFiにロックされる資本が多い = ネットワーク効用が大きい。ネットワーク手数料にも影響（+50%効果）。TVLベースの評価とメトカーフ効果に反映。',
+                'simulator.tvl.info': 'DeFiにロックされた資本 = ネットワーク効用。手数料(+50%)、Ecosystem Settlement(+50%)、Liquidity Premiumに影響。TVL Multiple、Metcalfe、L2 Ecosystemモデルに反映。',
                 'simulator.fees.info': '手数料が高い = 経済活動が活発。TVLの変化にも影響される。P/S比率と利回り評価に反映。',
-                'simulator.staking.info': 'ステーキング増加 = 供給減少。高い比率は希少性プレミアムを生むが利回りは低下。',
-                'simulator.stablecoins.info': 'イーサリアム上の実物資本。TVL/手数料に+30%、決済量に+50%の効果。',
+                'simulator.staking.info': 'ステーキング増加 = 流動供給減少。Staking Scarcity、Liquidity Premium、バリデーターAPR（DCFとValidator Economicsに影響）に反映。',
+                'simulator.stablecoins.info': 'イーサリアム上の実物資本。App Capitalモデルに直接反映。DeFi活動を通じてTVL(+30%)とネットワーク手数料(+30%)に間接的影響。',
+                'simulator.activeAddresses.info': 'L1で取引するユニークアドレス数。メトカーフの法則（n²効果）に直接反映。Fees、ETH Monetary、Ecosystem Settlementに比例反映（2倍ユーザー=2倍取引量）。',
                 'simulator.title': 'WHAT-IF シナリオシミュレーター',
                 'simulator.reset': '↺ リセット',
+                'simulator.resetAll': '↺ 全てリセット',
                 'simulator.marketPrice': '市場価格',
                 'simulator.currentFairValue': '現在の適正価値',
                 'simulator.simulatedFairValue': 'シミュレーション適正価値',
                 'simulator.scenarioVariables': 'シナリオ変数 <span class=\"sim-hint\">(ドラッグして調整)</span>',
-                'simulator.modelBreakdown': 'モデル別結果',
+                'simulator.simulatedValues': 'シミュレーション結果',
                 'section.historicalTitle': 'りれきてきせいかかくぶんせき',
                 'summary.title': 'がいよう',
                 'summary.currentPrice': 'げんざいかかく',
@@ -28919,7 +28953,13 @@ Check out ETHval 👇`;
                 metcalfe: {
                     name: "Metcalfe's Law",
                     color: '#eab308',
-                    calc: function(p) { return (2 * Math.pow(p.tvl / 1e9, 1.5) * 1e9) / p.supply; }
+                    calc: function(p) { 
+                        // Metcalfe's Law: Network value ∝ n² (users squared)
+                        // Using active addresses as proxy for network users
+                        var users = p.activeAddresses || 400000;
+                        var coefficient = 0.00015; // Calibrated to current market
+                        return (coefficient * Math.pow(users, 1.5)) / p.supply * p.price;
+                    }
                 },
                 dcf: {
                     name: 'DCF (Staking)',
@@ -28966,7 +29006,7 @@ Check out ETHval 👇`;
                     name: 'ETH Monetary (MV=PQ)',
                     color: '#a855f7',
                     calc: function(p) { 
-                        // dailySettlement scales with stablecoins effect
+                        // Pure ETH settlement - not affected by stablecoins or TVL
                         return ((p.dailySettlement * 365 / 6)) / p.supply; 
                     }
                 },
@@ -28974,14 +29014,18 @@ Check out ETHval 👇`;
                     name: 'Ecosystem Settlement (MV=PQ)',
                     color: '#ec4899',
                     calc: function(p) { 
-                        // L1+L2 total volume scales with stablecoins/TVL activity
+                        // L1+L2 total volume (ETH + all ERC-20 tokens)
+                        // Scales with TVL (50%) and Active Addresses (100%)
                         var baseL1 = 368000000000;
                         var baseL2 = 419500000000;
-                        // Use TVL ratio as proxy for volume scaling
-                        var volumeScale = p.tvl / (baseParams.tvl || 70000000000);
-                        var l1Total = baseL1 * volumeScale;
-                        var l2Total = baseL2 * volumeScale;
-                        return ((l1Total + l2Total) * 365 / 150) / p.supply; 
+                        var baseTotal = baseL1 + baseL2;
+                        // TVL effect at 50%
+                        var tvlRatio = p.tvl / (baseParams.tvl || 70000000000);
+                        var tvlScale = 1 + (tvlRatio - 1) * 0.5;
+                        // Active Addresses effect at 100% (2x users = 2x transactions)
+                        var aaRatio = p.activeAddresses / (baseParams.activeAddresses || 400000);
+                        var volumeScale = tvlScale * aaRatio;
+                        return ((baseTotal * volumeScale) * 365 / 150) / p.supply; 
                     }
                 }
             };
@@ -29019,6 +29063,12 @@ Check out ETHval 👇`;
                 if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
                 if (v >= 1e3) return '$' + (v / 1e3).toFixed(1) + 'K';
                 return '$' + v.toFixed(1);
+            }
+            
+            function formatCount(v) {
+                if (v >= 1e6) return (v / 1e6).toFixed(1) + 'M';
+                if (v >= 1e3) return (v / 1e3).toFixed(0) + 'K';
+                return v.toFixed(0);
             }
             
             function formatPrice(v) {
@@ -29066,6 +29116,15 @@ Check out ETHval 👇`;
                 // Get Stablecoins from Supabase (day before latest)
                 var stablesValue = getSupabaseValue(state.supabaseStablesEthHistory, 'value') || state.stablecoins || 166000000000;
                 
+                // Get Active Addresses from Supabase (day before latest)
+                var activeAddressesValue = 400000; // Default
+                if (state.supabaseActiveAddressesHistory && state.supabaseActiveAddressesHistory.length >= 2) {
+                    var aaDayBefore = state.supabaseActiveAddressesHistory[state.supabaseActiveAddressesHistory.length - 2];
+                    if (aaDayBefore && aaDayBefore.value) {
+                        activeAddressesValue = aaDayBefore.value;
+                    }
+                }
+                
                 // Calculate staking ratio (rounded to integer)
                 var supply = state.circulatingSupply || 120000000;
                 baseStakingRatio = Math.round((stakedEth / supply) * 100);
@@ -29080,7 +29139,8 @@ Check out ETHval 👇`;
                     stakingApr: state.stakingApr || 3.2,
                     stablecoins: stablesValue,
                     l2Tvl: state.l2Tvl || 12000000000,
-                    dailySettlement: state.dailySettlement || 10130000000
+                    dailySettlement: state.dailySettlement || 10130000000,
+                    activeAddresses: activeAddressesValue
                 };
                 
                 // Set market price display
@@ -29092,6 +29152,7 @@ Check out ETHval 👇`;
                 document.getElementById('sim-fees-current').textContent = formatVal(baseParams.fees);
                 document.getElementById('sim-staking-current').textContent = baseStakingRatio + '%';
                 document.getElementById('sim-stables-current').textContent = formatVal(baseParams.stablecoins);
+                document.getElementById('sim-activeAddresses-current').textContent = formatCount(baseParams.activeAddresses);
                 
                 // Update staking base label
                 var stakingLabel = document.getElementById('sim-staking-base-label');
@@ -29102,6 +29163,7 @@ Check out ETHval 👇`;
                 document.getElementById('sim-fees').value = 25;
                 document.getElementById('sim-staking').value = 25;
                 document.getElementById('sim-stables').value = 25;
+                document.getElementById('sim-activeAddresses').value = 25;
                 
                 updateSimulation();
                 setupEvents();
@@ -29109,7 +29171,7 @@ Check out ETHval 👇`;
             
             function setupEvents() {
                 // Slider events
-                ['tvl', 'fees', 'staking', 'stables'].forEach(function(p) {
+                ['tvl', 'fees', 'staking', 'stables', 'activeAddresses'].forEach(function(p) {
                     var s = document.getElementById('sim-' + p);
                     if (s) s.addEventListener('input', function() { updateSimulation(true); });
                 });
@@ -29135,6 +29197,7 @@ Check out ETHval 👇`;
                         document.getElementById('sim-fees').value = 25;
                         document.getElementById('sim-staking').value = 25;
                         document.getElementById('sim-stables').value = 25;
+                        document.getElementById('sim-activeAddresses').value = 25;
                         updateSimulation();
                     });
                 }
@@ -29159,31 +29222,38 @@ Check out ETHval 👇`;
                 var feesSlider = parseFloat(document.getElementById('sim-fees').value);
                 var stakingSlider = parseFloat(document.getElementById('sim-staking').value);
                 var stablesSlider = parseFloat(document.getElementById('sim-stables').value);
+                var activeAddressesSlider = parseFloat(document.getElementById('sim-activeAddresses').value);
                 
                 var tvlMult = sliderToMultiplier(tvlSlider);
                 var feesMult = sliderToMultiplier(feesSlider);
                 var stakingPct = sliderToStaking(stakingSlider) / 100;
                 var stablesMult = sliderToMultiplier(stablesSlider);
+                var activeAddressesMult = sliderToMultiplier(activeAddressesSlider);
                 
                 // Check if all sliders are at default (reset state = 25)
                 var isReset = Math.abs(tvlSlider - 25) < 0.5 && 
                               Math.abs(feesSlider - 25) < 0.5 && 
                               Math.abs(stablesSlider - 25) < 0.5 &&
-                              Math.abs(stakingSlider - 25) < 0.5;
+                              Math.abs(stakingSlider - 25) < 0.5 &&
+                              Math.abs(activeAddressesSlider - 25) < 0.5;
                 
                 // === VARIABLE LINKAGE EFFECTS ===
-                // 1. Stablecoins → TVL, Fees, Settlement (more stablecoins = more DeFi activity)
+                // 1. Stablecoins → TVL, Fees (more stablecoins = more DeFi activity)
+                // Note: ETH settlement (ETH Monetary) is NOT affected by stablecoins
                 var stablesEffectTvl = 1 + (stablesMult - 1) * 0.3;
                 var stablesEffectFees = 1 + (stablesMult - 1) * 0.3;
-                var stablesEffectSettle = 1 + (stablesMult - 1) * 0.5;
                 
                 // 2. TVL → Fees (higher TVL = more DeFi activity = more network fees)
-                // Using sqrt for diminishing returns (2x TVL ≠ 2x fees, more like 1.4x)
                 var tvlEffectFees = 1 + (tvlMult - 1) * 0.5;
+                
+                // 3. Active Addresses → Fees, Settlement (1:1 proportional)
+                // 2x users = 2x transactions = 2x fees/settlement
+                var activeAddressesEffectFees = activeAddressesMult;
+                var activeAddressesEffectSettlement = activeAddressesMult;
                 
                 // Calculate effective multipliers with all linkages
                 var effectiveTvlMult = tvlMult * stablesEffectTvl;
-                var effectiveFeesMult = feesMult * stablesEffectFees * tvlEffectFees;
+                var effectiveFeesMult = feesMult * stablesEffectFees * tvlEffectFees * activeAddressesEffectFees;
                 
                 // Build simulated params
                 var simParams;
@@ -29191,22 +29261,31 @@ Check out ETHval 👇`;
                     // Exact copy of baseParams to ensure 0% change
                     simParams = JSON.parse(JSON.stringify(baseParams));
                 } else {
+                    // Calculate simulated staking APR based on ratio change
+                    // APR roughly inversely proportional to staking ratio
+                    var baseStakingPct = baseStakingRatio / 100;
+                    var aprRatio = baseStakingPct / stakingPct; // If staking increases, APR decreases
+                    var simStakingApr = baseParams.stakingApr * aprRatio;
+                    simStakingApr = Math.max(1.5, Math.min(8, simStakingApr)); // Clamp to reasonable range
+                    
                     simParams = {
                         price: baseParams.price,
                         supply: baseParams.supply,
                         tvl: baseParams.tvl * effectiveTvlMult,
                         l2Tvl: baseParams.l2Tvl * effectiveTvlMult,
                         fees: baseParams.fees * effectiveFeesMult,
-                        dailySettlement: baseParams.dailySettlement * stablesEffectSettle,
+                        dailySettlement: baseParams.dailySettlement * activeAddressesEffectSettlement, // ETH settlement affected by active addresses
                         stakedEth: baseParams.supply * stakingPct,
-                        stakingApr: Math.max(2, Math.min(6, 0.85 / stakingPct)),
-                        stablecoins: baseParams.stablecoins * stablesMult
+                        stakingApr: simStakingApr,
+                        stablecoins: baseParams.stablecoins * stablesMult,
+                        activeAddresses: baseParams.activeAddresses * activeAddressesMult
                     };
                 }
                 
                 // Update slider displays
                 function updateDisplay(id, newVal, baseVal, isPct) {
                     var el = document.getElementById('sim-' + id + '-new');
+                    var changeEl = document.getElementById('sim-' + id + '-change');
                     var group = document.querySelector('[data-param="' + id + '"]');
                     var slider = document.getElementById('sim-' + id);
                     if (!el) return;
@@ -29215,6 +29294,48 @@ Check out ETHval 👇`;
                     el.className = 'sim-new-val';
                     if (newVal > baseVal * 1.01) el.classList.add('increased');
                     else if (newVal < baseVal * 0.99) el.classList.add('decreased');
+                    
+                    // Update change percentage
+                    if (changeEl) {
+                        var changePct = baseVal > 0 ? ((newVal - baseVal) / baseVal) * 100 : 0;
+                        if (Math.abs(changePct) < 0.5) {
+                            changeEl.textContent = '';
+                            changeEl.className = 'sim-change-pct';
+                        } else {
+                            changeEl.textContent = (changePct > 0 ? '+' : '') + changePct.toFixed(0) + '%';
+                            changeEl.className = 'sim-change-pct ' + (changePct > 0 ? 'positive' : 'negative');
+                        }
+                    }
+                    
+                    // Modified state: check if slider is not at 25 (default position)
+                    var isModified = Math.abs(parseFloat(slider.value) - 25) > 0.5;
+                    if (group) group.classList.toggle('modified', isModified);
+                }
+                
+                // Special display function for count values (no $ prefix)
+                function updateDisplayCount(id, newVal, baseVal) {
+                    var el = document.getElementById('sim-' + id + '-new');
+                    var changeEl = document.getElementById('sim-' + id + '-change');
+                    var group = document.querySelector('[data-param="' + id + '"]');
+                    var slider = document.getElementById('sim-' + id);
+                    if (!el) return;
+                    
+                    el.textContent = formatCount(newVal);
+                    el.className = 'sim-new-val';
+                    if (newVal > baseVal * 1.01) el.classList.add('increased');
+                    else if (newVal < baseVal * 0.99) el.classList.add('decreased');
+                    
+                    // Update change percentage
+                    if (changeEl) {
+                        var changePct = baseVal > 0 ? ((newVal - baseVal) / baseVal) * 100 : 0;
+                        if (Math.abs(changePct) < 0.5) {
+                            changeEl.textContent = '';
+                            changeEl.className = 'sim-change-pct';
+                        } else {
+                            changeEl.textContent = (changePct > 0 ? '+' : '') + changePct.toFixed(0) + '%';
+                            changeEl.className = 'sim-change-pct ' + (changePct > 0 ? 'positive' : 'negative');
+                        }
+                    }
                     
                     // Modified state: check if slider is not at 25 (default position)
                     var isModified = Math.abs(parseFloat(slider.value) - 25) > 0.5;
@@ -29225,6 +29346,7 @@ Check out ETHval 👇`;
                 updateDisplay('fees', simParams.fees, baseParams.fees, false);
                 updateDisplay('staking', stakingPct * 100, baseStakingRatio, true);
                 updateDisplay('stables', simParams.stablecoins, baseParams.stablecoins, false);
+                updateDisplayCount('activeAddresses', simParams.activeAddresses, baseParams.activeAddresses);
                 
                 // Calculate fair values using DB data for Current values
                 var currentTotal = 0, simTotal = 0, count = 0;
