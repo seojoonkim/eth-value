@@ -2964,15 +2964,16 @@
                                 const price = priceMap.get(dateStr);
                                 if (!price) continue;
                                 
-                                // Use total_volume_usd (ETH + all ERC-20 tokens)
-                                const txVolumeUsd = parseFloat(row.total_volume_usd) || 0;
+                                // Use eth_volume_usd (native ETH transfers only) for proper NVT calculation
+                                // NVT should use native coin volume, not all token transfers
+                                const txVolumeUsd = parseFloat(row.eth_volume_usd) || 0;
                                 if (txVolumeUsd <= 0) continue;
                                 
                                 const mcap = price * baseSupply;
                                 const nvt = mcap / txVolumeUsd;
                                 
-                                // Also get ETH-only volume for reference
-                                const ethVolumeUsd = parseFloat(row.eth_volume_usd) || 0;
+                                // Also store total volume for reference
+                                const totalVolumeUsd = parseFloat(row.total_volume_usd) || 0;
                                 
                                 records.push({
                                     date: dateStr,
@@ -2980,7 +2981,7 @@
                                     nvt_ratio: parseFloat(nvt.toFixed(2)),
                                     market_cap: parseFloat(mcap.toFixed(2)),
                                     tx_volume_usd: parseFloat(txVolumeUsd.toFixed(2)),
-                                    tx_volume_eth: parseFloat((ethVolumeUsd / price).toFixed(2)),
+                                    tx_volume_eth: parseFloat((txVolumeUsd / price).toFixed(2)),
                                     source: 'dune'
                                 });
                             }

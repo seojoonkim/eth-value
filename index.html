@@ -1704,7 +1704,7 @@
         /* Triple Chart Grid - Price & Market (4열) */
         .triple-chart-grid {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 12px;
             overflow: visible;
         }
@@ -1846,7 +1846,7 @@
         /* Section 2: Metrics - On-Chain (4열) */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 10px;
             margin-bottom: 10px;
             overflow: visible;
@@ -1900,7 +1900,7 @@
             color: var(--text);
             font-size: 14px;
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 20px;
         }
         
@@ -7865,19 +7865,18 @@
             }
         }
 
-        @media (max-width: 1000px) {
+        @media (max-width: 1200px) {
             .valuation-layout { grid-template-columns: 1fr; }
-            .triple-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
 
         @media (max-width: 850px) {
-            .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .methodology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-
-        @media (max-width: 900px) {
-            /* triple-chart-grid도 metrics-grid처럼 2열 유지 */
+        
+        @media (max-width: 600px) {
+            .triple-chart-grid { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .ai-commentary-text { grid-template-columns: 1fr; }
         }
 
         /* Responsive - Tablet (768px ~ 1024px) */
@@ -8101,9 +8100,9 @@
                 min-height: 80px;
             }
 
-            /* Triple Chart Grid - 2열 유지 */
+            /* Triple Chart Grid - 모바일에서도 auto-fill */
             .triple-chart-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
                 gap: 10px;
             }
 
@@ -8129,9 +8128,9 @@
                 height: 70px;
             }
 
-            /* Metrics - 768px에서도 2열 유지 */
+            /* Metrics - 모바일에서도 auto-fill */
             .metrics-grid { 
-                grid-template-columns: repeat(2, minmax(0, 1fr)); 
+                grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); 
                 gap: 10px;
             }
 
@@ -8603,8 +8602,8 @@
             display: flex;
             justify-content: center;
             gap: 48px;
-            margin-bottom: 16px;
-            padding: 12px 0;
+            margin-bottom: 8px;
+            padding: 6px 0;
         }
 
         .chart-price-item {
@@ -8680,7 +8679,7 @@
         }
 
         .historical-chart-area {
-            height: 480px;
+            height: 554px;
             touch-action: pan-y;  /* Allow vertical scroll */
         }
         
@@ -8690,8 +8689,8 @@
 
         /* Interactive Legend Container */
         .historical-legend-container {
-            margin-top: 20px;
-            padding-top: 16px;
+            margin-top: 10px;
+            padding-top: 8px;
         }
 
         .legend-row {
@@ -8803,7 +8802,7 @@
         }
 
         .legend-item-fixed .legend-color {
-            width: 14px;
+            width: 20px;
             height: 3px;
             flex-shrink: 0;
         }
@@ -8889,6 +8888,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
             color: var(--text-secondary);
+            font-size: 12px;
         }
 
         .legend-btn.active .legend-name {
@@ -8941,7 +8941,7 @@
         }
 
         .historical-chart-area {
-            height: 360px;
+            height: 416px;
             position: relative;
         }
 
@@ -13012,11 +13012,16 @@
                 </div>
                 
                 <!-- Period tabs (below price) -->
-                <div class="historical-tabs-wrapper" style="position: relative; margin-bottom: 12px;">
+                <div class="historical-tabs-wrapper" style="position: relative; margin-bottom: 5px;">
                     <label class="outlier-filter-toggle" title="Filter extreme outliers for better chart readability">
                         <input type="checkbox" id="outlier-filter-checkbox" checked>
                         <span class="outlier-filter-switch"></span>
-                        <span class="outlier-filter-label">Auto Scale</span>
+                        <span class="outlier-filter-label" data-i18n="chart.autoScale">Auto Scale</span>
+                    </label>
+                    <label class="outlier-filter-toggle" title="Apply 7-day moving average for smoother trends" style="margin-left: 16px;">
+                        <input type="checkbox" id="smoothing-checkbox" checked>
+                        <span class="outlier-filter-switch"></span>
+                        <span class="outlier-filter-label" data-i18n="chart.movingAvg7d">7D Moving Avg</span>
                     </label>
                     <div class="historical-tabs">
                         <button class="historical-tab active" data-period="90" id="historical-tab-90d">90D</button>
@@ -16875,6 +16880,8 @@
                 'chart.historicalTitle': 'COMPOSITE FAIR VALUE OVER TIME',
                 'chart.marketPrice': 'Market Price',
                 'chart.compositeFairValue': 'Composite Fair Value',
+                'chart.autoScale': 'Auto Scale',
+                'chart.movingAvg7d': '7D Moving Avg',
                 'conclusion.notePrefix': 'Simple average of',
                 'conclusion.noteSuffix': 'active models. Toggle off any model below to exclude it from the calculation.',
                 'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. Investment decisions should consider multiple factors comprehensively.',
@@ -17280,6 +17287,8 @@
                 'chart.historicalTitle': '종합 적정 가치의 변화',
                 'chart.marketPrice': '시장 가격',
                 'chart.compositeFairValue': '종합 적정 가치',
+                'chart.autoScale': '자동 스케일',
+                'chart.movingAvg7d': '7일 이동평균',
                 'conclusion.notePrefix': '',
                 'conclusion.noteSuffix': '개 활성 모델의 단순 평균. 아래 모델을 토글하여 계산에서 제외할 수 있습니다.',
                 'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
@@ -28153,6 +28162,48 @@ Check out ETHval 👇`;
                 state.yAxisMax = calculateYAxisMax();
             }
             
+            // Check if smoothing is enabled
+            const smoothingEnabled = document.getElementById('smoothing-checkbox')?.checked ?? true;
+            
+            // 7-day moving average helper (preserves last value as current)
+            const applySmoothing = (dataArray, preserveLastValue = true) => {
+                if (!smoothingEnabled || !dataArray || dataArray.length < 7) return dataArray;
+                
+                const result = [];
+                const window = 7;
+                
+                for (let i = 0; i < dataArray.length; i++) {
+                    if (i < window - 1) {
+                        // Not enough data for full window, use available average
+                        let sum = 0, count = 0;
+                        for (let j = 0; j <= i; j++) {
+                            if (dataArray[j] !== null && dataArray[j] !== undefined) {
+                                sum += dataArray[j];
+                                count++;
+                            }
+                        }
+                        result.push(count > 0 ? sum / count : null);
+                    } else {
+                        // Full 7-day window
+                        let sum = 0, count = 0;
+                        for (let j = i - window + 1; j <= i; j++) {
+                            if (dataArray[j] !== null && dataArray[j] !== undefined) {
+                                sum += dataArray[j];
+                                count++;
+                            }
+                        }
+                        result.push(count > 0 ? sum / count : null);
+                    }
+                }
+                
+                // Preserve last value as current (not smoothed)
+                if (preserveLastValue && dataArray.length > 0) {
+                    result[result.length - 1] = dataArray[dataArray.length - 1];
+                }
+                
+                return result;
+            };
+            
             // Check gated access for 3Y
             if (currentHistoricalPeriod === 1095) {
                 const isLoggedIn = !!window.currentUser;
@@ -28255,9 +28306,10 @@ Check out ETHval 👇`;
             
             // Price dataset - dashed line (reference), ALWAYS visible
             const colors = getModelColors();
+            const priceValues = sampledPrice.map(d => d.value);
             datasets.push({
                 label: 'Market Price',
-                data: sampledPrice.map(d => d.value),
+                data: applySmoothing(priceValues),
                 borderColor: colors.price,
                 backgroundColor: 'transparent',
                 borderWidth: 3,
@@ -28270,7 +28322,8 @@ Check out ETHval 👇`;
             });
             
             // Composite dataset - solid line (key output), ALWAYS visible
-            const compositeChartData = calculateDynamicComposite();
+            const compositeRawData = calculateDynamicComposite();
+            const compositeChartData = applySmoothing(compositeRawData);
             datasets.push({
                 label: 'Composite',
                 data: compositeChartData,
@@ -28304,10 +28357,11 @@ Check out ETHval 👇`;
                 if (modelData && modelData.length > 0) {
                     const filteredData = modelData.filter(d => d.date >= cutoffDate);
                     const btn = document.querySelector(`.legend-btn[data-model="${model}"]`);
+                    const modelValues = filteredData.map(d => d.value);
                     
                     datasets.push({
                         label: MODEL_NAMES[model] || model,
-                        data: filteredData.map(d => d.value),
+                        data: applySmoothing(modelValues),
                         borderColor: MODEL_COLORS[model] || '#888',
                         backgroundColor: 'transparent',
                         borderWidth: 1,
@@ -28759,6 +28813,15 @@ Check out ETHval 👇`;
                 renderHistoricalMainChart(null); // null keeps current period
             });
         }
+        
+        // Smoothing toggle event listener
+        const smoothingCheckbox = document.getElementById('smoothing-checkbox');
+        if (smoothingCheckbox) {
+            smoothingCheckbox.addEventListener('change', () => {
+                // Re-render chart with/without smoothing
+                renderHistoricalMainChart(null); // null keeps current period
+            });
+        }
 
         // Legend button click handlers
         document.querySelectorAll('.legend-btn').forEach(btn => {
@@ -28790,12 +28853,7 @@ Check out ETHval 👇`;
         function updateChartData() {
             if (!historicalMainChart || !state.historicalFairValues) return;
             
-            const cutoffDate = new Date();
-            cutoffDate.setDate(cutoffDate.getDate() - currentHistoricalPeriod);
-            const priceData = state.priceHistory.filter(d => d.date >= cutoffDate);
-            const sampleRate = Math.max(1, Math.floor(priceData.length / 100));
-            
-            // Get active models
+            // Get active models for badge update
             const activeModels = [];
             MODEL_ORDER.forEach(model => {
                 const btn = document.querySelector(`.legend-btn[data-model="${model}"]`);
@@ -28816,57 +28874,8 @@ Check out ETHval 👇`;
                 chartModelCount.textContent = activeModels.length;
             }
             
-            // Recalculate composite with active models only (simple average)
-            const filteredPrice = priceData.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            const newCompositeData = [];
-            
-            for (let i = 0; i < filteredPrice.length; i++) {
-                let sum = 0;
-                let count = 0;
-                
-                activeModels.forEach(model => {
-                    const modelData = state.historicalFairValues[model];
-                    if (modelData) {
-                        const filtered = modelData.filter(d => d.date >= cutoffDate);
-                        const sampled = filtered.filter((_, j, arr) => j % sampleRate === 0 || j === arr.length - 1);
-                        if (sampled[i] && sampled[i].value > 0 && isFinite(sampled[i].value)) {
-                            sum += sampled[i].value;
-                            count++;
-                        }
-                    }
-                });
-                
-                newCompositeData.push(count > 0 ? sum / count : 0);
-            }
-            
-            // Update composite dataset (index 1)
-            historicalMainChart.data.datasets[1].data = newCompositeData;
-            
-            // Update chart header composite value to match the chart's last composite value
-            const chartCompositeEl = document.getElementById('chart-composite-value');
-            const chartDiffEl = document.getElementById('chart-price-diff');
-            if (chartCompositeEl && newCompositeData.length > 0) {
-                const lastComposite = newCompositeData[newCompositeData.length - 1];
-                chartCompositeEl.textContent = '$' + lastComposite.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-                
-                if (chartDiffEl && state.price > 0) {
-                    const diff = ((lastComposite - state.price) / state.price) * 100;
-                    chartDiffEl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%';
-                    chartDiffEl.className = 'chart-price-diff ' + (diff >= 0 ? 'up' : 'down');
-                }
-            }
-            
-            // Update individual model visibility
-            MODEL_ORDER.forEach((model, index) => {
-                const datasetIndex = index + 2; // Skip price and composite
-                if (historicalMainChart.data.datasets[datasetIndex]) {
-                    const btn = document.querySelector(`.legend-btn[data-model="${model}"]`);
-                    historicalMainChart.data.datasets[datasetIndex].hidden = !(btn && btn.classList.contains('active'));
-                }
-            });
-            
-            // Trigger smooth update without showing points
-            historicalMainChart.update();
+            // Re-render chart to apply smoothing consistently
+            renderHistoricalMainChart(null);
         }
 
         // Trigger historical calculation after data is loaded

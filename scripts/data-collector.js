@@ -2184,8 +2184,9 @@ async function collect_nvt() {
             const price = priceMap.get(dateStr);
             if (!price) continue;
             
-            // Use total_volume_usd (ETH + all ERC-20 tokens)
-            const txVolumeUsd = parseFloat(row.total_volume_usd) || 0;
+            // Use eth_volume_usd (native ETH transfers only) for proper NVT calculation
+            // NVT should use native coin volume, not all token transfers
+            const txVolumeUsd = parseFloat(row.eth_volume_usd) || 0;
             if (txVolumeUsd <= 0) continue;
             
             const mcap = price * ETH_SUPPLY;
