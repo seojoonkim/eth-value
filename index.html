@@ -2455,6 +2455,7 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
             min-width: 0;
+            contain: layout style;
         }
 
         .valuation-model {
@@ -2465,6 +2466,8 @@
             min-width: 0;
             overflow: hidden;
             transition: border-color var(--transition-fast);
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
         
         .valuation-model:hover {
@@ -28962,14 +28965,22 @@ Check out ETHval 👇`;
                 ethMonetary: {
                     name: 'ETH Monetary (MV=PQ)',
                     color: '#a855f7',
-                    calc: function(p) { return ((p.dailySettlement * 365 / 6)) / p.supply; }
+                    calc: function(p) { 
+                        // dailySettlement scales with stablecoins effect
+                        return ((p.dailySettlement * 365 / 6)) / p.supply; 
+                    }
                 },
                 ecosystemSettlement: {
                     name: 'Ecosystem Settlement (MV=PQ)',
                     color: '#ec4899',
                     calc: function(p) { 
-                        var l1Total = p.l1TotalVolume || 368000000000;
-                        var l2Total = p.l2TotalVolume || 419500000000;
+                        // L1+L2 total volume scales with stablecoins/TVL activity
+                        var baseL1 = 368000000000;
+                        var baseL2 = 419500000000;
+                        // Use TVL ratio as proxy for volume scaling
+                        var volumeScale = p.tvl / (baseParams.tvl || 70000000000);
+                        var l1Total = baseL1 * volumeScale;
+                        var l2Total = baseL2 * volumeScale;
                         return ((l1Total + l2Total) * 365 / 150) / p.supply; 
                     }
                 }
@@ -29225,18 +29236,8 @@ Check out ETHval 👇`;
                     if (!model) continue;
                     
                     try {
-                        // Get Current value from DB (historicalFairValues)
-                        var curr = 0;
-                        if (typeof state !== 'undefined' && state.historicalFairValues && state.historicalFairValues[key]) {
-                            var dbData = state.historicalFairValues[key];
-                            if (dbData.length > 0) {
-                                curr = dbData[dbData.length - 1].value;
-                            }
-                        }
-                        // Fallback to MODELS calculation if no DB data
-                        if (curr === 0) {
-                            curr = model.calc(baseParams);
-                        }
+                        // Calculate Current value from baseParams (baseline)
+                        var curr = model.calc(baseParams);
                         
                         // Calculate Simulated value
                         var sim;
