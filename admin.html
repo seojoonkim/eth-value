@@ -374,7 +374,7 @@
         const DUNE_ETH_PRICE_QUERY_ID = 6390291;      // ETHval - ETH Daily Price
         const DUNE_ETH_BTC_QUERY_ID = 6390302;        // ETHval - ETH BTC Ratio
         const DUNE_BLOB_QUERY_ID = 6350774;
-        const DUNE_TX_VOLUME_QUERY_ID = 6350858;
+        // REMOVED: const DUNE_TX_VOLUME_QUERY_ID = 6350858;  // Archived - now using L1 Total Volume for NVT
         const DUNE_ACTIVE_ADDR_QUERY_ID = 6352303;
         const DUNE_L2_ACTIVE_ADDR_QUERY_ID = 6352308;
         // REMOVED: const DUNE_L2_TX_VOLUME_QUERY_ID = 6352386;  // Now using L2 Total Volume (6386591)
@@ -2922,10 +2922,10 @@
                 const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
                 const baseSupply = 120000000;
                 
-                // Try Dune API for accurate tx volume
+                // Use L1 Total Volume query (6386589) - has total_volume_usd
                 if (DUNE_API_KEY) {
                     try {
-                        log('  📡 Fetching TX volume from Dune API...', 'info');
+                        log('  📡 Fetching L1 Total Volume from Dune API...', 'info');
                         
                         // Paginate through all results
                         let allRows = [];
@@ -2933,7 +2933,7 @@
                         const pageSize = 1000;
                         
                         while (true) {
-                            const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_TX_VOLUME_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
+                            const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_L1_TOTAL_VOLUME_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
                                 headers: { 'X-Dune-API-Key': DUNE_API_KEY }
                             });
                             
@@ -2952,7 +2952,7 @@
                         }
                         
                         if (allRows.length > 0) {
-                            log(`  📊 Got ${allRows.length} TX volume records from Dune`, 'info');
+                            log(`  📊 Got ${allRows.length} L1 Total Volume records from Dune`, 'info');
                             
                             const records = [];
                             for (const row of allRows) {
@@ -2964,12 +2964,15 @@
                                 const price = priceMap.get(dateStr);
                                 if (!price) continue;
                                 
-                                const txVolumeEth = parseFloat(row.tx_volume_eth) || 0;
-                                if (txVolumeEth <= 0) continue;
+                                // Use total_volume_usd (ETH + all ERC-20 tokens)
+                                const txVolumeUsd = parseFloat(row.total_volume_usd) || 0;
+                                if (txVolumeUsd <= 0) continue;
                                 
-                                const txVolumeUsd = txVolumeEth * price;
                                 const mcap = price * baseSupply;
                                 const nvt = mcap / txVolumeUsd;
+                                
+                                // Also get ETH-only volume for reference
+                                const ethVolumeUsd = parseFloat(row.eth_volume_usd) || 0;
                                 
                                 records.push({
                                     date: dateStr,
@@ -2977,7 +2980,7 @@
                                     nvt_ratio: parseFloat(nvt.toFixed(2)),
                                     market_cap: parseFloat(mcap.toFixed(2)),
                                     tx_volume_usd: parseFloat(txVolumeUsd.toFixed(2)),
-                                    tx_volume_eth: parseFloat(txVolumeEth.toFixed(2)),
+                                    tx_volume_eth: parseFloat((ethVolumeUsd / price).toFixed(2)),
                                     source: 'dune'
                                 });
                             }

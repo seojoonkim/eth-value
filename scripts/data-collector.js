@@ -1178,7 +1178,7 @@ const DUNE_QUERIES = {
     
     // Existing queries
     BLOB: 6350774,
-    // TX_VOLUME: 6350858,  // REMOVED - Use L1 Total Volume (6386589) eth_volume_usd instead
+    // TX_VOLUME: 6350858,  // ARCHIVED - Use L1_TOTAL_VOLUME instead
     ACTIVE_ADDR: 6352303,
     L2_ACTIVE_ADDR: 6352308,
     // L2_TX_VOLUME: 6352386,  // REMOVED - Use L2 Total Volume (6386591) native_volume_usd instead
@@ -1190,6 +1190,8 @@ const DUNE_QUERIES = {
     GAS_PRICE: 6354506,  // Daily average gas price
     
     // New queries
+    L1_TOTAL_VOLUME: 6386589,     // L1 Total Volume (ETH + ERC-20) - for NVT
+    L2_TOTAL_VOLUME: 6386591,     // L2 Total Volume (all chains)
     L2_DEX_VOLUME: 6395472,       // L2 DEX Volume (all chains)
     BRIDGE_TOTAL_VOLUME: 6395474  // Bridge Total Volume (ETH + ERC-20)
 };
@@ -2117,51 +2119,109 @@ async function collect_volatility() {
 }
 
 // ============================================================
-// 20. NVT Ratio (calculated)
-// NVT = Market Cap / Daily On-chain Volume (7-day avg)
+// 20. NVT Ratio (from L1 Total Volume Dune query)
+// NVT = Market Cap / Daily On-chain Volume
 // ============================================================
 async function collect_nvt() {
-    const { data: prices } = await supabase.from('historical_eth_price').select('date, close, volume').order('date');
-    if (!prices || prices.length < 7) return 0;
+    if (!DUNE_API_KEY) {
+        console.log('  ⚠️ No Dune API key for NVT');
+        return 0;
+    }
     
+    // Get ETH prices first
+    const { data: prices } = await supabase.from('historical_eth_price')
+        .select('date, close')
+        .order('date', { ascending: false })
+        .limit(1100);
+    
+    if (!prices || prices.length === 0) {
+        console.log('  ❌ No price data available');
+        return 0;
+    }
+    
+    const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
     const ETH_SUPPLY = 120400000;
-    const records = [];
     
-    for (let i = 6; i < prices.length; i++) {
-        const p = prices[i];
-        if (!p.volume || p.volume === 0) continue;
+    try {
+        console.log('  📡 Fetching L1 Total Volume from Dune...');
         
-        // 7일 평균 거래량 계산
-        let sum = 0;
-        let count = 0;
-        for (let j = i - 6; j <= i; j++) {
-            if (prices[j].volume && prices[j].volume > 0) {
-                sum += parseFloat(prices[j].volume);
-                count++;
+        // Paginate through all results
+        let allRows = [];
+        let offset = 0;
+        const pageSize = 1000;
+        
+        while (true) {
+            const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_QUERIES.L1_TOTAL_VOLUME}/results?limit=${pageSize}&offset=${offset}`, {
+                headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+            });
+            
+            if (!response.ok) break;
+            
+            const data = await response.json();
+            const rows = data.result?.rows || [];
+            
+            if (rows.length === 0) break;
+            
+            allRows = allRows.concat(rows);
+            console.log(`  📊 Fetched ${rows.length} rows (total: ${allRows.length})`);
+            
+            if (rows.length < pageSize) break;
+            offset += pageSize;
+        }
+        
+        if (allRows.length === 0) {
+            console.log('  ⚠️ No data from Dune');
+            return 0;
+        }
+        
+        const records = [];
+        for (const row of allRows) {
+            let dateStr = row.date;
+            if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+                dateStr = dateStr.split(' ')[0];
+            }
+            
+            const price = priceMap.get(dateStr);
+            if (!price) continue;
+            
+            // Use total_volume_usd (ETH + all ERC-20 tokens)
+            const txVolumeUsd = parseFloat(row.total_volume_usd) || 0;
+            if (txVolumeUsd <= 0) continue;
+            
+            const mcap = price * ETH_SUPPLY;
+            const nvt = mcap / txVolumeUsd;
+            
+            if (nvt > 0 && nvt < 500) {
+                records.push({
+                    date: dateStr,
+                    timestamp: new Date(dateStr).getTime(),
+                    nvt_ratio: parseFloat(nvt.toFixed(2)),
+                    market_cap: parseFloat(mcap.toFixed(2)),
+                    tx_volume_usd: parseFloat(txVolumeUsd.toFixed(2)),
+                    source: 'dune'
+                });
             }
         }
         
-        if (count === 0) continue;
-        const avgVolume = sum / count;
+        // Sort by date descending and filter incomplete data
+        records.sort((a, b) => b.date.localeCompare(a.date));
         
-        const mcap = p.close * ETH_SUPPLY;
-        // volume이 USD 단위라면 직접 나눔
-        // volume이 ETH 단위라면 * close로 USD 변환
-        const volumeUsd = avgVolume > 1000000000 ? avgVolume : avgVolume * p.close;
-        
-        const nvt = mcap / volumeUsd;
-        
-        if (nvt > 0 && nvt < 500) {
-            records.push({
-                date: p.date,
-                nvt_ratio: parseFloat(nvt.toFixed(2)),
-                market_cap: mcap
-            });
+        if (records.length >= 8) {
+            const latestVol = records[0].tx_volume_usd;
+            const prev7Avg = records.slice(1, 8).reduce((sum, r) => sum + r.tx_volume_usd, 0) / 7;
+            if (prev7Avg > 0 && latestVol < prev7Avg * 0.3) {
+                console.log(`  ⚠️ Excluding incomplete: ${records[0].date}`);
+                records.shift();
+            }
         }
+        
+        console.log(`  📦 ${records.length} NVT records from Dune`);
+        return await upsertBatch('historical_nvt', records);
+        
+    } catch (e) {
+        console.log(`  ❌ Dune error: ${e.message}`);
+        return 0;
     }
-    
-    console.log(`  📦 Calculated ${records.length} NVT records`);
-    return await upsertBatch('historical_nvt', records);
 }
 
 // ============================================================
