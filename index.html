@@ -25011,201 +25011,236 @@
             setChartLoading(canvasId, false);
         }
 
-        // Valuation with formulas
+        // ═══════════════════════════════════════════════════════════════════
+        // UNIFIED MODEL CALCULATION - Single source of truth for all 12 models
+        // ═══════════════════════════════════════════════════════════════════
+        
+        // Model calculation constants
+        const MODEL_CONSTANTS = {
+            TVL_MULTIPLE: 7,
+            L2_WEIGHT: 2,
+            L2_MULTIPLE: 6,
+            PS_RATIO: 25,
+            DISCOUNT_RATE: 0.09,
+            GROWTH_RATE: 0.03,
+            RISK_FREE_RATE: 4.5,
+            RISK_PREMIUM: 1.5,
+            STABLES_RATIO: 0.28,
+            LOST_ETH_PCT: 0.03,
+            ETH_VELOCITY: 6,
+            ECOSYSTEM_VELOCITY: 150,
+            METCALFE_COEF: 2,
+            METCALFE_EXP: 1.5
+        };
+        
+        // Calculate single model value given input data
+        // Returns { value, source } or null if cannot calculate
+        function calculateSingleModel(modelId, data) {
+            const { price, supply, tvl, stakedEth, l2Tvl, fees, stables, stakingApr, 
+                    dailySettlement, l1TotalVolume, l2TotalVolume, ethInDefi } = data;
+            const C = MODEL_CONSTANTS;
+            
+            switch (modelId) {
+                case 'tvlMultiple':
+                    if (tvl > 0 && supply > 0) {
+                        return { 
+                            value: (tvl * C.TVL_MULTIPLE) / supply,
+                            source: `Multiple=${C.TVL_MULTIPLE}×`
+                        };
+                    }
+                    break;
+                    
+                case 'stakingScarcity':
+                    if (stakedEth > 0 && supply > 0 && price > 0) {
+                        const liquidSupply = supply - stakedEth;
+                        const scarcityFactor = supply / liquidSupply;
+                        const stakedPct = ((stakedEth / supply) * 100).toFixed(0);
+                        return {
+                            value: price * Math.pow(scarcityFactor, 0.5),
+                            source: `Staked=${stakedPct}%`
+                        };
+                    }
+                    break;
+                    
+                case 'metcalfe':
+                    if (tvl > 0 && supply > 0) {
+                        const networkValue = C.METCALFE_COEF * Math.pow(tvl / 1e9, C.METCALFE_EXP) * 1e9;
+                        return {
+                            value: networkValue / supply,
+                            source: `Coef=${C.METCALFE_COEF}, Exp=${C.METCALFE_EXP}`
+                        };
+                    }
+                    break;
+                    
+                case 'dcf':
+                    if (price > 0 && stakingApr > 0) {
+                        const stakingYield = stakingApr / 100;
+                        const yieldMultiplier = 1 + stakingYield;
+                        const dcfValue = Math.min(price * yieldMultiplier / (C.DISCOUNT_RATE - C.GROWTH_RATE), price * 3);
+                        return {
+                            value: dcfValue,
+                            source: `Discount=${C.DISCOUNT_RATE*100}%, Growth=${C.GROWTH_RATE*100}%, APR=${stakingApr.toFixed(1)}%`
+                        };
+                    }
+                    break;
+                    
+                case 'l2Ecosystem':
+                    if (l2Tvl > 0 && tvl > 0 && supply > 0) {
+                        return {
+                            value: (tvl + l2Tvl * C.L2_WEIGHT) * C.L2_MULTIPLE / supply,
+                            source: `Weight=${C.L2_WEIGHT}, Multiple=${C.L2_MULTIPLE}`
+                        };
+                    }
+                    break;
+                    
+                case 'ps':
+                    if (fees > 0 && supply > 0) {
+                        return {
+                            value: (fees * 365 * C.PS_RATIO) / supply,
+                            source: `PSRatio=${C.PS_RATIO}×`
+                        };
+                    }
+                    break;
+                    
+                case 'revenueYield':
+                    if (fees > 0 && supply > 0 && stakingApr > 0) {
+                        const targetYield = stakingApr / 100;
+                        return {
+                            value: (fees * 365 / targetYield) / supply,
+                            source: `APR=${stakingApr.toFixed(2)}%`
+                        };
+                    }
+                    break;
+                    
+                case 'commitmentPremium':
+                    if (stakedEth > 0 && supply > 0 && price > 0) {
+                        const defiEth = ethInDefi || (tvl / price);
+                        const l2Eth = l2Tvl / price;
+                        const lostEth = supply * C.LOST_ETH_PCT;
+                        const totalLocked = stakedEth + defiEth + l2Eth + lostEth;
+                        const liquidFloat = supply - totalLocked;
+                        if (liquidFloat > 0) {
+                            const liquidFloatPct = ((liquidFloat / supply) * 100).toFixed(0);
+                            return {
+                                value: price * Math.sqrt(supply / liquidFloat),
+                                source: `Liquid Float=${liquidFloatPct}%`
+                            };
+                        }
+                    }
+                    break;
+                    
+                case 'appCapital':
+                    if (stables > 0 && supply > 0) {
+                        const appCap = stables / C.STABLES_RATIO;
+                        return {
+                            value: appCap / supply,
+                            source: `Ratio=${(C.STABLES_RATIO*100).toFixed(0)}%`
+                        };
+                    }
+                    break;
+                    
+                case 'validatorEcon':
+                    if (price > 0 && stakingApr > 0) {
+                        const targetYield = C.RISK_FREE_RATE + C.RISK_PREMIUM;
+                        return {
+                            value: price * (targetYield / stakingApr),
+                            source: `Rf=${C.RISK_FREE_RATE}%+RP=${C.RISK_PREMIUM}%, APR=${stakingApr.toFixed(2)}%`
+                        };
+                    }
+                    break;
+                    
+                case 'ethMonetary':
+                    if (dailySettlement > 0 && supply > 0) {
+                        return {
+                            value: (dailySettlement * 365 / C.ETH_VELOCITY) / supply,
+                            source: `Velocity=${C.ETH_VELOCITY} (ETH turnover ≈ USD M1)`
+                        };
+                    }
+                    break;
+                    
+                case 'ecosystemSettlement':
+                    if (supply > 0) {
+                        const dailyEcosystemVolume = (l1TotalVolume || 0) + (l2TotalVolume || 0);
+                        if (dailyEcosystemVolume > 0) {
+                            return {
+                                value: (dailyEcosystemVolume * 365 / C.ECOSYSTEM_VELOCITY) / supply,
+                                source: `Velocity=${C.ECOSYSTEM_VELOCITY} (Stablecoin×2, BlockSci 4x adj.)`
+                            };
+                        }
+                    }
+                    break;
+            }
+            return null;
+        }
+        
+        // Model metadata (name, formula, reliability)
+        const MODEL_METADATA = {
+            tvlMultiple: { name: 'TVL Multiple', formula: 'TVL × Multiple ÷ Supply', reliability: 1 },
+            stakingScarcity: { name: 'Staking Scarcity', formula: 'Price × √(Supply ÷ (Supply - Staked))', reliability: 1 },
+            metcalfe: { name: "Metcalfe's Law", formula: 'Coef × TVL^Exp ÷ Supply', reliability: 2 },
+            dcf: { name: 'DCF (Staking)', formula: 'Price × (1+APR) ÷ (Discount - Growth)', reliability: 2 },
+            l2Ecosystem: { name: 'L2 Ecosystem', formula: '(TVL + L2×Weight) × Multiple ÷ Supply', reliability: 1 },
+            ps: { name: 'P/S Ratio (25x)', formula: '(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply', reliability: 2 },
+            revenueYield: { name: 'Fee Yield', formula: '(L1Fees + BlobFees) × 365 ÷ APR ÷ Supply', reliability: 3 },
+            commitmentPremium: { name: 'Liquidity Premium', formula: 'Price × √(Supply ÷ Liquid Float)', reliability: 1 },
+            appCapital: { name: 'App Capital', formula: 'AppCapital ÷ Supply', reliability: 2 },
+            validatorEcon: { name: 'Validator Economics', formula: 'Price × (Target ÷ APR)', reliability: 2 },
+            ethMonetary: { name: 'ETH Monetary (MV=PQ)', formula: '(L1 ETH + L2 ETH) × 365 ÷ ETH Velocity ÷ Supply', reliability: 2 },
+            ecosystemSettlement: { name: 'Ecosystem Settlement (MV=PQ)', formula: '(L1 Total Vol + L2 Total Vol) × 365 ÷ Ecosystem Velocity ÷ Supply', reliability: 2 }
+        };
+        
+        // Prepare data object from current state
+        function getCurrentModelData() {
+            const l1Fees = state.fees || 5000000;
+            const blobFeesUsd = (state.blobFees || 0) * (state.price || 3000);
+            
+            return {
+                price: state.price || 0,
+                supply: state.circulatingSupply || 120000000,
+                tvl: state.tvl || 50000000000,
+                stakedEth: state.stakedEth || 34000000,
+                l2Tvl: state.l2Tvl || 15000000000,
+                fees: l1Fees + blobFeesUsd,
+                stables: state.stablecoins || 0,
+                stakingApr: state.stakingApr || 3.5,
+                dailySettlement: state.dailySettlement || 5850000000,
+                l1TotalVolume: state.l1TotalVolume || 368000000000,
+                l2TotalVolume: state.l2TotalVolume || 419500000000,
+                ethInDefi: state.ethInDefi || (state.price > 0 ? (state.tvl || 50000000000) / state.price : 0)
+            };
+        }
+
+        // Valuation with formulas - uses unified calculation
         function calculateValuations() {
             const models = [];
-            const cs = state.circulatingSupply || 120000000; // 기본값 120M ETH
+            const data = getCurrentModelData();
             
-            // 기본값 설정 (API 실패 시 대비)
-            const tvl = state.tvl || 50000000000; // 기본 TVL $50B
-            const stakedEth = state.stakedEth || 34000000; // 기본 staked 34M ETH
-            const l2Tvl = state.l2Tvl || 15000000000; // 기본 L2 TVL $15B
-            const fees = state.fees || 5000000; // 기본 일일 fees $5M
-
-            // reliability: 3 (High), 2 (Medium), 1 (Low)
-            // 기준: 방법론 검증도 + 데이터 객관성 + 가정 민감도
-            if (tvl > 0 && cs > 0) {
-                models.push({ 
-                    id: 'tvlMultiple',
-                    name: 'TVL Multiple', 
-                    formula: 'TVL × Multiple ÷ Supply', 
-                    price: (tvl * 7) / cs,
-                    reliability: 1,
-                    source: 'Multiple=7×'
-                });
-            }
-            if (stakedEth > 0 && cs > 0) {
-                const scarcity = cs / (cs - stakedEth);
-                const stakedPct = ((stakedEth / cs) * 100).toFixed(0);
-                models.push({ 
-                    id: 'stakingScarcity',
-                    name: 'Staking Scarcity', 
-                    formula: 'Price × √(Supply ÷ (Supply - Staked))', 
-                    price: state.price * Math.pow(scarcity, 0.5),
-                    reliability: 1,
-                    source: `Staked=${stakedPct}%`
-                });
-            }
-            if (tvl > 0 && cs > 0) {
-                models.push({ 
-                    id: 'metcalfe',
-                    name: "Metcalfe's Law", 
-                    formula: 'Coef × TVL^Exp ÷ Supply', 
-                    price: (Math.pow(tvl / 1e9, 1.5) * 1e9 * 2) / cs,
-                    reliability: 2,
-                    source: 'Coef=2, Exp=1.5'
-                });
-            }
-            if (state.price > 0) {
-                // Use live staking APR from Lido, fallback to 3.5%
-                const stakingYield = state.stakingApr > 0 ? state.stakingApr / 100 : 0.035;
-                const yieldMultiplier = 1 + stakingYield;
-                const discountRate = 0.09; // 9% discount rate (4.5% Rf + 4.5% crypto equity RP)
-                const growthRate = 0.03;   // 3% perpetual growth
-                const displayYield = (stakingYield * 100).toFixed(1);
-                models.push({ 
-                    id: 'dcf',
-                    name: 'DCF (Staking)', 
-                    formula: 'Price × (1+APR) ÷ (Discount - Growth)', 
-                    price: Math.min(state.price * yieldMultiplier / (discountRate - growthRate), state.price * 3),
-                    reliability: 2,
-                    source: `Discount=9%, Growth=3%, APR=${displayYield}%`
-                });
-            }
-            if (l2Tvl > 0 && tvl > 0 && cs > 0) {
-                models.push({ 
-                    id: 'l2Ecosystem',
-                    name: 'L2 Ecosystem', 
-                    formula: '(TVL + L2×Weight) × Multiple ÷ Supply', 
-                    price: (tvl + l2Tvl * 2) * 6 / cs,
-                    reliability: 1,
-                    source: 'Weight=2, Multiple=6'
-                });
-            }
-            if (fees > 0 && cs > 0) {
-                models.push({ 
-                    id: 'ps',
-                    name: 'P/S Ratio (25x)', 
-                    formula: '(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply', 
-                    price: (fees * 365 * 25) / cs,
-                    reliability: 2,
-                    source: 'PSRatio=25×'
-                });
-            }
-            
-            // Fee Yield (수익률 기반 역산)
-            // 실제 스테이킹 수익률에서 역산한 가치
-            if (fees > 0 && cs > 0 && state.stakingApr > 0) {
-                const annualRevenue = fees * 365;
-                const targetYield = state.stakingApr / 100; // Live staking APR from Lido
-                const displayYield = state.stakingApr.toFixed(2);
-                models.push({ 
-                    id: 'revenueYield',
-                    name: 'Fee Yield', 
-                    formula: '(L1Fees + BlobFees) × 365 ÷ APR ÷ Supply', 
-                    price: (annualRevenue / targetYield) / cs,
-                    reliability: 3,
-                    source: `APR=${displayYield}%`
-                });
-            }
-            
-            // Liquidity Premium
-            // Based on Amihud liquidity theory: reduced tradeable supply creates price premium
-            // Liquid Float = Supply - (Staked + DeFi + L2 + Lost)
-            const ethInDefi = state.ethInDefi || (state.price > 0 ? tvl / state.price : 0);
-            const l2Eth = state.price > 0 ? (state.l2Tvl || 15000000000) / state.price : 0;
-            const lostEth = cs * 0.03; // ~3% lost/dormant estimate
-            if (stakedEth > 0 && cs > 0 && state.price > 0) {
-                const totalLocked = stakedEth + ethInDefi + l2Eth + lostEth;
-                const liquidFloat = cs - totalLocked;
-                const liquidFloatPct = ((liquidFloat / cs) * 100).toFixed(0);
-                
-                // Update liquid float display
-                const floatDisplay = document.getElementById('liquid-float-display');
-                if (floatDisplay) floatDisplay.textContent = liquidFloatPct;
-                
-                if (liquidFloat > 0) {
-                    const liquidityPremium = state.price * Math.sqrt(cs / liquidFloat);
+            // Calculate all models using unified function
+            Object.keys(MODEL_METADATA).forEach(modelId => {
+                const result = calculateSingleModel(modelId, data);
+                if (result) {
+                    const meta = MODEL_METADATA[modelId];
                     models.push({
-                        id: 'commitmentPremium',
-                        name: 'Liquidity Premium',
-                        formula: 'Price × √(Supply ÷ Liquid Float)',
-                        price: liquidityPremium,
-                        reliability: 1,
-                        source: `Liquid Float=${liquidFloatPct}%`
+                        id: modelId,
+                        name: meta.name,
+                        formula: meta.formula,
+                        price: result.value,
+                        reliability: meta.reliability,
+                        source: result.source
                     });
                 }
-            }
+            });
             
-            // App Capital
-            // Total on-chain assets (stablecoins, ERC-20s, NFTs, RWAs, bridged assets)
-            // App Capital serves as a floor for MC (security must back settled assets)
-            const appCapital = state.appCapital || (state.stablecoins > 0 ? state.stablecoins / 0.28 : 0);
-            if (appCapital > 0 && cs > 0) {
-                models.push({ 
-                    id: 'appCapital',
-                    name: 'App Capital', 
-                    formula: 'AppCapital ÷ Supply', 
-                    price: appCapital / cs,
-                    reliability: 2,
-                    source: 'Ratio=28%'
-                });
-            }
-            
-            // Validator Economics
-            // 목표 수익률 = 무위험수익률(US Treasury ~4.5%) + 크립토 리스크프리미엄(~1.5%) = 6%
-            // 논리: 스테이킹 수익률이 목표보다 낮으면 ETH가 저평가된 것
-            if (state.price > 0 && state.stakingApr > 0) {
-                const riskFreeRate = 4.5; // US 10Y Treasury ~4.5%
-                const riskPremium = 1.5;  // Crypto risk premium
-                const targetYield = riskFreeRate + riskPremium; // 6%
-                const currentApr = state.stakingApr;
-                models.push({ 
-                    id: 'validatorEcon',
-                    name: 'Validator Economics', 
-                    formula: 'Price × (Target ÷ APR)', 
-                    price: state.price * (targetYield / currentApr),
-                    reliability: 2,
-                    source: `Rf=${riskFreeRate}%+RP=${riskPremium}%, APR=${currentApr.toFixed(2)}%`
-                });
-            }
-            
-            // ETH Monetary (MV=PQ)
-            // Daily settlement volume: L1 ETH + L2 ETH + Bridge
-            // Velocity 6: SoV-heavy (28% staked, institutional holding, USD M1 ~5.5x benchmark)
-            const dailySettlement = state.dailySettlement || 5850000000; // $5.85B default (ETH only)
-            const ethVelocity = 6; // SoV-heavy default
-            if (dailySettlement > 0 && cs > 0) {
-                const annualVolume = dailySettlement * 365;
-                const fairMarketCap = annualVolume / ethVelocity;
-                models.push({ 
-                    id: 'ethMonetary',
-                    name: 'ETH Monetary (MV=PQ)', 
-                    formula: '(L1 ETH + L2 ETH) × 365 ÷ ETH Velocity ÷ Supply', 
-                    price: fairMarketCap / cs,
-                    reliability: 2,
-                    source: `Velocity=6 (ETH turnover ≈ USD M1)`
-                });
-            }
-            
-            // Ecosystem Settlement (MV=PQ)
-            // Total ecosystem volume: L1 ($368B) + L2 ($419.5B) = $787.5B/day
-            // Velocity 150: Based on stablecoin velocity (~80) × DeFi adjustment
-            const l1TotalVolume = state.l1TotalVolume || 368000000000;
-            const l2TotalVolume = state.l2TotalVolume || 419500000000;
-            const dailyEcosystemVolume = l1TotalVolume + l2TotalVolume;
-            const ecosystemVelocity = 150;
-            if (dailyEcosystemVolume > 0 && cs > 0) {
-                const annualEcosystemVolume = dailyEcosystemVolume * 365;
-                const ecosystemFairMC = annualEcosystemVolume / ecosystemVelocity;
-                models.push({ 
-                    id: 'ecosystemSettlement',
-                    name: 'Ecosystem Settlement (MV=PQ)', 
-                    formula: '(L1 Total Vol + L2 Total Vol) × 365 ÷ Ecosystem Velocity ÷ Supply', 
-                    price: ecosystemFairMC / cs,
-                    reliability: 2,
-                    source: `Velocity=150 (Stablecoin×2, BlockSci 4x adj.)`
-                });
+            // Update liquid float display (side effect)
+            if (data.stakedEth > 0 && data.supply > 0 && data.price > 0) {
+                const defiEth = data.ethInDefi;
+                const l2Eth = data.l2Tvl / data.price;
+                const lostEth = data.supply * MODEL_CONSTANTS.LOST_ETH_PCT;
+                const totalLocked = data.stakedEth + defiEth + l2Eth + lostEth;
+                const liquidFloat = data.supply - totalLocked;
+                const liquidFloatPct = ((liquidFloat / data.supply) * 100).toFixed(0);
+                const floatDisplay = document.getElementById('liquid-float-display');
+                if (floatDisplay) floatDisplay.textContent = liquidFloatPct;
             }
             
             return models;
@@ -27733,92 +27768,27 @@ Check out ETHval 👇`;
                     }
                 }
                 
-                // 1. TVL Multiple (matches: price = TVL × 7 ÷ Supply)
-                if (tvl > 0) {
-                    const tvlMultValue = (tvl * 7) / supply;
-                    results.tvlMultiple.push({ date, value: tvlMultValue });
-                }
-                
-                // 2. Staking Scarcity (matches: Price × √(Supply ÷ Liquid))
-                if (stakedEth > 0 && price > 0) {
-                    const liquidSupply = supply - stakedEth;
-                    const scarcityFactor = supply / liquidSupply;
-                    const stakingValue = price * Math.pow(scarcityFactor, 0.5);
-                    results.stakingScarcity.push({ date, value: stakingValue });
-                }
-                
-                // 3. Metcalfe's Law (matches: Coef × TVL^Exp ÷ Supply)
-                if (tvl > 0) {
-                    const networkValue = 2 * Math.pow(tvl / 1e9, 1.5) * 1e9;
-                    const metcalfeValue = networkValue / supply;
-                    results.metcalfe.push({ date, value: metcalfeValue });
-                }
-                
-                // 4. Staking DCF - matches: Price × (1+APR) ÷ (Discount - Growth)
-                if (price > 0 && stakingApr > 0) {
-                    const stakingYield = stakingApr / 100;
-                    const yieldMultiplier = 1 + stakingYield;
-                    const discountRate = 0.09;
-                    const growthRate = 0.03;
-                    const dcfValue = Math.min(price * yieldMultiplier / (discountRate - growthRate), price * 3);
-                    results.dcf.push({ date, value: dcfValue });
-                }
-                
-                // 5. L2 Ecosystem (matches: (TVL + L2×Weight) × Multiple ÷ Supply)
-                if (l2Tvl > 0 && tvl > 0) {
-                    const l2Value = (tvl + l2Tvl * 2) * 6 / supply;
-                    results.l2Ecosystem.push({ date, value: l2Value });
-                }
-                
-                // 6. P/S Ratio (25x) (matches: DailyFees × 365 × PSRatio ÷ Supply)
-                // fees = L1 fees + Blob fees (USD)
-                if (fees > 0) {
-                    const dailyFees = fees; // 이미 일일 값
-                    const psValue = (dailyFees * 365 * 25) / supply;
-                    results.ps.push({ date, value: psValue });
-                }
-                
-                // 7. Fee Yield (matches: DailyFees × 365 ÷ APR ÷ Supply)
-                // fees = L1 fees + Blob fees (USD)
-                if (fees > 0 && stakingApr > 0) {
-                    const dailyFees = fees; // 이미 일일 값
-                    const annualRev = dailyFees * 365;
-                    const targetYield = stakingApr / 100;
-                    const revYieldValue = (annualRev / targetYield) / supply;
-                    results.revenueYield.push({ date, value: revYieldValue });
-                }
-                
-                // 8. Liquidity Premium (matches: Price × √(Supply ÷ Liquid Float))
+                // Prepare data for unified calculation
                 const ethInDefi = price > 0 ? tvl / price : 0;
-                const l2EthHist = price > 0 ? l2Tvl / price : 0;
-                const lostEthHist = supply * 0.03; // ~3% lost/dormant estimate
-                if (stakedEth > 0 && price > 0) {
-                    const totalLocked = stakedEth + ethInDefi + l2EthHist + lostEthHist;
-                    const liquidFloat = supply - totalLocked;
-                    if (liquidFloat > 0) {
-                        const liquidityPremiumValue = price * Math.sqrt(supply / liquidFloat);
-                        results.commitmentPremium.push({ date, value: liquidityPremiumValue });
+                const modelData = {
+                    price, supply, tvl, stakedEth, l2Tvl, fees, 
+                    stables, stakingApr, ethInDefi,
+                    dailySettlement: 0, l1TotalVolume: 0, l2TotalVolume: 0
+                };
+                
+                // Calculate models 1-10 using unified function
+                const modelsToCalc = ['tvlMultiple', 'stakingScarcity', 'metcalfe', 'dcf', 'l2Ecosystem', 
+                                       'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon'];
+                
+                for (const modelId of modelsToCalc) {
+                    const result = calculateSingleModel(modelId, modelData);
+                    if (result && result.value > 0) {
+                        results[modelId].push({ date, value: result.value });
                     }
                 }
                 
-                // 9. App Capital (matches: Stables ÷ Ratio ÷ Supply)
-                const appCap = stables > 0 ? stables / 0.28 : 0;
-                if (appCap > 0) {
-                    const appCapValue = appCap / supply;
-                    results.appCapital.push({ date, value: appCapValue });
-                }
-                
-                // 10. Validator Economics (matches: Price × (Target ÷ APR))
-                if (price > 0 && stakingApr > 0) {
-                    const riskFreeRate = 4.5;
-                    const riskPremium = 1.5;
-                    const targetYield = riskFreeRate + riskPremium; // 6%
-                    const valEconValue = price * (targetYield / stakingApr);
-                    results.validatorEcon.push({ date, value: valEconValue });
-                }
-                
-                // 11. ETH Monetary (MV=PQ): (L1 ETH + L2 ETH) × 365 / 6 / Supply
-                const ethVelocity = 6;
+                // 11. ETH Monetary (MV=PQ) - special handling for historical data
+                const ethVelocity = MODEL_CONSTANTS.ETH_VELOCITY;
                 if (isLastPoint) {
                     const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
                     const ethMonetaryValue = (dailySettlement * 365 / ethVelocity) / supply;
@@ -27844,8 +27814,8 @@ Check out ETHval 👇`;
                     }
                 }
                 
-                // 12. Ecosystem Settlement (MV=PQ): (L1 Total Vol + L2 Total Vol) × 365 / 150 / Supply
-                const ecosystemVelocity = 150;
+                // 12. Ecosystem Settlement (MV=PQ) - special handling for historical data
+                const ecosystemVelocity = MODEL_CONSTANTS.ECOSYSTEM_VELOCITY;
                 if (isLastPoint) {
                     const l1TotalVolume = state.l1TotalVolume || 368000000000;
                     const l2TotalVolume = state.l2TotalVolume || 419500000000;
@@ -27913,59 +27883,15 @@ Check out ETHval 👇`;
             
             // Calculate Valuation values using SAME formulas as calculateValuations()
             const csVal = state.circulatingSupply || 120000000;
+            
+            // Use unified calculation for all models
+            const data = getCurrentModelData();
             const valuation = {};
             
-            // 1. TVL Multiple: TVL × 7 ÷ Supply
-            valuation.tvlMultiple = (state.tvl * 7) / csVal;
-            
-            // 2. Staking Scarcity: Price × √(Supply ÷ Liquid)
-            const scarcity = csVal / (csVal - state.stakedEth);
-            valuation.stakingScarcity = state.price * Math.pow(scarcity, 0.5);
-            
-            // 3. Metcalfe: Coef × TVL^Exp ÷ Supply
-            valuation.metcalfe = (Math.pow(state.tvl / 1e9, 1.5) * 1e9 * 2) / csVal;
-            
-            // 4. DCF: Price × (1+APR) ÷ (Discount - Growth)
-            const stakingYield = state.stakingApr / 100;
-            const discountRate = 0.09;
-            const growthRate = 0.03;
-            valuation.dcf = Math.min(state.price * (1 + stakingYield) / (discountRate - growthRate), state.price * 3);
-            
-            // 5. L2 Ecosystem: (TVL + L2×Weight) × Multiple ÷ Supply
-            valuation.l2Ecosystem = (state.tvl + state.l2Tvl * 2) * 6 / csVal;
-            
-            // Total daily fees = L1 fees + Blob fees (USD)
-            const totalDailyFees = state.fees + (state.blobFees || 0) * state.price;
-            
-            // 6. P/S: DailyFees × 365 × PSRatio ÷ Supply
-            valuation.ps = (totalDailyFees * 365 * 25) / csVal;
-            
-            // 7. Fee Yield: DailyFees × 365 ÷ APR ÷ Supply
-            valuation.revenueYield = (totalDailyFees * 365 / (state.stakingApr / 100)) / csVal;
-            
-            // 8. Liquidity Premium: Price × (1 + Commit% × Multiplier)
-            const ethInDefi = state.tvl / state.price;
-            const commitRatio = (state.stakedEth + ethInDefi) / csVal;
-            valuation.commitmentPremium = state.price * (1 + commitRatio * 1.5);
-            
-            // 9. App Capital: Stables ÷ Ratio ÷ Supply
-            valuation.appCapital = (state.stablecoins / 0.28) / csVal;
-            
-            // 10. Validator Economics: Price × (Target ÷ APR)
-            const riskFreeRate = 4.5;
-            const riskPremium = 1.5;
-            const targetYield = riskFreeRate + riskPremium; // 6%
-            valuation.validatorEcon = state.price * (targetYield / state.stakingApr);
-            
-            // 11. ETH Monetary (MV=PQ): (L1 ETH + L2 ETH) × 365 / 6 / Supply
-            const dailySettlement = state.dailySettlement || state.l1DailyVolume || 5000000000;
-            valuation.ethMonetary = (dailySettlement * 365 / 6) / csVal;
-            
-            // 12. Ecosystem Settlement (MV=PQ): (L1 Total Vol + L2 Total Vol) × 365 / 150 / Supply
-            const l1TotalVolume = state.l1TotalVolume || 368000000000; // $368B default
-            const l2TotalVolume = state.l2TotalVolume || 419500000000; // $419.5B default
-            const dailyEcosystemVolume = l1TotalVolume + l2TotalVolume;
-            valuation.ecosystemSettlement = (dailyEcosystemVolume * 365 / 150) / csVal;
+            Object.keys(MODEL_METADATA).forEach(modelId => {
+                const result = calculateSingleModel(modelId, data);
+                valuation[modelId] = result ? result.value : 0;
+            });
             
             modelKeys.forEach(key => {
                 const histData = results[key];
