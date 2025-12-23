@@ -86,66 +86,11 @@
                     <span id="connText">Connecting...</span>
                 </div>
                 <button class="btn btn-secondary" onclick="showConfig()">⚙️ Config</button>
-                <button class="btn btn-warning" onclick="showDataManager()">🗑️ Data Manager</button>
                 <button class="btn btn-success" onclick="collectAll()">🚀 Collect All</button>
                 <button class="btn btn-primary" onclick="verifyAll()">🔍 Verify All</button>
                 <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
             </div>
         </div>
-        
-        <!-- Data Manager Modal -->
-        <div id="dataManagerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
-            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h2 style="font-size:18px;">🗑️ Data Manager</h2>
-                    <button class="btn btn-secondary" onclick="closeDataManager()">✕</button>
-                </div>
-                
-                <div style="margin-bottom:20px; padding:12px; background:rgba(239,68,68,0.1); border:1px solid var(--error); border-radius:8px;">
-                    <p style="color:var(--error); font-size:12px; margin-bottom:8px;">⚠️ Warning: These actions permanently delete data!</p>
-                </div>
-                
-                <div style="display:grid; gap:12px;">
-                    <div style="background:var(--bg); padding:16px; border-radius:8px; border:1px solid var(--border);">
-                        <h3 style="font-size:14px; margin-bottom:12px;">🥩 Staking Data (historical_staking)</h3>
-                        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Delete all staking data and recollect from Dune (beacon chain)</p>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-warning" onclick="deleteTableData('historical_staking')">🗑️ Delete All</button>
-                            <button class="btn btn-success" onclick="recollectStaking()">🔄 Delete & Recollect</button>
-                        </div>
-                    </div>
-                    
-                    <div style="background:var(--bg); padding:16px; border-radius:8px; border:1px solid var(--border);">
-                        <h3 style="font-size:14px; margin-bottom:12px;">💹 Staking APR (historical_staking_apr)</h3>
-                        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Delete staking APR history data</p>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-warning" onclick="deleteTableData('historical_staking_apr')">🗑️ Delete All</button>
-                        </div>
-                    </div>
-                    
-                    <div style="background:var(--bg); padding:16px; border-radius:8px; border:1px solid var(--border);">
-                        <h3 style="font-size:14px; margin-bottom:12px;">📊 Other Tables</h3>
-                        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Select a table to delete its data</p>
-                        <select id="tableSelect" style="width:100%; padding:8px; margin-bottom:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; color:var(--text);">
-                            <option value="">-- Select Table --</option>
-                            <option value="historical_eth_price">ETH Price</option>
-                            <option value="historical_tvl">TVL</option>
-                            <option value="historical_fees">Fees</option>
-                            <option value="historical_dex_volume">DEX Volume</option>
-                            <option value="historical_stables_eth">Stablecoins</option>
-                            <option value="historical_l2_tvl">L2 TVL</option>
-                            <option value="historical_gas">Gas</option>
-                            <option value="historical_supply">Supply</option>
-                            <option value="historical_reserve">Exchange Reserve</option>
-                        </select>
-                        <button class="btn btn-warning" onclick="deleteSelectedTable()">🗑️ Delete Selected</button>
-                    </div>
-                </div>
-                
-                <div id="dataManagerLog" style="margin-top:16px; padding:12px; background:var(--bg); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:11px; max-height:200px; overflow-y:auto; display:none;"></div>
-            </div>
-        </div>
-        
         <div class="stats-grid">
             <div class="stat-card"><div class="label">Total</div><div class="value" id="stats-total">--</div></div>
             <div class="stat-card"><div class="label">OK</div><div class="value success" id="statOk">-</div></div>
@@ -429,7 +374,7 @@
         const DUNE_ETH_PRICE_QUERY_ID = 6390291;      // ETHval - ETH Daily Price
         const DUNE_ETH_BTC_QUERY_ID = 6390302;        // ETHval - ETH BTC Ratio
         const DUNE_BLOB_QUERY_ID = 6350774;
-        // REMOVED: const DUNE_TX_VOLUME_QUERY_ID = 6350858;  // Now using L1 Total Volume (6386589)
+        const DUNE_TX_VOLUME_QUERY_ID = 6350858;
         const DUNE_ACTIVE_ADDR_QUERY_ID = 6352303;
         const DUNE_L2_ACTIVE_ADDR_QUERY_ID = 6352308;
         // REMOVED: const DUNE_L2_TX_VOLUME_QUERY_ID = 6352386;  // Now using L2 Total Volume (6386591)
@@ -1036,153 +981,6 @@
             }
         }
 
-        // ════════════════════════════════════════════════════════════════
-        // Data Manager Functions
-        // ════════════════════════════════════════════════════════════════
-        function showDataManager() {
-            document.getElementById('dataManagerModal').style.display = 'flex';
-            document.getElementById('dataManagerLog').style.display = 'none';
-            document.getElementById('dataManagerLog').innerHTML = '';
-        }
-        
-        function closeDataManager() {
-            document.getElementById('dataManagerModal').style.display = 'none';
-        }
-        
-        function dmLog(msg, type = 'info') {
-            const logEl = document.getElementById('dataManagerLog');
-            logEl.style.display = 'block';
-            const color = type === 'error' ? 'var(--error)' : type === 'success' ? 'var(--success)' : 'var(--text-muted)';
-            logEl.innerHTML += `<div style="color:${color}">${new Date().toLocaleTimeString()} - ${msg}</div>`;
-            logEl.scrollTop = logEl.scrollHeight;
-        }
-        
-        async function deleteTableData(tableName) {
-            if (!confirm(`⚠️ Are you sure you want to delete ALL data from ${tableName}?\n\nThis action cannot be undone!`)) {
-                return;
-            }
-            
-            dmLog(`Deleting all data from ${tableName}...`);
-            
-            try {
-                const { error, count } = await sb.from(tableName).delete().neq('date', '1900-01-01');
-                
-                if (error) {
-                    dmLog(`❌ Error: ${error.message}`, 'error');
-                    return;
-                }
-                
-                dmLog(`✅ Deleted all records from ${tableName}`, 'success');
-                await refreshData();
-            } catch (e) {
-                dmLog(`❌ Error: ${e.message}`, 'error');
-            }
-        }
-        
-        async function recollectStaking() {
-            if (!confirm('⚠️ This will:\n1. Delete ALL staking data\n2. Recollect from Dune (beacon chain)\n\nContinue?')) {
-                return;
-            }
-            
-            dmLog('Starting staking data recollection...');
-            
-            // Step 1: Delete existing data
-            dmLog('Step 1/2: Deleting existing staking data...');
-            try {
-                const { error } = await sb.from('historical_staking').delete().neq('date', '1900-01-01');
-                if (error) throw error;
-                dmLog('✅ Deleted existing staking data', 'success');
-            } catch (e) {
-                dmLog(`❌ Delete failed: ${e.message}`, 'error');
-                return;
-            }
-            
-            // Step 2: Collect from Dune
-            dmLog('Step 2/2: Collecting from Dune (query 6400443)...');
-            try {
-                const DUNE_STAKING_QUERY = 6400443;
-                const url = `https://api.dune.com/api/v1/query/${DUNE_STAKING_QUERY}/results?limit=1500`;
-                const response = await fetch(url, {
-                    headers: { 'X-Dune-API-Key': DUNE_API_KEY }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Dune API error: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                const rows = data?.result?.rows || [];
-                
-                if (rows.length === 0) {
-                    dmLog('⚠️ No data returned from Dune', 'error');
-                    return;
-                }
-                
-                dmLog(`📊 Retrieved ${rows.length} records from Dune`);
-                
-                // Get APR data from DefiLlama
-                const yieldResponse = await fetch('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
-                const yieldData = await yieldResponse.json();
-                const aprMap = new Map();
-                if (yieldData?.data) {
-                    for (const point of yieldData.data) {
-                        const date = point.timestamp.split('T')[0];
-                        aprMap.set(date, point.apy || 3.2);
-                    }
-                }
-                
-                // Transform and insert
-                const records = rows.map(row => {
-                    const date = row.date?.split(' ')[0] || row.date;
-                    const totalStakedEth = parseFloat(row.total_staked_eth || row.cumulative_staked_eth || 0);
-                    const apr = aprMap.get(date) || 3.2;
-                    
-                    return {
-                        date,
-                        total_staked_eth: Math.round(totalStakedEth),
-                        total_validators: Math.round(totalStakedEth / 32),
-                        avg_apr: parseFloat(apr.toFixed(2)),
-                        source: 'dune'
-                    };
-                }).filter(r => r.total_staked_eth > 0);
-                
-                // Dedupe
-                const seen = new Set();
-                const uniqueRecords = records.filter(r => {
-                    if (seen.has(r.date)) return false;
-                    seen.add(r.date);
-                    return true;
-                });
-                
-                dmLog(`📦 Inserting ${uniqueRecords.length} unique records...`);
-                
-                // Batch insert
-                const batchSize = 500;
-                for (let i = 0; i < uniqueRecords.length; i += batchSize) {
-                    const batch = uniqueRecords.slice(i, i + batchSize);
-                    const { error } = await sb.from('historical_staking').upsert(batch, { onConflict: 'date' });
-                    if (error) throw error;
-                    dmLog(`  Inserted ${Math.min(i + batchSize, uniqueRecords.length)}/${uniqueRecords.length}`);
-                }
-                
-                const latest = uniqueRecords.find(r => r.total_staked_eth > 0);
-                dmLog(`✅ Complete! Latest: ${(latest?.total_staked_eth/1e6).toFixed(2)}M ETH (${latest?.date})`, 'success');
-                
-                await refreshData();
-            } catch (e) {
-                dmLog(`❌ Collection failed: ${e.message}`, 'error');
-            }
-        }
-        
-        async function deleteSelectedTable() {
-            const tableName = document.getElementById('tableSelect').value;
-            if (!tableName) {
-                alert('Please select a table first');
-                return;
-            }
-            await deleteTableData(tableName);
-        }
-
         function showConfig() {
             document.getElementById('configSupabaseUrl').value = SUPABASE_URL;
             document.getElementById('configSupabaseKey').value = SUPABASE_ANON_KEY;
@@ -1434,7 +1232,7 @@
             
             // --- 🦙 DefiLlama ---
             ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
-            staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth', expectedDays: 1095, phase: 1, source: '🔮 Dune' },
+            staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 6000, phase: 1, source: '🦙 DefiLlama' },
             protocol_fees: { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', valueField: 'fees', format: 'fees', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             dex_volume: { name: 'L1 DEX Volume', icon: '💱', table: 'historical_dex_volume', valueField: 'volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
@@ -1480,7 +1278,7 @@
             // ═══════════════════════════════════════════════════════════════════
             nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune', depends: ['eth_price', 'transactions'] },
             active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
-            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
+            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔶 Dune', noCollect: true },
             fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, source: '📊 alternative.me' },
             
             // ═══════════════════════════════════════════════════════════════════
@@ -2104,14 +1902,21 @@
                     
                     log(`  ✓ Dune returned ${data.result.rows.length} days`, 'info');
                     
-                    const records = data.result.rows.map(row => ({
-                        date: row.date,
-                        open: parseFloat(row.open) || parseFloat(row.avg_price),
-                        high: parseFloat(row.high) || parseFloat(row.avg_price),
-                        low: parseFloat(row.low) || parseFloat(row.avg_price),
-                        close: parseFloat(row.close) || parseFloat(row.avg_price),
-                        volume: 0
-                    }));
+                    const records = data.result.rows.map(row => {
+                        // Parse date and create timestamp
+                        const dateStr = typeof row.date === 'string' ? row.date.split(' ')[0] : row.date;
+                        const timestamp = new Date(dateStr).getTime();
+                        
+                        return {
+                            date: dateStr,
+                            timestamp: timestamp,
+                            open: parseFloat(row.open) || parseFloat(row.avg_price),
+                            high: parseFloat(row.high) || parseFloat(row.avg_price),
+                            low: parseFloat(row.low) || parseFloat(row.avg_price),
+                            close: parseFloat(row.close) || parseFloat(row.avg_price),
+                            volume: 0
+                        };
+                    });
                     
                     const { error, count } = await batchUpsert('historical_eth_price', records);
                     if (error) log(`  ❌ ${error.message}`, 'error');
@@ -2177,77 +1982,56 @@
 
             // 5. Staking - DefiLlama yields API (Lido stETH pool)
             async staking_data() {
-                // Primary: Dune API for accurate beacon chain data
-                if (DUNE_API_KEY) {
-                    try {
-                        log('  📊 Fetching staking data from Dune (query 6400443)...', 'info');
-                        const DUNE_STAKING_QUERY = 6400443;
-                        const url = `https://api.dune.com/api/v1/query/${DUNE_STAKING_QUERY}/results?limit=1500`;
-                        const response = await fetch(url, {
-                            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
-                        });
-                        
-                        if (response.ok) {
-                            const data = await response.json();
-                            const rows = data?.result?.rows || [];
-                            
-                            if (rows.length > 0) {
-                                log(`  ✓ Dune: ${rows.length} staking records`, 'success');
-                                
-                                // Get APR data from DefiLlama (Lido yields)
-                                const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
-                                const aprMap = new Map();
-                                if (yieldData?.data) {
-                                    for (const point of yieldData.data) {
-                                        const date = point.timestamp.split('T')[0];
-                                        aprMap.set(date, point.apy || 3.2);
-                                    }
-                                }
-                                
-                                const records = rows.map(row => {
-                                    const date = row.date?.split(' ')[0] || row.date?.split('T')[0] || row.date;
-                                    const totalStakedEth = parseFloat(row.total_staked_eth || row.cumulative_staked_eth || 0);
-                                    const apr = aprMap.get(date) || 3.2;
-                                    
-                                    return {
-                                        date,
-                                        total_staked_eth: Math.round(totalStakedEth),
-                                        total_validators: Math.round(totalStakedEth / 32),
-                                        avg_apr: parseFloat(apr.toFixed(2)),
-                                        source: 'dune'
-                                    };
-                                }).filter(r => r.total_staked_eth > 0 && r.date);
-                                
-                                // Dedupe
-                                const seen = new Set();
-                                const uniqueRecords = records.filter(r => {
-                                    if (seen.has(r.date)) return false;
-                                    seen.add(r.date);
-                                    return true;
-                                });
-                                
-                                const latest = uniqueRecords.find(r => r.total_staked_eth > 0);
-                                if (latest) {
-                                    log(`  📊 Latest: ${(latest.total_staked_eth/1e6).toFixed(2)}M ETH (${latest.date})`, 'info');
-                                }
-                                
-                                const { error } = await batchUpsert('historical_staking', uniqueRecords);
-                                if (error) log(`  ❌ ${error.message}`, 'error');
-                                return error ? 0 : uniqueRecords.length;
-                            }
-                        }
-                    } catch (e) {
-                        log(`  ⚠️ Dune API failed: ${e.message}`, 'warn');
-                    }
-                }
-                
-                // Fallback: DefiLlama yields API
-                log('  📊 Fallback: DefiLlama yields API...', 'info');
                 const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
                 
                 if (!yieldData?.data || yieldData.data.length === 0) {
-                    log('  ❌ DefiLlama API failed', 'error');
-                    return 0;
+                    // Fallback: Use Lido protocol TVL from DefiLlama
+                    const lidoData = await fetchJSON('https://api.llama.fi/protocol/lido');
+                    if (!lidoData?.tvl || lidoData.tvl.length === 0) {
+                        log('  ❌ DefiLlama & Lido APIs failed', 'error');
+                        return 0;
+                    }
+                    
+                    const { data: prices } = await sb.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
+                    const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
+                    
+                    const cutoff = Date.now() / 1000 - (1095 * 86400);
+                    const records = [];
+                    
+                    for (const point of lidoData.tvl) {
+                        if (point.date < cutoff) continue;
+                        
+                        const date = new Date(point.date * 1000).toISOString().split('T')[0];
+                        const lidoTvlUsd = point.totalLiquidityUSD || 0;
+                        const price = priceMap.get(date) || 3500;
+                        
+                        if (lidoTvlUsd <= 0) continue;
+                        
+                        const lidoStakedEth = lidoTvlUsd / price;
+                        const totalStakedEth = lidoStakedEth / 0.28;
+                        const totalValidators = Math.round(totalStakedEth / 32);
+                        
+                        records.push({
+                            date,
+                            timestamp: point.date * 1000,
+                            total_staked_eth: Math.round(totalStakedEth),
+                            staked_eth: Math.round(lidoStakedEth),
+                            total_validators: totalValidators,
+                            avg_apr: 3.5,
+                            source: 'defillama-lido'
+                        });
+                    }
+                    
+                    const seen = new Set();
+                    const uniqueRecords = records.filter(r => {
+                        if (seen.has(r.date)) return false;
+                        seen.add(r.date);
+                        return true;
+                    });
+                    
+                    const { error } = await batchUpsert('historical_staking', uniqueRecords);
+                    if (error) log(`  ❌ ${error.message}`, 'error');
+                    return error ? 0 : uniqueRecords.length;
                 }
                 
                 // Get ETH prices for TVL calculation
@@ -2261,8 +2045,7 @@
                     const year = new Date(date).getFullYear();
                     if (year <= 2022) return 0.30;
                     if (year === 2023) return 0.32;
-                    if (year === 2024) return 0.29;
-                    return 0.27;
+                    return 0.28;
                 };
                 
                 for (const point of yieldData.data) {
@@ -2306,9 +2089,7 @@
 
             // 6. Gas & Burn - Etherscan V2 with fallback
             async gas_burn() {
-                // Gas & Burn data is collected via gas_price collector (same Dune query)
-                log('  🔄 Redirecting to gas_price collector...', 'info');
-                return await collectors.gas_price();
+                return -1; // Data collected via Gas Price collector
             },
 
             // 7. Active Addresses - Dune API (정확한 온체인 데이터)
@@ -3124,10 +2905,8 @@
 
             // 21. NVT - Market Cap / On-chain Transaction Volume (Dune API)
             // NVT = Market Cap / Daily On-chain TX Volume (USD)
-            // Uses L1 Total Volume query (6386589) for eth_volume_usd
             async nvt() {
                 log('  🔍 Fetching NVT data...', 'info');
-                log(`  📡 Using L1 Total Volume Query ID: ${DUNE_L1_TOTAL_VOLUME_QUERY_ID}`, 'info');
                 
                 // Get ETH prices first
                 const { data: prices } = await sb.from('historical_eth_price')
@@ -3143,10 +2922,10 @@
                 const priceMap = new Map(prices.map(p => [p.date, parseFloat(p.close)]));
                 const baseSupply = 120000000;
                 
-                // Try Dune API for accurate tx volume (using L1 Total Volume)
+                // Try Dune API for accurate tx volume
                 if (DUNE_API_KEY) {
                     try {
-                        log('  📡 Fetching TX volume from Dune API (L1 Total Volume)...', 'info');
+                        log('  📡 Fetching TX volume from Dune API...', 'info');
                         
                         // Paginate through all results
                         let allRows = [];
@@ -3154,7 +2933,7 @@
                         const pageSize = 1000;
                         
                         while (true) {
-                            const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_L1_TOTAL_VOLUME_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
+                            const response = await fetch(`https://api.dune.com/api/v1/query/${DUNE_TX_VOLUME_QUERY_ID}/results?limit=${pageSize}&offset=${offset}`, {
                                 headers: { 'X-Dune-API-Key': DUNE_API_KEY }
                             });
                             
@@ -3185,11 +2964,10 @@
                                 const price = priceMap.get(dateStr);
                                 if (!price) continue;
                                 
-                                // Use eth_volume_usd from L1 Total Volume query
-                                const txVolumeUsd = parseFloat(row.eth_volume_usd) || 0;
-                                if (txVolumeUsd <= 0) continue;
+                                const txVolumeEth = parseFloat(row.tx_volume_eth) || 0;
+                                if (txVolumeEth <= 0) continue;
                                 
-                                const txVolumeEth = txVolumeUsd / price;
+                                const txVolumeUsd = txVolumeEth * price;
                                 const mcap = price * baseSupply;
                                 const nvt = mcap / txVolumeUsd;
                                 
@@ -4089,19 +3867,30 @@
                         row.avg_gas_price_gwei || row.gas_price_gwei || row.avg_gas_price || row.gas_price || row.median_gas_price || 0
                     );
                     
-                    // Use eth_burnt directly from Dune if available
-                    const ethBurnt = parseFloat(row.eth_burnt || 0);
-                    
                     return {
                         date: dateStr,
                         avg_gas_price_gwei: gasPrice,
                         gas_utilization: parseFloat(row.gas_utilization || row.utilization || 0),
-                        transaction_count: parseInt(row.tx_count || row.transaction_count || row.txn_count || 0),
-                        eth_burnt: ethBurnt > 0 ? parseFloat(ethBurnt.toFixed(2)) : null
+                        transaction_count: parseInt(row.tx_count || row.transaction_count || row.txn_count || 0)
                     };
                 }).filter(r => r.date && r.avg_gas_price_gwei > 0);
                 
-                const { error } = await batchUpsert('historical_gas_burn', records, 'date');
+                const upsertRecords = records.map(r => {
+                    const avgGasPerTx = 65000;
+                    const ethBurnt = r.transaction_count > 0 
+                        ? (r.avg_gas_price_gwei * r.transaction_count * avgGasPerTx) / 1e9
+                        : null;
+                    
+                    return {
+                        date: r.date,
+                        avg_gas_price_gwei: r.avg_gas_price_gwei,
+                        gas_utilization: r.gas_utilization || null,
+                        transaction_count: r.transaction_count || null,
+                        eth_burnt: ethBurnt ? parseFloat(ethBurnt.toFixed(2)) : null
+                    };
+                });
+                
+                const { error } = await batchUpsert('historical_gas_burn', upsertRecords, 'date');
                 if (error) {
                     log(`  ❌ ${error.message}`, 'error');
                     return 0;
