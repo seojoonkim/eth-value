@@ -18528,13 +18528,13 @@
         
         // ═══════════════════════════════════════════════════════════════════
         // GLOBAL HELPERS: Incomplete Data Handling
-        // Last day's data may be incomplete (still collecting), so we exclude it
+        // Last day's data is already excluded at data load time
         // ═══════════════════════════════════════════════════════════════════
         
-        // Get history with last day excluded (for charts and calculations)
+        // Get history (last day exclusion already done at load time)
         function getValidHistory(history) {
-            if (!history || history.length < 2) return history || [];
-            return history.slice(0, -1);
+            if (!history || history.length < 1) return history || [];
+            return history;  // 마지막 날 제외는 데이터 로드 시 이미 처리됨
         }
         
         // Get latest valid value (second-to-last, skipping potentially incomplete last day)
@@ -18785,10 +18785,7 @@
             prepare(history, days = null, maxPoints = null) {
                 const period = days || this.config.DEFAULT_PERIOD;
                 let filtered = this.filterByPeriod(history, period);
-                // 마지막 날 제외 (수집 중일 수 있음)
-                if (filtered.length > 2) {
-                    filtered = filtered.slice(0, -1);
-                }
+                // 마지막 날 제외는 데이터 로드 시 이미 처리됨
                 return this.sample(filtered, maxPoints);
             },
             
