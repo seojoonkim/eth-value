@@ -1191,7 +1191,12 @@ const DUNE_QUERIES = {
     
     // New queries
     L2_DEX_VOLUME: 6395472,       // L2 DEX Volume (all chains)
+<<<<<<< HEAD
     BRIDGE_TOTAL_VOLUME: 6395474  // Bridge Total Volume (ETH + ERC-20)
+=======
+    BRIDGE_TOTAL_VOLUME: 6395474, // Bridge Total Volume (ETH + ERC-20)
+    STAKING: 6400443              // Daily Staked ETH (beacon chain cumulative)
+>>>>>>> 5f11722 (fix)
 };
 
 // ============================================================
@@ -1406,113 +1411,166 @@ async function collect_protocol_fees() {
 }
 
 // ============================================================
-// 5. Staking Data (DefiLlama Yields API - admin.html 방식)
+// 5. Staking Data (Dune API - beacon chain deposits/withdrawals)
 // ============================================================
 async function collect_staking() {
     
-    // Primary: DefiLlama yields API (APR + TVL 동시에)
-    const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
-    
-    if (!yieldData?.data || yieldData.data.length === 0) {
-        console.log('  ⚠️ DefiLlama yields API failed, trying Lido protocol...');
-        
-        // Fallback: Lido protocol TVL
-        const lidoData = await fetchJSON('https://api.llama.fi/protocol/lido');
-        if (!lidoData?.tvl || lidoData.tvl.length === 0) {
-            console.log('  ❌ DefiLlama & Lido APIs failed');
-            return result.fail('No staking data available');
-        }
-        
-        const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
-        const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
-        
-        const cutoff = Date.now() / 1000 - (1095 * 86400);
-        const records = [];
-        
-        for (const point of lidoData.tvl) {
-            if (point.date < cutoff) continue;
-            
-            const date = new Date(point.date * 1000).toISOString().split('T')[0];
-            const lidoTvlUsd = point.totalLiquidityUSD || 0;
-            const price = priceMap.get(date) || 3500;
-            
-            if (lidoTvlUsd <= 0) continue;
-            
-            const lidoStakedEth = lidoTvlUsd / price;
-            const totalStakedEth = lidoStakedEth / 0.28; // Lido ~28% market share
-            const totalValidators = Math.round(totalStakedEth / 32);
-            
-            records.push({
-                date,
-                total_staked_eth: Math.round(totalStakedEth),
-                total_validators: totalValidators,
-                avg_apr: 3.5, // Fallback APR
-                source: 'defillama-lido'
+    // Primary: Dune API for accurate beacon chain staking data
+    if (DUNE_API_KEY && DUNE_QUERIES.STAKING) {
+        try {
+            console.log('  📊 Fetching staking data from Dune...');
+            const url = `https://api.dune.com/api/v1/query/${DUNE_QUERIES.STAKING}/results?limit=1500`;
+            const response = await fetch(url, {
+                headers: { 'X-Dune-API-Key': DUNE_API_KEY }
             });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const rows = data?.result?.rows || [];
+                
+                if (rows.length > 0) {
+                    console.log(`  ✓ Dune: ${rows.length} staking records`);
+                    
+                    // Get APR data from DefiLlama (Lido yields)
+                    const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+                    const aprMap = new Map();
+                    if (yieldData?.data) {
+                        for (const point of yieldData.data) {
+                            const date = point.timestamp.split('T')[0];
+                            aprMap.set(date, point.apy || 3.2);
+                        }
+                    }
+                    
+                    const records = rows.map(row => {
+                        const date = row.date?.split(' ')[0] || row.date;
+                        const totalStakedEth = parseFloat(row.total_staked_eth || row.cumulative_staked_eth || 0);
+                        const totalValidators = Math.round(totalStakedEth / 32);
+                        const apr = aprMap.get(date) || 3.2;
+                        
+                        return {
+                            date,
+                            total_staked_eth: Math.round(totalStakedEth),
+                            total_validators: totalValidators,
+                            avg_apr: parseFloat(apr.toFixed(2)),
+                            source: 'dune'
+                        };
+                    }).filter(r => r.total_staked_eth > 0);
+                    
+                    // Dedupe
+                    const seen = new Set();
+                    const uniqueRecords = records.filter(r => {
+                        if (seen.has(r.date)) return false;
+                        seen.add(r.date);
+                        return true;
+                    });
+                    
+                    const latest = uniqueRecords.find(r => r.total_staked_eth > 0);
+                    if (latest) {
+                        console.log(`  📦 ${uniqueRecords.length} staking records from Dune`);
+                        console.log(`  📊 Latest: ${(latest.total_staked_eth/1e6).toFixed(2)}M ETH (${latest.date})`);
+                    }
+                    
+                    return await upsertBatch('historical_staking', uniqueRecords);
+                }
+            }
+        } catch (e) {
+            console.log(`  ⚠️ Dune API failed: ${e.message}`);
         }
-        
-        // Dedupe
-        const seen = new Set();
-        const uniqueRecords = records.filter(r => {
-            if (seen.has(r.date)) return false;
-            seen.add(r.date);
-            return true;
-        });
-        
-        console.log(`  📦 ${uniqueRecords.length} staking records (from Lido fallback)`);
-        return await upsertBatch('historical_staking', uniqueRecords);
     }
     
-    // Get ETH prices for TVL calculation
-    const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
-    const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
-    
-    const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
-    const records = [];
-    
-    // Lido market share varies by year
-    const getMarketShare = (date) => {
-        const year = new Date(date).getFullYear();
-        if (year <= 2022) return 0.30;
-        if (year === 2023) return 0.32;
-        return 0.28;
-    };
-    
-    for (const point of yieldData.data) {
-        const timestamp = new Date(point.timestamp).getTime();
-        if (timestamp < cutoff) continue;
-        
-        const date = point.timestamp.split('T')[0];
-        const lidoTvlUsd = point.tvlUsd || 0;
-        const apr = point.apy || 0;
-        const price = priceMap.get(date) || 3500;
-        
-        if (lidoTvlUsd <= 0) continue;
-        
-        const lidoStakedEth = lidoTvlUsd / price;
-        const marketShare = getMarketShare(date);
-        const totalStakedEth = lidoStakedEth / marketShare;
-        const totalValidators = Math.round(totalStakedEth / 32);
-        
-        records.push({
-            date,
-            total_staked_eth: Math.round(totalStakedEth),
-            total_validators: totalValidators,
-            avg_apr: parseFloat(apr.toFixed(2)),
-            source: 'defillama'
-        });
+    // Fallback: beaconcha.in API for current data + DefiLlama for history
+    console.log('  📊 Fallback: beaconcha.in + DefiLlama...');
+    try {
+        const beaconData = await fetchJSON('https://beaconcha.in/api/v1/epoch/latest');
+        if (beaconData?.status === 'OK' && beaconData.data) {
+            const validators = beaconData.data.validatorscount || 0;
+            const totalStakedEth = validators * 32;
+            
+            console.log(`  ✓ beaconcha.in: ${validators.toLocaleString()} validators = ${(totalStakedEth/1e6).toFixed(2)}M ETH`);
+            
+            // Get historical data from DefiLlama
+            const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+            
+            const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
+            const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
+            
+            const cutoff = Date.now() - (1095 * 24 * 60 * 60 * 1000);
+            const records = [];
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Add today's accurate data from beaconcha.in
+            records.push({
+                date: today,
+                total_staked_eth: Math.round(totalStakedEth),
+                total_validators: validators,
+                avg_apr: 3.2,
+                source: 'beaconchain'
+            });
+            
+            // Add historical data from DefiLlama (scaled)
+            if (yieldData?.data && yieldData.data.length > 0) {
+                const latestYield = yieldData.data[yieldData.data.length - 1];
+                const latestPrice = priceMap.get(today) || 3500;
+                const latestLidoEth = (latestYield?.tvlUsd || 0) / latestPrice;
+                const defiLlamaEstimate = latestLidoEth / 0.27;
+                const scaleFactor = totalStakedEth / defiLlamaEstimate;
+                
+                const getMarketShare = (date) => {
+                    const year = new Date(date).getFullYear();
+                    if (year <= 2022) return 0.30;
+                    if (year === 2023) return 0.32;
+                    if (year === 2024) return 0.29;
+                    return 0.27;
+                };
+                
+                for (const point of yieldData.data) {
+                    const timestamp = new Date(point.timestamp).getTime();
+                    if (timestamp < cutoff) continue;
+                    
+                    const date = point.timestamp.split('T')[0];
+                    if (date === today) continue;
+                    
+                    const lidoTvlUsd = point.tvlUsd || 0;
+                    const apr = point.apy || 0;
+                    const price = priceMap.get(date) || 3500;
+                    
+                    if (lidoTvlUsd <= 0) continue;
+                    
+                    const lidoStakedEth = lidoTvlUsd / price;
+                    const marketShare = getMarketShare(date);
+                    let totalStakedEthEstimate = lidoStakedEth / marketShare;
+                    
+                    const daysDiff = (Date.now() - timestamp) / (24 * 60 * 60 * 1000);
+                    if (daysDiff < 90 && scaleFactor > 1) {
+                        const scaleWeight = Math.max(0, 1 - (daysDiff / 90));
+                        totalStakedEthEstimate *= (1 + (scaleFactor - 1) * scaleWeight);
+                    }
+                    
+                    records.push({
+                        date,
+                        total_staked_eth: Math.round(totalStakedEthEstimate),
+                        total_validators: Math.round(totalStakedEthEstimate / 32),
+                        avg_apr: parseFloat(apr.toFixed(2)),
+                        source: 'defillama-scaled'
+                    });
+                }
+            }
+            
+            const seen = new Set();
+            const uniqueRecords = records.filter(r => {
+                if (seen.has(r.date)) return false;
+                seen.add(r.date);
+                return true;
+            });
+            
+            console.log(`  📦 ${uniqueRecords.length} staking records (beaconcha.in + DefiLlama)`);
+            return await upsertBatch('historical_staking', uniqueRecords);
+        }
+    } catch (e) {
+        console.log(`  ⚠️ beaconcha.in API failed: ${e.message}`);
     }
     
-    // Dedupe
-    const seen = new Set();
-    const uniqueRecords = records.filter(r => {
-        if (seen.has(r.date)) return false;
-        seen.add(r.date);
-        return true;
-    });
-    
-    console.log(`  📦 ${uniqueRecords.length} staking records with APR`);
-    return await upsertBatch('historical_staking', uniqueRecords);
+    return result.fail('No staking data available');
 }
 
 // ============================================================

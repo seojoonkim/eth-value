@@ -1782,6 +1782,39 @@
             font-size: var(--font-caption);
             color: var(--text-muted);
         }
+        
+        /* Vertical legend layout (chart with legend on left) */
+        .metric-chart-with-legend {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+            overflow: hidden;
+            min-width: 0;
+        }
+        
+        .chart-legend-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 9px;
+            color: var(--text-muted);
+            justify-content: center;
+            flex-shrink: 0;
+            width: 55px;
+        }
+        
+        .chart-legend-vertical .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        
+        .metric-chart-with-legend .metric-chart {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
 
         .legend-item {
             display: flex;
@@ -2021,7 +2054,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: var(--space-sm);
+            margin-bottom: 3px;
             flex-wrap: wrap;
             gap: var(--space-xs);
         }
@@ -2093,7 +2126,7 @@
         }
 
         .metric-chart {
-            height: 70px;
+            height: 79px;
             margin-top: var(--space-sm);
             overflow: visible;
             position: relative;
@@ -2236,8 +2269,8 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            margin-top: 8px;
-            padding-top: 8px;
+            margin-top: 5px;
+            padding-top: 5px;
             border-top: 1px solid var(--border);
             font-size: 10px;
             gap: 4px;
@@ -11738,9 +11771,9 @@
                 <div class="price-card-right">
                     <div class="mini-tabs">
                         
-                        <button class="mini-tab" data-period="90">90D</button>
+                        <button class="mini-tab active" data-period="90">90D</button>
                         <button class="mini-tab" data-period="365">1Y</button>
-                        <button class="mini-tab active" data-period="1095">3Y</button>
+                        <button class="mini-tab" data-period="1095">3Y</button>
                     </div>
                     <div class="price-chart-area combined">
                         <canvas id="price-chart"></canvas>
@@ -11770,9 +11803,9 @@
                             <div class="metric-value-large" id="realized-price-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="realized-price-chart"></canvas></div>
@@ -11790,9 +11823,9 @@
                             <div class="metric-value-large" id="mvrv-ratio-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="mvrv-ratio-chart"></canvas></div>
@@ -11811,9 +11844,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="feargreed">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="feargreed-chart"></canvas></div>
@@ -11831,9 +11864,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="funding">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="funding-chart"></canvas></div>
@@ -11851,9 +11884,9 @@
                             <div class="metric-value-large" id="open-interest-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="openInterest">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="open-interest-chart"></canvas></div>
@@ -11872,9 +11905,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="reserve">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="reserve-chart"></canvas></div>
@@ -11892,9 +11925,9 @@
                             <div class="metric-value-large" id="whale-tx-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="whale-tx-chart"></canvas></div>
@@ -11924,9 +11957,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="ethbtc">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="ethbtc-chart"></canvas></div>
@@ -11945,9 +11978,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="dominance">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dominance-chart"></canvas></div>
@@ -11966,9 +11999,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="stablecoin">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-chart"></canvas></div>
@@ -11987,9 +12020,9 @@
                         </div>
                         <div class="metric-tabs" data-chart="volatility">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="volatility-chart"></canvas></div>
@@ -12007,9 +12040,9 @@
                             <div class="metric-value-large" id="nvt-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="nvt-chart"></canvas></div>
@@ -12038,9 +12071,9 @@
                             <div class="metric-value-large" id="staking-yield-value">--%</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="staking-yield-chart"></canvas></div>
@@ -12058,9 +12091,9 @@
                             <div class="metric-value-large" id="staked-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="staking-chart"></canvas></div>
@@ -12078,9 +12111,9 @@
                             <div class="metric-value-large burn-color" id="daily-burn-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="daily-burn">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-burn-chart"></canvas></div>
@@ -12098,9 +12131,9 @@
                             <div class="metric-value-large issuance-color" id="daily-issuance-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="daily-issuance">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="daily-issuance-chart"></canvas></div>
@@ -12118,9 +12151,9 @@
                             <div class="metric-value-large" id="net-supply-change">--%/yr</div>
                         </div>
                         <div class="metric-tabs" data-chart="net-supply">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="net-supply-chart"></canvas></div>
@@ -12138,21 +12171,23 @@
                             <div class="metric-value-large" id="float-pct">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="supply">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
-                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="supply-chart"></canvas></div>
-                    <div class="metric-footer">
-                        <span>DefiLlama</span>
-                        <span class="change" id="float-change">--</span>
-                        <div class="chart-card-legend" id="supply-legend">
+                    <div class="metric-chart-with-legend">
+                        <div class="chart-legend-vertical" id="supply-legend">
                             <span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span>Float</span>
                             <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6;"></span>Staking</span>
                             <span class="legend-item"><span class="legend-dot" style="background:#00bcd4;"></span>DeFi</span>
                             <span class="legend-item"><span class="legend-dot" style="background:#6b7280;"></span>Others</span>
                         </div>
+                        <div class="metric-chart" style="flex:1;"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="supply-chart"></canvas></div>
+                    </div>
+                    <div class="metric-footer">
+                        <span>DefiLlama</span>
+                        <span class="change" id="float-change">--</span>
                         <div class="metric-desc" data-i18n="desc.supply">Liquid ETH available for trading. Others = L2 bridges, lost coins.</div>
                     </div>
                 </div>
@@ -12175,9 +12210,9 @@
                             <div class="metric-value-large" id="gas-price-value">-- Gwei</div>
                         </div>
                         <div class="metric-tabs" data-chart="gasPrice">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-price-chart"></canvas></div>
@@ -12195,9 +12230,9 @@
                             <div class="metric-value-large" id="gas-utilization-value">--%</div>
                         </div>
                         <div class="metric-tabs" data-chart="gas-utilization">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="gas-utilization-chart"></canvas></div>
@@ -12216,9 +12251,9 @@
                         </div>
                         <div class="metric-tabs">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="fees-chart"></canvas></div>
@@ -12236,7 +12271,7 @@
                             <div class="metric-value-large" id="blob-fees-value">-- ETH</div>
                         </div>
                         <div class="metric-tabs" data-chart="blobFees">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="all">All</button>
                         </div>
@@ -12256,7 +12291,7 @@
                             <div class="metric-value-large" id="blob-count-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="blobCount">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="all">All</button>
                         </div>
@@ -12287,9 +12322,9 @@
                             <div class="metric-value-large" id="new-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="new-addr-chart"></canvas></div>
@@ -12307,9 +12342,9 @@
                             <div class="metric-value-large" id="l1-active-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-active-addr-chart"></canvas></div>
@@ -12327,9 +12362,9 @@
                             <div class="metric-value-large" id="l2-active-addr-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-active-addr-chart"></canvas></div>
@@ -12347,9 +12382,9 @@
                             <div class="metric-value-large" id="tx-eth-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-eth-chart"></canvas></div>
@@ -12367,9 +12402,9 @@
                             <div class="metric-value-large" id="tx-total-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tx-total-chart"></canvas></div>
@@ -12398,9 +12433,9 @@
                             <div class="metric-value-large" id="tvl-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="tvl-chart"></canvas></div>
@@ -12418,9 +12453,9 @@
                             <div class="metric-value-large" id="l2-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-chart"></canvas></div>
@@ -12438,9 +12473,9 @@
                             <div class="metric-value-large" id="lending-tvl">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="lending">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="lending-chart"></canvas></div>
@@ -12459,9 +12494,9 @@
                         </div>
                         <div class="metric-tabs">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stables-chart"></canvas></div>
@@ -12479,9 +12514,9 @@
                             <div class="metric-value-large" id="l2-stablecoin-supply-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-stablecoin-supply-chart"></canvas></div>
@@ -12500,9 +12535,9 @@
                         </div>
                         <div class="metric-tabs">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="app-capital-chart"></canvas></div>
@@ -12531,9 +12566,9 @@
                             <div class="metric-value-large" id="l1-total-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-total-volume-chart"></canvas></div>
@@ -12551,9 +12586,9 @@
                             <div class="metric-value-large" id="l1-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l1-volume-chart"></canvas></div>
@@ -12571,9 +12606,9 @@
                             <div class="metric-value-large" id="stablecoin-vol-value">--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="stablecoin-vol-chart"></canvas></div>
@@ -12592,9 +12627,9 @@
                         </div>
                         <div class="metric-tabs">
                             
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dex-chart"></canvas></div>
@@ -12612,9 +12647,15 @@
                             <div class="metric-value-large" id="l2-total-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
+<<<<<<< HEAD
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
+=======
+                            <button class="metric-tab active" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
+>>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-total-volume-chart"></canvas></div>
@@ -12632,9 +12673,15 @@
                             <div class="metric-value-large" id="l2-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
+<<<<<<< HEAD
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
+=======
+                            <button class="metric-tab active" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
+>>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-volume-chart"></canvas></div>
@@ -12652,9 +12699,15 @@
                             <div class="metric-value-large" id="l2-stablecoin-vol-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="l2StablecoinVol">
+<<<<<<< HEAD
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
+=======
+                            <button class="metric-tab active" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
+>>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-stablecoin-vol-chart"></canvas></div>
@@ -12672,9 +12725,15 @@
                             <div class="metric-value-large" id="l2-dex-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
+<<<<<<< HEAD
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
+=======
+                            <button class="metric-tab active" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
+>>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-dex-volume-chart"></canvas></div>
@@ -12692,9 +12751,15 @@
                             <div class="metric-value-large" id="bridge-total-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
+<<<<<<< HEAD
                             <button class="metric-tab" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab active" data-period="1095">3Y</button>
+=======
+                            <button class="metric-tab active" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
+>>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="bridge-total-volume-chart"></canvas></div>
@@ -12712,9 +12777,9 @@
                             <div class="metric-value-large" id="bridge-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-                            <button class="metric-tab" data-period="90">90D</button>
+                            <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="bridge-volume-chart"></canvas></div>
@@ -14214,7 +14279,7 @@
                     document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
                     historicalTab3Y.classList.add('active');
                     if (typeof renderHistoricalMainChart === 'function') {
-                        renderHistoricalMainChart(1095);
+                        renderHistoricalMainChart(ChartManager.getDefaultPeriod());
                     }
                 }
             }
@@ -18687,6 +18752,154 @@
             return null;
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // CHART MANAGER - 통합 차트 관리 시스템
+        // ═══════════════════════════════════════════════════════════════════
+        const ChartManager = {
+            // ═══ 설정 ═══
+            config: {
+                DEFAULT_PERIOD: 90,  // 기본 기간 (일) - 이 값만 바꾸면 모든 차트 기본값 변경
+                PERIODS: { '90D': 90, '1Y': 365, '3Y': 1095 },
+                MAX_POINTS: { small: 60, medium: 90, large: 180 }
+            },
+            
+            // ═══ 현재 활성 기간 (각 차트별) ═══
+            activePeriods: {},
+            
+            // ═══ 차트 인스턴스 저장소 ═══
+            instances: {},
+            
+            // ═══ 기본 기간 가져오기 ═══
+            getDefaultPeriod() {
+                return this.config.DEFAULT_PERIOD;
+            },
+            
+            // ═══ 차트의 현재 기간 가져오기 ═══
+            getPeriod(chartId) {
+                return this.activePeriods[chartId] || this.config.DEFAULT_PERIOD;
+            },
+            
+            // ═══ 차트 기간 설정 ═══
+            setPeriod(chartId, days) {
+                this.activePeriods[chartId] = days;
+            },
+            
+            // ═══ 히스토리 데이터 필터링 ═══
+            filterByPeriod(history, days = null) {
+                const period = days || this.config.DEFAULT_PERIOD;
+                if (!history || history.length === 0) return [];
+                
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - period);
+                
+                return history.filter(d => {
+                    if (!d.date) return false;
+                    const dateTime = d.date instanceof Date ? d.date.getTime() : new Date(d.date).getTime();
+                    return dateTime >= cutoffDate.getTime();
+                }).sort((a, b) => {
+                    const dateA = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime();
+                    const dateB = b.date instanceof Date ? b.date.getTime() : new Date(b.date).getTime();
+                    return dateA - dateB;
+                });
+            },
+            
+            // ═══ 데이터 샘플링 ═══
+            sample(history, maxPoints = null) {
+                const max = maxPoints || this.config.MAX_POINTS.medium;
+                if (!history || history.length <= max) return history;
+                const sampleRate = Math.max(1, Math.floor(history.length / max));
+                return history.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            },
+            
+            // ═══ 차트 데이터 준비 (필터 + 샘플 + 마지막날 제외) ═══
+            prepare(history, days = null, maxPoints = null) {
+                const period = days || this.config.DEFAULT_PERIOD;
+                let filtered = this.filterByPeriod(history, period);
+                // 마지막 날 제외 (수집 중일 수 있음)
+                if (filtered.length > 2) {
+                    filtered = filtered.slice(0, -1);
+                }
+                return this.sample(filtered, maxPoints);
+            },
+            
+            // ═══ 기존 차트 파괴 ═══
+            destroy(chartId) {
+                if (this.instances[chartId]) {
+                    this.instances[chartId].destroy();
+                    this.instances[chartId] = null;
+                }
+                // Chart.js의 getChart로도 확인
+                const canvas = document.getElementById(chartId);
+                if (canvas) {
+                    const existing = Chart.getChart(canvas);
+                    if (existing) existing.destroy();
+                }
+            },
+            
+            // ═══ 차트 등록 ═══
+            register(chartId, chartInstance) {
+                this.instances[chartId] = chartInstance;
+            },
+            
+            // ═══ 기간 라벨 가져오기 ═══
+            getPeriodLabel(days = null) {
+                const period = days || this.config.DEFAULT_PERIOD;
+                if (period <= 90) return '90D';
+                if (period <= 365) return '1Y';
+                return '3Y';
+            },
+            
+            // ═══ 변화율 계산 (단순 first/last) ═══
+            calculateChange(history) {
+                if (!history || history.length < 2) return 0;
+                const first = history[0].value;
+                const last = history[history.length - 1].value;
+                if (first === 0 || isNaN(first)) return 0;
+                return ((last - first) / Math.abs(first)) * 100;
+            },
+            
+            // ═══ 변화율 UI 업데이트 (통합 함수) ═══
+            updateChangeElement(elementId, history, days = null, options = {}) {
+                const el = document.getElementById(elementId);
+                if (!el || !history || history.length < 2) return;
+                
+                const period = days || this.config.DEFAULT_PERIOD;
+                const filtered = this.prepare(history, period);
+                if (filtered.length < 2) return;
+                
+                const label = options.label || this.getPeriodLabel(period);
+                const isPercentagePoint = options.pp || false;
+                
+                if (isPercentagePoint) {
+                    // 퍼센트 포인트 (APR, Commitment Ratio 등)
+                    const first = filtered[0].value;
+                    const last = filtered[filtered.length - 1].value;
+                    const ppChange = last - first;
+                    el.textContent = (ppChange >= 0 ? '+' : '') + ppChange.toFixed(2) + 'pp ' + label;
+                    el.className = 'change ' + (ppChange >= 0 ? 'up' : 'down');
+                } else {
+                    const change = this.calculateChange(filtered);
+                    el.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
+                    el.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                }
+            }
+        };
+        
+        // ═══ 하위 호환성을 위한 기존 함수들 (ChartManager로 위임) ═══
+        const CHART_CONFIG = ChartManager.config;
+        
+        function filterHistoryByPeriod(history, days) {
+            return ChartManager.filterByPeriod(history, days);
+        }
+        
+        function sampleChartData(history, maxPoints) {
+            return ChartManager.sample(history, maxPoints);
+        }
+        
+        function prepareChartData(history, days, maxPoints) {
+            return ChartManager.prepare(history, days, maxPoints);
+        }
+
         // Formatters
         const fmt = {
             usd: (n, d=1) => n >= 1e12 ? '$'+(n/1e12).toFixed(d)+'T' : n >= 1e9 ? '$'+(n/1e9).toFixed(d)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(d)+'M' : n >= 1e3 ? '$'+(n/1e3).toFixed(d)+'K' : '$'+n.toFixed(d),
@@ -20268,9 +20481,9 @@
                     }
                 }
                 
-                // 차트 업데이트
-                const activeBtn = document.querySelector('.price-period-btn.active');
-                const currentDays = activeBtn ? parseInt(activeBtn.dataset.days) || 1095 : 1095;
+                // 차트 업데이트 - 현재 활성 탭의 기간 사용
+                const activeTab = document.querySelector('.price-card-right .mini-tab.active');
+                const currentDays = activeTab ? parseInt(activeTab.dataset.period) : ChartManager.getDefaultPeriod();
                 if (typeof updateCombinedPriceVolumeChart === 'function') {
                     updateCombinedPriceVolumeChart(currentDays);
                 }
@@ -20306,14 +20519,14 @@
                 if (!res.ok) throw new Error('Binance klines failed');
                 const data = await res.json();
                 
-                // Binance kline format: [openTime, open, high, low, close, volume, closeTime, ...]
+                // Binance kline format: [openTime, open, high, low, close, volume, closeTime, quoteAssetVolume, ...]
                 state.priceHistory = data.map(k => ({
                     date: new Date(k[0]),
                     value: parseFloat(k[4]) // close price
                 }));
                 
                 // Note: Binance volume is exchange-specific, not total market volume
-                // Volume will be fetched separately from CoinGecko for total market data
+                // Volume will be fetched from CoinGecko for accurate total market data
                 
                 log('   Binance ETHUSDT history:', state.priceHistory.length, 'points');
                 
@@ -20336,17 +20549,8 @@
                         document.getElementById('eth-btc').textContent = state.ethBtcRatio.toFixed(5);
                     }
                     
-                    // 3Y 변화율 계산
-                    if (state.ethbtcHistory.length > 1) {
-                        const first = state.ethbtcHistory[0].value;
-                        const last = state.ethbtcHistory[state.ethbtcHistory.length - 1].value;
-                        const change = ((last - first) / first) * 100;
-                        const changeEl = document.getElementById('ethbtc-change');
-                        if (changeEl) {
-                            changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% 3Y';
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
-                    }
+                    // 변화율 계산 - ChartManager 통일
+                    ChartManager.updateChangeElement('ethbtc-change', state.ethbtcHistory);
                     
                     // 차트 업데이트
                     updateEthBtcChartWithPeriod(days);
@@ -20384,7 +20588,7 @@
                         else if (currentRate < -0.01) { sentimentEl.textContent = 'Bearish'; sentimentEl.className = 'change down'; }
                         else { sentimentEl.textContent = 'Neutral'; sentimentEl.className = 'change'; }
                     }
-                    updateFundingChart();
+                    updateFundingChart(ChartManager.getDefaultPeriod());
                     return;
                 }
                 
@@ -20444,20 +20648,18 @@
                         }
                     }
                     
-                    updateFundingChart();
+                    updateFundingChart(ChartManager.getDefaultPeriod());
                 }
             } catch (e) {
                 console.error('Funding rate error:', e);
             }
         }
         
-        function updateFundingChart(days = 1095) {
+        function updateFundingChart(days = null) {
             const ctx = document.getElementById('funding-chart');
             if (!ctx) return;
             
-            let history = state.fundingHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            let filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            let filtered = prepareChartData(state.fundingHistory, days, 60);
             
             if (filtered.length < 3) {
                 log('funding-chart: no data, using fallback');
@@ -20472,13 +20674,9 @@
             
             if (fundingChart) fundingChart.destroy();
             
-            // Sample data points
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            
-            const labels = sampled.map(d => fmt.chartLabel(d.date));
-            const values = sampled.map(d => d.value);
-            const dates = sampled.map(d => d.date); // Store dates for tooltip
+            const labels = filtered.map(d => fmt.chartLabel(d.date));
+            const values = filtered.map(d => d.value);
+            const dates = filtered.map(d => d.date); // Store dates for tooltip
             
             // Color based on positive/negative
             const bgColors = values.map(v => v >= 0 ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)');
@@ -20560,7 +20758,7 @@
                     else if (currentVol > 30) { levelEl.textContent = 'Moderate'; levelEl.className = 'change'; }
                     else { levelEl.textContent = 'Low'; levelEl.className = 'change up'; }
                 }
-                updateVolatilityChart();
+                updateVolatilityChart(ChartManager.getDefaultPeriod());
                 return;
             }
             
@@ -20621,18 +20819,16 @@
                     }
                 }
                 
-                updateVolatilityChart();
+                updateVolatilityChart(ChartManager.getDefaultPeriod());
                 log('   Volatility:', currentVol.toFixed(1) + '%');
             }
         }
         
-        function updateVolatilityChart(days = 1095) {
+        function updateVolatilityChart(days = null) {
             const ctx = document.getElementById('volatility-chart');
             if (!ctx) return;
             
-            let history = state.volatilityHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            let filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            let filtered = prepareChartData(state.volatilityHistory, days, 90);
             
             if (filtered.length < 3) {
                 log('volatility-chart: no data, using fallback');
@@ -20647,13 +20843,9 @@
             
             if (volatilityChart) volatilityChart.destroy();
             
-            // Sample for performance
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 90));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            
-            const labels = sampled.map(d => fmt.chartLabel(d.date));
-            const values = sampled.map(d => d.value);
-            const dates = sampled.map(d => d.date);
+            const labels = filtered.map(d => fmt.chartLabel(d.date));
+            const values = filtered.map(d => d.value);
+            const dates = filtered.map(d => d.date);
             
             volatilityChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -20742,7 +20934,7 @@
                         date: new Date(d.date * 1000),
                         value: d.totalCirculatingUSD?.peggedUSD || d.totalCirculating?.peggedUSD || 0
                     })).filter(d => d.value > 0);
-                    updateStablecoinChart();
+                    updateStablecoinChart(ChartManager.getDefaultPeriod());
                     setDataSource('stablecoin-chart', 'api', 'DefiLlama');
                 }
             } catch (e) {
@@ -20750,13 +20942,11 @@
             }
         }
         
-        function updateStablecoinChart(days = 1095) {
+        function updateStablecoinChart(days = null) {
             const ctx = document.getElementById('stablecoin-chart');
             if (!ctx) return;
             
-            let history = state.stablecoinHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            let filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            let filtered = prepareChartData(state.stablecoinHistory, days, 90);
             
             if (filtered.length < 3) {
                 log('stablecoin-chart: no data, using fallback');
@@ -20778,18 +20968,14 @@
             
             const changeEl = document.getElementById('stablecoin-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
             
-            // Sample for performance
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 90));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            
-            const labels = sampled.map(d => fmt.chartLabel(d.date));
-            const values = sampled.map(d => d.value / 1e9);
-            const dates = sampled.map(d => d.date);
+            const labels = filtered.map(d => fmt.chartLabel(d.date));
+            const values = filtered.map(d => d.value / 1e9);
+            const dates = filtered.map(d => d.date);
             
             stablecoinChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -20870,7 +21056,7 @@
                         labelEl.className = 'change ' + (current.value <= 45 ? 'down' : current.value >= 55 ? 'up' : '');
                     }
                     
-                    updateFearGreedChart();
+                    updateFearGreedChart(ChartManager.getDefaultPeriod());
                     return;
                 }
                 
@@ -20916,7 +21102,7 @@
                         }
                     }
                     
-                    updateFearGreedChart();
+                    updateFearGreedChart(ChartManager.getDefaultPeriod());
                     log('   Fear & Greed:', currentValue, current.value_classification);
                 }
             } catch (e) {
@@ -20924,13 +21110,11 @@
             }
         }
         
-        function updateFearGreedChart(days = 1095) {
+        function updateFearGreedChart(days = null) {
             const ctx = document.getElementById('feargreed-chart');
             if (!ctx) return;
             
-            let history = state.fgHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            let filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            let filtered = prepareChartData(state.fgHistory, days, 90);
             
             if (filtered.length < 3) {
                 log('feargreed-chart: no data, using fallback');
@@ -21275,10 +21459,10 @@
                 if (simMarketPriceEl) simMarketPriceEl.textContent = fmt.price(realtimePrice);
                 
                 // ═══════════════════════════════════════════════════════════════════
-                // 차트도 실시간 데이터로 다시 업데이트
+                // 차트도 실시간 데이터로 다시 업데이트 - 현재 활성 탭의 기간 사용
                 // ═══════════════════════════════════════════════════════════════════
-                const activeBtn = document.querySelector('.price-period-btn.active');
-                const currentDays = activeBtn ? parseInt(activeBtn.dataset.days) || 1095 : 1095;
+                const activeTab = document.querySelector('.price-card-right .mini-tab.active');
+                const currentDays = activeTab ? parseInt(activeTab.dataset.period) : ChartManager.getDefaultPeriod();
                 if (typeof updateCombinedPriceVolumeChart === 'function') {
                     updateCombinedPriceVolumeChart(currentDays);
                 }
@@ -21289,7 +21473,7 @@
         }
         
         // Fetch total market volume from CoinGecko (Supabase 데이터가 부족할 때만)
-        async function fetchVolumeFromCoinGecko(days = 1095) {
+        async function fetchVolumeFromCoinGecko(days = null) {
             // Supabase에서 충분한 volume 데이터가 있으면 스킵
             if (state.volumeHistory && state.volumeHistory.length > days * 0.8) {
                 log('Volume history sufficient from Supabase:', state.volumeHistory.length, 'points');
@@ -21298,7 +21482,7 @@
             
             try {
                 log('Fetching additional volume from CoinGecko...');
-                const apiDays = Math.min(days, 365); // CoinGecko는 365일 제한
+                const apiDays = Math.min(days || 365, 365); // CoinGecko는 365일 제한
                 const res = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=${apiDays}&interval=daily`);
                 
                 if (!res.ok) {
@@ -21335,6 +21519,14 @@
                     } else {
                         state.volumeHistory = cgVolume;
                         log('Volume data from CoinGecko:', state.volumeHistory.length, 'points');
+                    }
+                    
+                    // ★ 볼륨 데이터 로드 후 메인 차트 업데이트
+                    const activeTab = document.querySelector('.price-card-right .mini-tab.active');
+                    const currentDays = activeTab ? parseInt(activeTab.dataset.period) : ChartManager.getDefaultPeriod();
+                    if (typeof updateCombinedPriceVolumeChart === 'function') {
+                        updateCombinedPriceVolumeChart(currentDays);
+                        log('   Chart updated with real volume data');
                     }
                 }
             } catch (e) {
@@ -21514,38 +21706,17 @@
                 // ═══════════════════════════════════════════════════════════════════
                 // 차트 업데이트 및 소스 표시
                 // ═══════════════════════════════════════════════════════════════════
-                updateDominanceChartWithPeriod(1095);
-                updateEthBtcChartWithPeriod(1095);
+                updateDominanceChartWithPeriod(ChartManager.getDefaultPeriod());
+                updateEthBtcChartWithPeriod(ChartManager.getDefaultPeriod());
                 
                 setDataSource('dominance-chart', dominanceSource, 'CoinGecko');
                 setDataSource('ethbtc-chart', ethbtcSource, 'Binance');
                 
                 // ═══════════════════════════════════════════════════════════════════
-                // 변화율 계산 (전체 데이터 기준)
+                // 변화율 계산 - ChartManager 통일
                 // ═══════════════════════════════════════════════════════════════════
-                if (state.dominanceHistory && state.dominanceHistory.length > 1) {
-                    const first = state.dominanceHistory[0].value;
-                    const last = state.dominanceHistory[state.dominanceHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('dominance-change');
-                    if (changeEl) {
-                        const label = state.dominanceHistory.length > 900 ? '3Y' : state.dominanceHistory.length > 300 ? '1Y' : '90D';
-                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    }
-                }
-                
-                if (state.ethbtcHistory && state.ethbtcHistory.length > 1) {
-                    const first = state.ethbtcHistory[0].value;
-                    const last = state.ethbtcHistory[state.ethbtcHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('ethbtc-change');
-                    if (changeEl) {
-                        const label = state.ethbtcHistory.length > 900 ? '3Y' : state.ethbtcHistory.length > 300 ? '1Y' : '90D';
-                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    }
-                }
+                ChartManager.updateChangeElement('dominance-change', state.dominanceHistory);
+                ChartManager.updateChangeElement('ethbtc-change', state.ethbtcHistory);
                 
                 log('=== fetchDominanceAndEthBtc complete ===');
                 log(`   Sources: Dominance=${dominanceSource}, ETH/BTC=${ethbtcSource}`);
@@ -21640,13 +21811,10 @@
                 state.tvlHistoryDaily = state.supabaseTvlHistory;
                 state.tvlHistory = state.supabaseTvlHistory.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
                 updateMetricChart('tvl-chart', tvlChart, state.tvlHistory, '#10b981', 'tvl');
+                ChartManager.updateChangeElement('tvl-change', state.tvlHistory);
                 if (state.tvlHistory.length > 1) {
-                    const first = state.tvlHistory[0].value, last = state.tvlHistory[state.tvlHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('tvl-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    document.getElementById('tvl-range').textContent = '3Y: ' + fmt.usd(Math.min(...state.tvlHistory.map(d => d.value))) + ' - ' + fmt.usd(Math.max(...state.tvlHistory.map(d => d.value)));
+                    const validHist = getValidHistory(state.tvlHistory);
+                    document.getElementById('tvl-range').textContent = '3Y: ' + fmt.usd(Math.min(...validHist.map(d => d.value))) + ' - ' + fmt.usd(Math.max(...validHist.map(d => d.value)));
                 }
             } else if (tvlHistResult.status === 'fulfilled') {
                 // Supabase 없으면 API 사용
@@ -21658,13 +21826,10 @@
                         state.tvlHistoryDaily = filteredTvl.map(d => ({ date: new Date(d.date * 1000), value: d.tvl }));
                         state.tvlHistory = filteredTvl.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).map(d => ({ date: new Date(d.date * 1000), value: d.tvl }));
                         updateMetricChart('tvl-chart', tvlChart, state.tvlHistory, '#10b981', 'tvl');
+                        ChartManager.updateChangeElement('tvl-change', state.tvlHistory);
                         if (state.tvlHistory.length > 1) {
-                            const first = state.tvlHistory[0].value, last = state.tvlHistory[state.tvlHistory.length - 1].value;
-                            const change = ((last - first) / first) * 100;
-                            const changeEl = document.getElementById('tvl-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                            document.getElementById('tvl-range').textContent = '3Y: ' + fmt.usd(Math.min(...state.tvlHistory.map(d => d.value))) + ' - ' + fmt.usd(Math.max(...state.tvlHistory.map(d => d.value)));
+                            const validHist = getValidHistory(state.tvlHistory);
+                            document.getElementById('tvl-range').textContent = '3Y: ' + fmt.usd(Math.min(...validHist.map(d => d.value))) + ' - ' + fmt.usd(Math.max(...validHist.map(d => d.value)));
                         }
                     }
                 } catch (e) { console.error('TVL history error:', e); }
@@ -21688,13 +21853,7 @@
                 state.dexHistoryDaily = state.supabaseDexHistory;
                 state.dexHistory = state.supabaseDexHistory;
                 updateMetricChart('dex-chart', dexChart, state.dexHistory, '#06b6d4', 'dex');
-                if (state.dexHistory.length > 1) {
-                    const first = state.dexHistory[0].value, last = state.dexHistory[state.dexHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('dex-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
+                ChartManager.updateChangeElement('dex-change', state.dexHistory);
             } else if (dexResult.status === 'fulfilled') {
                 try {
                     const dexData = dexResult.value;
@@ -21702,13 +21861,7 @@
                         state.dexHistoryDaily = dexData.totalDataChart.slice(-1095).map(d => ({ date: new Date(d[0] * 1000), value: d[1] }));
                         state.dexHistory = state.dexHistoryDaily;
                         updateMetricChart('dex-chart', dexChart, state.dexHistory, '#06b6d4', 'dex');
-                        if (state.dexHistory.length > 1) {
-                            const first = state.dexHistory[0].value, last = state.dexHistory[state.dexHistory.length - 1].value;
-                            const change = ((last - first) / first) * 100;
-                            const changeEl = document.getElementById('dex-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
+                        ChartManager.updateChangeElement('dex-change', state.dexHistory);
                     }
                 } catch (e) { console.error('DEX error:', e); }
             }
@@ -21743,13 +21896,7 @@
                 state.feesHistoryDaily = state.supabaseFeesHistory;
                 state.feesHistory = state.supabaseFeesHistory;
                 updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees');
-                if (state.feesHistory.length > 1) {
-                    const first = state.feesHistory[0].value, last = state.feesHistory[state.feesHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('fees-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
+                ChartManager.updateChangeElement('fees-change', state.feesHistory);
             } else if (feesResult.status === 'fulfilled') {
                 try {
                     const feesData = feesResult.value;
@@ -21757,13 +21904,7 @@
                         state.feesHistoryDaily = feesData.totalDataChart.slice(-1095).map(d => ({ date: new Date(d[0] * 1000), value: d[1] }));
                         state.feesHistory = state.feesHistoryDaily;
                         updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees');
-                        if (state.feesHistory.length > 1) {
-                            const first = state.feesHistory[0].value, last = state.feesHistory[state.feesHistory.length - 1].value;
-                            const change = ((last - first) / first) * 100;
-                            const changeEl = document.getElementById('fees-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
+                        ChartManager.updateChangeElement('fees-change', state.feesHistory);
                     } else {
                         generateFallbackFeesHistory();
                     }
@@ -21799,50 +21940,26 @@
                 state.stablesHistory = state.supabaseStablesEthHistory.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
                 // 차트는 Supabase 데이터 그대로 사용 (API 값과 다를 수 있음)
                 updateMetricChart('stables-chart', stablesChart, state.stablesHistory, '#eab308', 'stables');
-                if (state.stablesHistory.length > 1) {
-                    const first = state.stablesHistory[0].value, last = state.stablesHistory[state.stablesHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('stables-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
+                ChartManager.updateChangeElement('stables-change', state.stablesHistory);
                 state.appCapitalHistory = state.stablesHistory.map(d => ({ date: d.date, value: d.value / STABLECOIN_RATIO }));
                 updateMetricChart('app-capital-chart', appCapitalChart, state.appCapitalHistory, '#ec4899', 'appCapital');
-                if (state.appCapitalHistory.length > 1) {
-                    const first = state.appCapitalHistory[0].value, last = state.appCapitalHistory[state.appCapitalHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('app-capital-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
+                ChartManager.updateChangeElement('app-capital-change', state.appCapitalHistory);
             } else if (stablesResult.status === 'fulfilled') {
                 try {
                     const stablesData = stablesResult.value;
                     if (Array.isArray(stablesData) && stablesData.length > 0) {
                         state.stablesHistory = stablesData.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).slice(-156).map(d => ({ date: new Date(d.date * 1000), value: d.totalCirculatingUSD?.peggedUSD || 0 }));
                         updateMetricChart('stables-chart', stablesChart, state.stablesHistory, '#eab308', 'stables');
-                        if (state.stablesHistory.length > 1) {
-                            const first = state.stablesHistory[0].value, last = state.stablesHistory[state.stablesHistory.length - 1].value;
-                            const change = ((last - first) / first) * 100;
-                            const changeEl = document.getElementById('stables-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
+                        ChartManager.updateChangeElement('stables-change', state.stablesHistory);
                         state.appCapitalHistory = state.stablesHistory.map(d => ({ date: d.date, value: d.value / STABLECOIN_RATIO }));
                         updateMetricChart('app-capital-chart', appCapitalChart, state.appCapitalHistory, '#ec4899', 'appCapital');
-                        if (state.appCapitalHistory.length > 1) {
-                            const first = state.appCapitalHistory[0].value, last = state.appCapitalHistory[state.appCapitalHistory.length - 1].value;
-                            const change = ((last - first) / first) * 100;
-                            const changeEl = document.getElementById('app-capital-change');
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
+                        ChartManager.updateChangeElement('app-capital-change', state.appCapitalHistory);
                     }
                 } catch (e) { console.error('Stables error:', e); }
             }
             
             log('fetchDefiLlama: Completed');
-            updateSupplyDistributionChart();
+            updateSupplyDistributionChart(ChartManager.getDefaultPeriod());
         }
         
         function generateFallbackFeesHistory() {
@@ -21873,12 +21990,7 @@
                     // Note: l1DailyVolume is set during data load with incomplete data filtering
                     // Don't override here to preserve valuation accuracy
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l1-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l1-volume-change', result?.history || state.l1VolumeHistory);
             }
             if (state.l1TotalVolumeHistory && state.l1TotalVolumeHistory.length > 0) {
                 const result = updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, state.l1TotalVolumeHistory, '#06b6d4', 'l1TotalVolume');
@@ -21886,12 +21998,7 @@
                     document.getElementById('l1-total-volume-value').textContent = '$' + (result.lastValue / 1e9).toFixed(1) + 'B';
                     state.l1TotalVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l1-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l1-total-volume-change', result?.history || state.l1TotalVolumeHistory);
             }
             if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
                 const result = updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
@@ -21899,12 +22006,7 @@
                     document.getElementById('l2-volume-value').textContent = fmt.usd(result.lastValue);
                     state.l2DailyVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l2-volume-change', result?.history || state.l2VolumeHistory);
             }
             if (state.l2TotalVolumeHistory && state.l2TotalVolumeHistory.length > 0) {
                 const result = updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, state.l2TotalVolumeHistory, '#f59e0b', 'l2TotalVolume');
@@ -21912,12 +22014,7 @@
                     document.getElementById('l2-total-volume-value').textContent = '$' + (result.lastValue / 1e9).toFixed(1) + 'B';
                     state.l2TotalVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l2-total-volume-change', result?.history || state.l2TotalVolumeHistory);
             }
             if (state.bridgeVolumeHistory && state.bridgeVolumeHistory.length > 0) {
                 const result = updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume');
@@ -21925,12 +22022,23 @@
                     document.getElementById('bridge-volume-value').textContent = fmt.usd(result.lastValue);
                     state.bridgeDailyVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('bridge-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                ChartManager.updateChangeElement('bridge-volume-change', result?.history || state.bridgeVolumeHistory);
+            }
+            if (state.l2DexVolumeHistory && state.l2DexVolumeHistory.length > 0) {
+                const result = updateMetricChart('l2-dex-volume-chart', l2DexVolumeChart, state.l2DexVolumeHistory, '#f59e0b', 'l2DexVolume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l2-dex-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.l2DexDailyVolume = result.lastValue;
                 }
+                ChartManager.updateChangeElement('l2-dex-volume-change', result?.history || state.l2DexVolumeHistory);
+            }
+            if (state.bridgeTotalVolumeHistory && state.bridgeTotalVolumeHistory.length > 0) {
+                const result = updateMetricChart('bridge-total-volume-chart', bridgeTotalVolumeChart, state.bridgeTotalVolumeHistory, '#ec4899', 'bridgeTotalVolume');
+                if (result && result.lastValue !== null) {
+                    document.getElementById('bridge-total-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.bridgeTotalDailyVolume = result.lastValue;
+                }
+                ChartManager.updateChangeElement('bridge-total-volume-change', result?.history || state.bridgeTotalVolumeHistory);
             }
             if (state.l2DexVolumeHistory && state.l2DexVolumeHistory.length > 0) {
                 const result = updateMetricChart('l2-dex-volume-chart', l2DexVolumeChart, state.l2DexVolumeHistory, '#f59e0b', 'l2DexVolume');
@@ -21959,16 +22067,7 @@
                 }
             }
             
-            if (state.feesHistory.length > 1) {
-                const first = state.feesHistory[0].value;
-                const last = state.feesHistory[state.feesHistory.length - 1].value;
-                const change = ((last - first) / first) * 100;
-                const changeEl = document.getElementById('fees-change');
-                if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
-            }
+            ChartManager.updateChangeElement('fees-change', state.feesHistory);
         }
         
         // L2 History - fetched asynchronously in background (non-blocking)
@@ -21980,13 +22079,7 @@
                     state.l2HistoryDaily = state.supabaseL2History;
                     state.l2History = state.supabaseL2History.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
                     updateMetricChart('l2-chart', l2Chart, state.l2History, '#7c3aed', 'l2');
-                    const first = state.l2History[0].value, last = state.l2History[state.l2History.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('l2-change');
-                    if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    }
+                    ChartManager.updateChangeElement('l2-change', state.l2History);
                     return;
                 }
                 
@@ -22034,11 +22127,7 @@
                 if (l2Combined.length > 0) {
                     state.l2History = l2Combined;
                     updateMetricChart('l2-chart', l2Chart, state.l2History, '#7c3aed', 'l2');
-                    const first = l2Combined[0].value, last = l2Combined[l2Combined.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('l2-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                    ChartManager.updateChangeElement('l2-change', state.l2History);
                 }
             } catch (e) { 
                 console.error('L2 history error:', e);
@@ -22063,15 +22152,7 @@
             }
             
             updateMetricChart('l2-chart', l2Chart, state.l2History, '#7c3aed', 'l2');
-            
-            const first = state.l2History[0].value;
-            const last = state.l2History[state.l2History.length - 1].value;
-            const change = ((last - first) / first) * 100;
-            const changeEl = document.getElementById('l2-change');
-            if (changeEl) {
-                changeEl.textContent = fmt.pct(change) + ' 3Y';
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-            }
+            ChartManager.updateChangeElement('l2-change', state.l2History);
         }
 
         async function fetchStaking() {
@@ -22089,17 +22170,9 @@
                     }
                     
                     updateMetricChart('staking-chart', stakingChart, state.stakingHistory, '#6366f1', 'staking');
+                    ChartManager.updateChangeElement('staking-change', state.stakingHistory);
                     
-                    // Calculate YoY change
-                    if (state.stakingHistory.length > 1) {
-                        const first = state.stakingHistory[0].value, last = state.stakingHistory[state.stakingHistory.length - 1].value;
-                        const change = ((last - first) / first) * 100;
-                        const changeEl = document.getElementById('staking-change');
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    }
-                    
-                    updateSupplyDistributionChart();
+                    updateSupplyDistributionChart(ChartManager.getDefaultPeriod());
                     return;
                 }
                 
@@ -22120,15 +22193,7 @@
                     value: baseStaked + (currentStaked - baseStaked) * (i / 52)
                 }));
                 updateMetricChart('staking-chart', stakingChart, state.stakingHistory, '#6366f1', 'staking');
-                
-                // Calculate YoY change
-                if (state.stakingHistory.length > 1) {
-                    const first = state.stakingHistory[0].value, last = state.stakingHistory[state.stakingHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('staking-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
+                ChartManager.updateChangeElement('staking-change', state.stakingHistory);
             } catch (e) {
                 state.stakedEth = 34000000;
                 document.getElementById('staked-value').textContent = '~34M ETH';
@@ -22136,7 +22201,7 @@
             }
             
             // Try to update Supply Distribution chart (may need TVL data too)
-            updateSupplyDistributionChart();
+            updateSupplyDistributionChart(ChartManager.getDefaultPeriod());
         }
 
         async function fetchStakingYield() {
@@ -22165,15 +22230,7 @@
                     state.stakingAprHistory[state.stakingAprHistory.length - 1].value = baseApr;
                     
                     updateMetricChart('staking-yield-chart', stakingAprChart, state.stakingAprHistory, '#10b981', 'stakingApr');
-                    
-                    if (state.stakingAprHistory.length > 1) {
-                        const first = state.stakingAprHistory[0].value;
-                        const last = state.stakingAprHistory[state.stakingAprHistory.length - 1].value;
-                        const change = last - first;
-                        const changeEl = document.getElementById('staking-yield-change');
-                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + 'pp 3Y';
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    }
+                    ChartManager.updateChangeElement('staking-yield-change', state.stakingAprHistory, null, { pp: true });
                 }
             } catch (e) {
                 console.error('Staking Yield error:', e);
@@ -22306,24 +22363,8 @@
                 updateMetricChart('tx-total-chart', txTotalChart, state.txTotalHistory, '#6366f1', 'txTotal');
                 
                 // Calculate YoY change for ETH
-                if (state.txEthHistory.length > 1) {
-                    const first = state.txEthHistory[0].value;
-                    const last = state.txEthHistory[state.txEthHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('tx-eth-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
-                
-                // Calculate YoY change for Total
-                if (state.txTotalHistory.length > 1) {
-                    const first = state.txTotalHistory[0].value;
-                    const last = state.txTotalHistory[state.txTotalHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('tx-total-change');
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
+                ChartManager.updateChangeElement('tx-eth-change', state.txEthHistory);
+                ChartManager.updateChangeElement('tx-total-change', state.txTotalHistory);
                 
                 log('Transactions data loaded - ETH:', fmt.num(state.txEth), 'Total:', fmt.num(state.txTotal));
             } catch (e) {
@@ -22346,14 +22387,8 @@
                 state.reserveHistory = state.supabaseReserveHistory;
                 state.exchangeReserve = state.reserveHistory[state.reserveHistory.length - 1].value;
                 document.getElementById('exchange-reserve').textContent = fmt.num(state.exchangeReserve, 1) + ' ETH';
-                updateReserveChartWithPeriod(1095);
-                
-                const first = state.reserveHistory[0].value;
-                const last = state.exchangeReserve;
-                const change = ((last - first) / first) * 100;
-                const changeEl = document.getElementById('reserve-change');
-                changeEl.textContent = fmt.pct(change) + ' 3Y';
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+                updateReserveChartWithPeriod(ChartManager.getDefaultPeriod());
+                ChartManager.updateChangeElement('reserve-change', state.reserveHistory);
                 return;
             }
             
@@ -22370,25 +22405,18 @@
             state.exchangeReserve = state.reserveHistory[state.reserveHistory.length - 1].value;
             
             document.getElementById('exchange-reserve').textContent = fmt.num(state.exchangeReserve, 1) + ' ETH';
-            updateReserveChartWithPeriod(1095);
-            
-            // YoY 변화율
-            const first = state.reserveHistory[0].value;
-            const last = state.exchangeReserve;
-            const change = ((last - first) / first) * 100;
-            const changeEl = document.getElementById('reserve-change');
-            changeEl.textContent = fmt.pct(change) + ' 3Y';
-            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+            updateReserveChartWithPeriod(ChartManager.getDefaultPeriod());
+            ChartManager.updateChangeElement('reserve-change', state.reserveHistory);
         }
         
         function updateReserveChart() {
             const ctx = document.getElementById('reserve-chart');
             if (!ctx || !state.reserveHistory.length) return;
             
-            // 3년 필터 적용
-            const threeYearsAgo = new Date();
-            threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
-            const filteredHistory = state.reserveHistory.filter(d => d.date.getTime() > threeYearsAgo.getTime());
+            // ★ ChartManager로 기본 기간 적용
+            const filteredHistory = ChartManager.prepare(state.reserveHistory, ChartManager.getDefaultPeriod());
+            
+            if (!filteredHistory.length) return;
             
             const data = filteredHistory.map(d => d.value);
             const labels = filteredHistory.map(d => 
@@ -22417,16 +22445,7 @@
                 state.openInterestHistory = state.supabaseOpenInterestHistory;
                 state.openInterest = state.openInterestHistory[state.openInterestHistory.length - 1].value;
                 document.getElementById('open-interest-value').textContent = '$' + (state.openInterest / 1e9).toFixed(2) + 'B';
-                updateOpenInterestChartWithPeriod(1095);
-                
-                const first = state.openInterestHistory[0].value;
-                const last = state.openInterest;
-                const change = ((last - first) / first) * 100;
-                const changeEl = document.getElementById('open-interest-change');
-                if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
+                updateOpenInterestChartWithPeriod(ChartManager.getDefaultPeriod());
                 return;
             }
             
@@ -22434,7 +22453,8 @@
             document.getElementById('open-interest-value').textContent = 'No Data';
         }
 
-        function updateCombinedPriceVolumeChart(days = 1095) {
+        function updateCombinedPriceVolumeChart(days = null) {
+            const period = days || ChartManager.getDefaultPeriod();
             const ctx = document.getElementById('price-chart');
             if (!ctx) return;
             
@@ -22443,15 +22463,11 @@
                 return;
             }
             
-            // Filter by period
-            const cutoffDate = new Date();
-            cutoffDate.setDate(cutoffDate.getDate() - days);
-            const filteredPrices = state.priceHistory.filter(d => d.date >= cutoffDate);
+            // Filter by period using ChartManager
+            const maxPoints = period <= 90 ? 90 : period <= 365 ? 180 : 365;
+            const sampledPrices = ChartManager.prepare(state.priceHistory, period, maxPoints);
             
-            // 샘플링 - 일간 데이터로 표시 (3년이면 ~365포인트, 1년이면 ~365, 90일이면 90)
-            const maxPoints = days <= 90 ? 90 : days <= 365 ? 180 : 365;
-            const sampleRate = Math.max(1, Math.ceil(filteredPrices.length / maxPoints));
-            const sampledPrices = filteredPrices.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
+            if (sampledPrices.length === 0) return;
             
             // ═══════════════════════════════════════════════════════════════════
             // 마지막 데이터 포인트를 실시간 데이터로 강제 업데이트
@@ -22501,14 +22517,17 @@
                 });
             } else {
                 // Fallback: 24h 볼륨 기반으로 가상 볼륨 히스토리 생성
+                // ★ 날짜 기반 결정적 값 사용 (탭 전환 시 일관된 값 유지)
                 const baseVolume = state.volume24h || 15000000000; // 기본 $15B
-                volumeData = sampledPrices.map((_, i) => {
+                volumeData = sampledPrices.map((pricePoint, i) => {
                     // 마지막 포인트는 실시간 볼륨
                     if (i === sampledPrices.length - 1) return realtimeVolume;
-                    // 가격 변동과 연동하여 볼륨 시뮬레이션 (랜덤 변동 + 가격 기반)
+                    // 날짜 기반 결정적 시드로 일관된 변동 생성
+                    const dateStr = pricePoint.date.toISOString().split('T')[0];
+                    const seed = dateStr.split('-').reduce((acc, val) => acc + parseInt(val), 0);
+                    const deterministicFactor = 0.7 + (seed % 60) / 100; // 0.7x ~ 1.3x
                     const priceRatio = priceData[i] / (state.price || priceData[priceData.length - 1]);
-                    const randomFactor = 0.5 + Math.random() * 1.0; // 0.5x ~ 1.5x
-                    return baseVolume * priceRatio * randomFactor;
+                    return baseVolume * priceRatio * deterministicFactor;
                 });
                 log('Using simulated volume data based on 24h volume:', baseVolume);
             }
@@ -22675,78 +22694,69 @@
             });
         }
         
-        function updatePriceChart(days = 1095) {
+        function updatePriceChart(days = null) {
             updateCombinedPriceVolumeChart(days);
         }
 
-        function updateVolumeChart(days = 1095) {
+        function updateVolumeChart(days = null) {
+            const period = days || ChartManager.getDefaultPeriod();
+            
             // Settlement Volume Charts (L1, L2, Bridge)
-            // ★ 차트 끝값과 표시값을 동기화
+            // ★ 모든 증감률 계산을 ChartManager.updateChangeElement로 통일
             if (state.l1VolumeHistory && state.l1VolumeHistory.length > 0) {
-                const result = updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume');
+                const result = updateMetricChart('l1-volume-chart', l1VolumeChart, state.l1VolumeHistory, '#3b82f6', 'l1Volume', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('l1-volume-value').textContent = fmt.usd(result.lastValue);
-                    // Note: l1DailyVolume is set during data load with incomplete data filtering
-                    // Don't override here to preserve valuation accuracy
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l1-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l1-volume-change', state.l1VolumeHistory, period);
             }
             if (state.l1TotalVolumeHistory && state.l1TotalVolumeHistory.length > 0) {
-                const result = updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, state.l1TotalVolumeHistory, '#06b6d4', 'l1TotalVolume');
+                const result = updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, state.l1TotalVolumeHistory, '#06b6d4', 'l1TotalVolume', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('l1-total-volume-value').textContent = '$' + (result.lastValue / 1e9).toFixed(1) + 'B';
                     state.l1TotalVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l1-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l1-total-volume-change', state.l1TotalVolumeHistory, period);
             }
             if (state.l2VolumeHistory && state.l2VolumeHistory.length > 0) {
-                const result = updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume');
+                const result = updateMetricChart('l2-volume-chart', l2VolumeChart, state.l2VolumeHistory, '#8b5cf6', 'l2Volume', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('l2-volume-value').textContent = fmt.usd(result.lastValue);
                     state.l2DailyVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l2-volume-change', state.l2VolumeHistory, period);
             }
             if (state.l2TotalVolumeHistory && state.l2TotalVolumeHistory.length > 0) {
-                const result = updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, state.l2TotalVolumeHistory, '#f59e0b', 'l2TotalVolume');
+                const result = updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, state.l2TotalVolumeHistory, '#f59e0b', 'l2TotalVolume', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('l2-total-volume-value').textContent = '$' + (result.lastValue / 1e9).toFixed(1) + 'B';
                     state.l2TotalVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l2-total-volume-change', state.l2TotalVolumeHistory, period);
             }
             if (state.bridgeVolumeHistory && state.bridgeVolumeHistory.length > 0) {
-                const result = updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume');
+                const result = updateMetricChart('bridge-volume-chart', bridgeVolumeChart, state.bridgeVolumeHistory, '#06b6d4', 'bridgeVolume', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('bridge-volume-value').textContent = fmt.usd(result.lastValue);
                     state.bridgeDailyVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('bridge-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                ChartManager.updateChangeElement('bridge-volume-change', state.bridgeVolumeHistory, period);
+            }
+            if (state.l2DexVolumeHistory && state.l2DexVolumeHistory.length > 0) {
+                const result = updateMetricChart('l2-dex-volume-chart', l2DexVolumeChart, state.l2DexVolumeHistory, '#f59e0b', 'l2DexVolume', period);
+                if (result && result.lastValue !== null) {
+                    document.getElementById('l2-dex-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.l2DexDailyVolume = result.lastValue;
                 }
+                ChartManager.updateChangeElement('l2-dex-volume-change', state.l2DexVolumeHistory, period);
+            }
+            if (state.bridgeTotalVolumeHistory && state.bridgeTotalVolumeHistory.length > 0) {
+                const result = updateMetricChart('bridge-total-volume-chart', bridgeTotalVolumeChart, state.bridgeTotalVolumeHistory, '#ec4899', 'bridgeTotalVolume', period);
+                if (result && result.lastValue !== null) {
+                    document.getElementById('bridge-total-volume-value').textContent = fmt.usd(result.lastValue);
+                    state.bridgeTotalDailyVolume = result.lastValue;
+                }
+                ChartManager.updateChangeElement('bridge-total-volume-change', state.bridgeTotalVolumeHistory, period);
             }
             if (state.l2DexVolumeHistory && state.l2DexVolumeHistory.length > 0) {
                 const result = updateMetricChart('l2-dex-volume-chart', l2DexVolumeChart, state.l2DexVolumeHistory, '#f59e0b', 'l2DexVolume');
@@ -22776,103 +22786,64 @@
             }
             // Stablecoin Volume
             if (state.stablecoinVolumeHistory && state.stablecoinVolumeHistory.length > 0) {
-                const result = updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, state.stablecoinVolumeHistory, '#eab308', 'stablecoinVol');
+                const result = updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, state.stablecoinVolumeHistory, '#eab308', 'stablecoinVol', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('stablecoin-vol-value').textContent = '$' + (result.lastValue / 1e9).toFixed(2) + 'B';
                     state.stablecoinDailyVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('stablecoin-vol-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('stablecoin-vol-change', state.stablecoinVolumeHistory, period);
             }
             // L2 Stablecoin Supply
             if (state.l2StablecoinSupplyHistory && state.l2StablecoinSupplyHistory.length > 0) {
-                // Filter to 3 years
-                const cutoffDate = new Date();
-                cutoffDate.setDate(cutoffDate.getDate() - 1095);
-                const filteredHistory = state.l2StablecoinSupplyHistory.filter(d => d.date.getTime() > cutoffDate.getTime());
-                
-                const result = updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, filteredHistory, '#22c55e', 'l2StablecoinSupply');
+                const result = updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, state.l2StablecoinSupplyHistory, '#22c55e', 'l2StablecoinSupply', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('l2-stablecoin-supply-value').textContent = '$' + (result.lastValue / 1e9).toFixed(2) + 'B';
                     state.l2StablecoinSupply = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-stablecoin-supply-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l2-stablecoin-supply-change', state.l2StablecoinSupplyHistory, period);
             }
             // L2 Stablecoin Volume
             if (state.l2StablecoinVolumeHistory && state.l2StablecoinVolumeHistory.length > 0) {
-                // Filter to 3 years
-                const cutoffDate = new Date();
-                cutoffDate.setDate(cutoffDate.getDate() - 1095);
-                const filteredHistory = state.l2StablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate.getTime());
-                
-                const result = updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, filteredHistory, '#f59e0b', 'l2StablecoinVol');
+                const result = updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, state.l2StablecoinVolumeHistory, '#f59e0b', 'l2StablecoinVol', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('l2-stablecoin-vol-value').textContent = '$' + (result.lastValue / 1e9).toFixed(2) + 'B';
                     state.l2StablecoinVolume = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-stablecoin-vol-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l2-stablecoin-vol-change', state.l2StablecoinVolumeHistory, period);
             }
             // Whale Transactions
             if (state.whaleTxHistory && state.whaleTxHistory.length > 0) {
-                const result = updateMetricChart('whale-tx-chart', whaleTxChart, state.whaleTxHistory, '#f59e0b', 'whaleTx');
+                const result = updateMetricChart('whale-tx-chart', whaleTxChart, state.whaleTxHistory, '#f59e0b', 'whaleTx', period);
                 if (result && result.lastValue !== null) {
                     document.getElementById('whale-tx-value').textContent = fmt.num(result.lastValue) + ' txs';
                     state.whaleTxCount = result.lastValue;
                 }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('whale-tx-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('whale-tx-change', state.whaleTxHistory, period);
             }
             // Realized Price
             if (state.mvrvHistory && state.mvrvHistory.length > 0) {
-                // Extract realized price history from MVRV data (max 3 years)
-                const threeYearsAgo = new Date();
-                threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
                 const realizedPriceHistory = state.mvrvHistory
-                    .filter(d => d.realizedPrice > 0 && d.date >= threeYearsAgo)
+                    .filter(d => d.realizedPrice > 0)
                     .map(d => ({ date: d.date, value: d.realizedPrice }));
                 
                 if (realizedPriceHistory.length > 0) {
-                    const result = updateMetricChart('realized-price-chart', realizedPriceChart, realizedPriceHistory, '#10b981', 'realizedPrice');
+                    const result = updateMetricChart('realized-price-chart', realizedPriceChart, realizedPriceHistory, '#10b981', 'realizedPrice', period);
                     if (result && result.lastValue !== null) {
                         document.getElementById('realized-price-value').textContent = '$' + fmt.num(result.lastValue);
                         state.realizedPrice = result.lastValue;
                     }
-                    if (result && result.history && result.history.length > 1) {
-                        const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                        const change = ((last - first) / first) * 100;
-                        const el = document.getElementById('realized-price-change');
-                        if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                    }
+                    ChartManager.updateChangeElement('realized-price-change', realizedPriceHistory, period);
                 }
             }
             // MVRV Ratio
             if (state.mvrvHistory && state.mvrvHistory.length > 0) {
-                renderMvrvChart('mvrv-ratio-chart', state.mvrvHistory, 1095);
-                const latest = state.mvrvHistory[state.mvrvHistory.length - 1];
-                document.getElementById('mvrv-ratio-value').textContent = latest.value.toFixed(2) + 'x';
-                // MVRV change: compare to beginning of period
-                const first = state.mvrvHistory[0].value, last = latest.value;
-                const change = ((last - first) / first) * 100;
-                const el = document.getElementById('mvrv-ratio-change');
-                if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
+                renderMvrvChart('mvrv-ratio-chart', state.mvrvHistory, period);
+                const filteredMvrv = ChartManager.prepare(state.mvrvHistory, period);
+                if (filteredMvrv.length > 0) {
+                    const latest = filteredMvrv[filteredMvrv.length - 1];
+                    document.getElementById('mvrv-ratio-value').textContent = latest.value.toFixed(2) + 'x';
+                }
+                ChartManager.updateChangeElement('mvrv-ratio-change', state.mvrvHistory, period);
             } else {
                 // Default MVRV if no history loaded
                 const mvrvEl = document.getElementById('mvrv-ratio-value');
@@ -22883,36 +22854,21 @@
             }
             // New Addresses
             if (state.newAddressesHistory && state.newAddressesHistory.length > 0) {
-                updateMetricChart('new-addr-chart', newAddrChart, state.newAddressesHistory, '#22c55e', 'newAddresses');
+                updateMetricChart('new-addr-chart', newAddrChart, state.newAddressesHistory, '#22c55e', 'newAddresses', period);
                 document.getElementById('new-addr-value').textContent = fmt.num(state.newAddresses);
-                if (state.newAddressesHistory.length > 1) {
-                    const first = state.newAddressesHistory[0].value, last = state.newAddressesHistory[state.newAddressesHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('new-addr-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('new-addr-change', state.newAddressesHistory, period);
             }
             // L1 Active Addresses
             if (state.l1ActiveAddrHistory && state.l1ActiveAddrHistory.length > 0) {
-                updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, state.l1ActiveAddrHistory, '#a855f7', 'l1ActiveAddr');
+                updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, state.l1ActiveAddrHistory, '#a855f7', 'l1ActiveAddr', period);
                 document.getElementById('l1-active-addr-value').textContent = fmt.num(state.l1ActiveAddresses);
-                if (state.l1ActiveAddrHistory.length > 1) {
-                    const first = state.l1ActiveAddrHistory[0].value, last = state.l1ActiveAddrHistory[state.l1ActiveAddrHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l1-active-addr-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l1-active-addr-change', state.l1ActiveAddrHistory, period);
             }
             // L2 Active Addresses
             if (state.l2ActiveAddrHistory && state.l2ActiveAddrHistory.length > 0) {
-                updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, state.l2ActiveAddrHistory, '#ec4899', 'l2ActiveAddr');
+                updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, state.l2ActiveAddrHistory, '#ec4899', 'l2ActiveAddr', period);
                 document.getElementById('l2-active-addr-value').textContent = fmt.num(state.l2ActiveAddresses);
-                if (state.l2ActiveAddrHistory.length > 1) {
-                    const first = state.l2ActiveAddrHistory[0].value, last = state.l2ActiveAddrHistory[state.l2ActiveAddrHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-active-addr-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
+                ChartManager.updateChangeElement('l2-active-addr-change', state.l2ActiveAddrHistory, period);
             }
         }
 
@@ -22930,16 +22886,8 @@
                     const nvtEl = document.getElementById('nvt-value');
                     if (nvtEl) nvtEl.textContent = state.nvtRatio.toFixed(1);
                     
-                    const first = state.nvtHistory[0].value;
-                    const last = state.nvtHistory[state.nvtHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('nvt-change');
-                    if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    }
-                    
                     updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#be123c', 'nvt');
+                    ChartManager.updateChangeElement('nvt-change', state.nvtHistory);
                     return;
                 }
                 
@@ -22976,16 +22924,8 @@
                 }
                 state.nvtHistory[state.nvtHistory.length - 1].value = currentNvt;
                 
-                const first = state.nvtHistory[0].value;
-                const last = state.nvtHistory[state.nvtHistory.length - 1].value;
-                const change = ((last - first) / first) * 100;
-                const changeEl = document.getElementById('nvt-change');
-                if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
-                
                 updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#be123c', 'nvt');
+                ChartManager.updateChangeElement('nvt-change', state.nvtHistory);
             } catch (e) {
                 console.error('NVT calculation error:', e);
                 const nvtEl = document.getElementById('nvt-value');
@@ -23017,19 +22957,8 @@
                 const addrEl = document.getElementById('active-addr-value');
                 if (addrEl) addrEl.textContent = fmt.num(state.activeAddresses);
                 
-                // Calculate YoY change
-                if (state.activeAddrHistory.length > 1) {
-                    const first = state.activeAddrHistory[0].value;
-                    const last = state.activeAddrHistory[state.activeAddrHistory.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const changeEl = document.getElementById('active-addr-change');
-                    if (changeEl) {
-                        changeEl.textContent = fmt.pct(change) + ' 3Y';
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    }
-                }
-                
                 updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#a855f7', 'activeAddr');
+                ChartManager.updateChangeElement('active-addr-change', state.activeAddrHistory);
                 return;
             }
             
@@ -23112,7 +23041,7 @@
                         const change = ((recentAvg - yearAgoAvg) / yearAgoAvg) * 100;
                         const changeEl = document.getElementById('active-addr-change');
                         if (changeEl) {
-                            changeEl.textContent = fmt.pct(change) + ' 3Y';
+                            changeEl.textContent = fmt.pct(change) + ' ' + ChartManager.getPeriodLabel();
                             changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                         }
                         log(`   YoY: recent=${fmt.num(recentAvg)}, yearAgo=${fmt.num(yearAgoAvg)}, change=${change.toFixed(1)}%`);
@@ -23139,6 +23068,7 @@
                 log(`   Data range: ${fullHistory[0]?.dateStr} ~ ${fullHistory[fullHistory.length-1]?.dateStr}`);
                 
                 updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#a855f7', 'activeAddr');
+                ChartManager.updateChangeElement('active-addr-change', state.activeAddrHistory);
             } else {
                 // Generate fallback history
                 log('Generating simulated Eco Active Addresses history...');
@@ -23150,16 +23080,8 @@
                     state.activeAddrHistory.push({ date, value: baseValue * variance * trend });
                 }
                 
-                const first = state.activeAddrHistory[0].value;
-                const last = state.activeAddrHistory[state.activeAddrHistory.length - 1].value;
-                const change = ((last - first) / first) * 100;
-                const changeEl = document.getElementById('active-addr-change');
-                if (changeEl) {
-                    changeEl.textContent = fmt.pct(change) + ' 3Y';
-                    changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                }
-                
                 updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#a855f7', 'activeAddr');
+                ChartManager.updateChangeElement('active-addr-change', state.activeAddrHistory);
             }
         }
 
@@ -23212,18 +23134,8 @@
                             return { date: defiPoint.date, value: ((closestStaked + defiPoint.value) / totalSupply) * 100 };
                         });
                         
-                        if (state.commitmentRatioHistory.length > 1) {
-                            const first = state.commitmentRatioHistory[0].value;
-                            const last = state.commitmentRatioHistory[state.commitmentRatioHistory.length - 1].value;
-                            const change = last - first;
-                            const changeEl = document.getElementById('commitment-ratio-change');
-                            if (changeEl) {
-                                changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + 'pp 3Y';
-                                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                            }
-                        }
-                        
                         updateMetricChart('commitment-ratio-chart', commitmentRatioChart, state.commitmentRatioHistory, '#059669', 'commitmentRatio');
+                        ChartManager.updateChangeElement('commitment-ratio-change', state.commitmentRatioHistory, null, { pp: true });
                     } else {
                         generateFallbackCommitmentHistory(totalSupply);
                     }
@@ -23250,19 +23162,11 @@
                 state.commitmentRatioHistory.push({ date, value: baseRatio + trend + variance });
             }
             
-            const first = state.commitmentRatioHistory[0].value;
-            const last = state.commitmentRatioHistory[state.commitmentRatioHistory.length - 1].value;
-            const change = last - first;
-            const changeEl = document.getElementById('commitment-ratio-change');
-            if (changeEl) {
-                changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + 'pp 3Y';
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-            }
-            
             updateMetricChart('commitment-ratio-chart', commitmentRatioChart, state.commitmentRatioHistory, '#059669', 'commitmentRatio');
+            ChartManager.updateChangeElement('commitment-ratio-change', state.commitmentRatioHistory, null, { pp: true });
         }
 
-        function updateSupplyDistributionChart(days = 1095) {
+        function updateSupplyDistributionChart(days = null) {
             const ctx = document.getElementById('supply-chart');
             if (!ctx) return;
             
@@ -23296,14 +23200,9 @@
             if (floatDisplay) floatDisplay.textContent = floatPct.toFixed(1);
             
             // Build time series data
-            const stakingHist = state.stakingHistory || [];
-            const tvlHist = state.tvlHistory || [];
-            const l2TvlHist = state.l2TvlHistory || [];
-            
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filteredStaking = stakingHist.filter(d => d.date.getTime() > cutoffDate);
-            const filteredTvl = tvlHist.filter(d => d.date.getTime() > cutoffDate);
-            const filteredL2 = l2TvlHist.filter(d => d.date.getTime() > cutoffDate);
+            const filteredStaking = prepareChartData(state.stakingHistory, days, 90);
+            const filteredTvl = prepareChartData(state.tvlHistory, days, 90);
+            const filteredL2 = prepareChartData(state.l2TvlHistory, days, 90);
             
             log('Supply chart - stakingHist:', filteredStaking.length, 'tvlHist:', filteredTvl.length, 'l2Hist:', filteredL2.length);
             
@@ -23555,7 +23454,7 @@
                     
                     const changeEl = document.getElementById('float-change');
                     if (changeEl) {
-                        const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                        const periodLabel = ChartManager.getPeriodLabel(days);
                         const sign = floatChange >= 0 ? '+' : '';
                         changeEl.textContent = sign + floatChange.toFixed(1) + 'pp ' + periodLabel;
                         changeEl.className = 'change ' + (floatChange >= 0 ? 'up' : 'down');
@@ -23579,7 +23478,7 @@
                 state.lendingTvl = state.lendingHistory[state.lendingHistory.length - 1].value;
                 const lendingTvlEl = document.getElementById('lending-tvl');
                 if (lendingTvlEl) lendingTvlEl.textContent = '$' + (state.lendingTvl / 1e9).toFixed(2) + 'B';
-                updateLendingChart();
+                updateLendingChart(ChartManager.getDefaultPeriod());
                 return;
             }
             
@@ -23616,14 +23515,14 @@
                 log('   Generating Lending TVL history based on current value:', (totalLendingTvl/1e9).toFixed(1) + 'B');
                 generateFallbackLendingHistory(totalLendingTvl);
                 
-                updateLendingChart();
+                updateLendingChart(ChartManager.getDefaultPeriod());
             } catch (e) {
                 console.error('Error fetching lending TVL:', e);
                 state.lendingTvl = 25000000000;
                 const lendingTvlEl = document.getElementById('lending-tvl');
                 if (lendingTvlEl) lendingTvlEl.textContent = '~$25B';
                 generateFallbackLendingHistory(25000000000);
-                updateLendingChart();
+                updateLendingChart(ChartManager.getDefaultPeriod());
             }
         }
         
@@ -23644,13 +23543,11 @@
             state.lendingHistory[state.lendingHistory.length - 1].value = currentTvl;
         }
 
-        function updateLendingChart(days = 1095) {
+        function updateLendingChart(days = null) {
             const ctx = document.getElementById('lending-chart');
             if (!ctx) return;
             
-            const history = state.lendingHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.lendingHistory, days, 60);
             
             setChartLoading('lending-chart', false);
             
@@ -23667,18 +23564,14 @@
             
             const changeEl = document.getElementById('lending-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
             
-            // Sample for performance
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            
-            const labels = sampled.map(d => fmt.chartLabel(d.date));
-            const values = sampled.map(d => d.value / 1e9);
-            const dates = sampled.map(d => d.date);
+            const labels = filtered.map(d => fmt.chartLabel(d.date));
+            const values = filtered.map(d => d.value / 1e9);
+            const dates = filtered.map(d => d.date);
             
             lendingChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -23850,20 +23743,18 @@
                 const gasEl = document.getElementById('gas-price-value');
                 if (gasEl) gasEl.textContent = state.gasPrice.toFixed(1) + ' Gwei';
                 
-                updateGasPriceChart();
+                updateGasPriceChart(ChartManager.getDefaultPeriod());
                 setDataSource('gas-price-chart', gasPriceDataSource);
             } catch (e) {
                 console.error('Gas price error:', e);
             }
         }
         
-        function updateGasPriceChart(days = 1095) {
+        function updateGasPriceChart(days = null) {
             const ctx = document.getElementById('gas-price-chart');
             if (!ctx) return;
             
-            let history = state.gasPriceHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            let filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            let filtered = prepareChartData(state.gasPriceHistory, days, 60);
             
             if (filtered.length < 3) {
                 log('gas-price-chart: no data, using fallback');
@@ -23885,17 +23776,14 @@
             
             const changeEl = document.getElementById('gas-price-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
             
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            
-            const labels = sampled.map(d => fmt.chartLabel(d.date));
-            const values = sampled.map(d => d.value);
-            const dates = sampled.map(d => d.date);
+            const labels = filtered.map(d => fmt.chartLabel(d.date));
+            const values = filtered.map(d => d.value);
+            const dates = filtered.map(d => d.date);
             
             gasPriceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -23989,8 +23877,8 @@
                         countBadge.className = 'source-badge cached';
                     }
                     
-                    updateBlobFeesChart();
-                    updateBlobCountChart();
+                    updateBlobFeesChart(ChartManager.getDefaultPeriod());
+                    updateBlobCountChart(ChartManager.getDefaultPeriod());
                     return;
                 }
                 
@@ -24161,23 +24049,21 @@
                     blobCountBadge.className = badge.class;
                 }
                 
-                updateBlobFeesChart();
-                updateBlobCountChart();
+                updateBlobFeesChart(ChartManager.getDefaultPeriod());
+                updateBlobCountChart(ChartManager.getDefaultPeriod());
                 log('   Blob Fees (1d):', blobFees.toFixed(1), 'ETH | Count:', fmt.num(blobCount));
             } catch (e) {
                 console.error('Blob fees error:', e);
             }
         }
         
-        function updateBlobFeesChart(days = 'all') {
+        function updateBlobFeesChart(days = null) {
+            const period = days || ChartManager.getDefaultPeriod();
             const ctx = document.getElementById('blob-fees-chart');
             if (!ctx) return;
             if (blobFeesChart) blobFeesChart.destroy();
             
-            const history = state.blobFeesHistory || [];
-            // 'all'이면 전체 데이터, 아니면 days 기준 필터
-            const cutoffDate = days === 'all' ? 0 : Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = ChartManager.prepare(state.blobFeesHistory, period, 60);
             
             setChartLoading('blob-fees-chart', false);
             
@@ -24197,7 +24083,7 @@
             
             const changeEl = document.getElementById('blob-fees-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? '1Y' : 'All';
+                const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -24272,7 +24158,7 @@
                     gasPriceEl.textContent = currentGasPrice.toFixed(1) + ' Gwei';
                 }
                 
-                updateGasPriceChart();
+                updateGasPriceChart(ChartManager.getDefaultPeriod());
                 setDataSource('gas-price-chart', dataSource);
                 log('   Gas Price:', currentGasPrice.toFixed(1), 'Gwei');
             } catch (e) {
@@ -24280,68 +24166,8 @@
             }
         }
         
-        function updateGasPriceChart(days = 1095) {
-            const ctx = document.getElementById('gas-price-chart');
-            if (!ctx) return;
-            if (gasPriceChart) gasPriceChart.destroy();
-            
-            const history = state.gasPriceHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
-            
-            if (filtered.length < 3) {
-                setChartLoading('gas-price-chart', false);
-                return;
-            }
-            
-            setChartLoading('gas-price-chart', false);
-            
-            const latest = filtered[filtered.length - 1].value;
-            const oldest = filtered[0].value;
-            const change = oldest > 0 ? ((latest - oldest) / oldest) * 100 : 0;
-            
-            const changeEl = document.getElementById('gas-price-change');
-            if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
-                changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-            }
-            
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            const dates = sampled.map(d => d.date);
-            
-            gasPriceChart = new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: sampled.map(d => fmt.chartLabel(d.date)),
-                    datasets: [{
-                        data: sampled.map(d => d.value),
-                        borderColor: '#06b6d4',
-                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                        borderWidth: 1.5,
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { 
-                            title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
-                            label: (ctx) => ctx.raw.toFixed(1) + ' Gwei' 
-                        } }
-                    },
-                    scales: {
-                        x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
-                    }
-                }
-            });
-        }
+        // Note: Primary updateGasPriceChart function is defined earlier
+        // This section is for Blob data (EIP-4844)
         
         // Blob Count - EIP-4844 blob usage tracking
         // Note: fetchBlobFees already calculates blob count via eth_feeHistory API
@@ -24355,7 +24181,7 @@
                     if (blobCountEl) {
                         blobCountEl.textContent = fmt.num(state.blobCount);
                     }
-                    updateBlobCountChart();
+                    updateBlobCountChart(ChartManager.getDefaultPeriod());
                     return;
                 }
                 
@@ -24404,22 +24230,20 @@
                     }
                 }
                 
-                updateBlobCountChart();
+                updateBlobCountChart(ChartManager.getDefaultPeriod());
             } catch (e) {
                 console.error('Blob count error:', e);
                 setChartLoading('blob-count-chart', false);
             }
         }
         
-        function updateBlobCountChart(days = 'all') {
+        function updateBlobCountChart(days = null) {
+            const period = days || ChartManager.getDefaultPeriod();
             const ctx = document.getElementById('blob-count-chart');
             if (!ctx) return;
             if (blobCountChart) blobCountChart.destroy();
             
-            const history = state.blobCountHistory || [];
-            // 'all'이면 전체 데이터, 아니면 days 기준 필터
-            const cutoffDate = days === 'all' ? 0 : Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = ChartManager.prepare(state.blobCountHistory, period, 60);
             
             if (filtered.length < 3) {
                 const changeEl = document.getElementById('blob-count-change');
@@ -24437,7 +24261,7 @@
             
             const changeEl = document.getElementById('blob-count-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? '1Y' : 'All';
+                const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
@@ -24556,10 +24380,10 @@
                 
                 // Update UI and Charts
                 updateSupplyDynamicsUI();
-                updateGasUtilizationChart(1095);
-                updateDailyBurnChart(1095);
-                updateDailyIssuanceChart(1095);
-                updateNetSupplyChart(1095);
+                updateGasUtilizationChart(ChartManager.getDefaultPeriod());
+                updateDailyBurnChart(ChartManager.getDefaultPeriod());
+                updateDailyIssuanceChart(ChartManager.getDefaultPeriod());
+                updateNetSupplyChart(ChartManager.getDefaultPeriod());
                 
                 // 데이터 소스 레이블 설정
                 const dataSource = state.supabaseGasHistory?.length > 0 ? 'dune' : 'api';
@@ -24651,16 +24475,14 @@
 
 
         
-        function updateGasUtilizationChart(days = 1095) {
+        function updateGasUtilizationChart(days = null) {
             const ctx = document.getElementById('gas-utilization-chart');
             if (!ctx) return;
             if (gasUtilizationChart) gasUtilizationChart.destroy();
             
             setChartLoading('gas-utilization-chart', false);
             
-            const history = state.gasUtilizationHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.gasUtilizationHistory, days, 60);
             if (filtered.length < 3) return;
             
             const latest = filtered[filtered.length - 1].value;
@@ -24669,21 +24491,19 @@
             
             const changeEl = document.getElementById('gas-util-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
             
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            const dates = sampled.map(d => d.date);
+            const dates = filtered.map(d => d.date);
             
             gasUtilizationChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: sampled.map(d => fmt.chartLabel(d.date)),
+                    labels: filtered.map(d => fmt.chartLabel(d.date)),
                     datasets: [{
-                        data: sampled.map(d => d.value),
+                        data: filtered.map(d => d.value),
                         borderColor: '#f43f5e',
                         backgroundColor: 'rgba(244, 63, 94, 0.1)',
                         borderWidth: 1.5,
@@ -24707,16 +24527,14 @@
             });
         }
         
-        function updateDailyBurnChart(days = 1095) {
+        function updateDailyBurnChart(days = null) {
             const ctx = document.getElementById('daily-burn-chart');
             if (!ctx) return;
             if (dailyBurnChart) dailyBurnChart.destroy();
             
             setChartLoading('daily-burn-chart', false);
             
-            const history = state.burnHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.burnHistory, days, 60);
             if (filtered.length < 3) return;
             
             const latest = filtered[filtered.length - 1].value;
@@ -24725,21 +24543,19 @@
             
             const changeEl = document.getElementById('burn-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
             
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            const dates = sampled.map(d => d.date);
+            const dates = filtered.map(d => d.date);
             
             dailyBurnChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: sampled.map(d => fmt.chartLabel(d.date)),
+                    labels: filtered.map(d => fmt.chartLabel(d.date)),
                     datasets: [{
-                        data: sampled.map(d => d.value),
+                        data: filtered.map(d => d.value),
                         borderColor: '#f97316',
                         backgroundColor: 'rgba(249, 115, 22, 0.1)',
                         borderWidth: 1.5,
@@ -24774,16 +24590,14 @@
             });
         }
         
-        function updateDailyIssuanceChart(days = 1095) {
+        function updateDailyIssuanceChart(days = null) {
             const ctx = document.getElementById('daily-issuance-chart');
             if (!ctx) return;
             if (dailyIssuanceChart) dailyIssuanceChart.destroy();
             
             setChartLoading('daily-issuance-chart', false);
             
-            const history = state.issuanceHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.issuanceHistory, days, 60);
             if (filtered.length < 3) return;
             
             const latest = filtered[filtered.length - 1].value;
@@ -24792,21 +24606,19 @@
             
             const changeEl = document.getElementById('issuance-change');
             if (changeEl) {
-                const periodLabel = days === 90 ? '90D' : days === 365 ? 'YoY' : '3Y';
+                const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
             }
             
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            const dates = sampled.map(d => d.date);
+            const dates = filtered.map(d => d.date);
             
             dailyIssuanceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: sampled.map(d => fmt.chartLabel(d.date)),
+                    labels: filtered.map(d => fmt.chartLabel(d.date)),
                     datasets: [{
-                        data: sampled.map(d => d.value),
+                        data: filtered.map(d => d.value),
                         borderColor: '#22c55e',
                         backgroundColor: 'rgba(34, 197, 94, 0.1)',
                         borderWidth: 1.5,
@@ -24830,16 +24642,14 @@
             });
         }
         
-        function updateNetSupplyChart(days = 1095) {
+        function updateNetSupplyChart(days = null) {
             const ctx = document.getElementById('net-supply-chart');
             if (!ctx) return;
             if (netSupplyChart) netSupplyChart.destroy();
             
             setChartLoading('net-supply-chart', false);
             
-            const history = state.netSupplyHistory || [];
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = history.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.netSupplyHistory, days, 60);
             if (filtered.length < 3) return;
             
             const latest = filtered[filtered.length - 1].value;
@@ -24849,16 +24659,14 @@
                 statusEl.className = 'change ' + (latest <= 0 ? 'up' : 'down');
             }
             
-            const sampleRate = Math.max(1, Math.floor(filtered.length / 60));
-            const sampled = filtered.filter((_, i, arr) => i % sampleRate === 0 || i === arr.length - 1);
-            const dates = sampled.map(d => d.date);
+            const dates = filtered.map(d => d.date);
             
             netSupplyChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: sampled.map(d => fmt.chartLabel(d.date)),
+                    labels: filtered.map(d => fmt.chartLabel(d.date)),
                     datasets: [{
-                        data: sampled.map(d => d.value),
+                        data: filtered.map(d => d.value),
                         borderColor: '#8b5cf6',
                         backgroundColor: 'rgba(139, 92, 246, 0.1)',
                         borderWidth: 1.5,
@@ -24932,26 +24740,22 @@
                 return;
             }
             
-            let history = state.dominanceHistory;
+            // ★ ChartManager로 기본 기간 적용
+            let history = ChartManager.prepare(state.dominanceHistory, ChartManager.getDefaultPeriod());
+            
             if (!history || history.length === 0) {
                 log('dominance-chart: no data, using fallback');
-                // Fallback: 빈 차트라도 그리기
+                const defaultPeriod = ChartManager.getDefaultPeriod();
                 history = [];
-                for (let i = 365; i >= 0; i--) {
+                for (let i = defaultPeriod; i >= 0; i--) {
                     history.push({
                         date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 9 // 기본 dominance 값
+                        value: 9
                     });
                 }
             }
             
-            // 3년 필터 적용
-            const threeYearsAgo = new Date();
-            threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
-            history = history.filter(d => d.date.getTime() > threeYearsAgo.getTime());
-            
             try {
-                // 데이터가 있을 때만 기존 차트 destroy
                 if (dominanceChart) {
                     dominanceChart.destroy();
                     dominanceChart = null;
@@ -24975,13 +24779,11 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('dominance-change');
                     if (changeEl) {
-                        const label = history.length > 900 ? '3Y' : history.length > 300 ? '1Y' : '90D';
-                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
+                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + ChartManager.getPeriodLabel();
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                 }
                 
-                // Remove loading spinner after chart is rendered
                 setChartLoading('dominance-chart', false);
                 log('Dominance chart updated with real data');
             } catch (e) {
@@ -24996,25 +24798,22 @@
                 return;
             }
             
-            let history = state.ethbtcHistory;
+            // ★ ChartManager로 기본 기간 적용
+            let history = ChartManager.prepare(state.ethbtcHistory, ChartManager.getDefaultPeriod());
+            
             if (!history || history.length === 0) {
                 log('ethbtc-chart: no data, using fallback');
+                const defaultPeriod = ChartManager.getDefaultPeriod();
                 history = [];
-                for (let i = 365; i >= 0; i--) {
+                for (let i = defaultPeriod; i >= 0; i--) {
                     history.push({
                         date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 0.035 // 기본 ETH/BTC 비율
+                        value: 0.035
                     });
                 }
             }
             
-            // 3년 필터 적용
-            const threeYearsAgo = new Date();
-            threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
-            history = history.filter(d => d.date.getTime() > threeYearsAgo.getTime());
-            
             try {
-                // 데이터가 있을 때만 기존 차트 destroy
                 if (ethbtcChart) {
                     ethbtcChart.destroy();
                     ethbtcChart = null;
@@ -25038,13 +24837,11 @@
                     const change = ((last - first) / first) * 100;
                     const changeEl = document.getElementById('ethbtc-change');
                     if (changeEl) {
-                        const label = history.length > 900 ? '3Y' : history.length > 300 ? '1Y' : '90D';
-                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + label;
+                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '% ' + ChartManager.getPeriodLabel();
                         changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
                     }
                 }
                 
-                // Remove loading spinner after chart is rendered
                 setChartLoading('ethbtc-chart', false);
                 log('ETH/BTC chart updated with real data');
             } catch (e) {
@@ -25052,22 +24849,21 @@
             }
         }
 
-        function updateMetricChart(canvasId, chartInstance, history, color, key) {
+        function updateMetricChart(canvasId, chartInstance, history, color, key, period = null) {
             const ctx = document.getElementById(canvasId);
             if (!ctx) return { lastValue: null, lastDate: null };
             
             // ═══════════════════════════════════════════════════════════════════
-            // 미취합 데이터 제외: 마지막 날짜는 항상 제외 (수집 중일 수 있음)
+            // ChartManager를 통해 기간 적용 (period가 지정되지 않으면 기본값 사용)
             // ═══════════════════════════════════════════════════════════════════
-            if (history && history.length > 2) {
-                history = history.slice(0, -1);
-            }
+            const effectivePeriod = period || ChartManager.getDefaultPeriod();
+            history = ChartManager.prepare(history, effectivePeriod);
             
             // 데이터 없으면 fallback 생성
             if (!history || history.length < 2) {
                 log(`${canvasId}: no data, generating fallback...`);
                 history = [];
-                for (let i = 90; i >= 0; i--) {
+                for (let i = effectivePeriod; i >= 0; i--) {
                     history.push({
                         date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
                         value: 0
@@ -25221,16 +25017,15 @@
         }
 
         // MVRV Ratio Chart with zone lines
-        function renderMvrvChart(canvasId, history, days = 1095) {
+        function renderMvrvChart(canvasId, history, days = null) {
             const ctx = document.getElementById(canvasId);
             if (!ctx) return;
             
             // Destroy existing chart
             if (mvrvRatioChart) mvrvRatioChart.destroy();
             
-            // Filter by period
-            const cutoffDate = Date.now() - days * 24 * 60 * 60 * 1000;
-            const filteredHistory = history.filter(d => d.date.getTime() > cutoffDate);
+            // Filter by period using prepareChartData
+            const filteredHistory = prepareChartData(history, days, 90);
             
             if (filteredHistory.length < 2) return;
             
@@ -26043,8 +25838,7 @@
             const ctx = document.getElementById('dominance-chart');
             if (!ctx || !state.dominanceHistory || state.dominanceHistory.length === 0) return;
             
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = state.dominanceHistory.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.dominanceHistory, days, 90);
             
             if (filtered.length === 0) return;
             
@@ -26058,16 +25852,8 @@
                 filtered.map(d => d.date)
             ));
             
-            // 변화율 업데이트
-            const first = filtered[0].value;
-            const last = filtered[filtered.length - 1].value;
-            const change = ((last - first) / first) * 100;
-            const changeEl = document.getElementById('dominance-change');
-            if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
-                changeEl.textContent = fmt.pct(change) + ' ' + label;
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-            }
+            // ★ ChartManager로 변화율 업데이트 (통일된 계산)
+            ChartManager.updateChangeElement('dominance-change', state.dominanceHistory, days);
         }
 
         // ETH/BTC 차트 기간별 업데이트
@@ -26075,8 +25861,7 @@
             const ctx = document.getElementById('ethbtc-chart');
             if (!ctx || !state.ethbtcHistory || state.ethbtcHistory.length === 0) return;
             
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = state.ethbtcHistory.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.ethbtcHistory, days, 90);
             
             if (filtered.length === 0) return;
             
@@ -26090,16 +25875,8 @@
                 filtered.map(d => d.date)
             ));
             
-            // 변화율 업데이트
-            const first = filtered[0].value;
-            const last = filtered[filtered.length - 1].value;
-            const change = ((last - first) / first) * 100;
-            const changeEl = document.getElementById('ethbtc-change');
-            if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
-                changeEl.textContent = fmt.pct(change) + ' ' + label;
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-            }
+            // ★ ChartManager로 변화율 업데이트 (통일된 계산)
+            ChartManager.updateChangeElement('ethbtc-change', state.ethbtcHistory, days);
         }
 
         // Exchange Reserve 차트 기간별 업데이트
@@ -26107,8 +25884,7 @@
             const ctx = document.getElementById('reserve-chart');
             if (!ctx || !state.reserveHistory || state.reserveHistory.length === 0) return;
             
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = state.reserveHistory.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.reserveHistory, days, 90);
             
             if (filtered.length === 0) return;
             
@@ -26122,16 +25898,8 @@
                 filtered.map(d => d.date)
             ));
             
-            // 변화율 업데이트
-            const first = filtered[0].value;
-            const last = filtered[filtered.length - 1].value;
-            const change = ((last - first) / first) * 100;
-            const changeEl = document.getElementById('reserve-change');
-            if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
-                changeEl.textContent = fmt.pct(change) + ' ' + label;
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-            }
+            // ★ ChartManager로 변화율 업데이트 (통일된 계산)
+            ChartManager.updateChangeElement('reserve-change', state.reserveHistory, days);
         }
 
         // Open Interest 차트 기간별 업데이트
@@ -26140,8 +25908,7 @@
             const ctx = document.getElementById('open-interest-chart');
             if (!ctx || !state.openInterestHistory || state.openInterestHistory.length === 0) return;
             
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = state.openInterestHistory.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.openInterestHistory, days, 90);
             
             if (filtered.length === 0) return;
             
@@ -26155,16 +25922,8 @@
                 filtered.map(d => d.date)
             ));
             
-            // 변화율 업데이트
-            const first = filtered[0].value;
-            const last = filtered[filtered.length - 1].value;
-            const change = ((last - first) / first) * 100;
-            const changeEl = document.getElementById('open-interest-change');
-            if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
-                changeEl.textContent = fmt.pct(change) + ' ' + label;
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-            }
+            // ★ ChartManager로 변화율 업데이트 (통일된 계산)
+            ChartManager.updateChangeElement('open-interest-change', state.openInterestHistory, days);
         }
 
         // L2 Stablecoin Volume 차트 기간별 업데이트
@@ -26172,8 +25931,7 @@
             const ctx = document.getElementById('l2-stablecoin-vol-chart');
             if (!ctx || !state.l2StablecoinVolumeHistory || state.l2StablecoinVolumeHistory.length === 0) return;
             
-            const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
-            const filtered = state.l2StablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
+            const filtered = prepareChartData(state.l2StablecoinVolumeHistory, days, 90);
             
             if (filtered.length === 0) return;
             
@@ -26187,16 +25945,8 @@
                 filtered.map(d => d.date)
             ));
             
-            // 변화율 업데이트
-            const first = filtered[0].value;
-            const last = filtered[filtered.length - 1].value;
-            const change = ((last - first) / first) * 100;
-            const changeEl = document.getElementById('l2-stablecoin-vol-change');
-            if (changeEl) {
-                const label = days === 1095 ? '3Y' : days === 365 ? 'YoY' : '90D';
-                changeEl.textContent = fmt.pct(change) + ' ' + label;
-                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-            }
+            // ★ ChartManager로 변화율 업데이트 (통일된 계산)
+            ChartManager.updateChangeElement('l2-stablecoin-vol-change', state.l2StablecoinVolumeHistory, days);
         }
 
         // Metric chart tabs
@@ -26205,22 +25955,19 @@
                 const card = tab.closest('.metric-card');
                 const metric = card.dataset.metric;
                 const period = parseInt(tab.dataset.period);
-                const periodLabel = period === 1095 ? '3Y' : period === 365 ? 'YoY' : '90D';
+                const periodLabel = ChartManager.getPeriodLabel(period);
                 
                 // Update active state
                 card.querySelectorAll('.metric-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 
-                // Filter history based on period
-                // Use daily data for 30D/90D, weekly data for 1Y
-                let history;
+                log(`Tab clicked: ${metric}, period: ${period}`);
+                
+                // ★ 원본 데이터를 전달하고 period로 필터링하도록 변경
+                let sourceHistory;
                 let changeElId;
-                const cutoffDate = Date.now() - (period * 24 * 60 * 60 * 1000);
-                const useDaily = period <= 90;
-                
-                log(`Tab clicked: ${metric}, period: ${period}, useDaily: ${useDaily}`);
-                
                 let result;
+<<<<<<< HEAD
                 if (metric === 'tvl') {
                     const hasDaily = state.tvlHistoryDaily && state.tvlHistoryDaily.length > 0;
                     log(`TVL - hasDaily: ${hasDaily}, dailyLen: ${state.tvlHistoryDaily?.length}, weeklyLen: ${state.tvlHistory?.length}`);
@@ -26323,67 +26070,65 @@
                     history = state.whaleTxHistory.filter(d => d.date.getTime() > cutoffDate);
                     result = updateMetricChart('whale-tx-chart', whaleTxChart, history, '#f59e0b', 'whaleTx');
                     changeElId = 'whale-tx-change';
+=======
+                
+                // 데이터 소스 매핑
+                const dataMap = {
+                    'tvl': { history: state.tvlHistory, daily: state.tvlHistoryDaily, chart: 'tvl-chart', color: '#10b981', key: 'tvl', changeEl: 'tvl-change' },
+                    'staking': { history: state.stakingHistory, chart: 'staking-chart', color: '#6366f1', key: 'staking', changeEl: 'staking-change' },
+                    'l2': { history: state.l2History, daily: state.l2HistoryDaily, chart: 'l2-chart', color: '#7c3aed', key: 'l2', changeEl: 'l2-change' },
+                    'dex': { history: state.dexHistory, daily: state.dexHistoryDaily, chart: 'dex-chart', color: '#06b6d4', key: 'dex', changeEl: 'dex-change' },
+                    'fees': { history: state.feesHistory, daily: state.feesHistoryDaily, chart: 'fees-chart', color: '#f97316', key: 'fees', changeEl: 'fees-change' },
+                    'stables': { history: state.stablesHistory, chart: 'stables-chart', color: '#eab308', key: 'stables', changeEl: 'stables-change' },
+                    'txEth': { history: state.txEthHistory, chart: 'tx-eth-chart', color: '#14b8a6', key: 'txEth', changeEl: 'tx-eth-change' },
+                    'txTotal': { history: state.txTotalHistory, chart: 'tx-total-chart', color: '#6366f1', key: 'txTotal', changeEl: 'tx-total-change' },
+                    'nvt': { history: state.nvtHistory, chart: 'nvt-chart', color: '#be123c', key: 'nvt', changeEl: 'nvt-change' },
+                    'activeAddr': { history: state.activeAddrHistory, chart: 'active-addr-chart', color: '#a855f7', key: 'activeAddr', changeEl: 'active-addr-change' },
+                    'ethInDefi': { history: state.ethInDefiHistory, chart: 'eth-defi-chart', color: '#06b6d4', key: 'ethInDefi', changeEl: 'eth-defi-change' },
+                    'commitmentRatio': { history: state.commitmentRatioHistory, chart: 'commitment-ratio-chart', color: '#f59e0b', key: 'commitmentRatio', changeEl: 'commitment-ratio-change' },
+                    'appCapital': { history: state.appCapitalHistory, chart: 'app-capital-chart', color: '#ec4899', key: 'appCapital', changeEl: 'app-capital-change' },
+                    'stakingApr': { history: state.stakingAprHistory, chart: 'staking-yield-chart', color: '#10b981', key: 'stakingApr', changeEl: 'staking-yield-change' },
+                    'l1Volume': { history: state.l1VolumeHistory, chart: 'l1-volume-chart', color: '#3b82f6', key: 'l1Volume', changeEl: 'l1-volume-change' },
+                    'l1TotalVolume': { history: state.l1TotalVolumeHistory, chart: 'l1-total-volume-chart', color: '#06b6d4', key: 'l1TotalVolume', changeEl: 'l1-total-volume-change' },
+                    'l2Volume': { history: state.l2VolumeHistory, chart: 'l2-volume-chart', color: '#8b5cf6', key: 'l2Volume', changeEl: 'l2-volume-change' },
+                    'l2TotalVolume': { history: state.l2TotalVolumeHistory, chart: 'l2-total-volume-chart', color: '#f59e0b', key: 'l2TotalVolume', changeEl: 'l2-total-volume-change' },
+                    'bridgeVolume': { history: state.bridgeVolumeHistory, chart: 'bridge-volume-chart', color: '#06b6d4', key: 'bridgeVolume', changeEl: 'bridge-volume-change' },
+                    'l2DexVolume': { history: state.l2DexVolumeHistory, chart: 'l2-dex-volume-chart', color: '#f59e0b', key: 'l2DexVolume', changeEl: 'l2-dex-volume-change' },
+                    'bridgeTotalVolume': { history: state.bridgeTotalVolumeHistory, chart: 'bridge-total-volume-chart', color: '#ec4899', key: 'bridgeTotalVolume', changeEl: 'bridge-total-volume-change' },
+                    'stablecoinVol': { history: state.stablecoinVolumeHistory, chart: 'stablecoin-vol-chart', color: '#eab308', key: 'stablecoinVol', changeEl: 'stablecoin-vol-change' },
+                    'whaleTx': { history: state.whaleTxHistory, chart: 'whale-tx-chart', color: '#f59e0b', key: 'whaleTx', changeEl: 'whale-tx-change' },
+                    'newAddresses': { history: state.newAddressesHistory, chart: 'new-addr-chart', color: '#22c55e', key: 'newAddresses', changeEl: 'new-addr-change' },
+                    'l1ActiveAddr': { history: state.l1ActiveAddrHistory, chart: 'l1-active-addr-chart', color: '#a855f7', key: 'l1ActiveAddr', changeEl: 'l1-active-addr-change' },
+                    'l2ActiveAddr': { history: state.l2ActiveAddrHistory, chart: 'l2-active-addr-chart', color: '#ec4899', key: 'l2ActiveAddr', changeEl: 'l2-active-addr-change' },
+                };
+                
+                const config = dataMap[metric];
+                
+                if (config) {
+                    // 90일 이하면 daily 데이터 우선 사용
+                    sourceHistory = (period <= 90 && config.daily && config.daily.length > 0) 
+                        ? config.daily : config.history;
+                    
+                    result = updateMetricChart(config.chart, null, sourceHistory, config.color, config.key, period);
+                    changeElId = config.changeEl;
+>>>>>>> 5f11722 (fix)
                 } else if (metric === 'realizedPrice') {
                     const realizedPriceHistory = state.mvrvHistory
-                        .filter(d => d.realizedPrice > 0 && d.date.getTime() > cutoffDate)
+                        .filter(d => d.realizedPrice > 0)
                         .map(d => ({ date: d.date, value: d.realizedPrice }));
-                    history = realizedPriceHistory;
-                    result = updateMetricChart('realized-price-chart', realizedPriceChart, history, '#10b981', 'realizedPrice');
+                    result = updateMetricChart('realized-price-chart', null, realizedPriceHistory, '#10b981', 'realizedPrice', period);
                     changeElId = 'realized-price-change';
+                    sourceHistory = realizedPriceHistory;
                 } else if (metric === 'mvrvRatio') {
-                    history = state.mvrvHistory.filter(d => d.date.getTime() > cutoffDate);
-                    renderMvrvChart('mvrv-ratio-chart', history, period);
+                    sourceHistory = state.mvrvHistory;
+                    renderMvrvChart('mvrv-ratio-chart', sourceHistory, period);
                     changeElId = 'mvrv-ratio-change';
-                } else if (metric === 'newAddresses') {
-                    history = state.newAddressesHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('new-addr-chart', newAddrChart, history, '#22c55e', 'newAddresses');
-                    changeElId = 'new-addr-change';
-                } else if (metric === 'l1ActiveAddr') {
-                    history = state.l1ActiveAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l1-active-addr-chart', l1ActiveAddrChart, history, '#a855f7', 'l1ActiveAddr');
-                    changeElId = 'l1-active-addr-change';
-                } else if (metric === 'l2ActiveAddr') {
-                    history = state.l2ActiveAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-active-addr-chart', l2ActiveAddrChart, history, '#ec4899', 'l2ActiveAddr');
-                    changeElId = 'l2-active-addr-change';
-                } else if (metric === 'l2StablecoinSupply') {
-                    history = state.l2StablecoinSupplyHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-stablecoin-supply-chart', l2StablecoinSupplyChart, history, '#22c55e', 'l2StablecoinSupply');
-                    changeElId = 'l2-stablecoin-supply-change';
-                } else if (metric === 'l2StablecoinVol') {
-                    history = state.l2StablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-stablecoin-vol-chart', l2StablecoinVolChart, history, '#f59e0b', 'l2StablecoinVol');
-                    changeElId = 'l2-stablecoin-vol-change';
                 }
                 
-                // Use chart's actual history (after filtering incomplete data)
-                if (result && result.history) history = result.history;
-                
-                // Update change percentage based on selected period
-                // Use 7-day average to reduce outlier impact
-                if (history && history.length > 1 && changeElId) {
-                    const windowSize = Math.max(1, Math.min(7, Math.floor(history.length / 4)));
-                    const firstWindow = history.slice(0, windowSize);
-                    const lastWindow = history.slice(-windowSize);
-                    const first = firstWindow.reduce((sum, d) => sum + d.value, 0) / firstWindow.length;
-                    const last = lastWindow.reduce((sum, d) => sum + d.value, 0) / lastWindow.length;
-                    
-                    // For stakingApr, show change in percentage points (pp)
-                    if (metric === 'stakingApr' || metric === 'commitmentRatio') {
-                        const change = last - first;
-                        const changeEl = document.getElementById(changeElId);
-                        if (changeEl) {
-                            changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + 'pp ' + periodLabel;
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
-                    } else {
-                        const change = first !== 0 ? ((last - first) / Math.abs(first)) * 100 : 0;
-                        const changeEl = document.getElementById(changeElId);
-                        if (changeEl) {
-                            changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
-                            changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
-                    }
+                // ★ 증감률 계산 - ChartManager 통합 함수 사용
+                if (changeElId && sourceHistory) {
+                    const isPP = (metric === 'stakingApr' || metric === 'commitmentRatio');
+                    ChartManager.updateChangeElement(changeElId, sourceHistory, period, { pp: isPP });
                 }
             });
         });
@@ -26535,33 +26280,14 @@
                     return history.slice(0, -1);
                 };
                 
+<<<<<<< HEAD
                 // 증감률 계산 헬퍼 함수 (7일 평균 사용)
+=======
+                // 증감률 계산 헬퍼 함수 - ChartManager로 위임
+>>>>>>> 5f11722 (fix)
                 const setChange = (elementId, history, options = {}) => {
                     try {
-                        const el = document.getElementById(elementId);
-                        if (!el || !history || history.length < 2) return;
-                        
-                        const windowSize = Math.max(1, Math.min(7, Math.floor(history.length / 4)));
-                        const firstWindow = history.slice(0, windowSize);
-                        const lastWindow = history.slice(-windowSize);
-                        const first = firstWindow.reduce((sum, d) => sum + d.value, 0) / firstWindow.length;
-                        const last = lastWindow.reduce((sum, d) => sum + d.value, 0) / lastWindow.length;
-                        
-                        if (first === 0 || first === null || first === undefined || isNaN(first)) return;
-                        
-                        const change = ((last - first) / Math.abs(first)) * 100;
-                        const label = options.label || '3Y';
-                        const suffix = options.suffix || '';
-                        const isPercentagePoint = options.pp || false;
-                        
-                        if (isPercentagePoint) {
-                            const ppChange = last - first;
-                            el.textContent = (ppChange >= 0 ? '+' : '') + ppChange.toFixed(2) + 'pp ' + label;
-                            el.className = 'change ' + (ppChange >= 0 ? 'up' : 'down');
-                        } else {
-                            el.textContent = fmt.pct(change) + ' ' + label + suffix;
-                            el.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                        }
+                        ChartManager.updateChangeElement(elementId, history, ChartManager.getDefaultPeriod(), options);
                     } catch (e) { console.error('setChange error for ' + elementId, e); }
                 };
                 
@@ -26586,13 +26312,28 @@
                     state.price = state.priceHistory[state.priceHistory.length - 1].value;
                     priceSource = 'supabase';
                     log(`   Price: Using Supabase (${state.supabasePriceHistory.length} points)`);
+                    
+                    // ★ Supabase 가격 데이터에서 볼륨 추출
+                    if (state.supabasePriceHistory.some(d => d.volume > 0)) {
+                        state.volumeHistory = state.supabasePriceHistory
+                            .filter(d => d.volume > 0)
+                            .map(d => ({ date: d.date, value: d.volume }));
+                        log(`   Volume from Supabase: ${state.volumeHistory.length} points`);
+                    }
                 } else if (state.supabasePriceHistory?.length > 0) {
                     // Supabase 데이터가 있지만 부족 - Binance에서 보충 필요
                     log(`   Price: Supabase insufficient (${state.supabasePriceHistory.length} points), will fetch from Binance`);
-                    // fetchBinanceHistory가 나중에 호출되어 보충함
                     state.priceHistory = state.supabasePriceHistory;
                     state.price = state.priceHistory[state.priceHistory.length - 1].value;
-                    priceSource = 'api'; // Binance로 보충 예정
+                    priceSource = 'api';
+                    
+                    // ★ Supabase 가격 데이터에서 볼륨 추출 (부족해도 일단 사용)
+                    if (state.supabasePriceHistory.some(d => d.volume > 0)) {
+                        state.volumeHistory = state.supabasePriceHistory
+                            .filter(d => d.volume > 0)
+                            .map(d => ({ date: d.date, value: d.volume }));
+                        log(`   Volume from Supabase: ${state.volumeHistory.length} points`);
+                    }
                 } else if (!state.priceHistory?.length) {
                     // Don't set fallback price - keep loading state until real data arrives
                     log('No price data yet, waiting for API...');
@@ -26616,7 +26357,19 @@
                         }
                     }
                     
+<<<<<<< HEAD
                     safeCall(() => updateCombinedPriceVolumeChart(1095), 'price'); // 기본 3Y로 변경
+=======
+                    // ★ 볼륨 데이터가 없으면 CoinGecko에서 먼저 가져오기
+                    if (!state.volumeHistory || state.volumeHistory.length < 30) {
+                        log('   Fetching volume data before rendering chart...');
+                        fetchVolumeFromCoinGecko(365).then(() => {
+                            safeCall(() => updateCombinedPriceVolumeChart(ChartManager.getDefaultPeriod()), 'price');
+                        });
+                    } else {
+                        safeCall(() => updateCombinedPriceVolumeChart(ChartManager.getDefaultPeriod()), 'price');
+                    }
+>>>>>>> 5f11722 (fix)
                     setDataSource('price-chart', priceSource, 'Binance');
                 }
                 
@@ -26749,7 +26502,7 @@
                     state.lendingHistory = simpleHistory(40e9);
                 }
                 setEl('lending-tvl', '$' + (state.lendingTvl / 1e9).toFixed(2) + 'B');
-                safeCall(() => updateLendingChart(), 'lending');
+                safeCall(() => updateLendingChart(ChartManager.getDefaultPeriod()), 'lending');
                 setDataSource('lending-chart', lendingSource, 'DefiLlama');
                 setChange('lending-change', state.lendingHistory);
                 
@@ -26781,7 +26534,7 @@
                 }
                 if (state.openInterest > 0) {
                     setEl('open-interest-value', '$' + (state.openInterest / 1e9).toFixed(2) + 'B');
-                    safeCall(() => updateOpenInterestChartWithPeriod(1095), 'openInterest');
+                    safeCall(() => updateOpenInterestChartWithPeriod(ChartManager.getDefaultPeriod()), 'openInterest');
                     setDataSource('open-interest-chart', openInterestSource, 'CryptoQuant');
                     setChange('open-interest-change', state.openInterestHistory);
                 } else {
@@ -26804,7 +26557,7 @@
                     }
                 }
                 setEl('fear-greed', Math.round(state.fearGreed));
-                safeCall(() => updateFearGreedChart(), 'fearGreed');
+                safeCall(() => updateFearGreedChart(ChartManager.getDefaultPeriod()), 'fearGreed');
                 setDataSource('feargreed-chart', fearGreedSource, 'Alternative.me');
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -26823,7 +26576,7 @@
                     }
                 }
                 setEl('volatility-value', state.volatility.toFixed(1) + '%');
-                safeCall(() => updateVolatilityChart(), 'volatility');
+                safeCall(() => updateVolatilityChart(ChartManager.getDefaultPeriod()), 'volatility');
                 setDataSource('volatility-chart', volatilitySource, 'Calculated');
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -26842,7 +26595,7 @@
                     }
                 }
                 setEl('funding-rate', (state.fundingRate * 100).toFixed(4) + '%');
-                safeCall(() => updateFundingChart(), 'funding');
+                safeCall(() => updateFundingChart(ChartManager.getDefaultPeriod()), 'funding');
                 setDataSource('funding-chart', fundingSource, 'Binance');
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -26860,7 +26613,7 @@
                     state.dominanceHistory = simpleHistory(9, 365);
                 }
                 setEl('eth-dominance', state.currentDominance.toFixed(1) + '%');
-                safeCall(() => updateDominanceChartWithPeriod(1095), 'dominance');
+                safeCall(() => updateDominanceChartWithPeriod(ChartManager.getDefaultPeriod()), 'dominance');
                 setDataSource('dominance-chart', dominanceSource, 'CoinGecko');
                 
                 let ethbtcSource = 'fallback';
@@ -26875,7 +26628,7 @@
                     state.ethbtcHistory = simpleHistory(0.035, 365);
                 }
                 setEl('eth-btc', state.ethBtcRatio.toFixed(5));
-                safeCall(() => updateEthBtcChartWithPeriod(1095), 'ethbtc');
+                safeCall(() => updateEthBtcChartWithPeriod(ChartManager.getDefaultPeriod()), 'ethbtc');
                 setDataSource('ethbtc-chart', ethbtcSource, 'Binance');
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -26958,10 +26711,10 @@
                     setEl('net-supply-change', (state.netSupplyChange >= 0 ? '+' : '') + state.netSupplyChange.toFixed(2) + '%/yr');
                     
                     // 차트 렌더링
-                    safeCall(() => updateGasUtilizationChart(1095), 'gasUtil');
-                    safeCall(() => updateDailyBurnChart(1095), 'burn');
-                    safeCall(() => updateDailyIssuanceChart(1095), 'issuance');
-                    safeCall(() => updateNetSupplyChart(1095), 'netSupply');
+                    safeCall(() => updateGasUtilizationChart(ChartManager.getDefaultPeriod()), 'gasUtil');
+                    safeCall(() => updateDailyBurnChart(ChartManager.getDefaultPeriod()), 'burn');
+                    safeCall(() => updateDailyIssuanceChart(ChartManager.getDefaultPeriod()), 'issuance');
+                    safeCall(() => updateNetSupplyChart(ChartManager.getDefaultPeriod()), 'netSupply');
                     setDataSource('gas-utilization-chart', supplySource);
                     setDataSource('daily-burn-chart', supplySource);
                     setDataSource('daily-issuance-chart', 'beaconchain');
@@ -27025,7 +26778,7 @@
                 if (!state.gasPrice || state.gasPrice === 0) state.gasPrice = 12;
                 if (!state.gasPriceHistory?.length) state.gasPriceHistory = simpleHistory(12);
                 setEl('gas-price-value', state.gasPrice.toFixed(1) + ' Gwei');
-                safeCall(() => updateGasPriceChart(), 'gasPrice');
+                safeCall(() => updateGasPriceChart(ChartManager.getDefaultPeriod()), 'gasPrice');
                 setDataSource('gas-price-chart', gasPriceSource);
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -27070,8 +26823,8 @@
                 }
                 setEl('blob-fees-value', state.blobFees.toFixed(1) + ' ETH');
                 setEl('blob-count-value', fmt.num(state.blobCount));
-                safeCall(() => updateBlobFeesChart(), 'blobFees');
-                safeCall(() => updateBlobCountChart(), 'blobCount');
+                safeCall(() => updateBlobFeesChart(ChartManager.getDefaultPeriod()), 'blobFees');
+                safeCall(() => updateBlobCountChart(ChartManager.getDefaultPeriod()), 'blobCount');
                 setDataSource('blob-fees-chart', blobSource);
                 setDataSource('blob-count-chart', blobSource);
                 
@@ -27147,7 +26900,7 @@
                     }
                 }
                 setEl('stablecoin-mcap', '$' + ((state.stablecoinMcap || 200e9) / 1e9).toFixed(1) + 'B');
-                safeCall(() => updateStablecoinChart(), 'stablecoin');
+                safeCall(() => updateStablecoinChart(ChartManager.getDefaultPeriod()), 'stablecoin');
                 setDataSource('stablecoin-chart', stablecoinSource, 'DefiLlama');
                 setChange('stablecoin-change', state.stablecoinHistory);
                 
@@ -27173,18 +26926,7 @@
                 setEl('staking-yield-value', state.stakingApr.toFixed(2) + '%');
                 safeCall(() => updateMetricChart('staking-yield-chart', stakingAprChart, state.stakingAprHistory, '#22c55e', 'stakingApr'), 'stakingApr');
                 setDataSource('staking-yield-chart', stakingYieldSource);
-                
-                // Staking Yield 증감률 계산
-                if (state.stakingAprHistory?.length > 1) {
-                    const first = state.stakingAprHistory[0].value;
-                    const last = state.stakingAprHistory[state.stakingAprHistory.length - 1].value;
-                    const change = last - first;
-                    const changeEl = document.getElementById('staking-yield-change');
-                    if (changeEl) {
-                        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + 'pp 3Y';
-                        changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                    }
-                }
+                ChartManager.updateChangeElement('staking-yield-change', state.stakingAprHistory, null, { pp: true });
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // 21. Commitment Ratio - (Staked + DeFi) / Supply
@@ -27226,19 +26968,9 @@
                         // Apply outlier filtering to commitment ratio history
                         state.commitmentRatioHistory = filterCommitmentRatioData(state.commitmentRatioHistory);
                         
-                        if (state.commitmentRatioHistory.length > 1) {
-                            const first = state.commitmentRatioHistory[0].value;
-                            const last = state.commitmentRatioHistory[state.commitmentRatioHistory.length - 1].value;
-                            const change = last - first;
-                            const changeEl = document.getElementById('commitment-ratio-change');
-                            if (changeEl) {
-                                changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + 'pp 3Y';
-                                changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
-                            }
-                        }
-                        
                         safeCall(() => updateMetricChart('commitment-ratio-chart', commitmentRatioChart, state.commitmentRatioHistory, '#059669', 'commitmentRatio'), 'commitmentRatio');
                         setDataSource('commitment-ratio-chart', tvlSource);
+                        ChartManager.updateChangeElement('commitment-ratio-change', state.commitmentRatioHistory, null, { pp: true });
                     }
                 } catch (e) {
                     console.error('Commitment Ratio error:', e);
@@ -27248,7 +26980,7 @@
                 // ═══════════════════════════════════════════════════════════════════
                 // 22. Supply Distribution & Valuations
                 // ═══════════════════════════════════════════════════════════════════
-                safeCall(() => updateSupplyDistributionChart(), 'supplyDist');
+                safeCall(() => updateSupplyDistributionChart(ChartManager.getDefaultPeriod()), 'supplyDist');
                 safeCall(() => renderValuations(), 'valuations');
                 
                 log('📊 Charts rendered - Data Sources:', {
@@ -27303,6 +27035,12 @@
                 if (!state.supabasePriceHistory?.length || state.supabasePriceHistory.length < 900) {
                     log('   → Price history insufficient, fetching from Binance');
                     apiCalls.push(fetchBinanceHistory(1095));
+                }
+                
+                // 볼륨 히스토리 - 항상 CoinGecko에서 가져오기 (Supabase에 volume 컬럼이 없을 수 있음)
+                if (!state.volumeHistory?.length || state.volumeHistory.length < 30) {
+                    log('   → Volume history missing, fetching from CoinGecko');
+                    apiCalls.push(fetchVolumeFromCoinGecko(365));
                 }
                 
                 // TVL - Supabase 없으면 DefiLlama
@@ -27380,7 +27118,7 @@
                 ]);
                 
                 // Settlement Volume 차트 업데이트
-                updateVolumeChart();
+                updateVolumeChart(ChartManager.getDefaultPeriod());
                 
                 // 최종 렌더링
                 renderValuations();
@@ -27697,7 +27435,7 @@
                 
                 // Refresh historical chart with new colors
                 if (typeof renderHistoricalMainChart === 'function') {
-                    renderHistoricalMainChart();
+                    renderHistoricalMainChart(ChartManager.getDefaultPeriod());
                 }
                 
                 // Refresh all mini charts by re-fetching data
@@ -28465,7 +28203,7 @@ Check out ETHval 👇`;
             state.yAxisMax = calculateYAxisMax();
             
             // Render charts (this will also update chart header composite value)
-            renderHistoricalMainChart();
+            renderHistoricalMainChart(ChartManager.getDefaultPeriod());
             renderModelCharts();
             
             // Sync all model values from DB data (single source of truth)

@@ -86,11 +86,66 @@
                     <span id="connText">Connecting...</span>
                 </div>
                 <button class="btn btn-secondary" onclick="showConfig()">⚙️ Config</button>
+                <button class="btn btn-warning" onclick="showDataManager()">🗑️ Data Manager</button>
                 <button class="btn btn-success" onclick="collectAll()">🚀 Collect All</button>
                 <button class="btn btn-primary" onclick="verifyAll()">🔍 Verify All</button>
                 <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
             </div>
         </div>
+        
+        <!-- Data Manager Modal -->
+        <div id="dataManagerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2 style="font-size:18px;">🗑️ Data Manager</h2>
+                    <button class="btn btn-secondary" onclick="closeDataManager()">✕</button>
+                </div>
+                
+                <div style="margin-bottom:20px; padding:12px; background:rgba(239,68,68,0.1); border:1px solid var(--error); border-radius:8px;">
+                    <p style="color:var(--error); font-size:12px; margin-bottom:8px;">⚠️ Warning: These actions permanently delete data!</p>
+                </div>
+                
+                <div style="display:grid; gap:12px;">
+                    <div style="background:var(--bg); padding:16px; border-radius:8px; border:1px solid var(--border);">
+                        <h3 style="font-size:14px; margin-bottom:12px;">🥩 Staking Data (historical_staking)</h3>
+                        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Delete all staking data and recollect from Dune (beacon chain)</p>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-warning" onclick="deleteTableData('historical_staking')">🗑️ Delete All</button>
+                            <button class="btn btn-success" onclick="recollectStaking()">🔄 Delete & Recollect</button>
+                        </div>
+                    </div>
+                    
+                    <div style="background:var(--bg); padding:16px; border-radius:8px; border:1px solid var(--border);">
+                        <h3 style="font-size:14px; margin-bottom:12px;">💹 Staking APR (historical_staking_apr)</h3>
+                        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Delete staking APR history data</p>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-warning" onclick="deleteTableData('historical_staking_apr')">🗑️ Delete All</button>
+                        </div>
+                    </div>
+                    
+                    <div style="background:var(--bg); padding:16px; border-radius:8px; border:1px solid var(--border);">
+                        <h3 style="font-size:14px; margin-bottom:12px;">📊 Other Tables</h3>
+                        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Select a table to delete its data</p>
+                        <select id="tableSelect" style="width:100%; padding:8px; margin-bottom:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; color:var(--text);">
+                            <option value="">-- Select Table --</option>
+                            <option value="historical_eth_price">ETH Price</option>
+                            <option value="historical_tvl">TVL</option>
+                            <option value="historical_fees">Fees</option>
+                            <option value="historical_dex_volume">DEX Volume</option>
+                            <option value="historical_stables_eth">Stablecoins</option>
+                            <option value="historical_l2_tvl">L2 TVL</option>
+                            <option value="historical_gas">Gas</option>
+                            <option value="historical_supply">Supply</option>
+                            <option value="historical_reserve">Exchange Reserve</option>
+                        </select>
+                        <button class="btn btn-warning" onclick="deleteSelectedTable()">🗑️ Delete Selected</button>
+                    </div>
+                </div>
+                
+                <div id="dataManagerLog" style="margin-top:16px; padding:12px; background:var(--bg); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:11px; max-height:200px; overflow-y:auto; display:none;"></div>
+            </div>
+        </div>
+        
         <div class="stats-grid">
             <div class="stat-card"><div class="label">Total</div><div class="value" id="stats-total">--</div></div>
             <div class="stat-card"><div class="label">OK</div><div class="value success" id="statOk">-</div></div>
@@ -979,6 +1034,153 @@
             } catch (err) {
                 log(`  ❌ Supply auto-fill: ${err.message}`, 'error');
             }
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // Data Manager Functions
+        // ════════════════════════════════════════════════════════════════
+        function showDataManager() {
+            document.getElementById('dataManagerModal').style.display = 'flex';
+            document.getElementById('dataManagerLog').style.display = 'none';
+            document.getElementById('dataManagerLog').innerHTML = '';
+        }
+        
+        function closeDataManager() {
+            document.getElementById('dataManagerModal').style.display = 'none';
+        }
+        
+        function dmLog(msg, type = 'info') {
+            const logEl = document.getElementById('dataManagerLog');
+            logEl.style.display = 'block';
+            const color = type === 'error' ? 'var(--error)' : type === 'success' ? 'var(--success)' : 'var(--text-muted)';
+            logEl.innerHTML += `<div style="color:${color}">${new Date().toLocaleTimeString()} - ${msg}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        async function deleteTableData(tableName) {
+            if (!confirm(`⚠️ Are you sure you want to delete ALL data from ${tableName}?\n\nThis action cannot be undone!`)) {
+                return;
+            }
+            
+            dmLog(`Deleting all data from ${tableName}...`);
+            
+            try {
+                const { error, count } = await sb.from(tableName).delete().neq('date', '1900-01-01');
+                
+                if (error) {
+                    dmLog(`❌ Error: ${error.message}`, 'error');
+                    return;
+                }
+                
+                dmLog(`✅ Deleted all records from ${tableName}`, 'success');
+                await refreshData();
+            } catch (e) {
+                dmLog(`❌ Error: ${e.message}`, 'error');
+            }
+        }
+        
+        async function recollectStaking() {
+            if (!confirm('⚠️ This will:\n1. Delete ALL staking data\n2. Recollect from Dune (beacon chain)\n\nContinue?')) {
+                return;
+            }
+            
+            dmLog('Starting staking data recollection...');
+            
+            // Step 1: Delete existing data
+            dmLog('Step 1/2: Deleting existing staking data...');
+            try {
+                const { error } = await sb.from('historical_staking').delete().neq('date', '1900-01-01');
+                if (error) throw error;
+                dmLog('✅ Deleted existing staking data', 'success');
+            } catch (e) {
+                dmLog(`❌ Delete failed: ${e.message}`, 'error');
+                return;
+            }
+            
+            // Step 2: Collect from Dune
+            dmLog('Step 2/2: Collecting from Dune (query 6400443)...');
+            try {
+                const DUNE_STAKING_QUERY = 6400443;
+                const url = `https://api.dune.com/api/v1/query/${DUNE_STAKING_QUERY}/results?limit=1500`;
+                const response = await fetch(url, {
+                    headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Dune API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const rows = data?.result?.rows || [];
+                
+                if (rows.length === 0) {
+                    dmLog('⚠️ No data returned from Dune', 'error');
+                    return;
+                }
+                
+                dmLog(`📊 Retrieved ${rows.length} records from Dune`);
+                
+                // Get APR data from DefiLlama
+                const yieldResponse = await fetch('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+                const yieldData = await yieldResponse.json();
+                const aprMap = new Map();
+                if (yieldData?.data) {
+                    for (const point of yieldData.data) {
+                        const date = point.timestamp.split('T')[0];
+                        aprMap.set(date, point.apy || 3.2);
+                    }
+                }
+                
+                // Transform and insert
+                const records = rows.map(row => {
+                    const date = row.date?.split(' ')[0] || row.date;
+                    const totalStakedEth = parseFloat(row.total_staked_eth || row.cumulative_staked_eth || 0);
+                    const apr = aprMap.get(date) || 3.2;
+                    
+                    return {
+                        date,
+                        total_staked_eth: Math.round(totalStakedEth),
+                        total_validators: Math.round(totalStakedEth / 32),
+                        avg_apr: parseFloat(apr.toFixed(2)),
+                        source: 'dune'
+                    };
+                }).filter(r => r.total_staked_eth > 0);
+                
+                // Dedupe
+                const seen = new Set();
+                const uniqueRecords = records.filter(r => {
+                    if (seen.has(r.date)) return false;
+                    seen.add(r.date);
+                    return true;
+                });
+                
+                dmLog(`📦 Inserting ${uniqueRecords.length} unique records...`);
+                
+                // Batch insert
+                const batchSize = 500;
+                for (let i = 0; i < uniqueRecords.length; i += batchSize) {
+                    const batch = uniqueRecords.slice(i, i + batchSize);
+                    const { error } = await sb.from('historical_staking').upsert(batch, { onConflict: 'date' });
+                    if (error) throw error;
+                    dmLog(`  Inserted ${Math.min(i + batchSize, uniqueRecords.length)}/${uniqueRecords.length}`);
+                }
+                
+                const latest = uniqueRecords.find(r => r.total_staked_eth > 0);
+                dmLog(`✅ Complete! Latest: ${(latest?.total_staked_eth/1e6).toFixed(2)}M ETH (${latest?.date})`, 'success');
+                
+                await refreshData();
+            } catch (e) {
+                dmLog(`❌ Collection failed: ${e.message}`, 'error');
+            }
+        }
+        
+        async function deleteSelectedTable() {
+            const tableName = document.getElementById('tableSelect').value;
+            if (!tableName) {
+                alert('Please select a table first');
+                return;
+            }
+            await deleteTableData(tableName);
         }
 
         function showConfig() {
