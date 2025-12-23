@@ -1154,7 +1154,15 @@
             gap: 4px;
             padding: 8px 10px;
             background: var(--bg-card);
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .nav-bar::-webkit-scrollbar {
+            display: none;
         }
         
         @media (max-width: 900px) {
@@ -11797,7 +11805,7 @@
             <a class="nav-item active" href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'instant'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); this.classList.add('active');" data-i18n="nav.overview">Overview</a>
             <a class="nav-item" href="#section-metrics" data-i18n="nav.metrics">Market & Metrics</a>
             <a class="nav-item" href="#section-valuation" data-i18n="nav.valuation">Valuation</a>
-            <a class="nav-item" href="#section-methodology" data-i18n="nav.methodology">Ratings & Discussion</a>
+            <a class="nav-item" href="#section-methodology" data-i18n="nav.methodologyShort">Ratings</a>
             <a class="nav-item" href="#section-rankings" data-i18n="nav.rankings">Leaderboard</a>
         </nav>
     </div>
@@ -11870,7 +11878,7 @@
                                 <path d="M21 10a2 2 0 0 0-2-2h-4v5a2 2 0 0 1-2 2H9l-1 1h6l3 3V15h2a2 2 0 0 0 2-2v-3z"/>
                                 <path d="M17 12l.3.9h1l-.8.6.3.9-.8-.6-.8.6.3-.9-.8-.6h1z" fill="currentColor" stroke="none"/>
                             </svg>
-                            <strong data-i18n="summary.communityStats">Rating & Discussion</strong>
+                            <strong data-i18n="summary.communityStats">Ratings & Discussion</strong>
                         </span>
                         <div class="community-stats-content">
                             <div class="community-stats-top-row">
@@ -16823,6 +16831,7 @@
                 'nav.valuation': 'Valuation',
                 'nav.historical': 'Historical',
                 'nav.methodology': 'Ratings & Discussion',
+                'nav.methodologyShort': 'Ratings',
                 'nav.rankings': 'Leaderboard',
                 'section.metricsTitle': 'Market & Metrics',
                 'rankings.title': 'Leaderboard',
@@ -16915,7 +16924,7 @@
                 'category.asset.full': 'On-chain Asset Value',
                 'category.network.full': 'Network Effects',
                 'category.scarcity.full': 'Supply Scarcity',
-                'summary.communityStats': 'Rating & Discussion',
+                'summary.communityStats': 'Ratings & Discussion',
                 'summary.participants': 'participants',
                 'summary.votes': 'ratings',
                 'summary.commentsLabel': 'comments',
@@ -17232,6 +17241,7 @@
                 'nav.valuation': '밸류에이션',
                 'nav.historical': '히스토리',
                 'nav.methodology': '평가 & 토론',
+                'nav.methodologyShort': '평가',
                 'nav.rankings': '리더보드',
                 'section.metricsTitle': '시장 & 지표',
                 'rankings.title': '리더보드',
@@ -17642,6 +17652,7 @@
                 'nav.valuation': '估值',
                 'nav.historical': '历史分析',
                 'nav.methodology': '评分与讨论',
+                'nav.methodologyShort': '评分',
                 'nav.rankings': '排行榜',
                 'section.metricsTitle': '市场与指标',
                 'rankings.title': '排行榜',
@@ -18044,6 +18055,7 @@
                 'nav.valuation': 'バリュエーション',
                 'nav.historical': 'りれきぶんせき',
                 'nav.methodology': '評価 & 議論',
+                'nav.methodologyShort': '評価',
                 'nav.rankings': 'リーダーボード',
                 'section.metricsTitle': '市場 & 指標',
                 'rankings.title': 'リーダーボード',
