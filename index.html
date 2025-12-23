@@ -1853,7 +1853,7 @@
         }
         
         /* 중간 크기 화면에서 3열 */
-        @media (min-width: 750px) {
+        @media (min-width: 700px) {
             .metrics-grid,
             .triple-chart-grid {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1861,7 +1861,7 @@
         }
         
         /* PC에서 auto-fill */
-        @media (min-width: 1000px) {
+        @media (min-width: 900px) {
             .metrics-grid,
             .triple-chart-grid {
                 grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -22651,20 +22651,9 @@
                     return closest.value;
                 });
             } else {
-                // Fallback: 24h 볼륨 기반으로 가상 볼륨 히스토리 생성
-                // ★ 날짜 기반 결정적 값 사용 (탭 전환 시 일관된 값 유지)
-                const baseVolume = state.volume24h || 15000000000; // 기본 $15B
-                volumeData = sampledPrices.map((pricePoint, i) => {
-                    // 마지막 포인트는 실시간 볼륨
-                    if (i === sampledPrices.length - 1) return realtimeVolume;
-                    // 날짜 기반 결정적 시드로 일관된 변동 생성
-                    const dateStr = pricePoint.date.toISOString().split('T')[0];
-                    const seed = dateStr.split('-').reduce((acc, val) => acc + parseInt(val), 0);
-                    const deterministicFactor = 0.7 + (seed % 60) / 100; // 0.7x ~ 1.3x
-                    const priceRatio = priceData[i] / (state.price || priceData[priceData.length - 1]);
-                    return baseVolume * priceRatio * deterministicFactor;
-                });
-                log('Using simulated volume data based on 24h volume:', baseVolume);
+                // 볼륨 데이터 없음 - 빈 배열로 유지
+                log('No volume history available');
+                volumeData = [];
             }
             
             log(`Updating combined chart: ${days} days, ${priceData.length} price points, ${volumeData.length} volume points`);
