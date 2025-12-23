@@ -1194,7 +1194,18 @@
 
         /* Scroll offset for sticky header */
         .section[id] {
-            scroll-margin-top: 45px;
+            scroll-margin-top: 55px;
+        }
+        
+        /* 900px 이하에서 2행 헤더용 scroll-margin */
+        @media (max-width: 900px) {
+            .section[id] {
+                scroll-margin-top: 40px;
+            }
+            
+            .summary-section {
+                padding-top: 20px;
+            }
         }
 
         #top {
@@ -8049,7 +8060,7 @@
 
             .nav-item {
                 padding: 4px 6px;
-                font-size: 10px;
+                font-size: 11px;
             }
 
             /* Section */
@@ -8057,10 +8068,6 @@
                 padding: 0;
                 padding-top: 24px;
                 margin-bottom: 32px;
-            }
-
-            .section[id] {
-                scroll-margin-top: 60px;
             }
 
             .section-header {
