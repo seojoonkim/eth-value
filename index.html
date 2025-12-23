@@ -8414,6 +8414,38 @@
             width: fit-content;
             margin-left: auto;
         }
+        
+        .historical-tabs-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .outlier-filter-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .outlier-filter-toggle input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+        
+        .outlier-filter-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        
+        .outlier-filter-toggle:hover .outlier-filter-label {
+            color: var(--text-secondary);
+        }
 
         .historical-tab {
             padding: 4px 10px;
@@ -12956,6 +12988,10 @@
                         <button class="historical-tab" data-period="365" id="historical-tab-1y">1Y</button>
                         <button class="historical-tab gated-tab-locked" data-period="1095" id="historical-tab-3y">3Y<span class="tab-lock-badge" id="tab-3y-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
                     </div>
+                    <label class="outlier-filter-toggle" title="Filter extreme outliers for better chart readability">
+                        <input type="checkbox" id="outlier-filter-checkbox" checked>
+                        <span class="outlier-filter-label">Auto Scale</span>
+                    </label>
                 </div>
                 
                 <div class="historical-chart-area">
@@ -13092,7 +13128,7 @@
                         
                         <div class="sim-slider-item" data-param="fees">
                             <div class="sim-slider-top">
-                                <span class="sim-slider-label">Daily Network Fees</span>
+                                <span class="sim-slider-label">Daily Network Fees <span style="opacity: 0.6; font-weight: 400;">(L1 + Blob)</span></span>
                                 <span class="sim-slider-value"><span id="sim-fees-current">$2.1M</span> → <span id="sim-fees-new" class="sim-new-val">$2.1M</span></span>
                                 <button class="sim-reset-btn" data-reset="fees">↺ Reset</button>
                             </div>
@@ -20002,10 +20038,11 @@
                         .map(d => ({ date: new Date(d.date), value: parseFloat(d.total_volume_usd) }))
                         .sort((a, b) => a.date - b.date);
                     
-                    if (l1TotalHistory.length > 0) {
-                        state.l1TotalVolumeHistory = l1TotalHistory;
-                        state.l1TotalVolume = getLatestValidValue(l1TotalHistory) || 0;
-                        log(`   ✓ L1 Total Volume: $${(state.l1TotalVolume / 1e9).toFixed(2)}B (${l1TotalHistory.length} records)`);
+                    if (l1TotalHistory.length > 1) {
+                        // Remove last day (potentially incomplete data)
+                        state.l1TotalVolumeHistory = l1TotalHistory.slice(0, -1);
+                        state.l1TotalVolume = state.l1TotalVolumeHistory[state.l1TotalVolumeHistory.length - 1]?.value || 0;
+                        log(`   ✓ L1 Total Volume: $${(state.l1TotalVolume / 1e9).toFixed(2)}B (${state.l1TotalVolumeHistory.length} records)`);
                     }
                 }
                 
@@ -20022,10 +20059,11 @@
                         .map(([date, usd]) => ({ date: new Date(date), value: usd }))
                         .sort((a, b) => a.date - b.date);
                     
-                    if (l2TotalHistory.length > 0) {
-                        state.l2TotalVolumeHistory = l2TotalHistory;
-                        state.l2TotalVolume = getLatestValidValue(l2TotalHistory) || 0;
-                        log(`   ✓ L2 Total Volume: $${(state.l2TotalVolume / 1e9).toFixed(2)}B (${l2TotalHistory.length} records)`);
+                    if (l2TotalHistory.length > 1) {
+                        // Remove last day (potentially incomplete data)
+                        state.l2TotalVolumeHistory = l2TotalHistory.slice(0, -1);
+                        state.l2TotalVolume = state.l2TotalVolumeHistory[state.l2TotalVolumeHistory.length - 1]?.value || 0;
+                        log(`   ✓ L2 Total Volume: $${(state.l2TotalVolume / 1e9).toFixed(2)}B (${state.l2TotalVolumeHistory.length} records)`);
                     }
                 }
                 
@@ -21970,10 +22008,10 @@
                 } catch (e) { console.error('Stables current value error:', e); }
             }
             
-            // 히스토리는 Supabase 우선 (이더리움 체인 데이터)
+            // 히스토리는 Supabase 우선 (이더리움 체인 데이터) - 일간 데이터 사용
             if (state.supabaseStablesEthHistory && state.supabaseStablesEthHistory.length > 10) {
                 log(`   Using Supabase Stablecoins ETH data: ${state.supabaseStablesEthHistory.length} points`);
-                state.stablesHistory = state.supabaseStablesEthHistory.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
+                state.stablesHistory = state.supabaseStablesEthHistory; // Daily data, no filtering
                 // 차트는 Supabase 데이터 그대로 사용 (API 값과 다를 수 있음)
                 updateMetricChart('stables-chart', stablesChart, state.stablesHistory, '#eab308', 'stables');
                 ChartManager.updateChangeElement('stables-change', state.stablesHistory);
@@ -21984,7 +22022,7 @@
                 try {
                     const stablesData = stablesResult.value;
                     if (Array.isArray(stablesData) && stablesData.length > 0) {
-                        state.stablesHistory = stablesData.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1).slice(-156).map(d => ({ date: new Date(d.date * 1000), value: d.totalCirculatingUSD?.peggedUSD || 0 }));
+                        state.stablesHistory = stablesData.slice(-1095).map(d => ({ date: new Date(d.date * 1000), value: d.totalCirculatingUSD?.peggedUSD || 0 })); // Daily data
                         updateMetricChart('stables-chart', stablesChart, state.stablesHistory, '#eab308', 'stables');
                         ChartManager.updateChangeElement('stables-change', state.stablesHistory);
                         state.appCapitalHistory = state.stablesHistory.map(d => ({ date: d.date, value: d.value / STABLECOIN_RATIO }));
@@ -26370,11 +26408,11 @@
                 setChange('dex-change', state.dexHistory);
                 
                 // ═══════════════════════════════════════════════════════════════════
-                // 7. Stablecoins on ETH (이더리움 체인만)
+                // 7. Stablecoins on ETH (이더리움 체인만) - 일간 데이터 사용
                 // ═══════════════════════════════════════════════════════════════════
                 let stablesSource = 'fallback';
                 if (state.supabaseStablesEthHistory?.length > 0) {
-                    state.stablesHistory = state.supabaseStablesEthHistory.filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1);
+                    state.stablesHistory = state.supabaseStablesEthHistory; // Daily data, no filtering
                     state.stablecoins = state.supabaseStablesEthHistory[state.supabaseStablesEthHistory.length - 1].value;
                     stablesSource = 'supabase';
                     log(`   Using Supabase Stables ETH: ${state.stablesHistory.length} points, $${(state.stablecoins/1e9).toFixed(1)}B`);
@@ -28086,6 +28124,9 @@ Check out ETHval 👇`;
         let currentHistoricalPeriod = 90; // Default to 90D for faster initial load
         
         // Render main historical chart
+        // Cache for filtered data per period
+        let chartDataCache = {};
+        
         function renderHistoricalMainChart(period = null) {
             if (period !== null) {
                 currentHistoricalPeriod = period;
@@ -28247,13 +28288,22 @@ Check out ETHval 👇`;
                 }
             });
             
-            // Destroy and recreate chart (but with animation disabled)
-            if (historicalMainChart) {
-                historicalMainChart.destroy();
-            }
-            
             const mobile = isMobile();
             
+            // Reuse existing chart if possible, otherwise create new
+            if (historicalMainChart) {
+                // Update data without destroying chart (much faster)
+                historicalMainChart.data.labels = labels;
+                historicalMainChart.data.datasets = datasets;
+                historicalMainChart.options.scales.y.max = state.yAxisMax || 20000;
+                // Store chartDates for tooltip
+                historicalMainChart._chartDates = chartDates;
+                // Update without animation for fast switching
+                historicalMainChart.update('none');
+                return;
+            }
+            
+            // First time creation only
             historicalMainChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: { labels, datasets },
@@ -28265,10 +28315,7 @@ Check out ETHval 👇`;
                     },
                     // 모바일에서 터치 이벤트 제한 - 스크롤 허용
                     events: mobile ? ['click'] : ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
-                    animation: mobile ? false : {
-                        duration: 400,
-                        easing: 'easeOutQuart'
-                    },
+                    animation: false, // Disable animation for faster rendering
                     elements: {
                         point: {
                             radius: 0,
@@ -28314,10 +28361,11 @@ Check out ETHval 👇`;
                                     const dataPoints = tooltipModel.dataPoints || [];
                                     const dataIndex = dataPoints[0]?.dataIndex;
                                     
-                                    // Get full date from chartDates
+                                    // Get full date from chartDates (stored on chart instance)
+                                    const storedDates = context.chart._chartDates || chartDates;
                                     let dateStr = tooltipModel.title[0];
-                                    if (chartDates && chartDates[dataIndex]) {
-                                        dateStr = chartDates[dataIndex].toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                    if (storedDates && storedDates[dataIndex]) {
+                                        dateStr = storedDates[dataIndex].toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
                                     }
                                     
                                     // Sort by value descending
@@ -28418,32 +28466,54 @@ Check out ETHval 👇`;
         function calculateYAxisMax() {
             if (!state.historicalFairValues) return 20000;
             
+            // Check if outlier filter is enabled
+            const filterOutliers = document.getElementById('outlier-filter-checkbox')?.checked ?? true;
+            
             // Get current period days (use currentHistoricalPeriod if available)
             const periodDays = (typeof currentHistoricalPeriod !== 'undefined') ? currentHistoricalPeriod : 365;
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - periodDays);
             
-            let maxValue = 0;
+            // Collect all values for percentile calculation if filtering
+            let allValues = [];
+            
             MODEL_ORDER.forEach(model => {
                 const data = state.historicalFairValues[model];
                 if (data && data.length > 0) {
-                    // Filter to current period only - no sampling
                     const periodData = data.filter(d => new Date(d.date) >= cutoffDate);
-                    if (periodData.length > 0) {
-                        const modelMax = Math.max(...periodData.map(d => d.value));
-                        if (modelMax > maxValue) maxValue = modelMax;
-                    }
+                    periodData.forEach(d => {
+                        if (d.value > 0 && isFinite(d.value)) {
+                            allValues.push(d.value);
+                        }
+                    });
                 }
             });
             
-            // Also include price data in range calculation
+            // Include price data
             const priceData = state.priceHistory ? state.priceHistory.filter(d => d.date >= cutoffDate) : [];
-            if (priceData.length > 0) {
-                const priceMax = Math.max(...priceData.map(d => d.price || d.value));
-                if (priceMax > maxValue && !isNaN(priceMax)) maxValue = priceMax;
+            priceData.forEach(d => {
+                const price = d.price || d.value;
+                if (price > 0 && isFinite(price)) {
+                    allValues.push(price);
+                }
+            });
+            
+            if (allValues.length === 0) return 20000;
+            
+            let maxValue;
+            if (filterOutliers) {
+                // Use 95th percentile to exclude extreme outliers
+                allValues.sort((a, b) => a - b);
+                const p95Index = Math.floor(allValues.length * 0.95);
+                const p95Value = allValues[p95Index];
+                // Add 20% padding above 95th percentile
+                maxValue = p95Value * 1.2;
+            } else {
+                // Use absolute max
+                maxValue = Math.max(...allValues);
             }
             
-            // Round up to nearest 5000 for clean 5K grid lines, no padding
+            // Round up to nearest 5000 for clean 5K grid lines
             return Math.ceil(maxValue / 5000) * 5000;
         }
 
@@ -28646,6 +28716,16 @@ Check out ETHval 👇`;
                 renderHistoricalMainChart(period);
             });
         });
+        
+        // Outlier filter toggle event listener
+        const outlierCheckbox = document.getElementById('outlier-filter-checkbox');
+        if (outlierCheckbox) {
+            outlierCheckbox.addEventListener('change', () => {
+                // Recalculate Y-axis max and re-render chart
+                state.yAxisMax = calculateYAxisMax();
+                renderHistoricalMainChart(null); // null keeps current period
+            });
+        }
 
         // Legend button click handlers
         document.querySelectorAll('.legend-btn').forEach(btn => {
@@ -28898,20 +28978,54 @@ Check out ETHval 👇`;
                     return;
                 }
                 
-                // Calculate staking ratio first (rounded to integer)
-                var supply = state.circulatingSupply || 120000000;
+                // Helper: Get second-to-last value from Supabase history (day before latest, to avoid incomplete data)
+                var getSupabaseValue = function(history, valueKey) {
+                    if (!history || history.length < 2) return null;
+                    // History is sorted oldest→newest, so second-to-last is index -2
+                    var dayBeforeLast = history[history.length - 2];
+                    return dayBeforeLast ? (dayBeforeLast[valueKey] || dayBeforeLast.value) : null;
+                };
+                
+                // Get TVL from Supabase (day before latest)
+                var tvlValue = getSupabaseValue(state.supabaseTvlHistory, 'value') || state.tvl || 70000000000;
+                
+                // Get L1 fees from Supabase (day before latest)
+                var l1Fees = getSupabaseValue(state.supabaseFeesHistory, 'value') || state.fees || 500000;
+                
+                // Get Blob fees from Supabase (day before latest)
+                var blobFeesEth = 0;
+                if (state.supabaseBlobHistory && state.supabaseBlobHistory.length >= 2) {
+                    var blobDayBefore = state.supabaseBlobHistory[state.supabaseBlobHistory.length - 2];
+                    blobFeesEth = blobDayBefore ? (blobDayBefore.fee || blobDayBefore.value || 0) : 0;
+                }
+                var blobFeesUsd = blobFeesEth * (state.price || 3000);
+                var totalFees = l1Fees + blobFeesUsd;
+                
+                // Get Staking data from Supabase (day before latest)
                 var stakedEth = state.stakedEth || 34000000;
+                if (state.supabaseStakingHistory && state.supabaseStakingHistory.length >= 2) {
+                    var stakingDayBefore = state.supabaseStakingHistory[state.supabaseStakingHistory.length - 2];
+                    if (stakingDayBefore && stakingDayBefore.staked) {
+                        stakedEth = stakingDayBefore.staked;
+                    }
+                }
+                
+                // Get Stablecoins from Supabase (day before latest)
+                var stablesValue = getSupabaseValue(state.supabaseStablesEthHistory, 'value') || state.stablecoins || 166000000000;
+                
+                // Calculate staking ratio (rounded to integer)
+                var supply = state.circulatingSupply || 120000000;
                 baseStakingRatio = Math.round((stakedEth / supply) * 100);
                 
-                // Store base parameters - use rounded staking ratio for consistency
+                // Store base parameters - all from Supabase (day before latest)
                 baseParams = {
                     price: state.price,
                     supply: supply,
-                    tvl: state.tvl || 70000000000,
-                    fees: state.fees || 2100000,
-                    stakedEth: supply * (baseStakingRatio / 100), // Use rounded ratio!
+                    tvl: tvlValue,
+                    fees: totalFees,
+                    stakedEth: supply * (baseStakingRatio / 100),
                     stakingApr: state.stakingApr || 3.2,
-                    stablecoins: state.stablecoins || 166000000000,
+                    stablecoins: stablesValue,
                     l2Tvl: state.l2Tvl || 12000000000,
                     dailySettlement: state.dailySettlement || 10130000000
                 };
@@ -30095,24 +30209,6 @@ Check out ETHval 👇`;
             <div class="share-card-stat">
                 <div class="share-card-stat-value buy" id="share-buy-count">-</div>
                 <div class="share-card-stat-label">Buy</div>
-            </div>
-            <div class="share-card-stat">
-                <div class="share-card-stat-value hold" id="share-hold-count">-</div>
-                <div class="share-card-stat-label">Hold</div>
-            </div>
-            <div class="share-card-stat">
-                <div class="share-card-stat-value sell" id="share-sell-count">-</div>
-                <div class="share-card-stat-label">Sell</div>
-            </div>
-        </div>
-        <div class="share-card-footer">
-            <div class="share-card-url">ethval.io</div>
-        </div>
-    </div>
-
-</body>
-</html>
-           <div class="share-card-stat-label">Buy</div>
             </div>
             <div class="share-card-stat">
                 <div class="share-card-stat-value hold" id="share-hold-count">-</div>
