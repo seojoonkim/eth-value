@@ -12647,15 +12647,9 @@
                             <div class="metric-value-large" id="l2-total-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-<<<<<<< HEAD
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-=======
                             <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab" data-period="1095">3Y</button>
->>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-total-volume-chart"></canvas></div>
@@ -12673,15 +12667,9 @@
                             <div class="metric-value-large" id="l2-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-<<<<<<< HEAD
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-=======
                             <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab" data-period="1095">3Y</button>
->>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-volume-chart"></canvas></div>
@@ -12699,15 +12687,9 @@
                             <div class="metric-value-large" id="l2-stablecoin-vol-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="l2StablecoinVol">
-<<<<<<< HEAD
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-=======
                             <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab" data-period="1095">3Y</button>
->>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-stablecoin-vol-chart"></canvas></div>
@@ -12725,15 +12707,9 @@
                             <div class="metric-value-large" id="l2-dex-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-<<<<<<< HEAD
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-=======
                             <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab" data-period="1095">3Y</button>
->>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="l2-dex-volume-chart"></canvas></div>
@@ -12751,15 +12727,9 @@
                             <div class="metric-value-large" id="bridge-total-volume-value">$--</div>
                         </div>
                         <div class="metric-tabs">
-<<<<<<< HEAD
-                            <button class="metric-tab" data-period="90">90D</button>
-                            <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="1095">3Y</button>
-=======
                             <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
                             <button class="metric-tab" data-period="1095">3Y</button>
->>>>>>> 5f11722 (fix)
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="bridge-total-volume-chart"></canvas></div>
@@ -22040,32 +22010,6 @@
                 }
                 ChartManager.updateChangeElement('bridge-total-volume-change', result?.history || state.bridgeTotalVolumeHistory);
             }
-            if (state.l2DexVolumeHistory && state.l2DexVolumeHistory.length > 0) {
-                const result = updateMetricChart('l2-dex-volume-chart', l2DexVolumeChart, state.l2DexVolumeHistory, '#f59e0b', 'l2DexVolume');
-                if (result && result.lastValue !== null) {
-                    document.getElementById('l2-dex-volume-value').textContent = fmt.usd(result.lastValue);
-                    state.l2DexDailyVolume = result.lastValue;
-                }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-dex-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
-            }
-            if (state.bridgeTotalVolumeHistory && state.bridgeTotalVolumeHistory.length > 0) {
-                const result = updateMetricChart('bridge-total-volume-chart', bridgeTotalVolumeChart, state.bridgeTotalVolumeHistory, '#ec4899', 'bridgeTotalVolume');
-                if (result && result.lastValue !== null) {
-                    document.getElementById('bridge-total-volume-value').textContent = fmt.usd(result.lastValue);
-                    state.bridgeTotalDailyVolume = result.lastValue;
-                }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('bridge-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
-            }
             
             ChartManager.updateChangeElement('fees-change', state.feesHistory);
         }
@@ -22757,32 +22701,6 @@
                     state.bridgeTotalDailyVolume = result.lastValue;
                 }
                 ChartManager.updateChangeElement('bridge-total-volume-change', state.bridgeTotalVolumeHistory, period);
-            }
-            if (state.l2DexVolumeHistory && state.l2DexVolumeHistory.length > 0) {
-                const result = updateMetricChart('l2-dex-volume-chart', l2DexVolumeChart, state.l2DexVolumeHistory, '#f59e0b', 'l2DexVolume');
-                if (result && result.lastValue !== null) {
-                    document.getElementById('l2-dex-volume-value').textContent = fmt.usd(result.lastValue);
-                    state.l2DexDailyVolume = result.lastValue;
-                }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('l2-dex-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
-            }
-            if (state.bridgeTotalVolumeHistory && state.bridgeTotalVolumeHistory.length > 0) {
-                const result = updateMetricChart('bridge-total-volume-chart', bridgeTotalVolumeChart, state.bridgeTotalVolumeHistory, '#ec4899', 'bridgeTotalVolume');
-                if (result && result.lastValue !== null) {
-                    document.getElementById('bridge-total-volume-value').textContent = fmt.usd(result.lastValue);
-                    state.bridgeTotalDailyVolume = result.lastValue;
-                }
-                if (result && result.history && result.history.length > 1) {
-                    const first = result.history[0].value, last = result.history[result.history.length - 1].value;
-                    const change = ((last - first) / first) * 100;
-                    const el = document.getElementById('bridge-total-volume-change');
-                    if (el) { el.textContent = fmt.pct(change) + ' 3Y'; el.className = 'change ' + (change >= 0 ? 'up' : 'down'); }
-                }
             }
             // Stablecoin Volume
             if (state.stablecoinVolumeHistory && state.stablecoinVolumeHistory.length > 0) {
@@ -25967,110 +25885,6 @@
                 let sourceHistory;
                 let changeElId;
                 let result;
-<<<<<<< HEAD
-                if (metric === 'tvl') {
-                    const hasDaily = state.tvlHistoryDaily && state.tvlHistoryDaily.length > 0;
-                    log(`TVL - hasDaily: ${hasDaily}, dailyLen: ${state.tvlHistoryDaily?.length}, weeklyLen: ${state.tvlHistory?.length}`);
-                    const sourceData = useDaily && hasDaily ? state.tvlHistoryDaily : state.tvlHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    log(`TVL - filtered points: ${history.length}`);
-                    result = updateMetricChart('tvl-chart', tvlChart, history, '#10b981', 'tvl');
-                    changeElId = 'tvl-change';
-                } else if (metric === 'staking') {
-                    history = state.stakingHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('staking-chart', stakingChart, history, '#6366f1', 'staking');
-                    changeElId = 'staking-change';
-                } else if (metric === 'l2') {
-                    const sourceData = useDaily && state.l2HistoryDaily && state.l2HistoryDaily.length > 0 
-                        ? state.l2HistoryDaily : state.l2History;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-chart', l2Chart, history, '#7c3aed', 'l2');
-                    changeElId = 'l2-change';
-                } else if (metric === 'dex') {
-                    const sourceData = useDaily && state.dexHistoryDaily && state.dexHistoryDaily.length > 0 
-                        ? state.dexHistoryDaily : state.dexHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('dex-chart', dexChart, history, '#06b6d4', 'dex');
-                    changeElId = 'dex-change';
-                } else if (metric === 'fees') {
-                    const sourceData = useDaily && state.feesHistoryDaily && state.feesHistoryDaily.length > 0 
-                        ? state.feesHistoryDaily : state.feesHistory;
-                    history = sourceData.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('fees-chart', feesChart, history, '#f97316', 'fees');
-                    changeElId = 'fees-change';
-                } else if (metric === 'stables') {
-                    history = state.stablesHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('stables-chart', stablesChart, history, '#eab308', 'stables');
-                    changeElId = 'stables-change';
-                } else if (metric === 'txEth') {
-                    history = state.txEthHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('tx-eth-chart', txEthChart, history, '#14b8a6', 'txEth');
-                    changeElId = 'tx-eth-change';
-                } else if (metric === 'txTotal') {
-                    history = state.txTotalHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('tx-total-chart', txTotalChart, history, '#6366f1', 'txTotal');
-                    changeElId = 'tx-total-change';
-                } else if (metric === 'nvt') {
-                    history = state.nvtHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('nvt-chart', nvtChart, history, '#be123c', 'nvt');
-                    changeElId = 'nvt-change';
-                } else if (metric === 'activeAddr') {
-                    history = state.activeAddrHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('active-addr-chart', activeAddrChart, history, '#a855f7', 'activeAddr');
-                    changeElId = 'active-addr-change';
-                } else if (metric === 'ethInDefi') {
-                    history = state.ethInDefiHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('eth-defi-chart', ethDefiChart, history, '#06b6d4', 'ethInDefi');
-                    changeElId = 'eth-defi-change';
-                } else if (metric === 'commitmentRatio') {
-                    history = state.commitmentRatioHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('commitment-ratio-chart', commitmentRatioChart, history, '#f59e0b', 'commitmentRatio');
-                    changeElId = 'commitment-ratio-change';
-                } else if (metric === 'appCapital') {
-                    history = state.appCapitalHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('app-capital-chart', appCapitalChart, history, '#ec4899', 'appCapital');
-                    changeElId = 'app-capital-change';
-                } else if (metric === 'stakingApr') {
-                    history = state.stakingAprHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('staking-yield-chart', stakingAprChart, history, '#10b981', 'stakingApr');
-                    changeElId = 'staking-yield-change';
-                } else if (metric === 'l1Volume') {
-                    history = state.l1VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l1-volume-chart', l1VolumeChart, history, '#3b82f6', 'l1Volume');
-                    changeElId = 'l1-volume-change';
-                } else if (metric === 'l1TotalVolume') {
-                    history = state.l1TotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l1-total-volume-chart', l1TotalVolumeChart, history, '#06b6d4', 'l1TotalVolume');
-                    changeElId = 'l1-total-volume-change';
-                } else if (metric === 'l2Volume') {
-                    history = state.l2VolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-volume-chart', l2VolumeChart, history, '#8b5cf6', 'l2Volume');
-                    changeElId = 'l2-volume-change';
-                } else if (metric === 'l2TotalVolume') {
-                    history = state.l2TotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-total-volume-chart', l2TotalVolumeChart, history, '#f59e0b', 'l2TotalVolume');
-                    changeElId = 'l2-total-volume-change';
-                } else if (metric === 'bridgeVolume') {
-                    history = state.bridgeVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('bridge-volume-chart', bridgeVolumeChart, history, '#06b6d4', 'bridgeVolume');
-                    changeElId = 'bridge-volume-change';
-                } else if (metric === 'l2DexVolume') {
-                    history = state.l2DexVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('l2-dex-volume-chart', l2DexVolumeChart, history, '#f59e0b', 'l2DexVolume');
-                    changeElId = 'l2-dex-volume-change';
-                } else if (metric === 'bridgeTotalVolume') {
-                    history = state.bridgeTotalVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('bridge-total-volume-chart', bridgeTotalVolumeChart, history, '#ec4899', 'bridgeTotalVolume');
-                    changeElId = 'bridge-total-volume-change';
-                } else if (metric === 'stablecoinVol') {
-                    history = state.stablecoinVolumeHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('stablecoin-vol-chart', stablecoinVolChart, history, '#eab308', 'stablecoinVol');
-                    changeElId = 'stablecoin-vol-change';
-                } else if (metric === 'whaleTx') {
-                    history = state.whaleTxHistory.filter(d => d.date.getTime() > cutoffDate);
-                    result = updateMetricChart('whale-tx-chart', whaleTxChart, history, '#f59e0b', 'whaleTx');
-                    changeElId = 'whale-tx-change';
-=======
                 
                 // 데이터 소스 매핑
                 const dataMap = {
@@ -26111,7 +25925,6 @@
                     
                     result = updateMetricChart(config.chart, null, sourceHistory, config.color, config.key, period);
                     changeElId = config.changeEl;
->>>>>>> 5f11722 (fix)
                 } else if (metric === 'realizedPrice') {
                     const realizedPriceHistory = state.mvrvHistory
                         .filter(d => d.realizedPrice > 0)
@@ -26280,11 +26093,7 @@
                     return history.slice(0, -1);
                 };
                 
-<<<<<<< HEAD
-                // 증감률 계산 헬퍼 함수 (7일 평균 사용)
-=======
                 // 증감률 계산 헬퍼 함수 - ChartManager로 위임
->>>>>>> 5f11722 (fix)
                 const setChange = (elementId, history, options = {}) => {
                     try {
                         ChartManager.updateChangeElement(elementId, history, ChartManager.getDefaultPeriod(), options);
@@ -26357,9 +26166,6 @@
                         }
                     }
                     
-<<<<<<< HEAD
-                    safeCall(() => updateCombinedPriceVolumeChart(1095), 'price'); // 기본 3Y로 변경
-=======
                     // ★ 볼륨 데이터가 없으면 CoinGecko에서 먼저 가져오기
                     if (!state.volumeHistory || state.volumeHistory.length < 30) {
                         log('   Fetching volume data before rendering chart...');
@@ -26369,7 +26175,6 @@
                     } else {
                         safeCall(() => updateCombinedPriceVolumeChart(ChartManager.getDefaultPeriod()), 'price');
                     }
->>>>>>> 5f11722 (fix)
                     setDataSource('price-chart', priceSource, 'Binance');
                 }
                 
