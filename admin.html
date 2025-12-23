@@ -2177,56 +2177,77 @@
 
             // 5. Staking - DefiLlama yields API (Lido stETH pool)
             async staking_data() {
+                // Primary: Dune API for accurate beacon chain data
+                if (DUNE_API_KEY) {
+                    try {
+                        log('  📊 Fetching staking data from Dune (query 6400443)...', 'info');
+                        const DUNE_STAKING_QUERY = 6400443;
+                        const url = `https://api.dune.com/api/v1/query/${DUNE_STAKING_QUERY}/results?limit=1500`;
+                        const response = await fetch(url, {
+                            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const rows = data?.result?.rows || [];
+                            
+                            if (rows.length > 0) {
+                                log(`  ✓ Dune: ${rows.length} staking records`, 'success');
+                                
+                                // Get APR data from DefiLlama (Lido yields)
+                                const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
+                                const aprMap = new Map();
+                                if (yieldData?.data) {
+                                    for (const point of yieldData.data) {
+                                        const date = point.timestamp.split('T')[0];
+                                        aprMap.set(date, point.apy || 3.2);
+                                    }
+                                }
+                                
+                                const records = rows.map(row => {
+                                    const date = row.date?.split(' ')[0] || row.date?.split('T')[0] || row.date;
+                                    const totalStakedEth = parseFloat(row.total_staked_eth || row.cumulative_staked_eth || 0);
+                                    const apr = aprMap.get(date) || 3.2;
+                                    
+                                    return {
+                                        date,
+                                        total_staked_eth: Math.round(totalStakedEth),
+                                        total_validators: Math.round(totalStakedEth / 32),
+                                        avg_apr: parseFloat(apr.toFixed(2)),
+                                        source: 'dune'
+                                    };
+                                }).filter(r => r.total_staked_eth > 0 && r.date);
+                                
+                                // Dedupe
+                                const seen = new Set();
+                                const uniqueRecords = records.filter(r => {
+                                    if (seen.has(r.date)) return false;
+                                    seen.add(r.date);
+                                    return true;
+                                });
+                                
+                                const latest = uniqueRecords.find(r => r.total_staked_eth > 0);
+                                if (latest) {
+                                    log(`  📊 Latest: ${(latest.total_staked_eth/1e6).toFixed(2)}M ETH (${latest.date})`, 'info');
+                                }
+                                
+                                const { error } = await batchUpsert('historical_staking', uniqueRecords);
+                                if (error) log(`  ❌ ${error.message}`, 'error');
+                                return error ? 0 : uniqueRecords.length;
+                            }
+                        }
+                    } catch (e) {
+                        log(`  ⚠️ Dune API failed: ${e.message}`, 'warn');
+                    }
+                }
+                
+                // Fallback: DefiLlama yields API
+                log('  📊 Fallback: DefiLlama yields API...', 'info');
                 const yieldData = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
                 
                 if (!yieldData?.data || yieldData.data.length === 0) {
-                    // Fallback: Use Lido protocol TVL from DefiLlama
-                    const lidoData = await fetchJSON('https://api.llama.fi/protocol/lido');
-                    if (!lidoData?.tvl || lidoData.tvl.length === 0) {
-                        log('  ❌ DefiLlama & Lido APIs failed', 'error');
-                        return 0;
-                    }
-                    
-                    const { data: prices } = await sb.from('historical_eth_price').select('date, close').order('date', { ascending: false }).limit(1100);
-                    const priceMap = new Map(prices?.map(p => [p.date, parseFloat(p.close)]) || []);
-                    
-                    const cutoff = Date.now() / 1000 - (1095 * 86400);
-                    const records = [];
-                    
-                    for (const point of lidoData.tvl) {
-                        if (point.date < cutoff) continue;
-                        
-                        const date = new Date(point.date * 1000).toISOString().split('T')[0];
-                        const lidoTvlUsd = point.totalLiquidityUSD || 0;
-                        const price = priceMap.get(date) || 3500;
-                        
-                        if (lidoTvlUsd <= 0) continue;
-                        
-                        const lidoStakedEth = lidoTvlUsd / price;
-                        const totalStakedEth = lidoStakedEth / 0.28;
-                        const totalValidators = Math.round(totalStakedEth / 32);
-                        
-                        records.push({
-                            date,
-                            timestamp: point.date * 1000,
-                            total_staked_eth: Math.round(totalStakedEth),
-                            staked_eth: Math.round(lidoStakedEth),
-                            total_validators: totalValidators,
-                            avg_apr: 3.5,
-                            source: 'defillama-lido'
-                        });
-                    }
-                    
-                    const seen = new Set();
-                    const uniqueRecords = records.filter(r => {
-                        if (seen.has(r.date)) return false;
-                        seen.add(r.date);
-                        return true;
-                    });
-                    
-                    const { error } = await batchUpsert('historical_staking', uniqueRecords);
-                    if (error) log(`  ❌ ${error.message}`, 'error');
-                    return error ? 0 : uniqueRecords.length;
+                    log('  ❌ DefiLlama API failed', 'error');
+                    return 0;
                 }
                 
                 // Get ETH prices for TVL calculation
@@ -2240,7 +2261,8 @@
                     const year = new Date(date).getFullYear();
                     if (year <= 2022) return 0.30;
                     if (year === 2023) return 0.32;
-                    return 0.28;
+                    if (year === 2024) return 0.29;
+                    return 0.27;
                 };
                 
                 for (const point of yieldData.data) {

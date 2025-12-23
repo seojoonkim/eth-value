@@ -1191,12 +1191,8 @@ const DUNE_QUERIES = {
     
     // New queries
     L2_DEX_VOLUME: 6395472,       // L2 DEX Volume (all chains)
-<<<<<<< HEAD
-    BRIDGE_TOTAL_VOLUME: 6395474  // Bridge Total Volume (ETH + ERC-20)
-=======
     BRIDGE_TOTAL_VOLUME: 6395474, // Bridge Total Volume (ETH + ERC-20)
     STAKING: 6400443              // Daily Staked ETH (beacon chain cumulative)
->>>>>>> 5f11722 (fix)
 };
 
 // ============================================================
