@@ -1704,7 +1704,7 @@
         /* Triple Chart Grid - Price & Market (4열) */
         .triple-chart-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
             overflow: visible;
         }
@@ -1846,10 +1846,26 @@
         /* Section 2: Metrics - On-Chain (4열) */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
             margin-bottom: 10px;
             overflow: visible;
+        }
+        
+        /* 중간 크기 화면에서 3열 */
+        @media (min-width: 750px) {
+            .metrics-grid,
+            .triple-chart-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        
+        /* PC에서 auto-fill */
+        @media (min-width: 1000px) {
+            .metrics-grid,
+            .triple-chart-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
         }
 
         .metrics-subgroup {
@@ -7877,8 +7893,6 @@
         }
         
         @media (max-width: 600px) {
-            .triple-chart-grid { grid-template-columns: 1fr; }
-            .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .ai-commentary-text { grid-template-columns: 1fr; }
         }
 
@@ -7939,6 +7953,9 @@
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
+                overflow-x: hidden;
+                max-width: 100vw;
+                box-sizing: border-box;
             }
 
             /* Header - 1줄로 (로고 + credit + Live) */
@@ -8103,12 +8120,6 @@
                 min-height: 80px;
             }
 
-            /* Triple Chart Grid - 모바일에서도 auto-fill */
-            .triple-chart-grid {
-                grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
-                gap: 10px;
-            }
-
             .chart-card {
                 padding: 10px;
             }
@@ -8131,14 +8142,12 @@
                 height: 70px;
             }
 
-            /* Metrics - 모바일에서 2열 */
-            .metrics-grid { 
-                grid-template-columns: repeat(2, minmax(0, 1fr)); 
-                gap: 10px;
-            }
-
             .metric-card {
                 padding: 10px;
+                min-width: 0;
+                max-width: 100%;
+                box-sizing: border-box;
+                overflow: hidden;
             }
 
             .metric-tabs {
