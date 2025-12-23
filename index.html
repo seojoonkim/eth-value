@@ -19784,18 +19784,9 @@
                     // 날짜순 정렬 보장
                     state.supabaseBlobHistory.sort((a, b) => a.date - b.date);
                     
-                    // 불완전 데이터 제거: 마지막 데이터가 평균의 30% 미만이면 제거
-                    for (let i = 0; i < 3 && state.supabaseBlobHistory.length > 10; i++) {
-                        const last = state.supabaseBlobHistory[state.supabaseBlobHistory.length - 1];
-                        const recent7 = state.supabaseBlobHistory.slice(-8, -1);
-                        const avgFees = recent7.reduce((s, d) => s + d.fees, 0) / recent7.length;
-                        
-                        if (avgFees > 0 && last.fees < avgFees * 0.3) {
-                            log(`   ⚠️ Removing incomplete blob data: ${last.date.toISOString().split('T')[0]} (${last.fees.toFixed(2)} vs avg ${avgFees.toFixed(2)})`);
-                            state.supabaseBlobHistory.pop();
-                        } else {
-                            break;
-                        }
+                    // 마지막 1일 제외 (불완전 데이터)
+                    if (state.supabaseBlobHistory.length > 1) {
+                        state.supabaseBlobHistory.pop();
                     }
                     
                     // blobFeesHistory, blobCountHistory도 설정
@@ -19827,18 +19818,9 @@
                     });
                     state.supabaseL2History = Object.entries(l2ByDate).map(([date, value]) => ({ date: new Date(date), value })).sort((a, b) => a.date - b.date);
                     
-                    // 불완전 데이터 제거: 마지막 데이터가 평균의 50% 미만이면 제거
-                    for (let i = 0; i < 3 && state.supabaseL2History.length > 10; i++) {
-                        const last = state.supabaseL2History[state.supabaseL2History.length - 1];
-                        const recent7 = state.supabaseL2History.slice(-8, -1);
-                        const avgValue = recent7.reduce((s, d) => s + d.value, 0) / recent7.length;
-                        
-                        if (avgValue > 0 && last.value < avgValue * 0.5) {
-                            log(`   ⚠️ Removing incomplete L2 data: ${last.date.toISOString().split('T')[0]} (${(last.value/1e9).toFixed(2)}B vs avg ${(avgValue/1e9).toFixed(2)}B)`);
-                            state.supabaseL2History.pop();
-                        } else {
-                            break;
-                        }
+                    // 마지막 1일 제외 (불완전 데이터)
+                    if (state.supabaseL2History.length > 1) {
+                        state.supabaseL2History.pop();
                     }
                     
                     log(`   ✓ L2: ${state.supabaseL2History.length} records`);
@@ -23746,23 +23728,10 @@
                 if (state.supabaseBlobHistory && state.supabaseBlobHistory.length > 10) {
                     console.log('🔵 Using Supabase Blob data:', state.supabaseBlobHistory.length, 'points');
                     
-                    // 불완전 데이터 제거: 마지막 데이터가 평균의 30% 미만이면 제거
+                    // 마지막 1일 제외 (불완전 데이터)
                     let blobData = [...state.supabaseBlobHistory];
-                    
-                    // 마지막 3개까지 검사
-                    for (let i = 0; i < 3 && blobData.length > 10; i++) {
-                        const last = blobData[blobData.length - 1];
-                        const recent7 = blobData.slice(-8, -1);
-                        const avgFees = recent7.reduce((s, d) => s + d.fees, 0) / recent7.length;
-                        
-                        console.log(`   Checking: ${last.date.toISOString().split('T')[0]} = ${last.fees.toFixed(2)} ETH (avg: ${avgFees.toFixed(2)})`);
-                        
-                        if (avgFees > 0 && last.fees < avgFees * 0.3) {
-                            console.log(`   ⚠️ Removing incomplete: ${last.date.toISOString().split('T')[0]}`);
-                            blobData.pop();
-                        } else {
-                            break;
-                        }
+                    if (blobData.length > 1) {
+                        blobData.pop();
                     }
                     
                     state.blobFeesHistory = blobData.map(d => ({ date: d.date, value: d.fees }));
