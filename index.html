@@ -9771,7 +9771,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
-            align-items: start;
+            align-items: stretch;
         }
         
         /* Left: Sliders - Compact Layout */
@@ -9976,35 +9976,36 @@
             border-left: 2px solid var(--border-light);
         }
         
-        /* Right: Model Breakdown */
+        /* Right: Simulated Values */
         .simulator-result-panel {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            height: 100%;
         }
         
         .sim-breakdown-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 2px 8px;
-            align-content: start;
+            grid-template-rows: repeat(6, 1fr);
+            gap: 0 8px;
             background: var(--bg);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 12px 14px;
+            padding: 8px 14px;
+            flex: 1;
         }
         
         .sim-breakdown-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 8px;
+            padding: 12px 8px;
             background: transparent;
             border: none;
             border-bottom: 1px solid var(--border-light);
             border-radius: 0;
             font-size: 11px;
-            min-height: 38px;
             box-sizing: border-box;
             transition: background 0.15s ease;
         }
@@ -29118,11 +29119,13 @@ Check out ETHval 👇`;
                 
                 // Get Active Addresses from Supabase (day before latest)
                 var activeAddressesValue = 400000; // Default
-                if (state.supabaseActiveAddressesHistory && state.supabaseActiveAddressesHistory.length >= 2) {
-                    var aaDayBefore = state.supabaseActiveAddressesHistory[state.supabaseActiveAddressesHistory.length - 2];
+                if (state.l1ActiveAddrHistory && state.l1ActiveAddrHistory.length >= 2) {
+                    var aaDayBefore = state.l1ActiveAddrHistory[state.l1ActiveAddrHistory.length - 2];
                     if (aaDayBefore && aaDayBefore.value) {
                         activeAddressesValue = aaDayBefore.value;
                     }
+                } else if (state.l1ActiveAddresses) {
+                    activeAddressesValue = state.l1ActiveAddresses;
                 }
                 
                 // Calculate staking ratio (rounded to integer)
