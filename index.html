@@ -1786,7 +1786,7 @@
         /* Vertical legend layout (chart with legend on left) */
         .metric-chart-with-legend {
             display: flex;
-            gap: 8px;
+            gap: 0;
             align-items: stretch;
             overflow: hidden;
             min-width: 0;
@@ -2054,7 +2054,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 3px;
+            margin-bottom: 0;
             flex-wrap: wrap;
             gap: var(--space-xs);
         }
@@ -2126,7 +2126,7 @@
         }
 
         .metric-chart {
-            height: 79px;
+            height: 85px;
             margin-top: var(--space-sm);
             overflow: visible;
             position: relative;
@@ -2269,7 +2269,7 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            margin-top: 5px;
+            margin-top: 2px;
             padding-top: 5px;
             border-top: 1px solid var(--border);
             font-size: 10px;
@@ -2592,6 +2592,36 @@
         @keyframes toggleGlow {
             0%, 100% { box-shadow: none; }
             50% { box-shadow: 0 0 6px rgba(139, 92, 246, 0.3); }
+        }
+        
+        /* Loading/Calculating animation - unified style for all loading states */
+        .calculating-dots::after,
+        .calculating-text::after,
+        .loading-dots::after,
+        .loading-text::after {
+            content: '.  ';
+            animation: loadingDots 1.2s infinite steps(1);
+            display: inline-block;
+            width: 1.5em;
+            text-align: left;
+        }
+        
+        @keyframes loadingDots {
+            0%, 24% { content: '.  '; }
+            25%, 49% { content: '.. '; }
+            50%, 74% { content: '...'; }
+            75%, 100% { content: '.  '; }
+        }
+        
+        .calculating-text,
+        .calculating-dots,
+        .loading-text,
+        .loading-dots {
+            color: var(--text-muted) !important;
+            font-style: normal !important;
+            font-weight: 500 !important;
+            font-size: 13px !important;
+            font-family: var(--font-sans) !important;
         }
 
         .model-toggle input:checked + .slider::before {
@@ -6774,18 +6804,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 0;
+            padding: 12px 0;
             gap: 16px;
         }
 
         .summary-valuation-row:first-child {
-            padding-top: 4px;
+            padding-top: 0;
         }
 
         .summary-valuation-row:last-child {
             border-bottom: none;
-            padding-top: 14px;
-            margin-top: 0;
+            padding-bottom: 0;
         }
 
         .summary-toggle-hint {
@@ -6810,10 +6839,11 @@
         }
 
         .summary-label {
-            font-size: var(--font-h2);
-            color: var(--text-secondary);
+            font-size: 11px;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            font-weight: 600;
         }
 
         .model-count-light {
@@ -6833,15 +6863,15 @@
 
         .summary-value {
             font-family: var(--font-mono);
-            font-size: 21px;
+            font-size: 24px;
             font-weight: 700;
             color: var(--text);
             font-variant-numeric: tabular-nums;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.5px;
         }
 
         .summary-value.large {
-            font-size: 29px;
+            font-size: 32px;
             letter-spacing: -0.5px;
         }
 
@@ -6849,15 +6879,21 @@
             display: inline-flex;
             align-items: center;
             flex-wrap: nowrap;
+            gap: 10px;
+        }
+
+        #summary-signal {
+            font-size: 13px;
+            font-weight: 600;
         }
 
         .summary-opportunity {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 10px;
+            padding: 5px 12px;
             border-radius: var(--radius-sm);
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             font-family: var(--font-mono);
@@ -6871,6 +6907,67 @@
         .summary-opportunity.downside {
             background: var(--red-bg);
             color: var(--red);
+        }
+        
+        /* MODEL RANGE Section */
+        .summary-model-range-section {
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+        
+        .summary-model-range-section .summary-label {
+            margin-bottom: 12px;
+        }
+        
+        .model-range-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+        
+        .model-range-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .model-range-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 0;
+            border-radius: 4px;
+            width: 34px;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .model-range-badge.min {
+            color: var(--red);
+            background: var(--red-bg);
+        }
+        
+        .model-range-badge.max {
+            color: var(--green);
+            background: var(--green-bg);
+        }
+        
+        .model-range-price {
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .model-range-price.min {
+            color: var(--red);
+        }
+        
+        .model-range-price.max {
+            color: var(--green);
         }
 
         .summary-description {
@@ -9017,22 +9114,6 @@
             .model-chart-area {
                 height: 100px;
             }
-        }
-
-        /* Calculating dots animation */
-        .calculating-dots::after {
-            content: '...';
-            display: inline-block;
-            width: 1.2em;
-            text-align: left;
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: ''; }
-            40% { content: '.'; }
-            60% { content: '..'; }
-            80%, 100% { content: '...'; }
         }
 
         /* ========================================
@@ -11634,32 +11715,38 @@
                 <div class="summary-valuation-box">
                     <div class="summary-valuation-row">
                         <span class="summary-label" data-i18n="summary.currentPrice">Current Price</span>
-                        <span class="summary-value" id="summary-current-price">$--</span>
+                        <span class="summary-value" id="summary-current-price"><span class="loading-text">Loading</span></span>
                     </div>
                     <div class="summary-valuation-row">
                         <span class="summary-label">
                             <span data-i18n="valuation.compositeFairValue">Composite Fair Value</span>
                             <span class="model-count-light model-count-break">(<span id="active-model-count">12</span> / 12 models)</span>
                         </span>
-                        <span class="summary-value" id="summary-fair-value" style="font-size: var(--font-h2); color: #a8b4c0;"><span class="calculating-dots">Calculating</span></span>
+                        <span class="summary-value" id="summary-fair-value"><span class="calculating-text">Calculating</span></span>
                     </div>
                     <div class="summary-valuation-row">
                         <span class="summary-label" data-i18n="summary.opportunity">Opportunity</span>
                         <span class="summary-opportunity-wrapper">
-                            <span id="summary-signal" style="font-size: 12px; font-weight: 600; margin-right: 8px; color: #a8b4c0;">--</span>
-                            <span class="summary-opportunity" id="summary-opportunity" style="background: #f1f3f4; color: #a8b4c0;">-- %</span>
+                            <span id="summary-signal" class="calculating-text">Calculating</span>
+                            <span class="summary-opportunity" id="summary-opportunity" style="background: #f1f3f4;"><span class="calculating-dots"></span></span>
                         </span>
                     </div>
-                    <div class="summary-model-range-section" style="border-top: 1px solid var(--border); padding-top: 16px; margin-top: 12px;">
-                        <div class="summary-label" data-i18n="summary.modelRange" style="margin-bottom: 14px; font-size: 13px;">Model Range</div>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;"><span style="font-size: 10px; font-weight: 600; color: var(--red); background: var(--red-bg); padding: 3px 0; border-radius: 4px; width: 34px; text-align: center; display: inline-block;">Min</span> <span id="summary-min-model-name">--</span></span>
-                                <span style="font-size: 14px; font-family: var(--font-mono); font-weight: 600; color: var(--red);" id="summary-min-price">$--</span>
+                    <div class="summary-model-range-section">
+                        <div class="summary-label" data-i18n="summary.modelRange">Model Range</div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div class="model-range-row">
+                                <span class="model-range-label">
+                                    <span class="model-range-badge min">Min</span>
+                                    <span id="summary-min-model-name" class="calculating-text">Calculating</span>
+                                </span>
+                                <span id="summary-min-price" class="model-range-price min calculating-dots"></span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;"><span style="font-size: 10px; font-weight: 600; color: var(--green); background: var(--green-bg); padding: 3px 0; border-radius: 4px; width: 34px; text-align: center; display: inline-block;">Max</span> <span id="summary-max-model-name">--</span></span>
-                                <span style="font-size: 14px; font-family: var(--font-mono); font-weight: 600; color: var(--green);" id="summary-max-price">$--</span>
+                            <div class="model-range-row">
+                                <span class="model-range-label">
+                                    <span class="model-range-badge max">Max</span>
+                                    <span id="summary-max-model-name" class="calculating-text">Calculating</span>
+                                </span>
+                                <span id="summary-max-price" class="model-range-price max calculating-dots"></span>
                             </div>
                         </div>
                     </div>
@@ -25246,7 +25333,7 @@
             return models;
         }
 
-        function renderValuations() {
+        function renderValuations(updateSummary = true) {
             const models = calculateValuations();
             const container = document.getElementById('valuation-models');
             container.innerHTML = '';
@@ -25379,8 +25466,10 @@
                 });
             }, 100);
 
-            // 초기 가중 평균 계산
-            recalculateWeightedAverage();
+            // 초기 가중 평균 계산 (updateSummary가 true일 때만)
+            if (updateSummary) {
+                recalculateWeightedAverage();
+            }
         }
 
         // 단순 평균 재계산 함수
@@ -25472,18 +25561,21 @@
             const summaryOpportunityEl = document.getElementById('summary-opportunity');
             
             if (summaryCurrentEl) {
-                summaryCurrentEl.textContent = fmt.price(state.price);
+                summaryCurrentEl.innerHTML = fmt.price(state.price); // Remove loading span
             }
             if (summaryFairEl) {
-                summaryFairEl.textContent = fmt.price(avgPrice);
-                summaryFairEl.style.fontSize = '';
-                summaryFairEl.style.color = '';
+                summaryFairEl.innerHTML = fmt.price(avgPrice); // Remove calculating span
             }
             if (summaryOpportunityEl) {
-                summaryOpportunityEl.textContent = fmt.pct(avgDiff);
+                summaryOpportunityEl.innerHTML = fmt.pct(avgDiff); // Remove inner calculating span
                 summaryOpportunityEl.className = 'summary-opportunity ' + (avgDiff >= 0 ? 'upside' : 'downside');
                 summaryOpportunityEl.style.background = '';
-                summaryOpportunityEl.style.color = '';
+            }
+            
+            // Signal 텍스트 로딩 애니메이션 제거
+            const summarySignalEl = document.getElementById('summary-signal');
+            if (summarySignalEl) {
+                summarySignalEl.classList.remove('calculating-text');
             }
             
             // Model Range 업데이트 (모델 이름 포함)
@@ -25511,16 +25603,25 @@
                     const minModel = activeModels.reduce((a, b) => a.price < b.price ? a : b);
                     const maxModel = activeModels.reduce((a, b) => a.price > b.price ? a : b);
                     
-                    if (summaryMinModelNameEl) summaryMinModelNameEl.textContent = minModel.name;
+                    // Remove calculating animation classes and update values
+                    if (summaryMinModelNameEl) {
+                        summaryMinModelNameEl.classList.remove('calculating-text');
+                        summaryMinModelNameEl.textContent = minModel.name;
+                    }
+                    summaryMinPriceEl.classList.remove('calculating-dots');
                     summaryMinPriceEl.textContent = fmt.price(minModel.price);
                     
-                    if (summaryMaxModelNameEl) summaryMaxModelNameEl.textContent = maxModel.name;
+                    if (summaryMaxModelNameEl) {
+                        summaryMaxModelNameEl.classList.remove('calculating-text');
+                        summaryMaxModelNameEl.textContent = maxModel.name;
+                    }
+                    summaryMaxPriceEl.classList.remove('calculating-dots');
                     summaryMaxPriceEl.textContent = fmt.price(maxModel.price);
                 }
             }
             
             // Signal 텍스트 업데이트 (Undervalued / Fair Value / Overvalued)
-            const summarySignalEl = document.getElementById('summary-signal');
+            // summarySignalEl is already defined above
             if (summarySignalEl) {
                 const undervaluedLabel = translations[currentLang]?.['valuation.undervalued'] || 'Undervalued';
                 const overvaluedLabel = translations[currentLang]?.['valuation.overvalued'] || 'Overvalued';
@@ -26784,10 +26885,10 @@
                 }
                 
                 // ═══════════════════════════════════════════════════════════════════
-                // 22. Supply Distribution & Valuations
+                // 22. Supply Distribution (Valuations rendered after all data loaded)
                 // ═══════════════════════════════════════════════════════════════════
                 safeCall(() => updateSupplyDistributionChart(ChartManager.getDefaultPeriod()), 'supplyDist');
-                safeCall(() => renderValuations(), 'valuations');
+                // renderValuations() is called in backgroundLoading() after all data is loaded
                 
                 log('📊 Charts rendered - Data Sources:', {
                     price: priceSource, 
@@ -26822,113 +26923,96 @@
             
             try {
                 // ═══════════════════════════════════════════════════════════════════
-                // 원칙: Supabase 데이터가 있으면 외부 API 호출 안함
-                // 외부 API는 Supabase 데이터가 없거나 부족할 때만 호출
+                // 최적화: 우선순위 기반 병렬 로딩
                 // ═══════════════════════════════════════════════════════════════════
                 
-                const MIN_DATA_POINTS = 30; // 최소 30일치 있어야 충분
+                const MIN_DATA_POINTS = 30;
                 
-                // 실시간 가격만 항상 가져오기 (현재가 업데이트용)
-                await fetchBinancePrice();
+                // ★ Phase 1: 가격/CoinGecko 병렬 로드 (Overview 값 즉시 표시용)
+                const phase1 = Promise.allSettled([
+                    fetchBinancePrice(),
+                    fetchCoinGecko()
+                ]);
                 
-                // CoinGecko에서 ATH, Market Cap 등 기본 정보 가져오기
-                await fetchCoinGecko();
+                // ★ Phase 1 완료 후 즉시 모델 카드 렌더링 (가격 데이터만으로)
+                phase1.then(() => {
+                    renderValuations(false);
+                    log('   → Phase 1 done: Valuations rendered with price data');
+                });
                 
-                // 필요한 API만 조건부 호출
+                // Phase 2: 필요한 API들 수집
                 const apiCalls = [];
                 
-                // 가격 히스토리 - Supabase 부족하면 Binance
                 if (!state.supabasePriceHistory?.length || state.supabasePriceHistory.length < 900) {
-                    log('   → Price history insufficient, fetching from Binance');
                     apiCalls.push(fetchBinanceHistory(1095));
                 }
                 
-                // 볼륨 히스토리 - 항상 CoinGecko에서 가져오기 (Supabase에 volume 컬럼이 없을 수 있음)
                 if (!state.volumeHistory?.length || state.volumeHistory.length < 30) {
-                    log('   → Volume history missing, fetching from CoinGecko');
                     apiCalls.push(fetchVolumeFromCoinGecko(365));
                 }
                 
-                // TVL - Supabase 없으면 DefiLlama
                 if (!state.supabaseTvlHistory?.length || state.supabaseTvlHistory.length < MIN_DATA_POINTS) {
-                    log('   → TVL data missing, fetching from DefiLlama');
                     apiCalls.push(fetchDefiLlama());
                 }
                 
-                // Staking - Supabase 없으면 외부 API
                 if (!state.supabaseStakingHistory?.length || state.supabaseStakingHistory.length < MIN_DATA_POINTS) {
-                    log('   → Staking data missing, fetching from API');
                     apiCalls.push(fetchStaking());
                 }
                 
-                // Funding Rate - Supabase 없으면 외부 API
                 if (!state.supabaseFundingHistory?.length || state.supabaseFundingHistory.length < MIN_DATA_POINTS) {
-                    log('   → Funding data missing, fetching from API');
                     apiCalls.push(fetchFundingRate());
                 }
                 
-                // Stablecoin - Supabase 없으면 외부 API
                 if (!state.supabaseStablecoinHistory?.length || state.supabaseStablecoinHistory.length < MIN_DATA_POINTS) {
-                    log('   → Stablecoin data missing, fetching from API');
                     apiCalls.push(fetchStablecoinMcap());
                 }
                 
-                // Exchange Reserve - Supabase 없으면 외부 API
                 if (!state.supabaseReserveHistory?.length || state.supabaseReserveHistory.length < MIN_DATA_POINTS) {
-                    log('   → Reserve data missing, fetching from API');
                     apiCalls.push(fetchExchangeReserve());
                 }
                 
-                // Gas - Supabase 없으면 외부 API
                 if (!state.supabaseGasHistory?.length || state.supabaseGasHistory.length < MIN_DATA_POINTS) {
-                    log('   → Gas data missing, fetching from API');
                     apiCalls.push(updateGasPriceDisplay());
                     apiCalls.push(fetchGasPrice());
                 }
                 
-                // Blob - Supabase 없으면 외부 API
                 if (!state.supabaseBlobHistory?.length || state.supabaseBlobHistory.length < MIN_DATA_POINTS) {
-                    log('   → Blob data missing, fetching from API');
                     apiCalls.push(fetchBlobFees());
                 }
                 
-                // Lending TVL - Supabase 없으면 외부 API
                 if (!state.supabaseLendingHistory?.length || state.supabaseLendingHistory.length < MIN_DATA_POINTS) {
-                    log('   → Lending data missing, fetching from API');
                     apiCalls.push(fetchLendingProtocolsTVL());
                 }
                 
-                // Dominance/ETH-BTC - Supabase 없으면 외부 API
                 if (!state.supabaseDominanceHistory?.length || state.supabaseDominanceHistory.length < MIN_DATA_POINTS ||
                     !state.supabaseEthBtcHistory?.length || state.supabaseEthBtcHistory.length < MIN_DATA_POINTS) {
-                    log('   → Dominance/ETH-BTC data missing, fetching from API');
                     apiCalls.push(fetchDominanceAndEthBtc(1095));
                 }
                 
-                // Fear & Greed - 항상 호출 (fgHistory 설정 필요)
                 apiCalls.push(fetchFearGreed());
                 
-                // 필요한 API들만 병렬 호출
+                // ★ Phase 1 완료 대기 + Phase 2 병렬 시작
+                await phase1;
+                
+                // Phase 2: 나머지 API + 계산 함수들 모두 병렬
                 if (apiCalls.length > 0) {
-                    log(`   Background: Fetching ${apiCalls.length} missing datasets...`);
-                    await Promise.allSettled(apiCalls);
-                } else {
-                    log('   Background: All data available from Supabase ✓');
+                    log(`   Background: Fetching ${apiCalls.length} datasets in parallel...`);
                 }
                 
-                // 계산 함수들 (항상 실행)
                 await Promise.allSettled([
+                    ...apiCalls,
                     fetchSupplyDynamics(),
                     calculateAndUpdateNVT(),
-                    calculateVolatility(),
+                    calculateVolatility()
                 ]);
                 
                 // Settlement Volume 차트 업데이트
                 updateVolumeChart(ChartManager.getDefaultPeriod());
                 
-                // 최종 렌더링
-                renderValuations();
+                // ★ 히스토리 분석 - 최종 값 계산 및 Overview 업데이트
                 initHistoricalAnalysis();
+                
+                log('   Background: All data loaded ✓');
                 
             } catch (e) {
                 console.error('Background loading error:', e);
@@ -28676,9 +28760,8 @@ Check out ETHval 👇`;
         // This will be called from the main data loading flow
         function initHistoricalAnalysis() {
             if (state.priceHistory.length > 0 && !state.historicalDataLoaded) {
-                setTimeout(() => {
-                    calculateHistoricalFairValues();
-                }, 1000);
+                // 즉시 실행 (불필요한 1초 대기 제거)
+                calculateHistoricalFairValues();
             }
         }
     </script>
