@@ -13292,7 +13292,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">DailyFees × 365 × PSRatio ÷ Supply</div>
+                            <div class="method-formula">(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply</div>
                             <div class="method-desc" data-i18n="method.ps.desc">Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations.</div>
                         </div>
                         <div class="method-right">
@@ -13335,7 +13335,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">AnnualFees ÷ APR ÷ Supply</div>
+                            <div class="method-formula">(L1Fees + BlobFees) × 365 ÷ APR ÷ Supply</div>
                             <div class="method-desc" data-i18n="method.yield.desc">Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class.</div>
                         </div>
                         <div class="method-right">
@@ -15278,7 +15278,7 @@
                     ]
                 },
                 'ps': {
-                    formula: 'DailyFees × 365 × PSRatio ÷ Supply',
+                    formula: '(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply',
                     desc: t('method.ps.desc', 'Applies traditional Price-to-Sales ratio using protocol fee revenue. A 25x P/S multiple is conservative for high-growth tech assets. Fee data sourced from Token Terminal. This model treats Ethereum like a revenue-generating business.'),
                     reliability: 2,
                     caveat: t('method.ps.note', '25x multiple borrowed from SaaS sector; crypto protocols may warrant different multiples'),
@@ -25086,7 +25086,7 @@
                 models.push({ 
                     id: 'ps',
                     name: 'P/S Ratio (25x)', 
-                    formula: 'DailyFees × 365 × PSRatio ÷ Supply', 
+                    formula: '(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply', 
                     price: (fees * 365 * 25) / cs,
                     reliability: 2,
                     source: 'PSRatio=25×'
@@ -25102,7 +25102,7 @@
                 models.push({ 
                     id: 'revenueYield',
                     name: 'Fee Yield', 
-                    formula: 'AnnualFees ÷ APR ÷ Supply', 
+                    formula: '(L1Fees + BlobFees) × 365 ÷ APR ÷ Supply', 
                     price: (annualRevenue / targetYield) / cs,
                     reliability: 3,
                     source: `APR=${displayYield}%`
@@ -27681,21 +27681,34 @@ Check out ETHval 👇`;
                 const stakedEth = isLastPoint ? state.stakedEth : (findClosest(state.stakingHistory, date) || state.stakedEth);
                 const l2Tvl = isLastPoint ? state.l2Tvl : (findClosest(state.l2History, date) || state.l2Tvl);
                 
-                // fees 처리: feesHistoryDaily는 일일 값, feesHistory는 주간 값(×7)
-                let fees;
+                // fees 처리: L1 fees + Blob fees (둘 다 burned되어 ETH 홀더에게 가치 귀속)
+                // feesHistoryDaily는 일일 값 (USD), blobFeesHistory는 일일 값 (ETH)
+                let l1Fees;
                 if (isLastPoint) {
-                    fees = state.fees; // 일일 값
+                    l1Fees = state.fees; // 일일 값 (USD)
                 } else {
                     // feesHistoryDaily 우선 (일일 값)
                     const dailyFee = findClosest(state.feesHistoryDaily, date);
                     if (dailyFee && dailyFee > 0) {
-                        fees = dailyFee;
+                        l1Fees = dailyFee;
                     } else {
                         // fallback: feesHistory는 주간 값이므로 /7
                         const weeklyFee = findClosest(state.feesHistory, date);
-                        fees = weeklyFee ? weeklyFee / 7 : state.fees;
+                        l1Fees = weeklyFee ? weeklyFee / 7 : state.fees;
                     }
                 }
+                
+                // Blob fees (ETH → USD 변환)
+                let blobFeesUsd = 0;
+                if (isLastPoint) {
+                    blobFeesUsd = (state.blobFees || 0) * price;
+                } else {
+                    const blobFeesEth = findClosest(state.blobFeesHistory, date) || 0;
+                    blobFeesUsd = blobFeesEth * price;
+                }
+                
+                // Total fees = L1 fees + Blob fees
+                const fees = l1Fees + blobFeesUsd;
                 
                 // 디버깅: 처음 몇 개와 마지막 포인트 로그
                 if (idx < 3 || idx > state.priceHistory.length - 3) {
@@ -27758,15 +27771,15 @@ Check out ETHval 👇`;
                 }
                 
                 // 6. P/S Ratio (25x) (matches: DailyFees × 365 × PSRatio ÷ Supply)
-                // feesHistoryDaily는 일일 값, state.fees도 일일 값
+                // fees = L1 fees + Blob fees (USD)
                 if (fees > 0) {
                     const dailyFees = fees; // 이미 일일 값
                     const psValue = (dailyFees * 365 * 25) / supply;
                     results.ps.push({ date, value: psValue });
                 }
                 
-                // 7. Fee Yield (matches: AnnualFees ÷ APR ÷ Supply)
-                // feesHistoryDaily는 일일 값
+                // 7. Fee Yield (matches: DailyFees × 365 ÷ APR ÷ Supply)
+                // fees = L1 fees + Blob fees (USD)
                 if (fees > 0 && stakingApr > 0) {
                     const dailyFees = fees; // 이미 일일 값
                     const annualRev = dailyFees * 365;
@@ -27921,11 +27934,14 @@ Check out ETHval 👇`;
             // 5. L2 Ecosystem: (TVL + L2×Weight) × Multiple ÷ Supply
             valuation.l2Ecosystem = (state.tvl + state.l2Tvl * 2) * 6 / csVal;
             
-            // 6. P/S: DailyFees × 365 × PSRatio ÷ Supply
-            valuation.ps = (state.fees * 365 * 25) / csVal;
+            // Total daily fees = L1 fees + Blob fees (USD)
+            const totalDailyFees = state.fees + (state.blobFees || 0) * state.price;
             
-            // 7. Fee Yield: AnnualFees ÷ APR ÷ Supply
-            valuation.revenueYield = (state.fees * 365 / (state.stakingApr / 100)) / csVal;
+            // 6. P/S: DailyFees × 365 × PSRatio ÷ Supply
+            valuation.ps = (totalDailyFees * 365 * 25) / csVal;
+            
+            // 7. Fee Yield: DailyFees × 365 ÷ APR ÷ Supply
+            valuation.revenueYield = (totalDailyFees * 365 / (state.stakingApr / 100)) / csVal;
             
             // 8. Liquidity Premium: Price × (1 + Commit% × Multiplier)
             const ethInDefi = state.tvl / state.price;
