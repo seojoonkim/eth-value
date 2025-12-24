@@ -12558,12 +12558,12 @@
                     <div class="metric-header">
                         <div class="metric-info">
                             <h4 data-i18n="metric.blobFees">Blob Fees</h4>
-                            <div class="metric-value-large" id="blob-fees-value">-- ETH</div>
+                            <div class="metric-value-large" id="blob-fees-value">--</div>
                         </div>
                         <div class="metric-tabs" data-chart="blobFees">
                             <button class="metric-tab active" data-period="90">90D</button>
                             <button class="metric-tab" data-period="365">1Y</button>
-                            <button class="metric-tab active" data-period="all">All</button>
+                            <button class="metric-tab" data-period="all">All</button>
                         </div>
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="blob-fees-chart"></canvas></div>
@@ -24121,8 +24121,10 @@
                     
                     log(`   Blob 1d: ${dailyFees.toFixed(2)} ETH, ${fmt.num(dailyCount)} blobs`);
                     
+                    // Convert to USD and display
+                    const blobFeesUsd = state.blobFees * (state.price || 3500);
                     const blobEl = document.getElementById('blob-fees-value');
-                    if (blobEl) blobEl.textContent = state.blobFees.toFixed(1) + ' ETH';
+                    if (blobEl) blobEl.textContent = fmt.usd(blobFeesUsd);
                     const blobCountEl = document.getElementById('blob-count-value');
                     if (blobCountEl) blobCountEl.textContent = fmt.num(state.blobCount);
                     
@@ -24282,7 +24284,8 @@
                 
                 const blobEl = document.getElementById('blob-fees-value');
                 if (blobEl) {
-                    blobEl.textContent = blobFees.toFixed(1) + ' ETH';
+                    const blobFeesUsd = blobFees * (state.price || 3500);
+                    blobEl.textContent = fmt.usd(blobFeesUsd);
                 }
                 
                 // Blob Count UI도 같이 업데이트
@@ -24318,13 +24321,52 @@
             }
         }
         
+        // Convert blob fees from ETH to USD using price history
+        function convertBlobFeesToUsd() {
+            if (!state.blobFeesHistory || state.blobFeesHistory.length === 0) return;
+            if (!state.priceHistory || state.priceHistory.length === 0) return;
+            
+            // Create price lookup map by date string
+            const priceByDate = {};
+            state.priceHistory.forEach(p => {
+                const dateStr = p.date.toISOString().split('T')[0];
+                priceByDate[dateStr] = p.value;
+            });
+            
+            // Convert each blob fee to USD
+            state.blobFeesHistoryUsd = state.blobFeesHistory.map(d => {
+                const dateStr = d.date.toISOString().split('T')[0];
+                const price = priceByDate[dateStr] || state.price || 3500; // fallback to current price
+                return {
+                    date: d.date,
+                    value: d.value * price,
+                    ethValue: d.value
+                };
+            });
+            
+            // Update current blob fees in USD
+            const lastDay = state.blobFeesHistoryUsd[state.blobFeesHistoryUsd.length - 1];
+            state.blobFeesUsd = lastDay ? lastDay.value : 0;
+        }
+        
         function updateBlobFeesChart(days = null) {
             const period = days || ChartManager.getDefaultPeriod();
             const ctx = document.getElementById('blob-fees-chart');
             if (!ctx) return;
             if (blobFeesChart) blobFeesChart.destroy();
             
-            const filtered = ChartManager.prepare(state.blobFeesHistory, period, 60);
+            // Convert to USD if not already done
+            if (!state.blobFeesHistoryUsd || state.blobFeesHistoryUsd.length === 0) {
+                convertBlobFeesToUsd();
+            }
+            
+            // Use USD history if available, otherwise fall back to ETH
+            const historyData = state.blobFeesHistoryUsd && state.blobFeesHistoryUsd.length > 0 
+                ? state.blobFeesHistoryUsd 
+                : state.blobFeesHistory;
+            const isUsd = state.blobFeesHistoryUsd && state.blobFeesHistoryUsd.length > 0;
+            
+            const filtered = ChartManager.prepare(historyData, period, 60);
             
             setChartLoading('blob-fees-chart', false);
             
@@ -24377,12 +24419,12 @@
                         legend: { display: false },
                         tooltip: { callbacks: { 
                             title: (items) => fmt.tooltipDate(dates[items[0]?.dataIndex]),
-                            label: (ctx) => ctx.raw.toFixed(1) + ' ETH' 
+                            label: (ctx) => isUsd ? fmt.usd(ctx.raw) : ctx.raw.toFixed(1) + ' ETH'
                         } }
                     },
                     scales: {
                         x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(0) } }
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => isUsd ? fmt.usd(v, 0) : v.toFixed(0) } }
                     }
                 }
             });
@@ -27011,7 +27053,7 @@
                         }
                     }
                 }
-                setEl('blob-fees-value', state.blobFees.toFixed(1) + ' ETH');
+                setEl('blob-fees-value', fmt.usd(state.blobFees * (state.price || 3500)));
                 setEl('blob-count-value', fmt.num(state.blobCount));
                 safeCall(() => updateBlobFeesChart(ChartManager.getDefaultPeriod()), 'blobFees');
                 safeCall(() => updateBlobCountChart(ChartManager.getDefaultPeriod()), 'blobCount');
