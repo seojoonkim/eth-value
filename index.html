@@ -11861,7 +11861,7 @@
                     </svg>
                 </div>
                 <span class="logo-text">ETHval</span>
-                <span class="version-badge">v0.5.5</span>
+                <span class="version-badge">v0.5.6</span>
             </div>
             <nav class="nav-bar-inline">
                 <a class="nav-item active" href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'instant'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); this.classList.add('active');" data-i18n="nav.overview">Overview</a>
@@ -13160,7 +13160,7 @@
                         <span class="outlier-filter-label" data-i18n="chart.autoScale">Auto Scale</span>
                     </label>
                     <label class="outlier-filter-toggle" title="Apply 7-day moving average for smoother trends" style="margin-left: 16px;">
-                        <input type="checkbox" id="smoothing-checkbox" checked>
+                        <input type="checkbox" id="smoothing-checkbox">
                         <span class="outlier-filter-switch"></span>
                         <span class="outlier-filter-label" data-i18n="chart.movingAvg7d">7D Moving Avg</span>
                     </label>
@@ -29022,6 +29022,9 @@ Check out ETHval 👇`;
             });
         }
         
+        // Track if user manually toggled the 7D Moving Avg
+        let userManuallyToggledSmoothing = false;
+        
         // Historical tabs event listeners
         document.querySelectorAll('.historical-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
@@ -29045,6 +29048,15 @@ Check out ETHval 👇`;
                 document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 
+                // Auto-set 7D Moving Avg based on period (only if user hasn't manually toggled)
+                if (!userManuallyToggledSmoothing) {
+                    const smoothingCheckbox = document.getElementById('smoothing-checkbox');
+                    if (smoothingCheckbox) {
+                        // 3Y: ON by default, 90D/1Y: OFF by default
+                        smoothingCheckbox.checked = (period === 1095);
+                    }
+                }
+                
                 renderHistoricalMainChart(period);
             });
         });
@@ -29063,6 +29075,8 @@ Check out ETHval 👇`;
         const smoothingCheckbox = document.getElementById('smoothing-checkbox');
         if (smoothingCheckbox) {
             smoothingCheckbox.addEventListener('change', () => {
+                // Mark that user manually toggled the smoothing option
+                userManuallyToggledSmoothing = true;
                 // Re-render chart with/without smoothing
                 renderHistoricalMainChart(null); // null keeps current period
             });
