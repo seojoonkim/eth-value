@@ -1224,6 +1224,118 @@
         body.dark .skeleton-block {
             background: #2d333b;
         }
+        
+        /* Forum skeleton loading */
+        .forum-skeleton {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .forum-skeleton-header {
+            display: grid;
+            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-subtle);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .forum-skeleton-header-item {
+            height: 12px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+            align-items: center;
+        }
+        
+        .forum-skeleton-category {
+            width: 70px;
+            height: 24px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-title {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .forum-skeleton-title-main {
+            width: 60%;
+            height: 16px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-title-sub {
+            width: 90%;
+            height: 12px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            animation: shimmer 2s ease-in-out infinite;
+            animation-delay: 0.1s;
+        }
+        
+        .forum-skeleton-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .forum-skeleton-avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-name {
+            width: 60px;
+            height: 14px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-stat {
+            width: 30px;
+            height: 14px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            animation: shimmer 2s ease-in-out infinite;
+            margin: 0 auto;
+        }
+        
+        .forum-skeleton-date {
+            width: 70px;
+            height: 14px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            animation: shimmer 2s ease-in-out infinite;
+            margin-left: auto;
+        }
+        
+        /* Tab skeleton */
+        .tab-skeleton {
+            width: 20px;
+            height: 18px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            animation: shimmer 2s ease-in-out infinite;
+            display: inline-block;
+        }
 
         .container {
             max-width: 1400px;
@@ -4361,19 +4473,16 @@
         .modal-top-section .modal-rating-summary {
             display: flex;
             flex-direction: row;
-            gap: 24px;
-            padding: 28px 32px;
+            gap: 32px;
+            padding: 24px 32px;
             position: relative;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-lg);
+            margin: 0 24px 24px 24px;
         }
 
         .modal-top-section .modal-rating-summary::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 32px;
-            right: 32px;
-            height: 1px;
-            background: var(--border);
+            display: none;
         }
 
         .modal-top-section .modal-write-section {
@@ -4384,26 +4493,31 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 80px;
+            justify-content: center;
+            min-width: 100px;
             flex-shrink: 0;
+            padding-right: 32px;
+            border-right: 1px solid var(--border-light);
         }
 
         .modal-avg-label {
             font-size: var(--text-sm);
             color: var(--text-muted);
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+            font-weight: var(--weight-medium);
         }
 
         .modal-avg {
-            font-size: var(--text-8xl);
+            font-size: 48px;
             font-weight: var(--weight-bold);
             color: var(--text);
+            line-height: 1;
         }
 
         .modal-stars {
             display: flex;
             gap: 2px;
-            margin: 4px 0;
+            margin: 8px 0 4px 0;
         }
 
         .modal-stars svg {
@@ -4420,8 +4534,9 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             min-width: 0;
+            justify-content: center;
         }
 
         .modal-bar-row {
@@ -4433,38 +4548,41 @@
         .modal-bar-graph {
             display: flex;
             align-items: center;
-            gap: 8px;
-            flex: 0 0 55%;
+            gap: 10px;
+            flex: 0 0 50%;
             min-width: 0;
         }
 
         .modal-bar-label {
-            font-size: var(--text-sm);
+            font-size: 13px;
             color: var(--text-muted);
-            width: 22px;
+            width: 24px;
             flex-shrink: 0;
+            font-weight: var(--weight-medium);
         }
 
         .modal-bar-track {
             flex: 1;
             height: 8px;
             background: var(--border-light);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-full);
             overflow: hidden;
         }
 
         .modal-bar-fill {
             height: 100%;
-            background: var(--star-color);
-            border-radius: var(--radius-sm);
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            border-radius: var(--radius-full);
+            transition: width 0.3s ease;
         }
 
         .modal-bar-count {
-            font-size: var(--text-sm);
-            color: var(--text-muted);
-            width: 32px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            width: 36px;
             text-align: right;
             flex-shrink: 0;
+            font-weight: var(--weight-medium);
         }
 
         .modal-bar-voters {
@@ -4472,28 +4590,32 @@
             align-items: center;
             gap: 2px;
             flex-shrink: 0;
-            min-width: 60px;
+            min-width: 80px;
         }
 
         .modal-bar-avatar {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            border: 1.5px solid var(--bg-card);
-            margin-left: -6px;
+            border: 2px solid var(--bg-subtle);
+            margin-left: -8px;
             object-fit: cover;
+            transition: transform 0.15s ease;
         }
 
         .modal-bar-avatar:first-child {
             margin-left: 0;
         }
 
+        .modal-bar-avatar:hover {
+            transform: scale(1.1);
+            z-index: 1;
+        }
+
         .modal-bar-more {
             font-size: var(--text-xs);
             color: var(--text-muted);
             margin-left: 4px;
-        }
-            flex-shrink: 0;
         }
 
         /* 모달 작성 섹션 - 기본 스타일은 .modal-top-section 안에서 정의 */
@@ -4505,11 +4627,14 @@
         .modal-star-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: var(--text-lg);
+            gap: 12px;
+            font-size: var(--text-md);
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
+            padding: 16px 20px;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
         }
 
         .confidence-label-wrapper {
@@ -4521,9 +4646,22 @@
         .confidence-label {
             font-weight: var(--weight-semibold);
             color: var(--text);
+            font-size: 15px;
         }
 
         .confidence-desc {
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+        }
+
+        .modal-star-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .optional-label {
             font-size: var(--text-sm);
             color: var(--text-muted);
         }
@@ -4551,36 +4689,46 @@
 
         .modal-write-input textarea {
             width: 100%;
-            min-height: 80px;
-            padding: 14px;
+            min-height: 100px;
+            padding: 14px 16px;
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             background: var(--bg-card);
             color: var(--text);
-            font-size: var(--text-lg);
+            font-size: 14px;
             font-family: inherit;
             resize: vertical;
             box-sizing: border-box;
+            line-height: 1.6;
         }
 
-        .modal-star-input-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .modal-write-input textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-write-input textarea::placeholder {
+            color: var(--text-muted);
         }
 
         .modal-star-input {
             display: flex;
-            gap: 2px;
+            gap: 4px;
         }
 
         .modal-star-input .star-input {
-            padding: 1px;
+            padding: 2px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .modal-star-input .star-input:hover {
+            transform: scale(1.15);
         }
 
         .modal-star-input .star-input svg {
-            width: 18px;
-            height: 18px;
+            width: 22px;
+            height: 22px;
         }
 
         .star-clear-btn {
@@ -10523,13 +10671,13 @@
             display: inline-block;
         }
         
-        .community-tab .tab-count:empty {
-            display: none;
-        }
-        
         .community-tab.active .tab-count {
             background: rgba(112, 72, 240, 0.2);
             color: var(--primary);
+        }
+        
+        .community-tab.active .tab-count .tab-skeleton {
+            background: rgba(112, 72, 240, 0.3);
         }
         
         .community-tab:hover {
@@ -10685,7 +10833,7 @@
             min-height: 200px;
             overflow-y: auto;
             font-family: inherit;
-            line-height: 1.6;
+            line-height: 1;
             outline: none;
         }
         
@@ -10911,7 +11059,7 @@
             min-height: 200px;
             resize: vertical;
             font-family: inherit;
-            line-height: 1.6;
+            line-height: 1;
         }
         
         .write-content:focus {
@@ -11131,6 +11279,119 @@
             color: var(--text-muted);
         }
         
+        /* Forum Skeleton Loading */
+        .forum-skeleton {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        
+        .forum-skeleton-header {
+            display: grid;
+            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-subtle);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .forum-skeleton-header-cell {
+            height: 12px;
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .forum-skeleton-row:last-child {
+            border-bottom: none;
+        }
+        
+        .forum-skeleton-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .forum-skeleton-badge {
+            width: 70px;
+            height: 22px;
+            background: var(--border-light);
+            border-radius: var(--radius-full);
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-title {
+            height: 16px;
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+            width: 80%;
+        }
+        
+        .forum-skeleton-preview {
+            height: 14px;
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+            animation-delay: 0.1s;
+            width: 100%;
+        }
+        
+        .forum-skeleton-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .forum-skeleton-avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--border-light);
+            border-radius: 50%;
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-name {
+            height: 14px;
+            width: 60px;
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+        }
+        
+        .forum-skeleton-stat {
+            height: 14px;
+            width: 30px;
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+            margin: 0 auto;
+        }
+        
+        .forum-skeleton-date {
+            height: 14px;
+            width: 70px;
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+            margin-left: auto;
+        }
+        
+        @keyframes skeleton-pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+        
         .community-empty {
             text-align: center;
             padding: 40px;
@@ -11282,7 +11543,7 @@
         .forum-cell-date {
             font-size: var(--text-sm);
             color: var(--text-muted);
-            text-align: right;
+            text-align: left;
         }
         
         .forum-post-category {
@@ -11709,7 +11970,7 @@
         .forum-modal-post-content {
             font-size: 14px;
             color: var(--text-body);
-            line-height: 1.6;
+            line-height: 1;
             white-space: pre-wrap;
             word-break: break-word;
         }
@@ -16109,11 +16370,11 @@
                 <!-- Category Tabs + Write Button -->
                 <div class="community-header-row">
                     <div class="community-tabs">
-                        <button class="community-tab active" data-category="all"><span data-i18n="community.tabs.all">All</span> <span class="tab-count" id="tab-count-all"></span></button>
-                        <button class="community-tab" data-category="updates"><span data-i18n="community.tabs.updates">Updates</span> <span class="tab-count" id="tab-count-updates"></span></button>
-                        <button class="community-tab" data-category="analysis"><span data-i18n="community.tabs.analysis">Analysis</span> <span class="tab-count" id="tab-count-analysis"></span></button>
-                        <button class="community-tab" data-category="model_ideas"><span data-i18n="community.tabs.modelIdeas">Model Ideas</span> <span class="tab-count" id="tab-count-model_ideas"></span></button>
-                        <button class="community-tab" data-category="questions"><span data-i18n="community.tabs.questions">Questions</span> <span class="tab-count" id="tab-count-questions"></span></button>
+                        <button class="community-tab active" data-category="all"><span data-i18n="community.tabs.all">All</span> <span class="tab-count" id="tab-count-all"><span class="tab-skeleton"></span></span></button>
+                        <button class="community-tab" data-category="updates"><span data-i18n="community.tabs.updates">Updates</span> <span class="tab-count" id="tab-count-updates"><span class="tab-skeleton"></span></span></button>
+                        <button class="community-tab" data-category="analysis"><span data-i18n="community.tabs.analysis">Analysis</span> <span class="tab-count" id="tab-count-analysis"><span class="tab-skeleton"></span></span></button>
+                        <button class="community-tab" data-category="model_ideas"><span data-i18n="community.tabs.modelIdeas">Model Ideas</span> <span class="tab-count" id="tab-count-model_ideas"><span class="tab-skeleton"></span></span></button>
+                        <button class="community-tab" data-category="questions"><span data-i18n="community.tabs.questions">Questions</span> <span class="tab-count" id="tab-count-questions"><span class="tab-skeleton"></span></span></button>
                     </div>
                     <button class="write-post-btn" onclick="openWriteModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -16125,9 +16386,43 @@
                 
                 <!-- Posts List -->
                 <div class="community-posts" id="community-posts">
-                    <div class="community-loading">
-                        <div class="rankings-loading-spinner"></div>
-                        <p data-i18n="community.loading">Loading posts...</p>
+                    <div class="forum-skeleton">
+                        <div class="forum-skeleton-header">
+                            <div class="forum-skeleton-header-cell"></div>
+                            <div class="forum-skeleton-header-cell"></div>
+                            <div class="forum-skeleton-header-cell"></div>
+                            <div class="forum-skeleton-header-cell"></div>
+                            <div class="forum-skeleton-header-cell"></div>
+                            <div class="forum-skeleton-header-cell"></div>
+                            <div class="forum-skeleton-header-cell"></div>
+                        </div>
+                        <div class="forum-skeleton-row">
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-badge"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-title"></div><div class="forum-skeleton-preview"></div></div>
+                            <div class="forum-skeleton-author"><div class="forum-skeleton-avatar"></div><div class="forum-skeleton-name"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-date"></div></div>
+                        </div>
+                        <div class="forum-skeleton-row">
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-badge"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-title"></div><div class="forum-skeleton-preview"></div></div>
+                            <div class="forum-skeleton-author"><div class="forum-skeleton-avatar"></div><div class="forum-skeleton-name"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-date"></div></div>
+                        </div>
+                        <div class="forum-skeleton-row">
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-badge"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-title"></div><div class="forum-skeleton-preview"></div></div>
+                            <div class="forum-skeleton-author"><div class="forum-skeleton-avatar"></div><div class="forum-skeleton-name"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                            <div class="forum-skeleton-cell"><div class="forum-skeleton-date"></div></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -32559,9 +32854,27 @@ Check out ETHval 👇`;
                     // Show subtle loading indicator if no cache
                     if (!forumPosts.length) {
                         container.innerHTML = `
-                            <div class="community-loading">
-                                <div class="rankings-loading-spinner"></div>
-                                <p data-i18n="community.loading">${t('community.loading', 'Loading posts...')}</p>
+                            <div class="forum-skeleton">
+                                <div class="forum-skeleton-header">
+                                    <div class="forum-skeleton-header-cell"></div>
+                                    <div class="forum-skeleton-header-cell"></div>
+                                    <div class="forum-skeleton-header-cell"></div>
+                                    <div class="forum-skeleton-header-cell"></div>
+                                    <div class="forum-skeleton-header-cell"></div>
+                                    <div class="forum-skeleton-header-cell"></div>
+                                    <div class="forum-skeleton-header-cell"></div>
+                                </div>
+                                ${[1,2,3].map(() => `
+                                    <div class="forum-skeleton-row">
+                                        <div class="forum-skeleton-cell"><div class="forum-skeleton-badge"></div></div>
+                                        <div class="forum-skeleton-cell"><div class="forum-skeleton-title"></div><div class="forum-skeleton-preview"></div></div>
+                                        <div class="forum-skeleton-author"><div class="forum-skeleton-avatar"></div><div class="forum-skeleton-name"></div></div>
+                                        <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                                        <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                                        <div class="forum-skeleton-cell"><div class="forum-skeleton-stat"></div></div>
+                                        <div class="forum-skeleton-cell"><div class="forum-skeleton-date"></div></div>
+                                    </div>
+                                `).join('')}
                             </div>
                         `;
                     }
