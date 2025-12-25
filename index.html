@@ -32173,13 +32173,10 @@ Check out ETHval 👇`;
                 const categorySelect = document.getElementById('composer-category');
                 
                 // Show appropriate composer state based on login
-                // TEST MODE: Always show composer form
                 function updateComposerState() {
-                    // Always show form for testing
-                    if (loginPrompt) loginPrompt.style.display = 'none';
-                    if (composerForm) composerForm.style.display = 'flex';
-                    
                     if (currentUser) {
+                        if (loginPrompt) loginPrompt.style.display = 'none';
+                        if (composerForm) composerForm.style.display = 'flex';
                         if (composerAvatar) composerAvatar.src = currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
                         
                         // Add updates option for admin only
@@ -32193,6 +32190,9 @@ Check out ETHval 👇`;
                                 categorySelect.insertBefore(updatesOption, categorySelect.firstChild);
                             }
                         }
+                    } else {
+                        if (loginPrompt) loginPrompt.style.display = 'flex';
+                        if (composerForm) composerForm.style.display = 'none';
                     }
                 }
                 
@@ -32409,16 +32409,10 @@ Check out ETHval 👇`;
             }
             
             async function submitForumPost() {
-                console.log('submitForumPost called');
-                
-                // TEST MODE: Skip login check
-                const testUser = {
-                    id: 'test-user-' + Date.now(),
-                    handle: 'test_user',
-                    name: 'Test User',
-                    avatar: 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'
-                };
-                const user = currentUser || testUser;
+                if (!currentUser) {
+                    loginWithTwitter();
+                    return;
+                }
                 
                 // Use write-modal inputs
                 const titleInput = document.getElementById('write-title');
@@ -32432,8 +32426,6 @@ Check out ETHval 👇`;
                 content = autoLinkUrls(content);
                 const category = categorySelect?.value || 'analysis';
                 
-                console.log('Title:', title, 'Content:', content, 'Category:', category);
-                
                 if (!title || !content || content === '<br>') {
                     alert('Please enter title and content');
                     return;
@@ -32446,14 +32438,13 @@ Check out ETHval 👇`;
                 }
                 
                 try {
-                    console.log('Inserting to supabase...');
                     const { data, error } = await supabaseClient
                         .from('forum_posts')
                         .insert({
-                            user_id: user.id,
-                            username: user.handle,
-                            display_name: user.name,
-                            avatar_url: user.avatar,
+                            user_id: currentUser.id,
+                            username: currentUser.handle,
+                            display_name: currentUser.name,
+                            avatar_url: currentUser.avatar,
                             category: category,
                             title: title,
                             content: content
@@ -32461,11 +32452,8 @@ Check out ETHval 👇`;
                         .select();
                     
                     if (error) {
-                        console.error('Supabase error:', error);
                         throw error;
                     }
-                    
-                    console.log('Post created:', data);
                     
                     // Close modal and clear form
                     closeWriteModal();
@@ -33066,6 +33054,12 @@ Check out ETHval 👇`;
             
             // Write Modal Functions
             function openWriteModal() {
+                // Require login
+                if (!currentUser) {
+                    loginWithTwitter();
+                    return;
+                }
+                
                 const overlay = document.getElementById('write-modal-overlay');
                 if (overlay) {
                     // Save scroll position
