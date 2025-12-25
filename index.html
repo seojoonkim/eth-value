@@ -11436,7 +11436,7 @@
         
         .forum-row {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            grid-template-columns: 100px 1fr 120px 60px 80px 60px 80px;
             gap: 12px;
             padding: 16px;
             border-bottom: 1px solid var(--border-light);
@@ -11445,24 +11445,53 @@
             transition: background 0.15s ease;
         }
         
-        /* 태블릿/중간 해상도용 */
-        @media (min-width: 769px) and (max-width: 1100px) {
-            .forum-table-header {
-                grid-template-columns: 90px 1fr 100px 50px 50px 50px 70px;
+        /* 큰 태블릿 (1200px ~ 1400px) */
+        @media (min-width: 1200px) and (max-width: 1400px) {
+            .forum-table-header,
+            .forum-row {
+                grid-template-columns: 90px 1fr 110px 50px 70px 50px 70px;
+                gap: 10px;
+            }
+        }
+        
+        /* 중간 태블릿 (1000px ~ 1200px) */
+        @media (min-width: 1000px) and (max-width: 1199px) {
+            .forum-table-header,
+            .forum-row {
+                grid-template-columns: 85px 1fr 100px 45px 60px 45px 60px;
                 gap: 8px;
-                padding: 10px 12px;
-                font-size: 10px;
             }
             
-            .forum-row {
-                grid-template-columns: 90px 1fr 100px 50px 50px 50px 70px;
-                gap: 8px;
-                padding: 12px;
+            .forum-table-header {
+                font-size: 10px;
             }
             
             .forum-post-category {
                 font-size: 10px;
-                padding: 2px 6px;
+            }
+            
+            .forum-title {
+                font-size: 13px;
+            }
+        }
+        
+        /* 작은 태블릿 (769px ~ 1000px) */
+        @media (min-width: 769px) and (max-width: 999px) {
+            .forum-table-header,
+            .forum-row {
+                grid-template-columns: 75px 1fr 85px 40px 40px 40px 55px;
+                gap: 6px;
+                padding: 12px;
+            }
+            
+            .forum-table-header {
+                font-size: 9px;
+                padding: 10px 12px;
+            }
+            
+            .forum-post-category {
+                font-size: 9px;
+                padding: 2px 5px;
             }
             
             .forum-title {
@@ -11472,6 +11501,29 @@
             .forum-preview {
                 font-size: 11px;
             }
+            
+            .forum-author-avatar {
+                width: 22px;
+                height: 22px;
+            }
+            
+            .forum-author-link {
+                font-size: 11px;
+            }
+            
+            .forum-cell-stat {
+                font-size: 11px;
+            }
+            
+            .forum-cell-stat svg {
+                width: 12px;
+                height: 12px;
+            }
+            
+            .forum-cell-date {
+                font-size: 10px;
+            }
+        }
             
             .forum-author-avatar {
                 width: 24px;
