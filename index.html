@@ -4542,7 +4542,7 @@
         .modal-bar-row {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
         }
 
         .modal-bar-graph {
@@ -4564,7 +4564,7 @@
         .modal-bar-track {
             flex: 1;
             height: 8px;
-            background: var(--border-light);
+            background: rgba(255, 255, 255, 0.06);
             border-radius: var(--radius-full);
             overflow: hidden;
         }
@@ -4919,13 +4919,13 @@
             display: flex;
             gap: 2px;
             background: var(--bg-subtle);
-            padding: 2px;
-            border-radius: var(--radius-sm);
+            padding: 3px;
+            border-radius: var(--radius-md);
         }
 
         .modal-sort-btn {
-            padding: 2px 8px;
-            font-size: var(--text-xs);
+            padding: 7px 12px;
+            font-size: var(--text-sm);
             font-weight: var(--weight-medium);
             background: transparent;
             border: none;
@@ -6577,7 +6577,7 @@
         
         .twitter-login-btn .x-logo,
         .summary-btn.login-btn .x-logo {
-            font-size: 1.3em;
+            font-size: 1.5em;
             font-weight: var(--weight-bold);
         }
 
@@ -18094,7 +18094,6 @@
                         ` : '<div class="summary-avatars-empty"></div>'}
                         ${!isLoggedIn ? `
                             <button class="summary-btn login-btn" onclick="loginWithTwitter(); event.stopPropagation();">
-                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                                 ${t('auth.loginToRate', 'Login with <span class="x-logo">𝕏</span> to Rate')}
                             </button>
                         ` : `
@@ -18406,7 +18405,6 @@
                             <div class="modal-header-right">
                                 ${!currentUser ? `
                                     <div class="modal-vote-status login-required${document.body.classList.contains('dark') ? ' dark-mode-btn' : ''}" onclick="loginWithTwitter()" style="background: linear-gradient(135deg, #b5a0fc 0%, #7c5cf5 100%) !important; color: #fff !important;">
-                                        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                                         ${t('auth.loginToRate', 'Login with <span class="x-logo">𝕏</span> to Rate')}
                                     </div>
                                 ` : ratings.userRating ? `
@@ -18866,7 +18864,6 @@
                     if (!currentUser) {
                         voteStatusEl.className = 'modal-vote-status login-required';
                         voteStatusEl.innerHTML = `
-                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                             ${t('auth.loginToRate', 'Login with <span class="x-logo">𝕏</span> to Rate')}
                         `;
                         voteStatusEl.onclick = loginWithTwitter;
