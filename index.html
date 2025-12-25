@@ -10513,15 +10513,22 @@
         }
         
         .community-tab .tab-count {
-            font-size: var(--text-sm);
+            font-size: 12px;
             color: var(--text-muted);
-            background: var(--bg-subtle);
-            padding: 2px 6px;
+            background: var(--bg-secondary);
+            padding: 2px 8px;
             border-radius: var(--radius-full);
+            min-width: 20px;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .community-tab .tab-count:empty {
+            display: none;
         }
         
         .community-tab.active .tab-count {
-            background: rgba(112, 72, 240, 0.15);
+            background: rgba(112, 72, 240, 0.2);
             color: var(--primary);
         }
         
@@ -11147,7 +11154,7 @@
         
         .forum-table-header {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 50px 50px 50px 80px;
+            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
             gap: 12px;
             padding: 12px 16px;
             background: var(--bg-subtle);
@@ -11161,7 +11168,7 @@
         
         .forum-row {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 50px 50px 50px 80px;
+            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
             gap: 12px;
             padding: 16px;
             border-bottom: 1px solid var(--border-light);
@@ -16091,7 +16098,7 @@
                 <div class="rankings-description" data-i18n="community.description">Share your analysis, propose new valuation models, or ask questions about Ethereum valuation.</div>
                 <a href="https://t.me/ethval_forum" target="_blank" rel="noopener noreferrer" class="telegram-link">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                    <span data-i18n="community.telegram">Telegram</span>
+                    <span>Telegram Community</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="outlink-icon">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
                     </svg>
@@ -16102,11 +16109,11 @@
                 <!-- Category Tabs + Write Button -->
                 <div class="community-header-row">
                     <div class="community-tabs">
-                        <button class="community-tab active" data-category="all" data-i18n="community.tabs.all">All<span class="tab-count" id="tab-count-all">0</span></button>
-                        <button class="community-tab" data-category="updates" data-i18n="community.tabs.updates">Updates<span class="tab-count" id="tab-count-updates">0</span></button>
-                        <button class="community-tab" data-category="analysis" data-i18n="community.tabs.analysis">Analysis<span class="tab-count" id="tab-count-analysis">0</span></button>
-                        <button class="community-tab" data-category="model_ideas" data-i18n="community.tabs.modelIdeas">Model Ideas<span class="tab-count" id="tab-count-model_ideas">0</span></button>
-                        <button class="community-tab" data-category="questions" data-i18n="community.tabs.questions">Questions<span class="tab-count" id="tab-count-questions">0</span></button>
+                        <button class="community-tab active" data-category="all"><span data-i18n="community.tabs.all">All</span> <span class="tab-count" id="tab-count-all"></span></button>
+                        <button class="community-tab" data-category="updates"><span data-i18n="community.tabs.updates">Updates</span> <span class="tab-count" id="tab-count-updates"></span></button>
+                        <button class="community-tab" data-category="analysis"><span data-i18n="community.tabs.analysis">Analysis</span> <span class="tab-count" id="tab-count-analysis"></span></button>
+                        <button class="community-tab" data-category="model_ideas"><span data-i18n="community.tabs.modelIdeas">Model Ideas</span> <span class="tab-count" id="tab-count-model_ideas"></span></button>
+                        <button class="community-tab" data-category="questions"><span data-i18n="community.tabs.questions">Questions</span> <span class="tab-count" id="tab-count-questions"></span></button>
                     </div>
                     <button class="write-post-btn" onclick="openWriteModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -32448,9 +32455,10 @@ Check out ETHval 👇`;
             let forumPostLikes = {};
             
             // Initialize community section
-            async function initCommunity() {
+            async function initForumSection() {
                 setupCommunityComposer();
                 setupCommunityTabs();
+                updateCategoryCounts(); // Load counts immediately
                 await loadForumPosts();
             }
             
@@ -32643,6 +32651,24 @@ Check out ETHval 👇`;
             
             // Update category counts in tabs
             async function updateCategoryCounts() {
+                const cacheKey = 'forum_category_counts';
+                
+                // Show cached counts immediately
+                const cached = localStorage.getItem(cacheKey);
+                if (cached) {
+                    try {
+                        const cachedData = JSON.parse(cached);
+                        if (Date.now() - cachedData.timestamp < 5 * 60 * 1000) {
+                            Object.keys(cachedData.counts).forEach(category => {
+                                const countEl = document.getElementById(`tab-count-${category}`);
+                                if (countEl) {
+                                    countEl.textContent = cachedData.counts[category];
+                                }
+                            });
+                        }
+                    } catch (e) {}
+                }
+                
                 try {
                     const { data: allPosts, error } = await supabaseClient
                         .from('forum_posts')
@@ -32663,6 +32689,14 @@ Check out ETHval 👇`;
                             counts[post.category]++;
                         }
                     });
+                    
+                    // Cache counts
+                    try {
+                        localStorage.setItem(cacheKey, JSON.stringify({
+                            counts: counts,
+                            timestamp: Date.now()
+                        }));
+                    } catch (e) {}
                     
                     // Update tab count badges by ID
                     Object.keys(counts).forEach(category => {
@@ -33469,7 +33503,7 @@ Check out ETHval 👇`;
             
             // Initialize community when page loads
             document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(initCommunity, 2000);
+                setTimeout(initForumSection, 2000);
             });
             
             // Write Modal Functions
