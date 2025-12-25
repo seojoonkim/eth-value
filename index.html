@@ -11598,22 +11598,56 @@
             }
             
             .forum-row {
-                grid-template-columns: 1fr;
-                gap: 8px;
-                padding: 12px;
+                display: block;
+                padding: 14px 12px;
             }
             
+            /* 첫 줄: 카테고리 + 제목 (인라인) */
             .forum-cell-category {
-                order: 1;
+                display: inline;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+            
+            .forum-cell-category .forum-post-category {
+                font-size: 10px;
+                padding: 2px 6px;
             }
             
             .forum-cell-title {
-                order: 2;
+                display: inline;
             }
             
+            .forum-cell-title .forum-title {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+            
+            .forum-cell-title .forum-preview {
+                display: none;
+            }
+            
+            /* 둘째 줄: 작성자 (좌) + 통계 (우) */
             .forum-cell-author {
-                order: 3;
-                justify-content: flex-start;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 10px;
+            }
+            
+            .forum-author-info {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            
+            .forum-author-avatar {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .forum-author-link {
+                font-size: 12px;
             }
             
             .forum-cell-stat,
@@ -11623,22 +11657,19 @@
             
             .forum-mobile-stats {
                 display: flex;
-                gap: 16px;
-                order: 4;
-                font-size: var(--text-xs);
+                gap: 10px;
+                font-size: 11px;
                 color: var(--text-muted);
-            }
-            
-            .forum-mobile-stats span {
-                display: flex;
-                align-items: center;
-                gap: 4px;
             }
         }
         
         @media (min-width: 769px) {
             .forum-mobile-stats {
                 display: none;
+            }
+            
+            .forum-author-info {
+                display: contents;
             }
         }
         
@@ -11849,7 +11880,7 @@
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 22px;
         }
         
         .forum-post-actions-btns {
@@ -33086,6 +33117,7 @@ Check out ETHval 👇`;
                     analysis: t('community.tabs.analysis', 'Analysis'),
                     model_ideas: t('community.tabs.modelIdeas', 'Ideas'),
                     questions: t('community.tabs.questions', 'Q&A'),
+                    feedback: t('community.tabs.feedback', 'Feedback'),
                     weekly_report: t('community.tabs.weeklyReport', 'Weekly')
                 };
                 
@@ -33103,8 +33135,16 @@ Check out ETHval 👇`;
                             <span class="forum-preview">${escapeHtml(preview)}</span>
                         </div>
                         <div class="forum-cell forum-cell-author" onclick="event.stopPropagation()">
-                            <img class="forum-author-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
-                            <a class="forum-author-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">${post.display_name || post.username}</a>
+                            <div class="forum-author-info">
+                                <img class="forum-author-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                <a class="forum-author-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">${post.display_name || post.username}</a>
+                            </div>
+                            <div class="forum-mobile-stats">
+                                <span>♥ ${post.likes_count || 0}</span>
+                                <span>💬 ${post.comments_count || 0}</span>
+                                <span>👁 ${post.views_count || 0}</span>
+                                <span>${timeAgo(post.created_at)}</span>
+                            </div>
                         </div>
                         <div class="forum-cell forum-cell-stat">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -33126,12 +33166,6 @@ Check out ETHval 👇`;
                             ${post.views_count || 0}
                         </div>
                         <div class="forum-cell forum-cell-date">${timeAgo(post.created_at)}</div>
-                        <div class="forum-mobile-stats">
-                            <span>${t('community.table.likes', 'Likes')} ${post.likes_count || 0}</span>
-                            <span>${t('community.table.comments', 'Comments')} ${post.comments_count || 0}</span>
-                            <span>${t('community.table.views', 'Views')} ${post.views_count || 0}</span>
-                            <span>${timeAgo(post.created_at)}</span>
-                        </div>
                     </div>
                 `;
             }
