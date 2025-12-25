@@ -19472,6 +19472,13 @@
                 'community.commentsError': 'Failed to load comments',
                 'community.deleteCommentConfirm': 'Delete this comment?',
                 'community.postDetail': 'Post',
+                'community.table.category': 'Category',
+                'community.table.title': 'Title',
+                'community.table.author': 'Author',
+                'community.table.likes': 'Likes',
+                'community.table.comments': 'Comments',
+                'community.table.views': 'Views',
+                'community.table.date': 'Date',
                 'valuation.compositeFairValue': 'Composite Fair Value',
                 'valuation.sub.models': 'Models & Fair Value',
                 'valuation.sub.historical': 'Historical Trends',
@@ -19948,6 +19955,13 @@
                 'community.commentsError': '댓글을 불러오지 못했습니다',
                 'community.deleteCommentConfirm': '이 댓글을 삭제하시겠습니까?',
                 'community.postDetail': '게시글',
+                'community.table.category': '카테고리',
+                'community.table.title': '제목',
+                'community.table.author': '작성자',
+                'community.table.likes': '좋아요',
+                'community.table.comments': '댓글',
+                'community.table.views': '조회',
+                'community.table.date': '날짜',
                 'valuation.compositeFairValue': '종합 적정 가치',
                 'valuation.sub.models': '모델 & 적정가치',
                 'valuation.sub.historical': '히스토리 트렌드',
@@ -20414,6 +20428,13 @@
                 'community.commentsError': '加载评论失败',
                 'community.deleteCommentConfirm': '删除此评论？',
                 'community.postDetail': '帖子',
+                'community.table.category': '分类',
+                'community.table.title': '标题',
+                'community.table.author': '作者',
+                'community.table.likes': '点赞',
+                'community.table.comments': '评论',
+                'community.table.views': '浏览',
+                'community.table.date': '日期',
                 'valuation.compositeFairValue': '综合公允价值',
                 'valuation.sub.models': '模型与公允价值',
                 'valuation.sub.historical': '历史趋势',
@@ -20885,6 +20906,13 @@
                 'community.commentsError': 'コメントの読み込みに失敗しました',
                 'community.deleteCommentConfirm': 'このコメントを削除しますか？',
                 'community.postDetail': '投稿',
+                'community.table.category': 'カテゴリ',
+                'community.table.title': 'タイトル',
+                'community.table.author': '投稿者',
+                'community.table.likes': 'いいね',
+                'community.table.comments': 'コメント',
+                'community.table.views': '閲覧',
+                'community.table.date': '日付',
                 'valuation.compositeFairValue': 'そうごうてきせいかかく',
                 'valuation.sub.models': 'モデル & 適正価値',
                 'valuation.sub.historical': 'ヒストリカルトレンド',
@@ -32504,14 +32532,31 @@ Check out ETHval 👇`;
             async function loadForumPosts(append = false) {
                 const container = document.getElementById('community-posts');
                 const loadMoreBtn = document.getElementById('community-load-more');
+                const cacheKey = `forum_posts_${forumCurrentCategory}`;
                 
-                if (!append && container) {
-                    container.innerHTML = `
-                        <div class="community-loading">
-                            <div class="rankings-loading-spinner"></div>
-                            <p data-i18n="community.loading">${t('community.loading', 'Loading posts...')}</p>
-                        </div>
-                    `;
+                // Show cached data immediately (only for first page, non-append)
+                if (!append && forumPage === 0 && container) {
+                    const cached = localStorage.getItem(cacheKey);
+                    if (cached) {
+                        try {
+                            const cachedData = JSON.parse(cached);
+                            // Show cache if less than 5 minutes old
+                            if (Date.now() - cachedData.timestamp < 5 * 60 * 1000) {
+                                forumPosts = cachedData.posts;
+                                renderForumPosts(false);
+                            }
+                        } catch (e) {}
+                    }
+                    
+                    // Show subtle loading indicator if no cache
+                    if (!forumPosts.length) {
+                        container.innerHTML = `
+                            <div class="community-loading">
+                                <div class="rankings-loading-spinner"></div>
+                                <p data-i18n="community.loading">${t('community.loading', 'Loading posts...')}</p>
+                            </div>
+                        `;
+                    }
                 }
                 
                 try {
@@ -32543,6 +32588,15 @@ Check out ETHval 👇`;
                         forumPosts = [...forumPosts, ...posts];
                     } else {
                         forumPosts = posts;
+                        // Cache first page results
+                        if (forumPage === 0) {
+                            try {
+                                localStorage.setItem(cacheKey, JSON.stringify({
+                                    posts: posts,
+                                    timestamp: Date.now()
+                                }));
+                            } catch (e) {}
+                        }
                     }
                     
                     renderForumPosts(append);
@@ -32649,13 +32703,13 @@ Check out ETHval 👇`;
                 const tableHtml = `
                     <div class="forum-table">
                         <div class="forum-table-header">
-                            <div>Category</div>
-                            <div>Title</div>
-                            <div>Author</div>
-                            <div>♥</div>
-                            <div>💬</div>
-                            <div>👁</div>
-                            <div>Date</div>
+                            <div>${t('community.table.category', 'Category')}</div>
+                            <div>${t('community.table.title', 'Title')}</div>
+                            <div>${t('community.table.author', 'Author')}</div>
+                            <div>${t('community.table.likes', 'Likes')}</div>
+                            <div>${t('community.table.comments', 'Comments')}</div>
+                            <div>${t('community.table.views', 'Views')}</div>
+                            <div>${t('community.table.date', 'Date')}</div>
                         </div>
                         ${rowsHtml}
                     </div>
@@ -32711,9 +32765,9 @@ Check out ETHval 👇`;
                         </div>
                         <div class="forum-cell forum-cell-date">${timeAgo(post.created_at)}</div>
                         <div class="forum-mobile-stats">
-                            <span>♥ ${post.likes_count || 0}</span>
-                            <span>💬 ${post.comments_count || 0}</span>
-                            <span>👁 ${post.views_count || 0}</span>
+                            <span>${t('community.table.likes', 'Likes')} ${post.likes_count || 0}</span>
+                            <span>${t('community.table.comments', 'Comments')} ${post.comments_count || 0}</span>
+                            <span>${t('community.table.views', 'Views')} ${post.views_count || 0}</span>
                             <span>${timeAgo(post.created_at)}</span>
                         </div>
                     </div>
