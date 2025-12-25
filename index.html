@@ -32650,7 +32650,7 @@ Check out ETHval 👇`;
                 };
                 
                 // Check if current user can delete (author or admin)
-                const canDelete = currentUser && (currentUser.user_metadata?.user_name === post.username || isAdmin);
+                const canDelete = currentUser && (currentUser.handle === post.username || isAdmin);
                 
                 // Sanitize and render HTML content
                 const contentHtml = sanitizeHtml(post.content);
