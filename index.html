@@ -16340,45 +16340,55 @@
         // Check if user is admin
         const ADMIN_HANDLES = ['simonkim_nft'];
         
-        async function checkAdmin(userId) {
+        function isAdminUser(handle) {
+            return ADMIN_HANDLES.includes(handle);
+        }
+        
+        async function checkAdmin(userId, handle) {
             // First check by handle
-            if (currentUser && ADMIN_HANDLES.includes(currentUser.handle)) {
+            if (handle && isAdminUser(handle)) {
                 return true;
             }
             
             // Then check by database
-            const { data } = await supabaseClient
-                .from('admins')
-                .select('id')
-                .eq('user_id', userId)
-                .single();
-            return !!data;
+            try {
+                const { data } = await supabaseClient
+                    .from('admins')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .single();
+                return !!data;
+            } catch (e) {
+                return false;
+            }
         }
         
         // Initialize auth state
         async function initAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session?.user) {
+                const handle = session.user.user_metadata?.user_name || session.user.user_metadata?.preferred_username || 'user';
                 currentUser = {
                     id: session.user.id,
-                    handle: session.user.user_metadata?.user_name || session.user.user_metadata?.preferred_username || 'user',
+                    handle: handle,
                     name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
                     avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || ''
                 };
-                isAdmin = await checkAdmin(session.user.id);
+                isAdmin = await checkAdmin(session.user.id, handle);
                 updateAuthUI();
             }
             
             // Listen for auth changes
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
                 if (session?.user) {
+                    const handle = session.user.user_metadata?.user_name || session.user.user_metadata?.preferred_username || 'user';
                     currentUser = {
                         id: session.user.id,
-                        handle: session.user.user_metadata?.user_name || session.user.user_metadata?.preferred_username || 'user',
+                        handle: handle,
                         name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
                         avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || ''
                     };
-                    isAdmin = await checkAdmin(session.user.id);
+                    isAdmin = await checkAdmin(session.user.id, handle);
                 } else {
                     currentUser = null;
                     isAdmin = false;
