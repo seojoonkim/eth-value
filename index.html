@@ -10678,7 +10678,7 @@
             min-height: 200px;
             overflow-y: auto;
             font-family: inherit;
-            line-height: 1.15;
+            line-height: 1.6;
             outline: none;
         }
         
@@ -10900,7 +10900,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             color: var(--text);
-            font-size: var(--text-sm);
+            font-size: 14px;
             min-height: 200px;
             resize: vertical;
             font-family: inherit;
@@ -11702,9 +11702,27 @@
         .forum-modal-post-content {
             font-size: 14px;
             color: var(--text-body);
-            line-height: 1.15;
+            line-height: 1.6;
             white-space: pre-wrap;
             word-break: break-word;
+        }
+        
+        .forum-modal-post-content ul,
+        .forum-modal-post-content ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+        
+        .forum-modal-post-content li {
+            margin: 4px 0;
+        }
+        
+        .forum-modal-post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-sm);
+            margin: 12px 0;
+            display: block;
         }
         
         .forum-modal-post-actions {
@@ -32497,11 +32515,7 @@ Check out ETHval 👇`;
                 }
                 
                 try {
-                    // Load category counts (only on first load)
-                    if (!append && forumPage === 0) {
-                        updateCategoryCounts();
-                    }
-                    
+                    // Build main posts query
                     let query = supabaseClient
                         .from('forum_posts')
                         .select('*')
@@ -32512,26 +32526,19 @@ Check out ETHval 👇`;
                         query = query.eq('category', forumCurrentCategory);
                     }
                     
-                    const { data: posts, error } = await query;
+                    // Execute posts query immediately
+                    const postsPromise = query;
+                    
+                    // Load category counts in background (only on first load)
+                    if (!append && forumPage === 0) {
+                        updateCategoryCounts(); // Don't await - let it run in background
+                    }
+                    
+                    const { data: posts, error } = await postsPromise;
                     
                     if (error) throw error;
                     
-                    // Get likes for current user
-                    if (currentUser) {
-                        const postIds = posts.map(p => p.id);
-                        const { data: likes } = await supabaseClient
-                            .from('forum_likes')
-                            .select('post_id')
-                            .eq('user_id', currentUser.id)
-                            .in('post_id', postIds);
-                        
-                        if (likes) {
-                            likes.forEach(like => {
-                                forumPostLikes[like.post_id] = true;
-                            });
-                        }
-                    }
-                    
+                    // Render posts immediately without waiting for likes
                     if (append) {
                         forumPosts = [...forumPosts, ...posts];
                     } else {
@@ -32543,6 +32550,28 @@ Check out ETHval 👇`;
                     // Show/hide load more button
                     if (loadMoreBtn) {
                         loadMoreBtn.style.display = posts.length === POSTS_PER_PAGE ? 'flex' : 'none';
+                    }
+                    
+                    // Load likes in background and update UI
+                    if (currentUser && posts.length > 0) {
+                        const postIds = posts.map(p => p.id);
+                        supabaseClient
+                            .from('forum_likes')
+                            .select('post_id')
+                            .eq('user_id', currentUser.id)
+                            .in('post_id', postIds)
+                            .then(({ data: likes }) => {
+                                if (likes) {
+                                    likes.forEach(like => {
+                                        forumPostLikes[like.post_id] = true;
+                                        // Update UI for liked posts
+                                        const likeBtn = document.querySelector(`.forum-like-btn[data-post-id="${like.post_id}"]`);
+                                        if (likeBtn) {
+                                            likeBtn.classList.add('liked');
+                                        }
+                                    });
+                                }
+                            });
                     }
                     
                 } catch (error) {
@@ -32885,23 +32914,19 @@ Check out ETHval 👇`;
                 if (!viewedPosts.has(postId)) {
                     viewedPosts.add(postId);
                     
-                    // Update DB
-                    try {
-                        await supabaseClient.rpc('increment_view_count', { post_id: postId });
-                        // Update local count
-                        post.views_count = (post.views_count || 0) + 1;
-                    } catch (e) {
-                        // Fallback: direct update if RPC doesn't exist
-                        try {
-                            await supabaseClient
-                                .from('forum_posts')
-                                .update({ views_count: (post.views_count || 0) + 1 })
-                                .eq('id', postId);
-                            post.views_count = (post.views_count || 0) + 1;
-                        } catch (e2) {
-                            console.error('Error incrementing view count:', e2);
-                        }
-                    }
+                    // Update local count immediately for UI
+                    post.views_count = (post.views_count || 0) + 1;
+                    
+                    // Update DB in background - use direct update (more reliable than RPC)
+                    supabaseClient
+                        .from('forum_posts')
+                        .update({ views_count: post.views_count })
+                        .eq('id', postId)
+                        .then(({ error }) => {
+                            if (error) {
+                                console.error('Error incrementing view count:', error);
+                            }
+                        });
                 }
                 
                 const overlay = document.getElementById('forum-modal-overlay');
