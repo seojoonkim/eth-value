@@ -160,7 +160,7 @@
             
             /* Size Scale - 7단계 (단순화) */
             --text-xs: 10px;     /* 배지, 태그, 메타 정보 */
-            --text-sm: 12px;     /* 본문, 일반 라벨 */
+            --text-sm: 12px;     /* 본문, 피드백 라벨 */
             --text-md: 13px;     /* 강조 라벨 */
             --text-lg: 14px;     /* 카드 제목, 네비게이션 */
             --text-xl: 16px;     /* 중형 제목 */
@@ -11586,6 +11586,11 @@
             font-weight: var(--weight-semibold);
         }
         
+        .forum-post-category.feedback {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+        }
+        
         /* Mobile responsive */
         @media (max-width: 768px) {
             .forum-table-header {
@@ -16375,6 +16380,7 @@
                         <button class="community-tab" data-category="analysis"><span data-i18n="community.tabs.analysis">Analysis</span> <span class="tab-count" id="tab-count-analysis"><span class="tab-skeleton"></span></span></button>
                         <button class="community-tab" data-category="model_ideas"><span data-i18n="community.tabs.modelIdeas">Model Ideas</span> <span class="tab-count" id="tab-count-model_ideas"><span class="tab-skeleton"></span></span></button>
                         <button class="community-tab" data-category="questions"><span data-i18n="community.tabs.questions">Questions</span> <span class="tab-count" id="tab-count-questions"><span class="tab-skeleton"></span></span></button>
+                        <button class="community-tab" data-category="feedback"><span data-i18n="community.tabs.feedback">Feedback</span> <span class="tab-count" id="tab-count-feedback"><span class="tab-skeleton"></span></span></button>
                     </div>
                     <button class="write-post-btn" onclick="openWriteModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -16474,9 +16480,11 @@
                                 <div class="write-form-field">
                                     <label data-i18n="community.category">Category</label>
                                     <select class="write-category" id="write-category">
+                                        <option value="updates" selected data-i18n="community.tabs.updates">Updates</option>
                                         <option value="analysis" data-i18n="community.tabs.analysis">Analysis</option>
                                         <option value="model_ideas" data-i18n="community.tabs.modelIdeas">Model Ideas</option>
                                         <option value="questions" data-i18n="community.tabs.questions">Questions</option>
+                                        <option value="feedback" data-i18n="community.tabs.feedback">Feedback</option>
                                     </select>
                                 </div>
                                 <div class="write-form-field write-form-field-grow">
@@ -16587,9 +16595,11 @@
                                 <div class="write-form-field">
                                     <label data-i18n="community.category">Category</label>
                                     <select class="write-category" id="edit-category">
+                                        <option value="updates" data-i18n="community.tabs.updates">Updates</option>
                                         <option value="analysis" data-i18n="community.tabs.analysis">Analysis</option>
                                         <option value="model_ideas" data-i18n="community.tabs.modelIdeas">Model Ideas</option>
                                         <option value="questions" data-i18n="community.tabs.questions">Questions</option>
+                                        <option value="feedback" data-i18n="community.tabs.feedback">Feedback</option>
                                     </select>
                                 </div>
                                 <div class="write-form-field write-form-field-grow">
@@ -17487,7 +17497,7 @@
             
             log('Adding review:', { modelId, content, rating, parentId });
             
-            // 별점이 있는 경우, 기존 별점 리뷰가 있으면 일반 글로 변환
+            // 별점이 있는 경우, 기존 별점 리뷰가 있으면 피드백 글로 변환
             if (rating && !parentId) {
                 const { data: existingReview } = await supabaseClient
                     .from('comments')
@@ -17499,7 +17509,7 @@
                     .single();
                 
                 if (existingReview) {
-                    // 기존 별점 리뷰를 일반 글로 변환
+                    // 기존 별점 리뷰를 피드백 글로 변환
                     await supabaseClient
                         .from('comments')
                         .update({ rating: null })
@@ -17976,9 +17986,9 @@
                 loadComments(modelId)
             ]);
             
-            // 리뷰(별점 있는 것)와 일반 댓글(별점 없는 것) 분리
+            // 리뷰(별점 있는 것)와 피드백 댓글(별점 없는 것) 분리
             const reviews = comments.filter(c => c.rating && !c.parent_id);
-            const generalComments = comments.filter(c => !c.rating && !c.parent_id);
+            const feedbackComments = comments.filter(c => !c.rating && !c.parent_id);
             
             // 총 댓글 수 (대댓글 포함)
             const totalCommentCount = comments.length;
@@ -18165,7 +18175,7 @@
                 }
             
             const reviews = comments.filter(c => c.rating && !c.parent_id);
-            const generalComments = comments.filter(c => !c.rating && !c.parent_id);
+            const feedbackComments = comments.filter(c => !c.rating && !c.parent_id);
             
             // 별점별 투표자 수집 (선착순, 화면 크기에 따라 최대 인원 조정)
             const maxVotersPerStar = window.innerWidth > 768 ? 7 : 5;
@@ -18510,7 +18520,7 @@
                                 </div>
                             </div>
                             <div class="modal-reviews-section" id="modal-reviews-${modelId}">
-                                ${renderModalReviewsList(reviews, generalComments, comments, commentLikes, modelId, 'popular')}
+                                ${renderModalReviewsList(reviews, feedbackComments, comments, commentLikes, modelId, 'popular')}
                             </div>
                         </div>
                     </div>
@@ -18684,9 +18694,9 @@
         }
         
         // 리뷰 목록 렌더링 (정렬 적용)
-        function renderModalReviewsList(reviews, generalComments, allComments, commentLikes, modelId, sortOrder) {
+        function renderModalReviewsList(reviews, feedbackComments, allComments, commentLikes, modelId, sortOrder) {
             // 모든 최상위 글 합치기
-            const allTopLevel = [...reviews, ...generalComments];
+            const allTopLevel = [...reviews, ...feedbackComments];
             
             // 정렬
             if (sortOrder === 'popular') {
@@ -18759,11 +18769,11 @@
                 }
                 
                 const reviews = comments.filter(c => c.rating && !c.parent_id);
-                const generalComments = comments.filter(c => !c.rating && !c.parent_id);
+                const feedbackComments = comments.filter(c => !c.rating && !c.parent_id);
                 
                 const reviewsSection = document.getElementById(`modal-reviews-${modelId}`);
                 if (reviewsSection) {
-                    reviewsSection.innerHTML = renderModalReviewsList(reviews, generalComments, comments, commentLikes, modelId, sortOrder);
+                    reviewsSection.innerHTML = renderModalReviewsList(reviews, feedbackComments, comments, commentLikes, modelId, sortOrder);
                 }
             } catch (err) {
                 console.error('Error changing sort:', err);
@@ -18800,7 +18810,7 @@
                 }
                 
                 const reviews = comments.filter(c => c.rating && !c.parent_id);
-                const generalComments = comments.filter(c => !c.rating && !c.parent_id);
+                const feedbackComments = comments.filter(c => !c.rating && !c.parent_id);
                 const sortOrder = modalSortOrder[modelId] || 'recent';
                 
                 // 별점 요약 업데이트
@@ -18878,7 +18888,7 @@
                 // 리뷰 목록 업데이트
                 const reviewsSection = document.getElementById(`modal-reviews-${modelId}`);
                 if (reviewsSection) {
-                    reviewsSection.innerHTML = renderModalReviewsList(reviews, generalComments, comments, commentLikes, modelId, sortOrder);
+                    reviewsSection.innerHTML = renderModalReviewsList(reviews, feedbackComments, comments, commentLikes, modelId, sortOrder);
                 }
                 
                 // 입력창 초기화
@@ -19294,7 +19304,7 @@
             log('Star selected:', modelId, star);
             selectedRatings[modelId] = star;
             
-            // 일반 폼과 모달 폼 모두 체크
+            // 피드백 폼과 모달 폼 모두 체크
             const forms = [
                 document.getElementById(`review-form-${modelId}`),
                 document.getElementById(`modal-form-${modelId}`)
@@ -19353,7 +19363,7 @@
                 return;
             }
             
-            // 리뷰/댓글 저장 (rating이 없으면 일반 댓글)
+            // 리뷰/댓글 저장 (rating이 없으면 피드백 댓글)
             await addReview(modelId, content, rating);
         }
         
@@ -19742,6 +19752,7 @@
                 'community.tabs.analysis': 'Analysis',
                 'community.tabs.modelIdeas': 'Model Ideas',
                 'community.tabs.questions': 'Questions',
+                'community.tabs.feedback': 'Feedback',
                 'community.tabs.weeklyReport': 'Weekly Report',
                 'community.tabs.telegram': 'Telegram',
                 'community.telegram': 'Telegram',
@@ -20225,6 +20236,7 @@
                 'community.tabs.analysis': '분석',
                 'community.tabs.modelIdeas': '모델 아이디어',
                 'community.tabs.questions': '질문',
+                'community.tabs.feedback': '피드백',
                 'community.tabs.weeklyReport': '주간 리포트',
                 'community.tabs.telegram': '텔레그램',
                 'community.telegram': '텔레그램',
@@ -20701,6 +20713,7 @@
                 'community.tabs.analysis': '分析',
                 'community.tabs.modelIdeas': '模型建议',
                 'community.tabs.questions': '问题',
+                'community.tabs.feedback': '反馈',
                 'community.tabs.weeklyReport': '周报',
                 'community.tabs.telegram': 'Telegram',
                 'community.weeklyReport.title': '📊 ETH周度估值报告',
@@ -20737,19 +20750,19 @@
                 'community.table.comments': '评论',
                 'community.table.views': '浏览',
                 'community.table.date': '日期',
-                'valuation.compositeFairValue': '综合公允价值',
+                'valuation.compositeFairValue': '反馈公允价值',
                 'valuation.sub.models': '模型与公允价值',
                 'valuation.sub.historical': '历史趋势',
                 'valuation.sub.simulator': '情景模拟器',
                 'valuation.sub.modelsFull': '01.1 — 模型与公允价值',
                 'valuation.sub.historicalFull': '01.2 — 历史趋势',
                 'valuation.sub.simulatorFull': '01.3 — 情景模拟器',
-                'chart.historicalTitle': '综合公允价值的变化',
+                'chart.historicalTitle': '反馈公允价值的变化',
                 'chart.marketPrice': '市场价格',
-                'chart.compositeFairValue': '综合公允价值',
+                'chart.compositeFairValue': '反馈公允价值',
                 'conclusion.notePrefix': '',
                 'conclusion.noteSuffix': '个活跃模型的简单平均。关闭任意模型可将其从计算中排除。',
-                'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应综合考虑多种因素。',
+                'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应反馈考虑多种因素。',
                 'footer.disclaimer': '自动刷新120秒 · 仅供信息参考 · 非投资建议',
                 'criteria.title': '附录：可靠性评估标准',
                 'criteria.subtitle': '每个模型通过三个维度进行评估，以确定其可靠性级别',
@@ -21179,6 +21192,7 @@
                 'community.tabs.analysis': '分析',
                 'community.tabs.modelIdeas': 'モデル提案',
                 'community.tabs.questions': '質問',
+                'community.tabs.feedback': 'フィードバック',
                 'community.tabs.weeklyReport': '週間レポート',
                 'community.tabs.telegram': 'Telegram',
                 'community.weeklyReport.title': '📊 週間ETHバリュエーションレポート',
@@ -32994,7 +33008,8 @@ Check out ETHval 👇`;
                         updates: 0,
                         analysis: 0,
                         model_ideas: 0,
-                        questions: 0
+                        questions: 0,
+                        feedback: 0
                     };
                     
                     allPosts.forEach(post => {
