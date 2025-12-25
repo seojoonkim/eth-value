@@ -32648,7 +32648,9 @@ Check out ETHval 👇`;
                 };
                 
                 // Check if current user can delete (author or admin)
-                const canDelete = currentUser && (currentUser.handle === post.username || isAdmin);
+                const isAuthor = currentUser && currentUser.handle === post.username;
+                const isUserAdmin = isAdmin || (currentUser && ADMIN_HANDLES.includes(currentUser.handle));
+                const canDelete = currentUser && (isAuthor || isUserAdmin);
                 
                 // Sanitize and render HTML content
                 const contentHtml = sanitizeHtml(post.content);
@@ -32827,6 +32829,7 @@ Check out ETHval 👇`;
                 const commentsHtml = forumComments.map(comment => {
                     const isLiked = forumCommentLikes[comment.id];
                     const isOwner = currentUser && currentUser.id === comment.user_id;
+                    const isUserAdmin = isAdmin || (currentUser && ADMIN_HANDLES.includes(currentUser.handle));
                     
                     return `
                         <div class="forum-comment" data-comment-id="${comment.id}">
@@ -32845,7 +32848,7 @@ Check out ETHval 👇`;
                                         </svg>
                                         <span>${comment.likes_count || 0}</span>
                                     </button>
-                                    ${isOwner || isAdmin ? `
+                                    ${isOwner || isUserAdmin ? `
                                         <button class="forum-comment-action" onclick="deleteForumComment('${comment.id}')" style="color: var(--text-muted);">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
