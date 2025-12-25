@@ -3929,9 +3929,9 @@
         
         .modal-model-info .method-formula {
             font-family: var(--font-mono);
-            font-size: var(--text-sm);
+            font-size: 14px;
             background: #eef2f7;
-            padding: 4px 8px;
+            padding: 6px 10px;
             border-radius: var(--radius-sm);
             border: 1px solid #e2e8f0;
             color: var(--primary);
@@ -4093,10 +4093,10 @@
         }
         
         .modal-model-info .method-note {
-            font-size: var(--text-xs);
-            padding: 6px 8px;
+            font-size: 13px;
+            padding: 8px 10px;
             color: var(--text-muted);
-            line-height: 1.4;
+            line-height: 1.5;
             flex: 1;
             background: rgba(245, 158, 11, 0.08);
             border-radius: var(--radius-sm);
@@ -4112,11 +4112,11 @@
         }
         
         .modal-model-info .method-ref-link {
-            font-size: var(--text-xs);
+            font-size: 13px;
             color: var(--text-secondary);
             text-decoration: none;
             transition: color 0.15s ease;
-            line-height: 1.4;
+            line-height: 1.5;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -6084,16 +6084,53 @@
             font-weight: var(--weight-semibold);
             color: var(--text);
         }
+        
+        .comment-author-link {
+            font-size: var(--text-sm);
+            font-weight: var(--weight-semibold);
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        
+        .comment-author-link:hover {
+            color: var(--primary);
+        }
 
         .comment-handle {
             font-size: var(--text-xs);
             color: var(--text-muted);
+        }
+        
+        .comment-handle-link {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        
+        .comment-handle-link:hover {
+            color: var(--primary);
         }
 
         .comment-time {
             font-size: var(--text-xs);
             color: var(--text-muted);
             margin-left: auto;
+        }
+        
+        /* AMZ style links */
+        .amz-reviewer-name,
+        .amz-reply-name {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: var(--weight-semibold);
+            transition: color 0.15s ease;
+        }
+        
+        .amz-reviewer-name:hover,
+        .amz-reply-name:hover {
+            color: var(--primary);
         }
 
         .comment-text {
@@ -10445,7 +10482,7 @@
             border: none;
             background: transparent;
             color: var(--text-muted);
-            font-size: var(--text-sm);
+            font-size: var(--text-base);
             font-weight: var(--weight-normal);
             border-radius: var(--radius-sm);
             cursor: pointer;
@@ -10454,6 +10491,19 @@
             align-items: center;
             gap: 6px;
             white-space: nowrap;
+        }
+        
+        .community-tab .tab-count {
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            padding: 2px 6px;
+            border-radius: var(--radius-full);
+        }
+        
+        .community-tab.active .tab-count {
+            background: rgba(112, 72, 240, 0.15);
+            color: var(--primary);
         }
         
         .community-tab:hover {
@@ -11094,9 +11144,9 @@
             display: grid;
             grid-template-columns: 100px 1fr 120px 60px 60px 80px;
             gap: 12px;
-            padding: 14px 16px;
+            padding: 16px;
             border-bottom: 1px solid var(--border-light);
-            align-items: center;
+            align-items: start;
             cursor: pointer;
             transition: background 0.15s ease;
         }
@@ -11110,7 +11160,7 @@
         }
         
         .forum-cell {
-            font-size: var(--text-sm);
+            font-size: var(--text-base);
             color: var(--text-secondary);
             overflow: hidden;
             text-overflow: ellipsis;
@@ -11125,11 +11175,12 @@
         .forum-cell-title {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 4px;
             min-width: 0;
         }
         
         .forum-title {
+            font-size: 14px;
             font-weight: var(--weight-medium);
             color: var(--text);
             overflow: hidden;
@@ -11142,11 +11193,15 @@
         }
         
         .forum-preview {
-            font-size: var(--text-xs);
+            font-size: var(--text-md);
             color: var(--text-muted);
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            white-space: normal;
+            line-height: 1.4;
         }
         
         .forum-cell-author {
@@ -11163,18 +11218,32 @@
         }
         
         .forum-author-name {
-            font-size: var(--text-xs);
+            font-size: var(--text-md);
             color: var(--text-secondary);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
         
+        .forum-author-link {
+            font-size: var(--text-md);
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        
+        .forum-author-link:hover {
+            color: var(--primary);
+        }
+        
         .forum-cell-stat {
             display: flex;
             align-items: center;
             gap: 4px;
-            font-size: var(--text-xs);
+            font-size: var(--text-md);
             color: var(--text-muted);
         }
         
@@ -11185,7 +11254,7 @@
         }
         
         .forum-cell-date {
-            font-size: var(--text-xs);
+            font-size: var(--text-sm);
             color: var(--text-muted);
             text-align: right;
         }
@@ -11196,7 +11265,7 @@
             padding: 3px 8px;
             background: var(--accent-bg);
             color: var(--accent);
-            font-size: 10px;
+            font-size: 11px;
             font-weight: var(--weight-medium);
             border-radius: var(--radius-full);
             text-transform: uppercase;
@@ -11545,9 +11614,32 @@
             font-size: var(--text-md);
         }
         
+        .forum-modal-name-link {
+            font-weight: var(--weight-semibold);
+            color: var(--text);
+            font-size: var(--text-md);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        
+        .forum-modal-name-link:hover {
+            color: var(--primary);
+        }
+        
         .forum-modal-handle {
             color: var(--text-muted);
             font-size: var(--text-sm);
+        }
+        
+        .forum-modal-handle-link {
+            color: var(--text-muted);
+            font-size: var(--text-sm);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        
+        .forum-modal-handle-link:hover {
+            color: var(--primary);
         }
         
         .forum-modal-time {
@@ -11589,7 +11681,7 @@
         }
         
         .forum-modal-post-content {
-            font-size: var(--text-sm);
+            font-size: 14px;
             color: var(--text-body);
             line-height: 1.7;
             white-space: pre-wrap;
@@ -11699,9 +11791,32 @@
             font-size: var(--text-sm);
         }
         
+        .forum-comment-name-link {
+            font-weight: var(--weight-semibold);
+            color: var(--text);
+            font-size: var(--text-sm);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        
+        .forum-comment-name-link:hover {
+            color: var(--primary);
+        }
+        
         .forum-comment-handle {
             color: var(--text-muted);
             font-size: var(--text-xs);
+        }
+        
+        .forum-comment-handle-link {
+            color: var(--text-muted);
+            font-size: var(--text-xs);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        
+        .forum-comment-handle-link:hover {
+            color: var(--primary);
         }
         
         .forum-comment-time {
@@ -15950,11 +16065,11 @@
                 <!-- Category Tabs + Write Button -->
                 <div class="community-header-row">
                     <div class="community-tabs">
-                        <button class="community-tab active" data-category="all" data-i18n="community.tabs.all">All</button>
-                        <button class="community-tab" data-category="updates" data-i18n="community.tabs.updates">Updates</button>
-                        <button class="community-tab" data-category="analysis" data-i18n="community.tabs.analysis">Analysis</button>
-                        <button class="community-tab" data-category="model_ideas" data-i18n="community.tabs.modelIdeas">Model Ideas</button>
-                        <button class="community-tab" data-category="questions" data-i18n="community.tabs.questions">Questions</button>
+                        <button class="community-tab active" data-category="all" data-i18n="community.tabs.all">All<span class="tab-count" id="tab-count-all">0</span></button>
+                        <button class="community-tab" data-category="updates" data-i18n="community.tabs.updates">Updates<span class="tab-count" id="tab-count-updates">0</span></button>
+                        <button class="community-tab" data-category="analysis" data-i18n="community.tabs.analysis">Analysis<span class="tab-count" id="tab-count-analysis">0</span></button>
+                        <button class="community-tab" data-category="model_ideas" data-i18n="community.tabs.modelIdeas">Model Ideas<span class="tab-count" id="tab-count-model_ideas">0</span></button>
+                        <button class="community-tab" data-category="questions" data-i18n="community.tabs.questions">Questions<span class="tab-count" id="tab-count-questions">0</span></button>
                     </div>
                     <button class="write-post-btn" onclick="openWriteModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -16588,7 +16703,7 @@
                         writeSection.innerHTML = `
                             <div class="modal-login-prompt" onclick="loginWithTwitter()">
                                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                ${t('modal.signIn')}
+                                ${t('auth.loginToRate')}
                             </div>
                         `;
                     }
@@ -17153,8 +17268,8 @@
                         <img class="comment-avatar" src="${c.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                         <div class="comment-body">
                             <div class="comment-header">
-                                <span class="comment-author">${c.user_name || 'User'}</span>
-                                <span class="comment-handle">@${c.user_handle}</span>
+                                <a class="comment-author-link" href="https://x.com/${c.user_handle}" target="_blank" rel="noopener noreferrer">${c.user_name || 'User'}</a>
+                                <a class="comment-handle-link" href="https://x.com/${c.user_handle}" target="_blank" rel="noopener noreferrer">@${c.user_handle}</a>
                                 <span class="comment-time">${timeAgo(c.created_at)}</span>
                             </div>
                             <div class="comment-text">${c.content}</div>
@@ -18040,7 +18155,7 @@
                                     ` : `
                                     <div class="modal-login-prompt" onclick="loginWithTwitter()">
                                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                        ${t('modal.signIn')}
+                                        ${t('auth.loginToRate')}
                                     </div>
                                     `}
                                 </div>
@@ -18912,7 +19027,7 @@
                 <div class="amz-review" data-comment-id="${review.id}">
                     <div class="amz-review-header">
                         <img class="amz-reviewer-avatar" src="${review.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
-                        <span class="amz-reviewer-name">${review.user_name || review.user_handle}</span>
+                        <a class="amz-reviewer-name" href="https://x.com/${review.user_handle}" target="_blank" rel="noopener noreferrer">${review.user_name || review.user_handle}</a>
                     </div>
                     <div class="amz-review-rating">
                         ${renderStars(review.rating, 'small')}
@@ -18951,7 +19066,7 @@
                     <img class="amz-reply-avatar" src="${reply.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                     <div class="amz-reply-content">
                         <div class="amz-reply-header">
-                            <span class="amz-reply-name">${reply.user_name || reply.user_handle}</span>
+                            <a class="amz-reply-name" href="https://x.com/${reply.user_handle}" target="_blank" rel="noopener noreferrer">${reply.user_name || reply.user_handle}</a>
                             <span class="amz-reply-date">${timeAgo(reply.created_at)}</span>
                         </div>
                         <div class="amz-reply-text">${linkifyUrls(reply.content)}</div>
@@ -19493,7 +19608,7 @@
                 'modal.placeholder': 'Share your thoughts about this model...',
                 'modal.post': 'Post',
                 'modal.reply': 'Reply',
-                'modal.signIn': 'Sign in with X to review',
+                'modal.signIn': 'Login with <span class="x-logo">𝕏</span> to Rate',
                 'modal.popular': 'Popular',
                 'modal.recent': 'Recent',
                 'modal.old': 'Old',
@@ -19967,7 +20082,7 @@
                 'modal.placeholder': '이 모델에 대한 의견을 공유해 주세요...',
                 'modal.post': '게시',
                 'modal.reply': '답글',
-                'modal.signIn': 'X로 로그인하여 리뷰하기',
+                'modal.signIn': '<span class="x-logo">𝕏</span>로 로그인하여 평가하기',
                 'modal.popular': '인기순',
                 'modal.recent': '최신순',
                 'modal.old': '오래된순',
@@ -20433,7 +20548,7 @@
                 'modal.placeholder': '分享您对该模型的看法...',
                 'modal.post': '发布',
                 'modal.reply': '回复',
-                'modal.signIn': '使用 X 登录以评论',
+                'modal.signIn': '使用 <span class="x-logo">𝕏</span> 登录以评分',
                 'modal.popular': '热门',
                 'modal.recent': '最新',
                 'modal.old': '最早',
@@ -20904,7 +21019,7 @@
                 'modal.placeholder': 'このモデルについてご意見をお聞かせください...',
                 'modal.post': '投稿',
                 'modal.reply': '返信',
-                'modal.signIn': 'Xでログインしてレビュー',
+                'modal.signIn': '<span class="x-logo">𝕏</span>でログインして評価',
                 'modal.popular': '人気順',
                 'modal.recent': '新着順',
                 'modal.old': '古い順',
@@ -32356,6 +32471,11 @@ Check out ETHval 👇`;
                 }
                 
                 try {
+                    // Load category counts (only on first load)
+                    if (!append && forumPage === 0) {
+                        updateCategoryCounts();
+                    }
+                    
                     let query = supabaseClient
                         .from('forum_posts')
                         .select('*')
@@ -32412,6 +32532,42 @@ Check out ETHval 👇`;
                 }
             }
             
+            // Update category counts in tabs
+            async function updateCategoryCounts() {
+                try {
+                    const { data: allPosts, error } = await supabaseClient
+                        .from('forum_posts')
+                        .select('category');
+                    
+                    if (error) throw error;
+                    
+                    const counts = {
+                        all: allPosts.length,
+                        updates: 0,
+                        analysis: 0,
+                        model_ideas: 0,
+                        questions: 0
+                    };
+                    
+                    allPosts.forEach(post => {
+                        if (counts[post.category] !== undefined) {
+                            counts[post.category]++;
+                        }
+                    });
+                    
+                    // Update tab count badges by ID
+                    Object.keys(counts).forEach(category => {
+                        const countEl = document.getElementById(`tab-count-${category}`);
+                        if (countEl) {
+                            countEl.textContent = counts[category];
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error('Error loading category counts:', error);
+                }
+            }
+            
             function renderForumPosts(append = false) {
                 const container = document.getElementById('community-posts');
                 if (!container) return;
@@ -32463,7 +32619,7 @@ Check out ETHval 👇`;
                 
                 // Strip HTML tags for preview
                 const plainText = stripHtml(post.content);
-                const preview = plainText.length > 60 ? plainText.substring(0, 60) + '...' : plainText;
+                const preview = plainText.length > 120 ? plainText.substring(0, 120) + '...' : plainText;
                 
                 return `
                     <div class="forum-row" onclick="viewForumPost('${post.id}')">
@@ -32474,9 +32630,9 @@ Check out ETHval 👇`;
                             <span class="forum-title">${escapeHtml(post.title)}</span>
                             <span class="forum-preview">${escapeHtml(preview)}</span>
                         </div>
-                        <div class="forum-cell forum-cell-author">
+                        <div class="forum-cell forum-cell-author" onclick="event.stopPropagation()">
                             <img class="forum-author-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
-                            <span class="forum-author-name">${post.display_name || post.username}</span>
+                            <a class="forum-author-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">${post.display_name || post.username}</a>
                         </div>
                         <div class="forum-cell forum-cell-stat">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -32755,8 +32911,8 @@ Check out ETHval 👇`;
                         <img class="forum-modal-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                         <div class="forum-modal-post-meta">
                             <div class="forum-modal-author">
-                                <span class="forum-modal-name">${post.display_name || post.username}</span>
-                                <span class="forum-modal-handle">@${post.username}</span>
+                                <a class="forum-modal-name-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">${post.display_name || post.username}</a>
+                                <a class="forum-modal-handle-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">@${post.username}</a>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
                                 <span class="forum-modal-category ${post.category}">${categoryLabels[post.category] || post.category}</span>
@@ -32940,8 +33096,8 @@ Check out ETHval 👇`;
                             <img class="forum-comment-avatar" src="${comment.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                             <div class="forum-comment-body">
                                 <div class="forum-comment-header">
-                                    <span class="forum-comment-name">${comment.display_name || comment.username}</span>
-                                    <span class="forum-comment-handle">@${comment.username}</span>
+                                    <a class="forum-comment-name-link" href="https://x.com/${comment.username}" target="_blank" rel="noopener noreferrer">${comment.display_name || comment.username}</a>
+                                    <a class="forum-comment-handle-link" href="https://x.com/${comment.username}" target="_blank" rel="noopener noreferrer">@${comment.username}</a>
                                     <span class="forum-comment-time">· ${timeAgo(comment.created_at)}</span>
                                 </div>
                                 <div class="forum-comment-content">${escapeHtml(comment.content)}</div>
