@@ -11491,6 +11491,14 @@
             margin-bottom: 16px;
         }
         
+        .forum-post-actions-btns {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        
+        .forum-edit-btn,
         .forum-delete-btn {
             background: none;
             border: none;
@@ -11499,8 +11507,11 @@
             padding: 8px;
             border-radius: var(--radius-sm);
             transition: all 0.15s ease;
-            flex-shrink: 0;
-            margin-left: auto;
+        }
+        
+        .forum-edit-btn:hover {
+            background: rgba(112, 72, 240, 0.1);
+            color: var(--primary);
         }
         
         .forum-delete-btn:hover {
@@ -16104,6 +16115,82 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Edit Post Modal -->
+            <div class="forum-modal-overlay" id="edit-modal-overlay" style="display: none;" onclick="closeEditModal(event)">
+                <div class="forum-modal write-modal" onclick="event.stopPropagation()">
+                    <div class="forum-modal-header">
+                        <span class="forum-modal-title" data-i18n="community.editPost">Edit Post</span>
+                        <button class="forum-modal-close" onclick="closeEditModal()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="write-modal-body">
+                        <div class="write-modal-form">
+                            <div class="write-form-row-inline">
+                                <div class="write-form-field">
+                                    <label data-i18n="community.category">Category</label>
+                                    <select class="write-category" id="edit-category">
+                                        <option value="analysis" data-i18n="community.tabs.analysis">Analysis</option>
+                                        <option value="model_ideas" data-i18n="community.tabs.modelIdeas">Model Ideas</option>
+                                        <option value="questions" data-i18n="community.tabs.questions">Questions</option>
+                                    </select>
+                                </div>
+                                <div class="write-form-field write-form-field-grow">
+                                    <label data-i18n="community.titleLabel">Title</label>
+                                    <input type="text" class="write-title" id="edit-title" placeholder="Enter title..." maxlength="100" data-i18n-placeholder="community.titlePlaceholder">
+                                </div>
+                            </div>
+                            <div class="write-form-row write-form-row-content">
+                                <label data-i18n="community.contentLabel">Content</label>
+                                <div class="write-content-wrapper">
+                                    <div class="write-content" id="edit-content" contenteditable="true" data-placeholder="Share your thoughts about ETH valuation..."></div>
+                                </div>
+                                <div class="write-editor-toolbar">
+                                    <button type="button" class="editor-btn" onclick="formatTextEdit('bold')" title="Bold (Ctrl+B)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                                            <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="editor-btn" onclick="formatTextEdit('italic')" title="Italic (Ctrl+I)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="19" y1="4" x2="10" y2="4"/>
+                                            <line x1="14" y1="20" x2="5" y2="20"/>
+                                            <line x1="15" y1="4" x2="9" y2="20"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="editor-btn" onclick="formatTextEdit('underline')" title="Underline (Ctrl+U)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
+                                            <line x1="4" y1="21" x2="20" y2="21"/>
+                                        </svg>
+                                    </button>
+                                    <div class="editor-separator"></div>
+                                    <button type="button" class="editor-btn" onclick="insertLinkEdit()" title="Insert Link (Ctrl+K)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                                        </svg>
+                                    </button>
+                                    <div class="editor-spacer"></div>
+                                    <span class="write-char-count"><span id="edit-char-count">0</span></span>
+                                </div>
+                            </div>
+                            <div class="write-form-footer">
+                                <div class="editor-shortcuts">
+                                    <span><kbd>Ctrl</kbd>+<kbd>B</kbd> Bold</span>
+                                    <span><kbd>Ctrl</kbd>+<kbd>I</kbd> Italic</span>
+                                    <span><kbd>Ctrl</kbd>+<kbd>K</kbd> Link</span>
+                                </div>
+                                <button class="write-submit-btn" id="edit-submit-btn" onclick="submitEditPost()" data-i18n="community.save">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Leaderboard Section -->
@@ -19208,6 +19295,8 @@
                 'community.weeklyReport.badge': 'Weekly',
                 'community.writePost': 'Write',
                 'community.newPost': 'New Post',
+                'community.editPost': 'Edit Post',
+                'community.save': 'Save',
                 'community.category': 'Category',
                 'community.titleLabel': 'Title',
                 'community.contentLabel': 'Content',
@@ -19682,6 +19771,8 @@
                 'community.weeklyReport.badge': '주간',
                 'community.writePost': '글쓰기',
                 'community.newPost': '새 글 작성',
+                'community.editPost': '글 수정',
+                'community.save': '저장',
                 'community.category': '카테고리',
                 'community.titleLabel': '제목',
                 'community.contentLabel': '내용',
@@ -20148,6 +20239,8 @@
                 'community.weeklyReport.badge': '周报',
                 'community.writePost': '发帖',
                 'community.newPost': '新帖子',
+                'community.editPost': '编辑帖子',
+                'community.save': '保存',
                 'community.category': '分类',
                 'community.titleLabel': '标题',
                 'community.contentLabel': '内容',
@@ -20617,6 +20710,8 @@
                 'community.weeklyReport.badge': '週間',
                 'community.writePost': '投稿',
                 'community.newPost': '新規投稿',
+                'community.editPost': '投稿を編集',
+                'community.save': '保存',
                 'community.category': 'カテゴリ',
                 'community.titleLabel': 'タイトル',
                 'community.contentLabel': '内容',
@@ -32668,14 +32763,23 @@ Check out ETHval 👇`;
                                 <span class="forum-modal-time">${timeAgo(post.created_at)}</span>
                             </div>
                         </div>
-                        ${canDelete ? `
-                        <button class="forum-delete-btn" onclick="deleteForumPostWithConfirm('${post.id}')" title="Delete post">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"/>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            </svg>
-                        </button>
-                        ` : ''}
+                        <div class="forum-post-actions-btns">
+                            ${isAuthor ? `
+                            <button class="forum-edit-btn" onclick="openEditPostModal('${post.id}')" title="Edit post">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                                </svg>
+                            </button>
+                            ` : ''}
+                            ${canDelete ? `
+                            <button class="forum-delete-btn" onclick="deleteForumPostWithConfirm('${post.id}')" title="Delete post">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </button>
+                            ` : ''}
+                        </div>
                     </div>
                     <div class="forum-modal-post-content">${contentHtml}</div>
                     <div class="forum-modal-post-actions">
@@ -33143,6 +33247,169 @@ Check out ETHval 👇`;
                 }
             }
             
+            // Edit Post Modal Functions
+            let editingPostId = null;
+            
+            function openEditPostModal(postId) {
+                const post = forumPosts.find(p => p.id === postId);
+                if (!post) return;
+                
+                // Check if user is author
+                if (!currentUser || currentUser.handle !== post.username) {
+                    alert('You can only edit your own posts.');
+                    return;
+                }
+                
+                editingPostId = postId;
+                
+                // Close the view modal first
+                closeForumModal();
+                
+                const overlay = document.getElementById('edit-modal-overlay');
+                if (overlay) {
+                    savedScrollPosition = window.scrollY;
+                    document.body.style.top = `-${savedScrollPosition}px`;
+                    overlay.style.display = 'flex';
+                    document.body.classList.add('modal-open');
+                    
+                    // Populate form with existing data
+                    const titleInput = document.getElementById('edit-title');
+                    const contentInput = document.getElementById('edit-content');
+                    const categorySelect = document.getElementById('edit-category');
+                    
+                    if (titleInput) titleInput.value = post.title;
+                    if (contentInput) contentInput.innerHTML = post.content;
+                    if (categorySelect) {
+                        // Add updates option for admin only
+                        const isUserAdmin = isAdmin || (currentUser && ADMIN_HANDLES.includes(currentUser.handle));
+                        const existingUpdates = categorySelect.querySelector('option[value="updates"]');
+                        if (isUserAdmin && !existingUpdates) {
+                            const updatesOption = document.createElement('option');
+                            updatesOption.value = 'updates';
+                            updatesOption.textContent = t('community.tabs.updates', 'Updates');
+                            categorySelect.insertBefore(updatesOption, categorySelect.firstChild);
+                        } else if (!isUserAdmin && existingUpdates) {
+                            existingUpdates.remove();
+                        }
+                        categorySelect.value = post.category;
+                    }
+                    
+                    updateEditCharCount();
+                    
+                    // Setup content input listener
+                    if (contentInput) {
+                        contentInput.oninput = updateEditCharCount;
+                    }
+                }
+            }
+            
+            function closeEditModal(event) {
+                if (event && event.target !== event.currentTarget) return;
+                const overlay = document.getElementById('edit-modal-overlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                    document.body.style.top = '';
+                    window.scrollTo(0, savedScrollPosition);
+                    editingPostId = null;
+                }
+            }
+            
+            function updateEditCharCount() {
+                const content = document.getElementById('edit-content');
+                const charCount = document.getElementById('edit-char-count');
+                if (content && charCount) {
+                    charCount.textContent = content.innerText.length;
+                }
+            }
+            
+            function formatTextEdit(command) {
+                document.execCommand(command, false, null);
+                updateEditCharCount();
+            }
+            
+            function insertLinkEdit() {
+                const selection = window.getSelection();
+                const selectedText = selection.toString().trim();
+                
+                let url = prompt('Enter URL:', 'https://');
+                if (!url || url === 'https://') return;
+                
+                if (!url.match(/^https?:\/\//i)) {
+                    url = 'https://' + url;
+                }
+                
+                const linkText = selectedText || prompt('Enter link text:', url) || url;
+                const linkHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+                document.execCommand('insertHTML', false, linkHtml);
+                updateEditCharCount();
+            }
+            
+            async function submitEditPost() {
+                if (!currentUser || !editingPostId) return;
+                
+                const titleInput = document.getElementById('edit-title');
+                const contentInput = document.getElementById('edit-content');
+                const categorySelect = document.getElementById('edit-category');
+                const submitBtn = document.getElementById('edit-submit-btn');
+                
+                const title = titleInput?.value?.trim();
+                let content = contentInput?.innerHTML?.trim();
+                content = autoLinkUrls(content);
+                const category = categorySelect?.value || 'analysis';
+                
+                // Check if trying to set updates category without being admin
+                const isUserAdmin = isAdmin || (currentUser && ADMIN_HANDLES.includes(currentUser.handle));
+                if (category === 'updates' && !isUserAdmin) {
+                    alert('Only admins can set the Updates category.');
+                    return;
+                }
+                
+                if (!title || !content || content === '<br>') {
+                    alert('Please enter title and content');
+                    return;
+                }
+                
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '...';
+                }
+                
+                try {
+                    const { error } = await supabaseClient
+                        .from('forum_posts')
+                        .update({
+                            title: title,
+                            content: content,
+                            category: category,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', editingPostId);
+                    
+                    if (error) throw error;
+                    
+                    // Update local array
+                    const postIndex = forumPosts.findIndex(p => p.id === editingPostId);
+                    if (postIndex !== -1) {
+                        forumPosts[postIndex].title = title;
+                        forumPosts[postIndex].content = content;
+                        forumPosts[postIndex].category = category;
+                    }
+                    
+                    closeEditModal();
+                    renderForumPosts();
+                    
+                } catch (error) {
+                    console.error('Error updating post:', error);
+                    alert('Failed to update post: ' + error.message);
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = t('community.save', 'Save');
+                    }
+                }
+            }
+            
             function updateCharCount() {
                 const content = document.getElementById('write-content');
                 const charCount = document.getElementById('write-char-count');
@@ -33463,6 +33730,11 @@ Check out ETHval 👇`;
             window.closeForumModal = closeForumModal;
             window.openWriteModal = openWriteModal;
             window.closeWriteModal = closeWriteModal;
+            window.openEditPostModal = openEditPostModal;
+            window.closeEditModal = closeEditModal;
+            window.submitEditPost = submitEditPost;
+            window.formatTextEdit = formatTextEdit;
+            window.insertLinkEdit = insertLinkEdit;
             window.insertImage = insertImage;
             window.insertLink = insertLink;
             window.handleImageUpload = handleImageUpload;
