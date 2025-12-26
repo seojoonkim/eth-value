@@ -950,13 +950,13 @@
         }
         
         html.dark {
-            scrollbar-color: rgba(255, 255, 255, 0.2) var(--bg);
+            scrollbar-color: rgba(255, 255, 255, 0.3) #0d1117;
         }
         
         html.dark::-webkit-scrollbar {
             width: 6px;
             height: 6px;
-            background: var(--bg);
+            background: #0d1117;
         }
 
         /* Webkit 브라우저 (Chrome, Safari, Edge) */
@@ -970,7 +970,7 @@
         }
         
         html.dark::-webkit-scrollbar-track {
-            background: var(--bg);
+            background: #0d1117;
         }
 
         ::-webkit-scrollbar-thumb {
@@ -983,11 +983,11 @@
         }
         
         html.dark::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
         }
         
         html.dark::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.5);
         }
 
         /* 스크롤바가 컨텐츠 위에 오버레이 */
@@ -1829,6 +1829,7 @@
             justify-content: space-between;
             align-items: center;
             font-size: var(--text-xl);
+            margin-top: 6px;
         }
 
         .price-stat-label {
@@ -7192,7 +7193,12 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 0;
-            gap: 16px;
+            gap: 8px;
+        }
+        
+        .summary-valuation-row .summary-label {
+            flex-shrink: 0;
+            max-width: 45%;
         }
 
         .summary-valuation-row:first-child {
@@ -7268,14 +7274,16 @@
             display: inline-flex;
             align-items: center;
             flex-wrap: nowrap;
-            gap: 10px;
-            overflow: hidden;
+            gap: 8px;
+            flex-shrink: 1;
+            min-width: 0;
         }
 
         #summary-signal {
             font-size: var(--text-md);
             font-weight: var(--weight-semibold);
-            overflow: hidden;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .summary-opportunity {
@@ -7288,6 +7296,8 @@
             font-weight: var(--weight-bold);
             font-variant-numeric: tabular-nums;
             font-family: var(--font-mono);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .summary-opportunity.upside {
@@ -8274,24 +8284,6 @@
             .methodology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         
-        /* 중간 해상도(650px~1000px)에서만 4열 배치 */
-        @media (min-width: 650px) and (max-width: 1000px) {
-            .current-vs-model {
-                display: grid !important;
-                grid-template-columns: repeat(4, 1fr) !important;
-                gap: 16px !important;
-            }
-            
-            .current-vs-model-row {
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                justify-content: flex-start !important;
-                gap: 4px !important;
-                padding: 0 !important;
-            }
-        }
-
         @media (max-width: 900px) {
             .valuation-layout { grid-template-columns: 1fr; }
         }
