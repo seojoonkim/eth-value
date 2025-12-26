@@ -83,6 +83,10 @@
                DESIGN SYSTEM - Finance Terminal Style
                ======================================== */
             
+            /* Header Heights - calculated from actual header */
+            --header-height: 88px;
+            --header-height-with-nav: 99px;
+            
             /* Background Colors - 차가운 화이트 톤 */
             --bg: #f8fafc;
             --bg-card: #ffffff;
@@ -995,7 +999,7 @@
             line-height: 1.5;
             overflow-x: hidden;
             min-width: 320px;
-            padding-top: 70px; /* Space for fixed header (single line) */
+            padding-top: var(--header-height); /* Space for fixed header */
             counter-reset: section-counter;
             min-height: 100vh;
             transition: background-color var(--theme-transition) ease, color var(--theme-transition) ease;
@@ -1421,6 +1425,10 @@
             .nav-bar {
                 display: flex;
             }
+            
+            body {
+                padding-top: var(--header-height-with-nav);
+            }
         }
 
         .nav-item {
@@ -1456,13 +1464,13 @@
 
         /* Scroll offset for sticky header */
         .section[id] {
-            scroll-margin-top: 55px;
+            scroll-margin-top: var(--header-height);
         }
         
         /* 900px 이하에서 2행 헤더용 scroll-margin */
         @media (max-width: 900px) {
             .section[id] {
-                scroll-margin-top: 40px;
+                scroll-margin-top: var(--header-height-with-nav);
             }
             
             .summary-section {
@@ -1471,7 +1479,13 @@
         }
 
         #top {
-            scroll-margin-top: 55px;
+            scroll-margin-top: var(--header-height);
+        }
+        
+        @media (max-width: 900px) {
+            #top {
+                scroll-margin-top: var(--header-height-with-nav);
+            }
         }
 
         .logo {
@@ -1688,12 +1702,12 @@
             border-radius: 0;
             padding: 0;
             margin-bottom: 48px;
-            padding-top: 16px;
+            padding-top: 8px;
             overflow: visible;
         }
 
         .section:first-of-type {
-            margin-top: 12px;
+            padding-top: 8px;
         }
 
         .section-header {
@@ -1702,7 +1716,7 @@
             align-items: center;
             margin-bottom: 16px;
             margin-top: 0;
-            padding-top: 16px;
+            padding-top: 0;
             padding-left: 0;
             border: none;
             position: relative;
@@ -8447,7 +8461,7 @@
             /* Section */
             .section {
                 padding: 0;
-                padding-top: 24px;
+                padding-top: 8px;
                 margin-bottom: 32px;
             }
             
@@ -8457,7 +8471,7 @@
 
             .section-header {
                 margin-bottom: 12px;
-                margin-top: 20px;
+                margin-top: 0;
             }
             
             .section:first-of-type .section-header {
@@ -8724,7 +8738,7 @@
             }
 
             .section {
-                padding-top: 20px;
+                padding-top: 8px;
                 margin-bottom: 28px;
             }
 
@@ -12524,7 +12538,7 @@
         
         @media (max-width: 768px) {
             .rankings-section-title {
-                font-size: var(--text-4xl);
+                font-size: 16px;
             }
             
             .rankings-description {
@@ -12534,7 +12548,7 @@
         
         @media (max-width: 480px) {
             .rankings-section-title {
-                font-size: 18px;
+                font-size: 16px;
             }
             
             .rankings-description {
@@ -13989,8 +14003,8 @@
         /* Live Visitors Counter */
         .live-visitors {
             position: fixed;
-            bottom: 16px;
-            left: 16px;
+            bottom: 8px;
+            left: 12px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -14033,8 +14047,8 @@
         
         @media (max-width: 768px) {
             .live-visitors {
-                bottom: 12px;
-                left: 12px;
+                bottom: 6px;
+                left: 8px;
                 padding: 5px 10px;
                 font-size: 11px;
             }
@@ -14228,11 +14242,10 @@
         
         /* Desktop: 1400px centered layout */
         .container {
-            width: 100%;
             max-width: 1400px;
             margin-left: auto;
             margin-right: auto;
-            padding: 24px 32px;
+            padding: 0 32px 16px 32px;
             box-sizing: border-box;
         }
         
@@ -14240,7 +14253,7 @@
         @media screen and (max-width: 768px) {
             .container {
                 max-width: 100%;
-                padding: 10px 12px;
+                padding: 0 12px 10px 12px;
             }
             
             .header {
@@ -14255,7 +14268,7 @@
         /* Extra small: 400px and below */
         @media screen and (max-width: 400px) {
             .container {
-                padding: 6px 8px;
+                padding: 0 8px 6px 8px;
             }
             
             .header {
