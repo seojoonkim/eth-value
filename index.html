@@ -998,8 +998,6 @@
             padding-top: 70px; /* Space for fixed header (single line) */
             counter-reset: section-counter;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             transition: background-color var(--theme-transition) ease, color var(--theme-transition) ease;
         }
         
@@ -1341,7 +1339,6 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: var(--space-lg) var(--space-xl);
-            flex: 1;
         }
         
         @media (min-width: 1600px) {
@@ -8175,7 +8172,7 @@
             }
 
             .summary-description {
-                padding: 0 12px;
+                padding: 0;
             }
 
             .summary-valuation-outer {
@@ -8349,10 +8346,7 @@
         /* Responsive - Mobile */
         @media (max-width: 768px) {
             .container {
-                padding: 10px;
-                overflow-x: hidden;
-                max-width: 100vw;
-                box-sizing: border-box;
+                padding: 10px 12px;
             }
 
             /* Header - 1줄로 (로고 + credit + Live) */
@@ -8362,7 +8356,7 @@
                 align-items: center;
                 justify-content: space-between;
                 gap: 6px;
-                padding: 6px 10px 6px 6px;
+                padding: 6px 12px;
             }
 
             .logo {
@@ -8441,7 +8435,7 @@
             }
 
             .nav-bar {
-                padding: 4px 10px;
+                padding: 4px 12px;
                 gap: 2px;
             }
 
@@ -8717,16 +8711,21 @@
         /* Extra small screens */
         @media (max-width: 400px) {
             .container {
-                padding: 6px;
+                padding: 6px 8px;
+            }
+
+            .header {
+                padding: 6px 8px;
+                gap: 4px;
+            }
+
+            .nav-bar {
+                padding: 4px 8px;
             }
 
             .section {
                 padding-top: 20px;
                 margin-bottom: 28px;
-            }
-
-            .header {
-                gap: 4px;
             }
 
             .logo-text {
@@ -14222,6 +14221,51 @@
         .summary-rate-btn.rated {
             background: var(--green);
         }
+        
+        /* ============================================
+           LAYOUT FIX - Final Override (Desktop/Mobile)
+           ============================================ */
+        
+        /* Desktop: 1400px centered layout */
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 24px 32px;
+            box-sizing: border-box;
+        }
+        
+        /* Mobile: 768px and below */
+        @media screen and (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                padding: 10px 12px;
+            }
+            
+            .header {
+                padding: 6px 12px;
+            }
+            
+            .nav-bar {
+                padding: 4px 12px;
+            }
+        }
+        
+        /* Extra small: 400px and below */
+        @media screen and (max-width: 400px) {
+            .container {
+                padding: 6px 8px;
+            }
+            
+            .header {
+                padding: 6px 8px;
+            }
+            
+            .nav-bar {
+                padding: 4px 8px;
+            }
+        }
     </style>
     <script>
         // Early handler for broken Twitter avatar images (before DOM loads)
@@ -14450,7 +14494,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- VALUATION MODELS (Part of Valuation Section) -->
         <section class="section" id="section-valuation" style="padding-top: 0; margin-top: -20px;">
