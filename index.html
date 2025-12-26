@@ -950,13 +950,13 @@
         }
         
         html.dark {
-            scrollbar-color: rgba(255, 255, 255, 0.3) #0d1117;
+            scrollbar-color: rgba(255, 255, 255, 0.2) var(--bg);
         }
         
         html.dark::-webkit-scrollbar {
             width: 6px;
             height: 6px;
-            background: #0d1117;
+            background: var(--bg);
         }
 
         /* Webkit 브라우저 (Chrome, Safari, Edge) */
@@ -970,7 +970,7 @@
         }
         
         html.dark::-webkit-scrollbar-track {
-            background: #0d1117;
+            background: var(--bg);
         }
 
         ::-webkit-scrollbar-thumb {
@@ -983,11 +983,11 @@
         }
         
         html.dark::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
         }
         
         html.dark::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.4);
         }
 
         /* 스크롤바가 컨텐츠 위에 오버레이 */
@@ -1780,7 +1780,7 @@
 
         .price-label {
             font-family: var(--font-heading);
-            font-size: var(--text-2xl);
+            font-size: var(--text-xl);
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -13000,7 +13000,7 @@
             display: flex;
             align-items: center;
             gap: 32px;
-            padding: 14px 14px;
+            padding: 14px 22px;
             background: linear-gradient(135deg, rgba(112, 72, 240, 0.15) 0%, rgba(90, 61, 196, 0.1) 100%);
             border: 1px solid rgba(112, 72, 240, 0.3);
             border-radius: var(--radius-lg);
@@ -13008,12 +13008,7 @@
         }
         
         .community-stats-left {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            padding-right: 24px;
-            border-right: 1px solid rgba(112, 72, 240, 0.3);
+            display: none;
         }
         
         .community-stats-icon {
@@ -13223,6 +13218,12 @@
                 font-size: var(--text-xs);
             }
             
+            /* Hide Posts/Comments column on mobile */
+            .user-leaderboard-table th:nth-child(4),
+            .user-leaderboard-table td:nth-child(4) {
+                display: none;
+            }
+            
             /* Hide Liked column on mobile */
             .user-leaderboard-table th:nth-child(5),
             .user-leaderboard-table td:nth-child(5) {
@@ -13250,9 +13251,15 @@
                 font-size: var(--text-sm);
             }
             
-            /* Also hide Score column on very small screens */
-            .user-leaderboard-table th:nth-child(6),
-            .user-leaderboard-table td:nth-child(6) {
+            /* Hide Posts/Comments column */
+            .user-leaderboard-table th:nth-child(4),
+            .user-leaderboard-table td:nth-child(4) {
+                display: none;
+            }
+            
+            /* Hide Liked column */
+            .user-leaderboard-table th:nth-child(5),
+            .user-leaderboard-table td:nth-child(5) {
                 display: none;
             }
             
@@ -13943,7 +13950,7 @@
             align-items: center;
             gap: 8px;
             padding: 10px 16px;
-            background: linear-gradient(135deg, #7c5cf5, #b5a0fc);
+            background: linear-gradient(135deg, #b5a0fc 0%, #7c5cf5 100%);
             color: white;
             border: none;
             border-radius: var(--radius-full);
@@ -34902,7 +34909,7 @@ Check out ETHval 👇`;
                 const userScores = {};
                 
                 // Helper function to add/update user
-                const addUserScore = (uniqueKey, userName, userHandle, userAvatar, scoreType, likes = 0) => {
+                const addUserScore = (uniqueKey, userName, userHandle, userAvatar, scoreType, likes = 0, createdAt = null) => {
                     if (!userScores[uniqueKey]) {
                         userScores[uniqueKey] = {
                             uniqueKey,
@@ -34913,13 +34920,19 @@ Check out ETHval 👇`;
                             comments: 0,     // 글 작성 (모델 댓글 + 커뮤니티 글)
                             forumComments: 0, // 댓글 (커뮤니티 댓글)
                             likes: 0,
-                            score: 0
+                            score: 0,
+                            lastActivity: createdAt
                         };
                     }
                     
                     // Update avatar if we find one
                     if (userAvatar && !userScores[uniqueKey].userAvatar) {
                         userScores[uniqueKey].userAvatar = userAvatar;
+                    }
+                    
+                    // Update lastActivity if this is more recent
+                    if (createdAt && (!userScores[uniqueKey].lastActivity || new Date(createdAt) > new Date(userScores[uniqueKey].lastActivity))) {
+                        userScores[uniqueKey].lastActivity = createdAt;
                     }
                     
                     // Add likes received
@@ -34948,13 +34961,14 @@ Check out ETHval 👇`;
                     const userHandle = comment.user_handle || null;
                     const userAvatar = comment.user_avatar || null;
                     const likesReceived = comment.likes || 0;
+                    const createdAt = comment.created_at || null;
                     
                     if (comment.rating && comment.rating > 0) {
                         // It's a vote (확신도 투표) - 5 points
-                        addUserScore(uniqueKey, userName, userHandle, userAvatar, 'vote', likesReceived);
+                        addUserScore(uniqueKey, userName, userHandle, userAvatar, 'vote', likesReceived, createdAt);
                     } else {
                         // It's a model comment - 3 points (글 작성)
-                        addUserScore(uniqueKey, userName, userHandle, userAvatar, 'comment', likesReceived);
+                        addUserScore(uniqueKey, userName, userHandle, userAvatar, 'comment', likesReceived, createdAt);
                     }
                 });
                 
@@ -34965,8 +34979,9 @@ Check out ETHval 👇`;
                     const userHandle = post.user_handle || null;
                     const userAvatar = post.avatar_url || null;
                     const likesReceived = post.likes || 0;
+                    const createdAt = post.created_at || null;
                     
-                    addUserScore(uniqueKey, userName, userHandle, userAvatar, 'comment', likesReceived);
+                    addUserScore(uniqueKey, userName, userHandle, userAvatar, 'comment', likesReceived, createdAt);
                 });
                 
                 // Process forum comments (커뮤니티 댓글) - 2 points each
@@ -34976,8 +34991,9 @@ Check out ETHval 👇`;
                     const userHandle = comment.user_handle || null;
                     const userAvatar = comment.avatar_url || null;
                     const likesReceived = comment.likes || 0;
+                    const createdAt = comment.created_at || null;
                     
-                    addUserScore(uniqueKey, userName, userHandle, userAvatar, 'forumComment', likesReceived);
+                    addUserScore(uniqueKey, userName, userHandle, userAvatar, 'forumComment', likesReceived, createdAt);
                 });
                 
                 // Store all users for sorting
@@ -35020,10 +35036,10 @@ Check out ETHval 👇`;
                 // Render recent contributors avatars
                 const avatarsContainer = document.getElementById('recent-contributors-avatars');
                 if (avatarsContainer) {
-                    // Get users with avatars, sorted by most recent activity
+                    // Get users with avatars, sorted by most recent activity (lastActivity timestamp)
                     const usersWithAvatars = Object.values(userScores)
                         .filter(u => u.userAvatar)
-                        .sort((a, b) => b.score - a.score)
+                        .sort((a, b) => new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0))
                         .slice(0, 8);
                     
                     let avatarsHtml = usersWithAvatars.map(user => 
