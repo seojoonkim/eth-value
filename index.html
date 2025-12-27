@@ -14494,7 +14494,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- VALUATION MODELS (Part of Valuation Section) -->
         <section class="section" id="section-valuation" style="padding-top: 0; margin-top: -20px;">
@@ -23272,9 +23272,7 @@
                     log(`   ✓ Gas (filtered): ${state.supabaseGasHistory.length} records`);
                     
                     // Network Fees from fees_usd (eth_burnt * eth_price from Dune)
-                    const networkFeesData = state.supabaseGasHistory
-                        .filter(d => d.feesUsd > 0)
-                        .map(d => ({ date: d.date, value: d.feesUsd }));
+                    const networkFeesData = state.supabaseGasHistory.filter(d => d.feesUsd > 0).map(d => ({ date: d.date, value: d.feesUsd }));
                     if (networkFeesData.length > 10) {
                         state.supabaseFeesHistory = networkFeesData;
                         log(`   ✓ Network Fees (from fees_usd): ${networkFeesData.length} records`);
@@ -23305,7 +23303,7 @@
                     })).reverse();
                 }
                 
-                // feesData processing removed - Network Fees now from historical_gas_burn.fees_usd (handled above in gasData)
+                // feesData processing removed - Network Fees now from historical_gas_burn.fees_usd
                 
                 if (ethBtcData.length > 10) {
                     log(`   ✓ ETH/BTC: ${ethBtcData.length} records`);
@@ -29912,7 +29910,7 @@
                     feesSource = 'supabase';
                     log(`   Fees: Using Supabase (${state.supabaseFeesHistory.length} points), Latest: $${(state.fees/1e6).toFixed(2)}M/day`);
                 } else if (!state.feesHistory?.length) {
-                    state.fees = 50000;  // Realistic default for current low-fee environment
+                    state.fees = 50000;  // Realistic for current low-fee environment
                     state.feesHistory = simpleHistory(50000);
                     log(`   Fees: No Supabase data, using fallback`);
                 }
