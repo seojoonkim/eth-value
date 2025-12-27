@@ -1969,12 +1969,30 @@
 
             // 4. Protocol Fees - NO source, NO timestamp
             async protocol_fees() {
-                const data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
-                if (!data?.totalDataChart) return 0;
+                // Try new API endpoint first
+                let data = await fetchJSON('https://api.llama.fi/overview/fees/ethereum?dataType=dailyFees');
+                
+                // Fallback to old endpoint if new one fails
+                if (!data?.totalDataChart) {
+                    log('  ⚠️ New fees API failed, trying legacy endpoint...', 'warn');
+                    data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
+                }
+                
+                if (!data?.totalDataChart) {
+                    log('  ❌ Both fees API endpoints failed', 'error');
+                    return 0;
+                }
+                
                 const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
                     date: new Date(d[0] * 1000).toISOString().split('T')[0],
                     fees: parseFloat(d[1].toFixed(2))
                 }));
+                
+                if (records.length === 0) {
+                    log('  ❌ No valid fees records', 'error');
+                    return 0;
+                }
+                
                 const { error } = await batchUpsert('historical_protocol_fees', records);
                 if (error) log(`  ❌ ${error.message}`, 'error');
                 return error ? 0 : records.length;
