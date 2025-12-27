@@ -3889,28 +3889,25 @@
                         row.avg_gas_price_gwei || row.gas_price_gwei || row.avg_gas_price || row.gas_price || row.median_gas_price || 0
                     );
                     
+                    // eth_burnt and fees_usd now come directly from Dune query
                     return {
                         date: dateStr,
                         avg_gas_price_gwei: gasPrice,
+                        eth_burnt: parseFloat(row.eth_burnt || 0),
+                        fees_usd: parseFloat(row.fees_usd || 0),
                         gas_utilization: parseFloat(row.gas_utilization || row.utilization || 0),
                         transaction_count: parseInt(row.tx_count || row.transaction_count || row.txn_count || 0)
                     };
                 }).filter(r => r.date && r.avg_gas_price_gwei > 0);
                 
-                const upsertRecords = records.map(r => {
-                    const avgGasPerTx = 65000;
-                    const ethBurnt = r.transaction_count > 0 
-                        ? (r.avg_gas_price_gwei * r.transaction_count * avgGasPerTx) / 1e9
-                        : null;
-                    
-                    return {
-                        date: r.date,
-                        avg_gas_price_gwei: r.avg_gas_price_gwei,
-                        gas_utilization: r.gas_utilization || null,
-                        transaction_count: r.transaction_count || null,
-                        eth_burnt: ethBurnt ? parseFloat(ethBurnt.toFixed(2)) : null
-                    };
-                });
+                const upsertRecords = records.map(r => ({
+                    date: r.date,
+                    avg_gas_price_gwei: r.avg_gas_price_gwei,
+                    eth_burnt: r.eth_burnt > 0 ? parseFloat(r.eth_burnt.toFixed(2)) : null,
+                    fees_usd: r.fees_usd > 0 ? parseFloat(r.fees_usd.toFixed(2)) : null,
+                    gas_utilization: r.gas_utilization || null,
+                    transaction_count: r.transaction_count || null
+                }));
                 
                 const { error } = await batchUpsert('historical_gas_burn', upsertRecords, 'date');
                 if (error) {
