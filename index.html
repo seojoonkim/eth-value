@@ -27796,8 +27796,8 @@
                     labels: sampled.map(d => fmt.chartLabel(d.date)),
                     datasets: [{
                         data: sampled.map(d => d.value),
-                        borderColor: '#9580fa',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
                         borderWidth: 1.5,
                         fill: true,
                         tension: 0.3,
@@ -27841,7 +27841,7 @@
             document.getElementById('defi-revenue-value').textContent = fmt.usd(latestValue);
             
             // Use updateMetricChart for consistent styling
-            updateMetricChart('defi-revenue-chart', defiRevenueChart, history, '#8b5cf6', 'defiRevenue');
+            updateMetricChart('defi-revenue-chart', defiRevenueChart, history, '#14b8a6', 'defiRevenue');
             
             setChartLoading('defi-revenue-chart', false);
             ChartManager.updateChangeElement('defi-revenue-change', history);
@@ -29628,7 +29628,7 @@
                     'l2': { history: state.l2History, daily: state.l2HistoryDaily, chart: 'l2-chart', color: '#7c5cf5', key: 'l2', changeEl: 'l2-change' },
                     'dex': { history: state.dexHistory, daily: state.dexHistoryDaily, chart: 'dex-chart', color: '#06b6d4', key: 'dex', changeEl: 'dex-change' },
                     'fees': { history: state.feesHistory, daily: state.feesHistoryDaily, chart: 'fees-chart', color: '#f97316', key: 'fees', changeEl: 'fees-change' },
-                    'defiRevenue': { history: state.supabaseDefiRevenueHistory, chart: 'defi-revenue-chart', color: '#8b5cf6', key: 'defiRevenue', changeEl: 'defi-revenue-change' },
+                    'defiRevenue': { history: state.supabaseDefiRevenueHistory, chart: 'defi-revenue-chart', color: '#14b8a6', key: 'defiRevenue', changeEl: 'defi-revenue-change' },
                     'stables': { history: state.stablesHistory, chart: 'stables-chart', color: '#eab308', key: 'stables', changeEl: 'stables-change' },
                     'txEth': { history: state.txEthHistory, chart: 'tx-eth-chart', color: '#14b8a6', key: 'txEth', changeEl: 'tx-eth-change' },
                     'txTotal': { history: state.txTotalHistory, chart: 'tx-total-chart', color: '#7c5cf5', key: 'txTotal', changeEl: 'tx-total-change' },
