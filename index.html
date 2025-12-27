@@ -15487,6 +15487,26 @@
                     </div>
                 </div>
                 
+                <div class="metric-card" data-metric="defiRevenue">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.defiRevenue">DeFi Protocol Revenue</h4>
+                            <div class="metric-value-large" id="defi-revenue-value">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="defiRevenue">
+                            <button class="metric-tab active" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="defi-revenue-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span>DefiLlama</span>
+                        <span class="change" id="defi-revenue-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.defiRevenue">Daily fee revenue from DeFi protocols (Uniswap, Aave, Lido, etc). Shows ecosystem economic activity.</div>
+                    </div>
+                </div>
+                
                 <!-- AI Commentary: Network Demand -->
                 <div class="ai-commentary loading" id="commentary-network_demand" style="grid-column: 1 / -1; display: none;">
                     <div class="ai-commentary-text">Loading AI analysis...</div>
@@ -20268,6 +20288,7 @@
                 'desc.gasPrice': "Average L1 gas price in Gwei. Reflects mainnet transaction costs.",
                 'desc.blobFees': "L2 data posting fees since Dencun upgrade (Mar 2024). Blob fees are burned like gas, contributing to L1 revenue.",
                 'desc.blobCount': "Data blobs posted by L2s since Dencun (Mar 2024). More blobs = growing L2 adoption.",
+                'desc.defiRevenue': "Daily fee revenue from DeFi protocols (Uniswap, Aave, Lido, etc). Shows ecosystem economic activity.",
                 'desc.tvl': "Total USD value locked in Ethereum L1 DeFi protocols (Aave, Lido, MakerDAO, etc). Key measure of DeFi adoption.",
                 'desc.l2Tvl': "Total USD value locked in L2 rollups (Arbitrum, Optimism, Base, zkSync, etc). Growing L2 TVL indicates scaling adoption.",
                 'desc.supply': "Liquid ETH available for trading. Others = L2 bridges, lost coins.",
@@ -20331,6 +20352,7 @@
                 'metric.networkFees': "Network Fees",
                 'metric.blobFees': "Blob Fees",
                 'metric.blobCount': "Blob Count",
+                'metric.defiRevenue': "DeFi Protocol Revenue",
                 'metric.l1ActiveAddr': "L1 Active Addresses",
                 'metric.l2ActiveAddr': "L2 Active Addresses",
                 'metric.l1Transactions': "L1 Transactions",
@@ -20750,6 +20772,7 @@
                 'desc.gasPrice': "L1 평균 가스 가격 (Gwei). 네트워크 트랜잭션 비용 반영.",
                 'desc.blobFees': "Dencun 업그레이드(2024.3) 이후 L2가 이더리움에 데이터를 올릴 때 내는 수수료. 가스처럼 소각되어 L1 수익에 기여.",
                 'desc.blobCount': "Dencun(2024.3) 이후 L2가 게시한 데이터 블롭. 많을수록 L2 채택 증가.",
+                'desc.defiRevenue': "DeFi 프로토콜(Uniswap, Aave, Lido 등)의 일일 수수료 수익. 생태계 경제 활동을 나타냄.",
                 'desc.tvl': "이더리움 DeFi 프로토콜 예치 금액. 핵심 유틸리티 지표.",
                 'desc.l2Tvl': "L2 롤업 예치 금액. TVL 증가 = L2 생태계 성장.",
                 'desc.supply': "거래 가능한 유동 ETH. Others = L2 브릿지, 분실 코인.",
@@ -20814,6 +20837,7 @@
                 'metric.networkFees': "네트워크 수수료",
                 'metric.blobFees': "블롭 수수료",
                 'metric.blobCount': "블롭 수",
+                'metric.defiRevenue': "DeFi 프로토콜 수익",
                 'metric.l1ActiveAddr': "L1 활성 주소",
                 'metric.l2ActiveAddr': "L2 활성 주소",
                 'metric.l1Transactions': "L1 트랜잭션",
@@ -21224,6 +21248,7 @@
                 'desc.gasPrice': "L1平均Gas价格(Gwei)。反映网络交易成本。",
                 'desc.blobFees': "Dencun升级(2024.3)以来L2向以太坊发布数据的费用。blob费用像gas一样被销毁，贡献L1收入。",
                 'desc.blobCount': "Dencun(2024.3)以来L2发布的数据块。越多=L2采用增长。",
+                'desc.defiRevenue': "DeFi协议(Uniswap、Aave、Lido等)的每日费用收入。显示生态系统经济活动。",
                 'desc.tvl': "以太坊DeFi锁仓价值。核心效用指标。",
                 'desc.l2Tvl': "L2 Rollup锁仓价值。TVL增长=L2生态发展。",
                 'desc.supply': "可交易的流动ETH。Others = L2桥接、丢失代币。",
@@ -21288,6 +21313,7 @@
                 'metric.networkFees': "网络费用",
                 'metric.blobFees': "Blob费用",
                 'metric.blobCount': "Blob数量",
+                'metric.defiRevenue': "DeFi协议收入",
                 'metric.l1ActiveAddr': "L1活跃地址",
                 'metric.l2ActiveAddr': "L2活跃地址",
                 'metric.l1Transactions': "L1交易数",
@@ -21703,6 +21729,7 @@
                 'desc.gasPrice': "L1平均ガス価格(Gwei)。ネットワーク取引コストを反映。",
                 'desc.blobFees': "Dencunアップグレード(2024.3)以降、L2がイーサリアムにデータを投稿する際の手数料。ガスのようにバーンされL1収益に貢献。",
                 'desc.blobCount': "Dencun(2024.3)以降L2が投稿したデータブロブ。多い=L2採用増加。",
+                'desc.defiRevenue': "DeFiプロトコル(Uniswap、Aave、Lido等)の日次手数料収益。エコシステムの経済活動を示す。",
                 'desc.tvl': "イーサリアムDeFiロック額。主要ユーティリティ指標。",
                 'desc.l2Tvl': "L2ロールアップロック額。TVL増加=L2エコシステム成長。",
                 'desc.supply': "取引可能な流動ETH。Others = L2ブリッジ、紛失コイン。",
@@ -21766,6 +21793,7 @@
                 'metric.networkFees': "ネットワーク手数料",
                 'metric.blobFees': "Blob手数料",
                 'metric.blobCount': "Blob数",
+                'metric.defiRevenue': "DeFiプロトコル収益",
                 'metric.l1ActiveAddr': "L1アクティブアドレス",
                 'metric.l2ActiveAddr': "L2アクティブアドレス",
                 'metric.l1Transactions': "L1トランザクション",
@@ -22063,6 +22091,7 @@
         let stablecoinChart = null;
         let gasPriceChart = null;
         let blobCountChart = null;
+        let defiRevenueChart = null;
         let gasUtilizationChart = null;
         let dailyBurnChart = null;
         let dailyIssuanceChart = null;
@@ -23187,7 +23216,7 @@
                 };
                 
                 // 모든 테이블 병렬 로딩
-                const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, feesData,
+                const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, defiRevenueData,
                        ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, openInterestData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l1TotalVolumeData, l2TotalVolumeData, bridgeVolumeData, l2DexVolumeData, bridgeTotalVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
@@ -23196,7 +23225,7 @@
                     safeFetchSupabase(`${baseUrl}/historical_active_addresses?select=date,active_addresses&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_eth_supply?select=date,eth_supply,eth2_staking,burnt_fees&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_fear_greed?select=date,value,classification&order=date.desc&limit=${limit}`),
-                    Promise.resolve([]),  // feesData - Network Fees now from historical_gas_burn.fees_usd
+                    safeFetchSupabase(`${baseUrl}/historical_protocol_fees?select=date,fees&order=date.desc&limit=${limit}`),  // defiRevenueData - DeFi Protocol Revenue
                     safeFetchSupabase(`${baseUrl}/historical_eth_btc?select=date,ratio&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_eth_dominance?select=date,eth_dominance&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_dex_volume?select=date,volume&order=date.desc&limit=${limit}`),
@@ -23303,7 +23332,13 @@
                     })).reverse();
                 }
                 
-                // feesData processing removed - Network Fees now from historical_gas_burn.fees_usd
+                // DeFi Protocol Revenue processing
+                if (defiRevenueData && defiRevenueData.length > 10) {
+                    log(`   ✓ DeFi Revenue: ${defiRevenueData.length} records`);
+                    state.supabaseDefiRevenueHistory = defiRevenueData.map(d => ({ date: new Date(d.date), value: parseFloat(d.fees || 0) })).reverse();
+                } else {
+                    log(`   ⚠️ DeFi Revenue: ${defiRevenueData?.length || 0} records (insufficient)`);
+                }
                 
                 if (ethBtcData.length > 10) {
                     log(`   ✓ ETH/BTC: ${ethBtcData.length} records`);
@@ -25428,6 +25463,11 @@
                 ChartManager.updateChangeElement('fees-change', state.feesHistory);
             } else {
                 generateFallbackFeesHistory();
+            }
+            
+            // DeFi Protocol Revenue chart
+            if (state.supabaseDefiRevenueHistory && state.supabaseDefiRevenueHistory.length > 10) {
+                renderDefiRevenueChart();
             }
             
             // ═══════════════════════════════════════════════════════════════════
@@ -27785,6 +27825,30 @@
         }
 
         // ========================================
+        // DeFi Protocol Revenue Chart
+        // ========================================
+        async function renderDefiRevenueChart() {
+            const history = state.supabaseDefiRevenueHistory;
+            
+            if (!history || history.length < 10) {
+                setChartLoading('defi-revenue-chart', false);
+                return;
+            }
+            
+            // 최신 값 표시
+            const latestValue = history[history.length - 1]?.value || 0;
+            state.defiRevenue = latestValue;
+            document.getElementById('defi-revenue-value').textContent = fmt.usd(latestValue);
+            
+            // Use updateMetricChart for consistent styling
+            updateMetricChart('defi-revenue-chart', defiRevenueChart, history, '#8b5cf6', 'defiRevenue');
+            
+            setChartLoading('defi-revenue-chart', false);
+            ChartManager.updateChangeElement('defi-revenue-change', history);
+            setDataSource('defi-revenue-chart', 'DeFi Protocol Revenue', 'DefiLlama');
+        }
+
+        // ========================================
         // SUPPLY DYNAMICS - Fusaka Metrics
         // ========================================
 
@@ -28427,6 +28491,7 @@
             if (key === 'l2ActiveAddr' && l2ActiveAddrChart) l2ActiveAddrChart.destroy();
             if (key === 'l2StablecoinSupply' && l2StablecoinSupplyChart) l2StablecoinSupplyChart.destroy();
             if (key === 'l2StablecoinVol' && l2StablecoinVolChart) l2StablecoinVolChart.destroy();
+            if (key === 'defiRevenue' && defiRevenueChart) defiRevenueChart.destroy();
 
             const formatFn = (key === 'staking' || key === 'ethInDefi') 
                 ? (v) => fmt.num(v) + ' ETH'
@@ -29563,6 +29628,7 @@
                     'l2': { history: state.l2History, daily: state.l2HistoryDaily, chart: 'l2-chart', color: '#7c5cf5', key: 'l2', changeEl: 'l2-change' },
                     'dex': { history: state.dexHistory, daily: state.dexHistoryDaily, chart: 'dex-chart', color: '#06b6d4', key: 'dex', changeEl: 'dex-change' },
                     'fees': { history: state.feesHistory, daily: state.feesHistoryDaily, chart: 'fees-chart', color: '#f97316', key: 'fees', changeEl: 'fees-change' },
+                    'defiRevenue': { history: state.supabaseDefiRevenueHistory, chart: 'defi-revenue-chart', color: '#8b5cf6', key: 'defiRevenue', changeEl: 'defi-revenue-change' },
                     'stables': { history: state.stablesHistory, chart: 'stables-chart', color: '#eab308', key: 'stables', changeEl: 'stables-change' },
                     'txEth': { history: state.txEthHistory, chart: 'tx-eth-chart', color: '#14b8a6', key: 'txEth', changeEl: 'tx-eth-change' },
                     'txTotal': { history: state.txTotalHistory, chart: 'tx-total-chart', color: '#7c5cf5', key: 'txTotal', changeEl: 'tx-total-change' },
@@ -29918,6 +29984,14 @@
                 safeCall(() => updateMetricChart('fees-chart', feesChart, state.feesHistory, '#f97316', 'fees'), 'fees');
                 setDataSource('fees-chart', feesSource, 'Dune');
                 setChange('fees-change', state.feesHistory);
+                
+                // ═══════════════════════════════════════════════════════════════════
+                // 5.5 DeFi Protocol Revenue
+                // ═══════════════════════════════════════════════════════════════════
+                if (state.supabaseDefiRevenueHistory?.length > 10) {
+                    safeCall(() => renderDefiRevenueChart(), 'defiRevenue');
+                    log(`   DeFi Revenue: Using Supabase (${state.supabaseDefiRevenueHistory.length} points)`);
+                }
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // 6. DEX Volume

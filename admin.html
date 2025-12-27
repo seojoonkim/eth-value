@@ -1234,7 +1234,7 @@
             ethereum_tvl: { name: 'Ethereum TVL', icon: '🏦', table: 'historical_ethereum_tvl', valueField: 'tvl', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             staking_data: { name: 'Staking Data', icon: '🥩', table: 'historical_staking', valueField: 'total_staked_eth', format: 'eth', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             l2_tvl: { name: 'L2 TVL', icon: '🔗', table: 'historical_l2_tvl', valueField: 'tvl', format: 'tvl', aggregate: true, expectedDays: 6000, phase: 1, source: '🦙 DefiLlama' },
-            protocol_fees: { name: 'Protocol Fees', icon: '📈', table: 'historical_protocol_fees', valueField: 'fees', format: 'fees', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
+            protocol_fees: { name: 'DeFi Protocol Revenue', icon: '📈', table: 'historical_protocol_fees', valueField: 'fees', format: 'fees', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             dex_volume: { name: 'L1 DEX Volume', icon: '💱', table: 'historical_dex_volume', valueField: 'volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             stablecoins: { name: 'Stablecoins (All)', icon: '💵', table: 'historical_stablecoins', valueField: 'total_mcap', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
             stablecoins_eth: { name: 'Stablecoins (ETH)', icon: '🔷', table: 'historical_stablecoins_eth', valueField: 'total_mcap', format: 'tvl', expectedDays: 1095, phase: 1, source: '🦙 DefiLlama' },
@@ -1967,7 +1967,7 @@
                 return total;
             },
 
-            // 4. Protocol Fees - NO source, NO timestamp
+            // 4. DeFi Protocol Revenue (Uniswap, Aave, Lido etc.) - NOT L1 gas fees
             async protocol_fees() {
                 // Try new API endpoint first
                 let data = await fetchJSON('https://api.llama.fi/overview/fees/ethereum?dataType=dailyFees');

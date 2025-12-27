@@ -1402,7 +1402,7 @@ async function collect_l2_tvl() {
 }
 
 // ============================================================
-// 4. Protocol Fees (DefiLlama)
+// 4. DeFi Protocol Revenue (DefiLlama) - Uniswap, Aave, Lido etc. NOT L1 gas fees
 // ============================================================
 async function collect_protocol_fees() {
     // Try new API endpoint first (overview/fees with chain filter)
