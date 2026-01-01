@@ -1233,17 +1233,75 @@ async function fetchJSON(url, retries = 3) {
 
 // Dune API helper - fetch all results with pagination
 // Note: Dune queries are scheduled to auto-refresh daily at 03:30-04:00 UTC
-async function fetchDuneResults(queryId, maxRows = 10000) {
+async function fetchDuneResults(queryId, maxRows = 10000, maxStaleDays = 2) {
     if (!DUNE_API_KEY) {
-        console.log(`  ⚠️ No DUNE_API_KEY`);
+        console.log('  ⚠️ No DUNE_API_KEY');
         return null;
     }
     
-    const allRows = [];
-    const pageSize = 1000;
-    let offset = 0;
-    
     try {
+        // 1. Check if cache is stale and needs refresh
+        const checkUrl = `https://api.dune.com/api/v1/query/${queryId}/results?limit=10`;
+        const checkResponse = await fetch(checkUrl, { 
+            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+        });
+        
+        if (checkResponse.ok) {
+            const checkData = await checkResponse.json();
+            const rows = checkData?.result?.rows || [];
+            if (rows.length > 0) {
+                const dateVal = rows[0].block_date || rows[0].date || rows[0].day || '';
+                const latestDateStr = String(dateVal).split('T')[0].split(' ')[0];
+                const daysDiff = Math.floor((Date.now() - new Date(latestDateStr).getTime()) / (24*60*60*1000));
+                
+                if (daysDiff > maxStaleDays) {
+                    console.log(`  ⚠️ Data stale: ${latestDateStr} (${daysDiff}d ago), refreshing...`);
+                    
+                    // Execute fresh query
+                    const execResponse = await fetch(`https://api.dune.com/api/v1/query/${queryId}/execute`, {
+                        method: 'POST',
+                        headers: { 
+                            'X-Dune-API-Key': DUNE_API_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ performance: 'medium' })
+                    });
+                    
+                    if (execResponse.ok) {
+                        const execData = await execResponse.json();
+                        const executionId = execData.execution_id;
+                        console.log(`  ⏳ Execution started: ${executionId}`);
+                        
+                        // Poll for completion (max 2 min)
+                        for (let i = 0; i < 24; i++) {
+                            await sleep(5000);
+                            const statusResponse = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/status`, {
+                                headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                            });
+                            if (!statusResponse.ok) continue;
+                            
+                            const statusData = await statusResponse.json();
+                            if (statusData.state === 'QUERY_STATE_COMPLETED') {
+                                console.log('  ✅ Query refresh completed');
+                                break;
+                            } else if (statusData.state === 'QUERY_STATE_FAILED') {
+                                console.log('  ❌ Query refresh failed');
+                                break;
+                            }
+                            console.log(`  ⏳ Waiting... (${statusData.state})`);
+                        }
+                    }
+                } else {
+                    console.log(`  📅 Cache fresh: ${latestDateStr} (${daysDiff}d ago) ✓`);
+                }
+            }
+        }
+        
+        // 2. Fetch all results
+        const allRows = [];
+        const pageSize = 1000;
+        let offset = 0;
+        
         while (offset < maxRows) {
             const url = `https://api.dune.com/api/v1/query/${queryId}/results?limit=${pageSize}&offset=${offset}`;
             const response = await fetch(url, { 
@@ -1259,7 +1317,6 @@ async function fetchDuneResults(queryId, maxRows = 10000) {
             
             const data = await response.json();
             
-            // 상세 응답 구조 로깅
             if (offset === 0) {
                 const state = data?.state || data?.execution_id ? 'has execution' : 'direct result';
                 console.log(`  📡 Query ${queryId}: state=${state}, has_result=${!!data?.result}`);
@@ -1281,7 +1338,7 @@ async function fetchDuneResults(queryId, maxRows = 10000) {
             offset += pageSize;
             
             if (rows.length < pageSize) break;
-            await sleep(500); // Rate limit
+            await sleep(500);
         }
         
         console.log(`  📊 Total rows fetched: ${allRows.length}`);

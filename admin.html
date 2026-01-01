@@ -1246,9 +1246,9 @@
             
             // --- 🔶 Dune Analytics ---
             blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, phase: 1, source: '🔶 Dune' },
-            l2_native_transfer: { name: 'L2 ETH Transfer', icon: '💸', table: 'historical_l2_total_volume', valueField: 'native_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'ETH transfers on L2s (excludes Mantle MNT). For Settlement Layer.' },
+            l2_native_transfer: { name: 'L2 ETH Transfer', icon: '💸', table: 'historical_l2_total_volume', valueField: 'native_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'ETH transfers on L2s (excludes Mantle MNT). For Settlement Layer.', noCollect: true },
             l1_total_volume: { name: 'L1 Total Volume', icon: '📊', table: 'historical_l1_total_volume', valueField: 'total_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (ETH + all ERC-20 tokens)' },
-            l1_eth_transfer: { name: 'L1 ETH Transfer', icon: '💸', table: 'historical_l1_total_volume', valueField: 'eth_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Native ETH transfers only. Now from L1 Total Volume table.' },
+            l1_eth_transfer: { name: 'L1 ETH Transfer', icon: '💸', table: 'historical_l1_total_volume', valueField: 'eth_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Native ETH transfers only. Now from L1 Total Volume table.', noCollect: true },
             l2_total_volume: { name: 'L2 Total Volume', icon: '📈', table: 'historical_l2_total_volume', valueField: 'total_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (Native + all tokens) across 8 L2s' },
             bridge_volume: { name: 'Bridge ETH Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
             l2_dex_volume: { name: 'L2 DEX Volume', icon: '🔄', table: 'historical_l2_dex_volume', valueField: 'dex_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Daily DEX trading volume on L2s' },
@@ -3160,7 +3160,7 @@
                         .select('date, chain, tx_count').order('date', { ascending: false }).limit(8000);
                     if (!txs?.length) return 0;
                     const records = txs.map(t => ({
-                        date: t.date, timestamp: Date.now(), chain: t.chain,
+                        date: t.date, chain: t.chain,
                         active_addresses: Math.floor(t.tx_count * 0.3),
                         source: 'estimated'
                     }));
@@ -3206,7 +3206,6 @@
                             
                             return {
                                 date: dateStr,
-                                timestamp: new Date(dateStr).getTime(),
                                 chain: row.chain,
                                 active_addresses: parseInt(row.active_addresses) || 0,
                                 source: 'dune'
@@ -3921,6 +3920,20 @@
 
         async function collectOne(key) {
             const ds = DATASETS[key];
+            
+            // Skip datasets that don't have their own collector (data comes from another table)
+            if (ds.noCollect) {
+                log(`📥 ${ds.icon} ${ds.name}... ⏭️ Skipped (uses ${ds.table})`, 'info');
+                lastCollectResult[key] = { count: -1, expected: ds.expectedDays || 1095, ratio: 1, time: new Date(), skipped: true };
+                return;
+            }
+            
+            if (!collectors[key]) {
+                log(`📥 ${ds.icon} ${ds.name}... ⏭️ No collector`, 'warn');
+                lastCollectResult[key] = { count: -1, expected: ds.expectedDays || 1095, ratio: 1, time: new Date(), skipped: true };
+                return;
+            }
+            
             log(`📥 ${ds.icon} ${ds.name}...`, 'info');
             try {
                 const count = await collectors[key]();
