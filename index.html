@@ -7586,8 +7586,8 @@
             }
             
             .community-stats-items {
-                gap: 10px;
-                flex-wrap: nowrap;
+                gap: 8px 12px;
+                flex-wrap: wrap;
             }
             
             .community-stat-value {
@@ -8151,12 +8151,14 @@
             .summary-layout {
                 grid-template-columns: 1fr;
                 gap: 16px;
+                overflow: hidden;
             }
 
             .summary-valuation-box {
                 max-width: none;
                 min-width: 0;
                 padding: 16px;
+                overflow: hidden;
             }
 
             .summary-valuation-row {
@@ -8173,6 +8175,15 @@
 
             .summary-description {
                 padding: 0;
+                overflow: hidden;
+                word-break: break-word;
+            }
+            
+            .summary-text {
+                font-size: var(--text-base);
+                line-height: 1.65;
+                word-break: break-word;
+                overflow-wrap: break-word;
             }
 
             .summary-valuation-outer {
@@ -8186,10 +8197,30 @@
             .summary-value.large {
                 font-size: var(--text-4xl);
             }
-
-            .summary-text {
-                font-size: var(--text-lg);
-                line-height: 1.7;
+            
+            .community-stats-box {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px 14px;
+            }
+            
+            .community-stats-top-row {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .community-stats-items {
+                flex-wrap: wrap;
+                gap: 6px 12px;
+            }
+            
+            .community-stats-label {
+                width: 100%;
+                flex-direction: row;
+                justify-content: flex-start;
+                text-align: left;
+                gap: 8px;
             }
         }
         
@@ -8449,6 +8480,7 @@
                 padding: 0;
                 padding-top: 24px;
                 margin-bottom: 32px;
+                overflow-x: hidden;
             }
             
             .section:first-of-type {
