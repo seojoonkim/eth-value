@@ -1233,17 +1233,86 @@ async function fetchJSON(url, retries = 3) {
 
 // Dune API helper - fetch all results with pagination
 // Note: Dune queries are scheduled to auto-refresh daily at 03:30-04:00 UTC
-async function fetchDuneResults(queryId, maxRows = 10000) {
+async function fetchDuneResults(queryId, maxRows = 10000, maxStaleDays = 2) {
     if (!DUNE_API_KEY) {
-        console.log(`  ⚠️ No DUNE_API_KEY`);
+        console.log('  ⚠️ No DUNE_API_KEY');
         return null;
     }
     
-    const allRows = [];
-    const pageSize = 1000;
-    let offset = 0;
-    
     try {
+        // 1. Check if cache is stale and needs refresh
+        const checkUrl = `https://api.dune.com/api/v1/query/${queryId}/results?limit=10`;
+        const checkResponse = await fetch(checkUrl, { 
+            headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+        });
+        
+        if (checkResponse.ok) {
+            const checkData = await checkResponse.json();
+            const rows = checkData?.result?.rows || [];
+            if (rows.length > 0) {
+                // Find the latest date (rows might be in any order)
+                let latestDateStr = '';
+                let latestTime = 0;
+                for (const row of rows) {
+                    const dateVal = row.block_date || row.date || row.day || '';
+                    const dateStr = String(dateVal).split('T')[0].split(' ')[0];
+                    const time = new Date(dateStr).getTime();
+                    if (time > latestTime) {
+                        latestTime = time;
+                        latestDateStr = dateStr;
+                    }
+                }
+                
+                const daysDiff = Math.floor((Date.now() - latestTime) / (24*60*60*1000));
+                
+                if (daysDiff > maxStaleDays) {
+                    console.log(`  ⚠️ Data stale: ${latestDateStr} (${daysDiff}d ago), refreshing...`);
+                    
+                    // Execute fresh query
+                    const execResponse = await fetch(`https://api.dune.com/api/v1/query/${queryId}/execute`, {
+                        method: 'POST',
+                        headers: { 
+                            'X-Dune-API-Key': DUNE_API_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ performance: 'medium' })
+                    });
+                    
+                    if (execResponse.ok) {
+                        const execData = await execResponse.json();
+                        const executionId = execData.execution_id;
+                        console.log(`  ⏳ Execution started: ${executionId}`);
+                        
+                        // Poll for completion (max 2 min)
+                        for (let i = 0; i < 24; i++) {
+                            await sleep(5000);
+                            const statusResponse = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/status`, {
+                                headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                            });
+                            if (!statusResponse.ok) continue;
+                            
+                            const statusData = await statusResponse.json();
+                            if (statusData.state === 'QUERY_STATE_COMPLETED') {
+                                console.log('  ✅ Query refresh completed');
+                                break;
+                            } else if (statusData.state === 'QUERY_STATE_FAILED') {
+                                console.log('  ❌ Query refresh failed');
+                                break;
+                            }
+                            console.log(`  ⏳ Waiting... (${statusData.state})`);
+                        }
+                    }
+                } else {
+                    console.log(`  📅 Cache fresh: ${latestDateStr} (${daysDiff}d ago) ✓`);
+                }
+            }
+        }
+        
+        // 2. Fetch all results
+        const allRows = [];
+        const pageSize = 1000;
+        let offset = 0;
+        
         while (offset < maxRows) {
             const url = `https://api.dune.com/api/v1/query/${queryId}/results?limit=${pageSize}&offset=${offset}`;
             const response = await fetch(url, { 
@@ -1259,7 +1328,6 @@ async function fetchDuneResults(queryId, maxRows = 10000) {
             
             const data = await response.json();
             
-            // 상세 응답 구조 로깅
             if (offset === 0) {
                 const state = data?.state || data?.execution_id ? 'has execution' : 'direct result';
                 console.log(`  📡 Query ${queryId}: state=${state}, has_result=${!!data?.result}`);
@@ -1281,7 +1349,7 @@ async function fetchDuneResults(queryId, maxRows = 10000) {
             offset += pageSize;
             
             if (rows.length < pageSize) break;
-            await sleep(500); // Rate limit
+            await sleep(500);
         }
         
         console.log(`  📊 Total rows fetched: ${allRows.length}`);
@@ -1402,15 +1470,32 @@ async function collect_l2_tvl() {
 }
 
 // ============================================================
-// 4. Protocol Fees (DefiLlama)
+// 4. DeFi Protocol Revenue (DefiLlama) - Uniswap, Aave, Lido etc. NOT L1 gas fees
 // ============================================================
 async function collect_protocol_fees() {
-    const data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
-    if (!data?.totalDataChart) return 0;
+    // Try new API endpoint first (overview/fees with chain filter)
+    let data = await fetchJSON('https://api.llama.fi/overview/fees/ethereum?dataType=dailyFees');
+    
+    // Fallback to old endpoint if new one fails
+    if (!data?.totalDataChart) {
+        console.log('  ⚠️ New fees API failed, trying legacy endpoint...');
+        data = await fetchJSON('https://api.llama.fi/summary/fees/ethereum?dataType=dailyFees');
+    }
+    
+    if (!data?.totalDataChart) {
+        console.log('  ❌ Both fees API endpoints failed');
+        return result.fail('No fees data available from DefiLlama');
+    }
+    
     const records = data.totalDataChart.filter(d => d[1] > 0).map(d => ({
         date: new Date(d[0] * 1000).toISOString().split('T')[0],
         fees: parseFloat(d[1].toFixed(2))
     }));
+    
+    if (records.length === 0) {
+        return result.fail('No valid fees records');
+    }
+    
     return await upsertBatch('historical_protocol_fees', records);
 }
 
@@ -2761,7 +2846,11 @@ async function collect_dune_gas_price() {
     const rows = await fetchDuneResults(DUNE_QUERIES.GAS_PRICE, 5000);
     if (!rows || rows.length === 0) return 0;
     
+<<<<<<< HEAD
     // Update historical_gas_burn table with gas price data
+=======
+    // Update historical_gas_burn table with gas price, eth_burnt, fees_usd data
+>>>>>>> 8bd0a61 (fix)
     const records = rows.map(r => {
         // Parse date: "2025-12-14 00:00" or "2025-12-14T00:00:00" -> "2025-12-14"
         let dateStr = r.block_date || r.date || '';
@@ -2774,14 +2863,21 @@ async function collect_dune_gas_price() {
         return {
             date: dateStr,
             avg_gas_price_gwei: parseFloat(r.avg_gas_price_gwei || r.gas_price_gwei || r.avg_gas_price || 0),
+            eth_burnt: parseFloat(r.eth_burnt || 0),
             gas_utilization: parseFloat(r.gas_utilization || r.utilization || 0),
+<<<<<<< HEAD
             transaction_count: parseInt(r.tx_count || r.transaction_count || 0)
+=======
+            transaction_count: parseInt(r.tx_count || r.transaction_count || 0),
+            fees_usd: parseFloat(r.fees_usd || 0)
+>>>>>>> 8bd0a61 (fix)
         };
     }).filter(r => r.date && r.avg_gas_price_gwei > 0);
     
     console.log(`  📊 Got ${records.length} records with gas price`);
     if (records.length > 0) {
         console.log(`  📅 Date range: ${records[records.length-1].date} to ${records[0].date}`);
+<<<<<<< HEAD
         console.log(`  ⛽ Sample: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(2)} Gwei`);
     }
     
@@ -2796,17 +2892,44 @@ async function collect_dune_gas_price() {
         }
         if (record.transaction_count > 0) {
             updateData.transaction_count = record.transaction_count;
+=======
+        console.log(`  ⛽ Sample: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(2)} Gwei, ${records[0].eth_burnt.toFixed(2)} ETH burnt, $${(records[0].fees_usd/1000).toFixed(1)}K fees`);
+    }
+    
+    // Upsert records to historical_gas_burn (insert if not exists, update if exists)
+    let updated = 0;
+    for (const record of records) {
+        const upsertData = { 
+            date: record.date,
+            avg_gas_price_gwei: record.avg_gas_price_gwei,
+            eth_burnt: record.eth_burnt,
+            fees_usd: record.fees_usd
+        };
+        if (record.gas_utilization > 0) {
+            upsertData.gas_utilization = record.gas_utilization;
+        }
+        if (record.transaction_count > 0) {
+            upsertData.transaction_count = record.transaction_count;
+>>>>>>> 8bd0a61 (fix)
         }
         
         const { error } = await supabase
             .from('historical_gas_burn')
+<<<<<<< HEAD
             .update(updateData)
             .eq('date', record.date);
+=======
+            .upsert(upsertData, { onConflict: 'date' });
+>>>>>>> 8bd0a61 (fix)
         
         if (!error) updated++;
     }
     
+<<<<<<< HEAD
     console.log(`  ✅ Updated ${updated} records in historical_gas_burn`);
+=======
+    console.log(`  ✅ Upserted ${updated} records in historical_gas_burn`);
+>>>>>>> 8bd0a61 (fix)
     return updated;
 }
 
