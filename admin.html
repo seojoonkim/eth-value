@@ -1384,25 +1384,49 @@
             }
             
             try {
-                // 1. 캐시된 결과 확인
-                const cachedResponse = await fetch(`https://api.dune.com/api/v1/query/${queryId}/results?limit=10`, {
+                // 1. 먼저 메타데이터에서 총 row 수 확인
+                const metaResponse = await fetch(`https://api.dune.com/api/v1/query/${queryId}/results?limit=1`, {
                     headers: { 'X-Dune-API-Key': DUNE_API_KEY }
                 });
                 
                 let needsRefresh = false;
-                if (cachedResponse.ok) {
-                    const cachedData = await cachedResponse.json();
-                    const rows = cachedData.result?.rows || [];
-                    if (rows.length > 0) {
-                        const dateVal = rows[0][dateField] || rows[0].block_date || rows[0].day || '';
-                        const latestDateStr = String(dateVal).split('T')[0].split(' ')[0];
-                        const daysDiff = Math.floor((Date.now() - new Date(latestDateStr).getTime()) / (24*60*60*1000));
-                        
-                        if (daysDiff > maxStaleDays) {
-                            needsRefresh = true;
-                            log(`  ⚠️ Data stale: ${latestDateStr} (${daysDiff}d ago), refreshing...`, 'warn');
+                if (metaResponse.ok) {
+                    const metaData = await metaResponse.json();
+                    const totalRows = metaData.result?.metadata?.total_row_count || 100;
+                    
+                    // 마지막 20개 rows 가져와서 최신 날짜 확인 (ASC 정렬 대응)
+                    const checkOffset = Math.max(0, totalRows - 20);
+                    const cachedResponse = await fetch(`https://api.dune.com/api/v1/query/${queryId}/results?limit=20&offset=${checkOffset}`, {
+                        headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                    });
+                    
+                    if (cachedResponse.ok) {
+                        const cachedData = await cachedResponse.json();
+                        const rows = cachedData.result?.rows || [];
+                        if (rows.length > 0) {
+                            // Find latest date among rows
+                            let latestDateStr = '';
+                            let latestTime = 0;
+                            for (const row of rows) {
+                                const dateVal = row[dateField] || row.block_date || row.day || '';
+                                const dateStr = String(dateVal).split('T')[0].split(' ')[0];
+                                const time = new Date(dateStr).getTime();
+                                if (time > latestTime) {
+                                    latestTime = time;
+                                    latestDateStr = dateStr;
+                                }
+                            }
+                            
+                            const daysDiff = Math.floor((Date.now() - latestTime) / (24*60*60*1000));
+                            
+                            if (daysDiff > maxStaleDays) {
+                                needsRefresh = true;
+                                log(`  ⚠️ Data stale: ${latestDateStr} (${daysDiff}d ago), refreshing...`, 'warn');
+                            } else {
+                                log(`  📅 Latest: ${latestDateStr} (${daysDiff}d ago) ✓`);
+                            }
                         } else {
-                            log(`  📅 Latest: ${latestDateStr} (${daysDiff}d ago) ✓`);
+                            needsRefresh = true;
                         }
                     } else {
                         needsRefresh = true;

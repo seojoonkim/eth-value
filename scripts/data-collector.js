@@ -1241,69 +1241,82 @@ async function fetchDuneResults(queryId, maxRows = 10000, maxStaleDays = 2) {
     
     try {
         // 1. Check if cache is stale and needs refresh
-        const checkUrl = `https://api.dune.com/api/v1/query/${queryId}/results?limit=10`;
-        const checkResponse = await fetch(checkUrl, { 
+        // First get metadata to know total rows
+        const metaUrl = `https://api.dune.com/api/v1/query/${queryId}/results?limit=1`;
+        const metaResponse = await fetch(metaUrl, { 
             headers: { 'X-Dune-API-Key': DUNE_API_KEY }
         });
         
-        if (checkResponse.ok) {
-            const checkData = await checkResponse.json();
-            const rows = checkData?.result?.rows || [];
-            if (rows.length > 0) {
-                // Find the latest date (rows might be in any order)
-                let latestDateStr = '';
-                let latestTime = 0;
-                for (const row of rows) {
-                    const dateVal = row.block_date || row.date || row.day || '';
-                    const dateStr = String(dateVal).split('T')[0].split(' ')[0];
-                    const time = new Date(dateStr).getTime();
-                    if (time > latestTime) {
-                        latestTime = time;
-                        latestDateStr = dateStr;
-                    }
-                }
-                
-                const daysDiff = Math.floor((Date.now() - latestTime) / (24*60*60*1000));
-                
-                if (daysDiff > maxStaleDays) {
-                    console.log(`  ⚠️ Data stale: ${latestDateStr} (${daysDiff}d ago), refreshing...`);
-                    
-                    // Execute fresh query
-                    const execResponse = await fetch(`https://api.dune.com/api/v1/query/${queryId}/execute`, {
-                        method: 'POST',
-                        headers: { 
-                            'X-Dune-API-Key': DUNE_API_KEY,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ performance: 'medium' })
-                    });
-                    
-                    if (execResponse.ok) {
-                        const execData = await execResponse.json();
-                        const executionId = execData.execution_id;
-                        console.log(`  ⏳ Execution started: ${executionId}`);
-                        
-                        // Poll for completion (max 2 min)
-                        for (let i = 0; i < 24; i++) {
-                            await sleep(5000);
-                            const statusResponse = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/status`, {
-                                headers: { 'X-Dune-API-Key': DUNE_API_KEY }
-                            });
-                            if (!statusResponse.ok) continue;
-                            
-                            const statusData = await statusResponse.json();
-                            if (statusData.state === 'QUERY_STATE_COMPLETED') {
-                                console.log('  ✅ Query refresh completed');
-                                break;
-                            } else if (statusData.state === 'QUERY_STATE_FAILED') {
-                                console.log('  ❌ Query refresh failed');
-                                break;
-                            }
-                            console.log(`  ⏳ Waiting... (${statusData.state})`);
+        if (metaResponse.ok) {
+            const metaData = await metaResponse.json();
+            const totalRows = metaData?.result?.metadata?.total_row_count || 100;
+            
+            // Fetch last 20 rows to find latest date (handles ASC sorted results)
+            const offset = Math.max(0, totalRows - 20);
+            const checkUrl = `https://api.dune.com/api/v1/query/${queryId}/results?limit=20&offset=${offset}`;
+            const checkResponse = await fetch(checkUrl, { 
+                headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+            });
+            
+            if (checkResponse.ok) {
+                const checkData = await checkResponse.json();
+                const rows = checkData?.result?.rows || [];
+                if (rows.length > 0) {
+                    // Find the latest date
+                    let latestDateStr = '';
+                    let latestTime = 0;
+                    for (const row of rows) {
+                        const dateVal = row.block_date || row.date || row.day || '';
+                        const dateStr = String(dateVal).split('T')[0].split(' ')[0];
+                        const time = new Date(dateStr).getTime();
+                        if (time > latestTime) {
+                            latestTime = time;
+                            latestDateStr = dateStr;
                         }
                     }
-                } else {
-                    console.log(`  📅 Cache fresh: ${latestDateStr} (${daysDiff}d ago) ✓`);
+                    
+                    const daysDiff = Math.floor((Date.now() - latestTime) / (24*60*60*1000));
+                    
+                    if (daysDiff > maxStaleDays) {
+                        console.log(`  ⚠️ Data stale: ${latestDateStr} (${daysDiff}d ago), refreshing...`);
+                        
+                        // Execute fresh query
+                        const execResponse = await fetch(`https://api.dune.com/api/v1/query/${queryId}/execute`, {
+                            method: 'POST',
+                            headers: { 
+                                'X-Dune-API-Key': DUNE_API_KEY,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ performance: 'medium' })
+                        });
+                        
+                        if (execResponse.ok) {
+                            const execData = await execResponse.json();
+                            const executionId = execData.execution_id;
+                            console.log(`  ⏳ Execution started: ${executionId}`);
+                            
+                            // Poll for completion (max 2 min)
+                            for (let i = 0; i < 24; i++) {
+                                await sleep(5000);
+                                const statusResponse = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/status`, {
+                                    headers: { 'X-Dune-API-Key': DUNE_API_KEY }
+                                });
+                                if (!statusResponse.ok) continue;
+                                
+                                const statusData = await statusResponse.json();
+                                if (statusData.state === 'QUERY_STATE_COMPLETED') {
+                                    console.log('  ✅ Query refresh completed');
+                                    break;
+                                } else if (statusData.state === 'QUERY_STATE_FAILED') {
+                                    console.log('  ❌ Query refresh failed');
+                                    break;
+                                }
+                                console.log(`  ⏳ Waiting... (${statusData.state})`);
+                            }
+                        }
+                    } else {
+                        console.log(`  📅 Latest: ${latestDateStr} (${daysDiff}d ago) ✓`);
+                    }
                 }
             }
         }
