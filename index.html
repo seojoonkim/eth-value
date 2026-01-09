@@ -14691,7 +14691,7 @@
                             <div class="model-bar-container"><div class="model-bar-bg"></div><div class="model-bar-center"></div><div class="model-bar-fill" style="width:0%"></div><div class="model-bar-marker" style="left:50%"></div></div>
                             <div class="model-diff calculating">--<small></small></div>
                         </div>
-                        <div class="model-row-3"><div class="model-formula">(L1 ETH + L2 ETH) × 365 ÷ ETH Velocity ÷ Supply</div><label class="model-toggle"><input type="checkbox" checked data-model="ethMonetary"><span class="slider"></span></label></div>
+                        <div class="model-row-3"><div class="model-formula">(L1 ETH Vol + L2 ETH Vol) × 365 ÷ ETH Velocity ÷ Supply</div><label class="model-toggle"><input type="checkbox" checked data-model="ethMonetary"><span class="slider"></span></label></div>
                     </div>
                     <div class="valuation-model" data-model="ecosystemSettlement">
                         <div class="model-row-1"><div class="model-name">Ecosystem Settlement (MV=PQ)</div></div>
@@ -16511,7 +16511,7 @@
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">(L1 ETH + L2 ETH) × 365 ÷ ETH Velocity ÷ Supply</div>
+                            <div class="method-formula">(L1 ETH Vol + L2 ETH Vol) × 365 ÷ ETH Velocity ÷ Supply</div>
                             <div class="method-desc" data-i18n="method.ethMonetary.desc">Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value.</div>
                         </div>
                         <div class="method-right">
@@ -18670,7 +18670,7 @@
                     ]
                 },
                 'ethMonetary': {
-                    formula: '(L1 ETH + L2 ETH) × 365 ÷ ETH Velocity ÷ Supply',
+                    formula: '(L1 ETH Vol + L2 ETH Vol) × 365 ÷ ETH Velocity ÷ Supply',
                     desc: t('method.ethMonetary.desc', "Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value."),
                     reliability: 2,
                     caveat: t('method.ethMonetary.note', 'Velocity = 6: Empirically derived from ETH transfer data, benchmarked to USD M1 (~5.5x)'),
@@ -28975,7 +28975,7 @@
             commitmentPremium: { name: 'Liquidity Premium', formula: 'Price × √(Supply ÷ Liquid Float)', reliability: 1 },
             appCapital: { name: 'App Capital', formula: 'AppCapital ÷ Supply', reliability: 2 },
             validatorEcon: { name: 'Validator Economics', formula: 'Price × (Target ÷ APR)', reliability: 2 },
-            ethMonetary: { name: 'ETH Monetary (MV=PQ)', formula: '(L1 ETH + L2 ETH) × 365 ÷ ETH Velocity ÷ Supply', reliability: 2 },
+            ethMonetary: { name: 'ETH Monetary (MV=PQ)', formula: '(L1 ETH Vol + L2 ETH Vol) × 365 ÷ ETH Velocity ÷ Supply', reliability: 2 },
             ecosystemSettlement: { name: 'Ecosystem Settlement (MV=PQ)', formula: '(L1 Total Vol + L2 Total Vol) × 365 ÷ Ecosystem Velocity ÷ Supply', reliability: 2 }
         };
         
