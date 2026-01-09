@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ETHval | Intrinsic Value Dashboard</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⟠</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23667eea'/><stop offset='50%25' stop-color='%23764ba2'/><stop offset='100%25' stop-color='%23f093fb'/></linearGradient></defs><rect fill='url(%23g)' width='32' height='32' rx='6'/><path d='M16 4L9 16l7 4 7-4L16 4z' fill='rgba(255,255,255,0.9)'/><path d='M9 16l7 4V4L9 16z' fill='rgba(255,255,255,0.6)'/><path d='M6 26l5-4 5 2.5 5-6 5-2.5' stroke='white' stroke-width='1.5' stroke-linecap='round' fill='none'/></svg>">
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PX7DBZL3ND"></script>
@@ -1455,11 +1455,17 @@
         /* 900px 이하에서 2행 헤더용 scroll-margin */
         @media (max-width: 900px) {
             .section[id] {
-                scroll-margin-top: 40px;
+                scroll-margin-top: 90px;
             }
-            
+
             .summary-section {
                 padding-top: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section[id] {
+                scroll-margin-top: 85px;
             }
         }
 
@@ -14369,7 +14375,7 @@
     <!-- Sticky Header -->
     <div class="header-wrapper">
         <header class="header">
-            <div class="logo" style="text-decoration: none; cursor: pointer;" onclick="window.scrollTo({top: 0, behavior: 'instant'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelector('.nav-item[data-i18n=\'nav.valuation\']').classList.add('active');">
+            <div class="logo" style="text-decoration: none; cursor: pointer;" onclick="window.location.hash = 'section-summary'; window.scrollTo({top: 0, behavior: 'instant'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelectorAll('.nav-item[data-i18n=\'nav.valuation\']').forEach(n => n.classList.add('active'));">
                 <div class="logo-icon">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <!-- 이더리움 다이아몬드 -->
@@ -14384,7 +14390,7 @@
                 <span class="version-badge">v0.6.1</span>
             </div>
             <nav class="nav-bar-inline">
-                <a class="nav-item active" href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'instant'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); this.classList.add('active');" data-i18n="nav.valuation">Valuation</a>
+                <a class="nav-item active" href="#section-summary" data-i18n="nav.valuation">Valuation</a>
                 <a class="nav-item" href="#section-metrics" data-i18n="nav.metrics">Fundamentals</a>
                 <a class="nav-item" href="#section-methodology" data-i18n="nav.methodology">Ratings</a>
                 <a class="nav-item" href="#section-community" data-i18n="nav.community">Community</a>
@@ -14417,7 +14423,7 @@
         </header>
         <!-- 모바일 네비게이션 바 -->
         <nav class="nav-bar">
-            <a class="nav-item active" href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'instant'}); history.replaceState(null, '', window.location.pathname); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); this.classList.add('active');" data-i18n="nav.valuation">Valuation</a>
+            <a class="nav-item active" href="#section-summary" data-i18n="nav.valuation">Valuation</a>
             <a class="nav-item" href="#section-metrics" data-i18n="nav.metricsShort">Fundamentals</a>
             <a class="nav-item" href="#section-methodology" data-i18n="nav.methodologyShort">Ratings</a>
             <a class="nav-item" href="#section-community" data-i18n="nav.communityShort">Community</a>
@@ -30960,7 +30966,36 @@
                     document.documentElement.classList.remove('no-transition');
                 });
             });
-            
+
+            // URL hash navigation - restore position on page load
+            const handleHashNavigation = () => {
+                const hash = window.location.hash;
+                if (hash) {
+                    const targetId = hash.replace('#', '');
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        setTimeout(() => {
+                            targetSection.scrollIntoView({ behavior: 'instant' });
+                            // Update nav active state
+                            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                            const navMapping = {
+                                'section-summary': 'nav.valuation',
+                                'section-metrics': 'nav.metrics',
+                                'section-methodology': 'nav.methodology',
+                                'section-community': 'nav.community',
+                                'section-rankings': 'nav.rankings'
+                            };
+                            const navKey = navMapping[targetId];
+                            if (navKey) {
+                                document.querySelectorAll(`.nav-item[data-i18n="${navKey}"], .nav-item[data-i18n="${navKey}Short"]`).forEach(n => n.classList.add('active'));
+                            }
+                        }, 100);
+                    }
+                }
+            };
+            handleHashNavigation();
+            window.addEventListener('hashchange', handleHashNavigation);
+
             // Initial gated access check (before auth loads)
             setTimeout(updateGatedAccess, 500);
             
@@ -34166,9 +34201,31 @@ Check out ETHval 👇`;
                 }
             });
             
-            // Initialize community when page loads
+            // Initialize community - lazy load when section is near viewport or accessed via hash
+            let forumInitialized = false;
             document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(initForumSection, 2000);
+                // If URL hash points to community, load immediately
+                if (window.location.hash === '#section-community') {
+                    initForumSection();
+                    forumInitialized = true;
+                    return;
+                }
+
+                // Otherwise, use IntersectionObserver for lazy loading
+                const communitySection = document.getElementById('section-community');
+                if (communitySection && 'IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting && !forumInitialized) {
+                            forumInitialized = true;
+                            initForumSection();
+                            observer.disconnect();
+                        }
+                    }, { rootMargin: '200px' }); // Start loading 200px before visible
+                    observer.observe(communitySection);
+                } else {
+                    // Fallback for older browsers
+                    setTimeout(initForumSection, 2000);
+                }
             });
             
             // Write Modal Functions
@@ -35201,8 +35258,30 @@ Check out ETHval 👇`;
                 });
             }
             
-            // Start initialization
-            initRankings();
+            // Start initialization - lazy load when section is near viewport or accessed via hash
+            let rankingsInitialized = false;
+
+            // If URL hash points to rankings, load immediately
+            if (window.location.hash === '#section-rankings') {
+                initRankings();
+                rankingsInitialized = true;
+            } else {
+                // Use IntersectionObserver for lazy loading
+                const rankingsSection = document.getElementById('section-rankings');
+                if (rankingsSection && 'IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting && !rankingsInitialized) {
+                            rankingsInitialized = true;
+                            initRankings();
+                            observer.disconnect();
+                        }
+                    }, { rootMargin: '300px' }); // Start loading 300px before visible
+                    observer.observe(rankingsSection);
+                } else {
+                    // Fallback
+                    initRankings();
+                }
+            }
         })();
     </script>
 
