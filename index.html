@@ -30976,34 +30976,57 @@
                 });
             });
 
+            // Calculate header height based on viewport width
+            function getHeaderHeight() {
+                const headerWrapper = document.querySelector('.header-wrapper');
+                return headerWrapper ? headerWrapper.offsetHeight : 65;
+            }
+
+            // Scroll to section with consistent offset
+            function scrollToSection(sectionId, updateNav = true) {
+                const section = document.getElementById(sectionId);
+                if (!section) return;
+
+                const headerHeight = getHeaderHeight();
+                const targetY = section.offsetTop - headerHeight - 15; // 15px extra padding
+                window.scrollTo({ top: Math.max(0, targetY), behavior: 'instant' });
+
+                if (updateNav) {
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    const navMapping = {
+                        'section-summary': 'nav.valuation',
+                        'section-metrics': 'nav.metrics',
+                        'section-methodology': 'nav.methodology',
+                        'section-community': 'nav.community',
+                        'section-rankings': 'nav.rankings'
+                    };
+                    const navKey = navMapping[sectionId];
+                    if (navKey) {
+                        document.querySelectorAll(`.nav-item[data-i18n="${navKey}"], .nav-item[data-i18n="${navKey}Short"]`).forEach(n => n.classList.add('active'));
+                    }
+                }
+            }
+
             // URL hash navigation - restore position on page load
             const handleHashNavigation = () => {
                 const hash = window.location.hash;
                 if (hash) {
                     const targetId = hash.replace('#', '');
-                    const targetSection = document.getElementById(targetId);
-                    if (targetSection) {
-                        setTimeout(() => {
-                            targetSection.scrollIntoView({ behavior: 'instant' });
-                            // Update nav active state
-                            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                            const navMapping = {
-                                'section-summary': 'nav.valuation',
-                                'section-metrics': 'nav.metrics',
-                                'section-methodology': 'nav.methodology',
-                                'section-community': 'nav.community',
-                                'section-rankings': 'nav.rankings'
-                            };
-                            const navKey = navMapping[targetId];
-                            if (navKey) {
-                                document.querySelectorAll(`.nav-item[data-i18n="${navKey}"], .nav-item[data-i18n="${navKey}Short"]`).forEach(n => n.classList.add('active'));
-                            }
-                        }, 100);
-                    }
+                    setTimeout(() => scrollToSection(targetId), 100);
                 }
             };
             handleHashNavigation();
             window.addEventListener('hashchange', handleHashNavigation);
+
+            // Handle nav-item clicks with custom scroll
+            document.querySelectorAll('.nav-item[href^="#"]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = item.getAttribute('href').replace('#', '');
+                    window.location.hash = targetId;
+                    scrollToSection(targetId);
+                });
+            });
 
             // Initial gated access check (before auth loads)
             setTimeout(updateGatedAccess, 500);
