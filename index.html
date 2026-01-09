@@ -2476,6 +2476,18 @@
         .data-source-badge.synced { background: #dcfce7; color: #166534; }
         .data-source-badge.live { background: #dbeafe; color: #1e40af; }
         .data-source-badge.fallback { background: #fef3c7; color: #92400e; }
+
+        /* Data Source Link - 클릭 가능한 소스 링크 */
+        .data-source-link {
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.15s ease;
+            cursor: pointer;
+        }
+        .data-source-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
         
         /* 메인 가격 차트 하단 정보 줄 - 미니차트와 동일 스타일 */
         .price-chart-footer {
@@ -29091,6 +29103,17 @@
             state.models = {};
             models.forEach(m => {
                 state.models[m.id] = m.price;
+                // Also update legend values immediately to stay in sync
+                const legendEl = document.getElementById(`legend-val-${m.id}`);
+                if (legendEl) {
+                    const newText = '$' + m.price.toFixed(0);
+                    legendEl.textContent = newText;
+                    // Debug: track legend updates for MV=PQ models
+                    if (m.id === 'ecosystemSettlement' || m.id === 'ethMonetary') {
+                        console.log(`🔵 renderValuations: ${m.id} legend = ${newText}, price = ${m.price}`);
+                        console.log(`   state.l1TotalVolume = ${state.l1TotalVolume}, state.l2TotalVolume = ${state.l2TotalVolume}`);
+                    }
+                }
             });
             
             // 디버그: state 값 확인
@@ -30901,6 +30924,87 @@
             log("=== Charts will load with real data ===");
             // No dummy charts - loading spinners will show until real data arrives
         }
+
+        // 데이터 소스 링크 매핑 - 메트릭 ID별 외부 링크
+        const DATA_SOURCE_LINKS = {
+            // Dune Queries
+            'realizedPrice': 'https://dune.com/queries/6354057',
+            'mvrvRatio': 'https://dune.com/queries/6354057',
+            'whaleTx': 'https://dune.com/queries/6352498',
+            'gasPrice': 'https://dune.com/queries/6354506',
+            'activeAddresses': 'https://dune.com/queries/6352303',
+            'staking': 'https://dune.com/queries/6352308',
+            'newAddresses': 'https://dune.com/queries/6352513',
+            'l2ActiveAddresses': 'https://dune.com/queries/6352308',
+            'bridgeVolume': 'https://dune.com/queries/6352417',
+            'bridgeTotalVolume': 'https://dune.com/queries/6395474',
+            'l1TotalVolume': 'https://dune.com/queries/6386589',
+            'l1Volume': 'https://dune.com/queries/6386589',
+            'l2TotalVolume': 'https://dune.com/queries/6386591',
+            'l2DexVolume': 'https://dune.com/queries/6395472',
+            'stablecoinVol': 'https://dune.com/queries/6353868',
+            'l2StablecoinVol': 'https://dune.com/queries/6353868',
+            'l2StablecoinSupply': 'https://dune.com/queries/6353868',
+            'blobFees': 'https://dune.com/queries/6350774',
+            'blobCount': 'https://dune.com/queries/6350774',
+
+            // DefiLlama
+            'tvl': 'https://defillama.com/chain/Ethereum',
+            'dex': 'https://defillama.com/dexs/chains/ethereum',
+            'stables': 'https://defillama.com/stablecoins/Ethereum',
+            'stablesEth': 'https://defillama.com/stablecoins/Ethereum',
+            'lending': 'https://defillama.com/protocols/lending',
+            'defiRevenue': 'https://defillama.com/fees/ethereum',
+            'l2Tvl': 'https://defillama.com/chains',
+            'appCapital': 'https://defillama.com/chain/Ethereum',
+
+            // L2Beat
+            'l2Activity': 'https://l2beat.com/scaling/activity',
+
+            // CoinGecko
+            'ethbtc': 'https://www.coingecko.com/en/coins/ethereum/btc',
+            'dominance': 'https://www.coingecko.com/en/global-charts',
+            'stablecoin': 'https://www.coingecko.com/en/categories/stablecoins',
+
+            // Beaconcha.in
+            'stakingYield': 'https://beaconcha.in/charts/staking_rewards',
+            'dailyIssuance': 'https://beaconcha.in/charts/issuance',
+
+            // CryptoQuant
+            'funding': 'https://cryptoquant.com/asset/eth/chart/derivatives/funding-rate',
+            'openInterest': 'https://cryptoquant.com/asset/eth/chart/derivatives/open-interest',
+            'reserve': 'https://cryptoquant.com/asset/eth/chart/exchange/reserve',
+
+            // Alternative.me
+            'feargreed': 'https://alternative.me/crypto/fear-and-greed-index/',
+
+            // Etherscan
+            'txCount': 'https://etherscan.io/chart/tx',
+            'txVolume': 'https://etherscan.io/chart/tx'
+        };
+
+        // 페이지 로드 시 데이터 소스 링크 초기화
+        function initDataSourceLinks() {
+            document.querySelectorAll('.metric-footer > span:first-child').forEach(span => {
+                const card = span.closest('.metric-card');
+                if (!card) return;
+
+                const metricId = card.dataset.metric;
+                const link = DATA_SOURCE_LINKS[metricId];
+
+                if (link && !span.querySelector('a')) {
+                    const text = span.textContent.trim();
+                    span.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="data-source-link">${text}</a>`;
+                }
+            });
+        }
+
+        // DOM 로드 후 링크 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDataSourceLinks);
+        } else {
+            initDataSourceLinks();
+        }
         // 이벤트 위임 - DOMContentLoaded 밖에서 즉시 등록
         (function() {
             // 클릭 이벤트 처리 중인지 추적 (중복 실행 방지)
@@ -31754,7 +31858,20 @@ Check out ETHval 👇`;
                 // 11. ETH Monetary (MV=PQ) - special handling for historical data
                 const ethVelocity = MODEL_CONSTANTS.ETH_VELOCITY;
                 if (isLastPoint) {
-                    const dailySettlement = state.dailySettlement || (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0);
+                    // Use history[-2] to skip incomplete last day (consistent with getCurrentModelData)
+                    const getHistVal = (hist) => {
+                        if (!hist || hist.length === 0) return 0;
+                        if (hist.length < 2) return hist[0]?.value || 0;
+                        return hist[hist.length - 2]?.value || hist[hist.length - 1]?.value || 0;
+                    };
+                    let dailySettlement = 0;
+                    if (state.dailySettlement > 0) {
+                        dailySettlement = state.dailySettlement;
+                    } else if ((state.l1DailyVolume || 0) + (state.l2DailyVolume || 0) > 0) {
+                        dailySettlement = (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0);
+                    } else {
+                        dailySettlement = getHistVal(state.l1VolumeHistory) + getHistVal(state.l2VolumeHistory);
+                    }
                     if (dailySettlement > 0) {
                         const ethMonetaryValue = (dailySettlement * 365 / ethVelocity) / supply;
                         results.ethMonetary.push({ date, value: ethMonetaryValue });
@@ -31782,8 +31899,14 @@ Check out ETHval 👇`;
                 // 12. Ecosystem Settlement (MV=PQ) - special handling for historical data
                 const ecosystemVelocity = MODEL_CONSTANTS.ECOSYSTEM_VELOCITY;
                 if (isLastPoint) {
-                    const l1TotalVolume = state.l1TotalVolume || 368000000000;
-                    const l2TotalVolume = state.l2TotalVolume || 419500000000;
+                    // Use history[-2] to skip incomplete last day (consistent with getCurrentModelData)
+                    const getHistVal = (hist) => {
+                        if (!hist || hist.length === 0) return 0;
+                        if (hist.length < 2) return hist[0]?.value || 0;
+                        return hist[hist.length - 2]?.value || hist[hist.length - 1]?.value || 0;
+                    };
+                    const l1TotalVolume = state.l1TotalVolume > 0 ? state.l1TotalVolume : getHistVal(state.l1TotalVolumeHistory);
+                    const l2TotalVolume = state.l2TotalVolume > 0 ? state.l2TotalVolume : getHistVal(state.l2TotalVolumeHistory);
                     const dailyEcosystemVolume = l1TotalVolume + l2TotalVolume;
                     const ecosystemValue = (dailyEcosystemVolume * 365 / ecosystemVelocity) / supply;
                     results.ecosystemSettlement.push({ date, value: ecosystemValue });
@@ -31834,30 +31957,26 @@ Check out ETHval 👇`;
             // 차트 마지막 포인트를 현재 Valuation 값으로 강제 동기화
             // 이렇게 하면 차트 끝점과 표시되는 값이 항상 일치함
             // ═══════════════════════════════════════════════════════════════════
-            state.historicalFairValues = results;
-            state.historicalDataLoaded = true;
-            
+
+            const modelKeys = ['tvlMultiple', 'stakingScarcity', 'metcalfe', 'dcf', 'l2Ecosystem',
+                              'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'ethMonetary', 'ecosystemSettlement'];
+
+            // Calculate Valuation values using SAME formulas as calculateValuations()
+            // Use unified calculation for all models
+            const data = getCurrentModelData();
+            const valuation = {};
+
+            Object.keys(MODEL_METADATA).forEach(modelId => {
+                const result = calculateSingleModel(modelId, data);
+                valuation[modelId] = result ? result.value : 0;
+            });
+
             // Debug: Compare Historical last values with Valuation
             log('📊 Historical vs Valuation Comparison:');
             log('┌─────────────────────────┬──────────────────┬──────────────────┬────────┐');
             log('│ Model                   │ Historical Last  │ Valuation        │ Match  │');
             log('├─────────────────────────┼──────────────────┼──────────────────┼────────┤');
-            
-            const modelKeys = ['tvlMultiple', 'stakingScarcity', 'metcalfe', 'dcf', 'l2Ecosystem', 
-                              'ps', 'revenueYield', 'commitmentPremium', 'appCapital', 'validatorEcon', 'ethMonetary', 'ecosystemSettlement'];
-            
-            // Calculate Valuation values using SAME formulas as calculateValuations()
-            const csVal = state.circulatingSupply || 120000000;
-            
-            // Use unified calculation for all models
-            const data = getCurrentModelData();
-            const valuation = {};
-            
-            Object.keys(MODEL_METADATA).forEach(modelId => {
-                const result = calculateSingleModel(modelId, data);
-                valuation[modelId] = result ? result.value : 0;
-            });
-            
+
             modelKeys.forEach(key => {
                 const histData = results[key];
                 const histLast = histData && histData.length > 0 ? histData[histData.length - 1].value : 0;
@@ -31865,8 +31984,18 @@ Check out ETHval 👇`;
                 const match = Math.abs(histLast - valLast) < 0.01 || (valLast > 0 && Math.abs((histLast - valLast) / valLast) < 0.001);
                 const matchStr = match ? '✅' : '❌';
                 log(`│ ${key.padEnd(23)} │ $${histLast.toFixed(2).padStart(14)} │ $${valLast.toFixed(2).padStart(14)} │ ${matchStr}      │`);
+
+                // Force sync: overwrite historical last point with current valuation value
+                // This ensures chart endpoint matches displayed valuation card value
+                if (valLast > 0 && histData && histData.length > 0) {
+                    histData[histData.length - 1].value = valLast;
+                }
             });
             log('└─────────────────────────┴──────────────────┴──────────────────┴────────┘');
+
+            // Now assign to state AFTER syncing values
+            state.historicalFairValues = results;
+            state.historicalDataLoaded = true;
             
             log('✅ Historical fair values calculated:', {
                 pricePoints: state.priceHistory.length,
@@ -31893,21 +32022,28 @@ Check out ETHval 👇`;
         // NOTE: Card updates are handled by renderValuations() using getCurrentModelData()
         function syncAllModelValuesFromDB() {
             if (!state.historicalFairValues) return;
-            
+
             const maxDiff = 100; // ±100% range for bar
-            
+
+            // MV=PQ models use live calculation from getCurrentModelData(), not DB history
+            // This ensures legend matches the valuation card values
+            const liveCalcModels = ['ethMonetary', 'ecosystemSettlement'];
+
             // Update chart legend and other displays (NOT the sidebar cards)
             MODEL_ORDER.forEach(model => {
+                // Skip MV=PQ models - they will be set by renderValuations()
+                if (liveCalcModels.includes(model)) return;
+
                 const data = state.historicalFairValues[model];
                 if (!data || data.length === 0) return;
-                
+
                 // Use second-to-last value (skip potentially incomplete last day)
                 const price = data.length >= 2 ? data[data.length - 2].value : data[data.length - 1].value;
                 const diff = state.price > 0 ? ((price - state.price) / state.price) * 100 : 0;
-                
+
                 // Update state.models for chart legend
                 state.models[model] = price;
-                
+
                 // NOTE: Sidebar card updates removed - handled by renderValuations()
                 // This prevents overwriting correct values with potentially stale historical data
             });
@@ -32325,8 +32461,8 @@ Check out ETHval 👇`;
                 ctx.ondblclick = null;
             }
             
-            // Update legend values with the LAST value from each model's chart data
-            updateLegendValues();
+            // Legend values are updated by renderValuations() to ensure consistency
+            // with valuation card values (using getCurrentModelData())
         }
         
         // Calculate and store fixed Y-axis max based on all models
@@ -32385,16 +32521,30 @@ Check out ETHval 👇`;
         }
 
         
-        // Update legend with actual chart last values
+        // Update legend with actual model values (synced with valuation cards)
         function updateLegendValues() {
-            if (!state.historicalFairValues) return;
-            
+            // Skip legend updates for MV=PQ models - they are updated directly by renderValuations()
+            const mvpqModels = ['ethMonetary', 'ecosystemSettlement'];
+
             MODEL_ORDER.forEach(model => {
-                const data = state.historicalFairValues[model];
-                if (data && data.length > 0) {
-                    const lastValue = data[data.length - 1].value;
-                    const el = document.getElementById(`legend-val-${model}`);
-                    if (el) {
+                const el = document.getElementById(`legend-val-${model}`);
+                if (!el) return;
+
+                // MV=PQ models: only use state.models (set by renderValuations)
+                if (mvpqModels.includes(model)) {
+                    if (state.models && state.models[model] > 0) {
+                        el.textContent = '$' + state.models[model].toFixed(0);
+                    }
+                    return; // Don't fall back to historicalFairValues for these
+                }
+
+                // Other models: priority state.models > historicalFairValues
+                if (state.models && state.models[model] > 0) {
+                    el.textContent = '$' + state.models[model].toFixed(0);
+                } else if (state.historicalFairValues) {
+                    const data = state.historicalFairValues[model];
+                    if (data && data.length > 0) {
+                        const lastValue = data[data.length - 1].value;
                         el.textContent = '$' + lastValue.toFixed(0);
                     }
                 }
@@ -32770,19 +32920,19 @@ Check out ETHval 👇`;
                 ecosystemSettlement: {
                     name: 'Ecosystem Settlement (MV=PQ)',
                     color: '#ec4899',
-                    calc: function(p) { 
+                    calc: function(p) {
                         // L1+L2 total volume (ETH + all ERC-20 tokens)
+                        // Use actual l1TotalVolume and l2TotalVolume from state
+                        var l1Vol = p.l1TotalVolume || baseParams.l1TotalVolume || 368000000000;
+                        var l2Vol = p.l2TotalVolume || baseParams.l2TotalVolume || 419500000000;
+                        var totalVolume = l1Vol + l2Vol;
                         // Scales with TVL (50%) and Active Addresses (100%)
-                        var baseL1 = 368000000000;
-                        var baseL2 = 419500000000;
-                        var baseTotal = baseL1 + baseL2;
-                        // TVL effect at 50%
                         var tvlRatio = p.tvl / (baseParams.tvl || 70000000000);
                         var tvlScale = 1 + (tvlRatio - 1) * 0.5;
                         // Active Addresses effect at 100% (2x users = 2x transactions)
                         var aaRatio = p.activeAddresses / (baseParams.activeAddresses || 400000);
                         var volumeScale = tvlScale * aaRatio;
-                        return ((baseTotal * volumeScale) * 365 / 150) / p.supply; 
+                        return ((totalVolume * volumeScale) * 365 / 150) / p.supply;
                     }
                 }
             };
@@ -32888,6 +33038,15 @@ Check out ETHval 👇`;
                 var supply = state.circulatingSupply || 120000000;
                 baseStakingRatio = Math.round((stakedEth / supply) * 100);
                 
+                // Get L1/L2 Total Volume from state (using history[-2] to skip incomplete day)
+                var getHistoryValue = function(history) {
+                    if (!history || history.length === 0) return 0;
+                    if (history.length < 2) return history[0]?.value || 0;
+                    return history[history.length - 2]?.value || history[history.length - 1]?.value || 0;
+                };
+                var l1TotalVolumeValue = state.l1TotalVolume > 0 ? state.l1TotalVolume : getHistoryValue(state.l1TotalVolumeHistory);
+                var l2TotalVolumeValue = state.l2TotalVolume > 0 ? state.l2TotalVolume : getHistoryValue(state.l2TotalVolumeHistory);
+
                 // Store base parameters - all from Supabase (day before latest)
                 baseParams = {
                     price: state.price,
@@ -32899,7 +33058,9 @@ Check out ETHval 👇`;
                     stablecoins: stablesValue,
                     l2Tvl: state.l2Tvl || 12000000000,
                     dailySettlement: state.dailySettlement || (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0),
-                    activeAddresses: activeAddressesValue
+                    activeAddresses: activeAddressesValue,
+                    l1TotalVolume: l1TotalVolumeValue || 368000000000,
+                    l2TotalVolume: l2TotalVolumeValue || 419500000000
                 };
                 
                 // Set market price display
