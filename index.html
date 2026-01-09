@@ -996,10 +996,24 @@
             line-height: 1.5;
             overflow-x: hidden;
             min-width: 320px;
-            padding-top: 70px; /* Space for fixed header (single line) */
+            padding-top: 50px; /* Space for fixed header (single line, 900px+) */
             counter-reset: section-counter;
             min-height: 100vh;
             transition: background-color var(--theme-transition) ease, color var(--theme-transition) ease;
+        }
+
+        /* 900px 이하: header + nav-bar 2줄 */
+        @media (max-width: 900px) {
+            body {
+                padding-top: 85px;
+            }
+        }
+
+        /* 768px 이하: 더 작은 헤더 */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 67px;
+            }
         }
         
         /* Theme transition for key elements */
@@ -1447,10 +1461,10 @@
             font-weight: var(--weight-medium);
         }
 
-        /* Scroll offset for sticky header
-           - 900px+: single row header (~45px) + 20px padding = 65px
-           - 768px-900px: header (~45px) + nav-bar (~40px) + 15px padding = 100px
-           - 768px-: header (~35px) + nav-bar (~32px) + 15px padding = 82px
+        /* Scroll offset for sticky header (body padding-top + 15px margin)
+           - 900px+: 50px + 15px = 65px
+           - 768px-900px: 85px + 15px = 100px
+           - 768px-: 67px + 15px = 82px
         */
         .section[id] {
             scroll-margin-top: 65px;
@@ -1464,22 +1478,6 @@
 
         @media (max-width: 768px) {
             .section[id] {
-                scroll-margin-top: 82px;
-            }
-        }
-
-        #top {
-            scroll-margin-top: 65px;
-        }
-
-        @media (max-width: 900px) {
-            #top {
-                scroll-margin-top: 100px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            #top {
                 scroll-margin-top: 82px;
             }
         }
