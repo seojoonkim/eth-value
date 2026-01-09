@@ -24086,56 +24086,42 @@
         }
 
         // Fetch functions
-        
-        // Binance API - 빠른 가격 데이터 소스
+
+        // 실시간 ETH 가격 가져오기 (CoinGecko 사용, Binance는 CORS 문제로 제외)
         async function fetchBinancePrice() {
             try {
                 // ═══════════════════════════════════════════════════════════════════
-                // CoinGecko에서 가격, 24h 변화율, 총 시장 거래량 가져오기 (우선)
+                // CoinGecko에서 가격, 24h 변화율, 총 시장 거래량 가져오기
                 // ═══════════════════════════════════════════════════════════════════
-                let cgPrice = null, cgChange24h = null, cgVolume = null;
-                try {
-                    const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true');
-                    if (cgRes.ok) {
-                        const cgData = await cgRes.json();
-                        if (cgData.ethereum) {
-                            cgPrice = cgData.ethereum.usd;
-                            cgChange24h = cgData.ethereum.usd_24h_change;
-                            cgVolume = cgData.ethereum.usd_24h_vol;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('CoinGecko price fetch failed:', e);
+                const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true');
+
+                if (!cgRes.ok) {
+                    throw new Error(`CoinGecko API failed: ${cgRes.status}`);
                 }
-                
-                // ═══════════════════════════════════════════════════════════════════
-                // Binance에서 가격 가져오기 (CoinGecko 실패 시 fallback)
-                // ═══════════════════════════════════════════════════════════════════
-                const [tickerRes, ethbtcRes] = await Promise.all([
-                    fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT'),
-                    fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHBTC')
-                ]);
-                
-                if (!tickerRes.ok) throw new Error('Binance ticker failed');
-                const ticker = await tickerRes.json();
-                
-                const binancePrice = parseFloat(ticker.lastPrice);
-                const binanceVolume = parseFloat(ticker.quoteVolume);
-                const binanceChange24h = parseFloat(ticker.priceChangePercent);
-                
-                // CoinGecko 우선, 없으면 Binance fallback
-                state.price = cgPrice || binancePrice;
-                state.volume24h = cgVolume || binanceVolume;
-                state.change24h = cgChange24h !== null ? cgChange24h : binanceChange24h;
-                
-                log(`   Price: $${state.price.toFixed(2)} (${cgPrice ? 'CoinGecko' : 'Binance'})`);
-                log(`   24h Change: ${state.change24h.toFixed(2)}% (${cgChange24h !== null ? 'CoinGecko' : 'Binance'})`);
-                log(`   Volume: $${(state.volume24h/1e9).toFixed(2)}B (${cgVolume ? 'CoinGecko' : 'Binance'})`);
-                
+
+                const cgData = await cgRes.json();
+
+                if (!cgData.ethereum) {
+                    throw new Error('CoinGecko: No ethereum data');
+                }
+
+                state.price = cgData.ethereum.usd;
+                state.change24h = cgData.ethereum.usd_24h_change;
+                state.volume24h = cgData.ethereum.usd_24h_vol;
+
+                // ETH/BTC 비율 계산
+                if (cgData.bitcoin && cgData.bitcoin.usd) {
+                    state.ethBtcRatio = cgData.ethereum.usd / cgData.bitcoin.usd;
+                }
+
+                log(`   Price: $${state.price.toFixed(2)} (CoinGecko)`);
+                log(`   24h Change: ${state.change24h.toFixed(2)}%`);
+                log(`   Volume: $${(state.volume24h/1e9).toFixed(2)}B`);
+
                 // 메인 가격 표시
                 document.getElementById('current-price').textContent = fmt.price(state.price);
                 document.getElementById('volume-24h').textContent = fmt.usd(state.volume24h);
-                
+
                 // 시뮬레이터 마켓 프라이스도 업데이트
                 const simMarketPriceEl = document.getElementById('sim-market-price');
                 if (simMarketPriceEl) simMarketPriceEl.textContent = fmt.price(state.price);
@@ -24143,7 +24129,7 @@
                 // 차트 영역 시장 가격도 업데이트
                 const chartMarketPriceEl = document.getElementById('chart-market-price');
                 if (chartMarketPriceEl) chartMarketPriceEl.textContent = fmt.price(state.price);
-                
+
                 // Executive Summary 가격도 즉시 업데이트
                 const summaryPriceEl = document.getElementById('summary-current-price');
                 if (summaryPriceEl) {
@@ -24151,17 +24137,11 @@
                     summaryPriceEl.style.fontSize = '';
                     summaryPriceEl.style.color = '';
                 }
-                
+
                 // 24h 변화율 UI 업데이트
                 const changeEl = document.getElementById('price-change');
                 document.getElementById('price-change-text').textContent = fmt.pct(state.change24h) + ' (24h)';
                 changeEl.className = 'price-change ' + (state.change24h >= 0 ? 'up' : 'down');
-                
-                // ETH/BTC 비율
-                if (ethbtcRes.ok) {
-                    const ethbtcTicker = await ethbtcRes.json();
-                    state.ethBtcRatio = parseFloat(ethbtcTicker.lastPrice);
-                }
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // 가격 히스토리 마지막 포인트도 실시간으로 업데이트
@@ -24193,11 +24173,11 @@
                 
                 return true;
             } catch (e) {
-                console.error('Binance price error:', e);
-                return false;
+                console.error('Price fetch error:', e);
+                throw e; // 재시도 시스템이 감지할 수 있도록 throw
             }
         }
-        
+
         async function fetchBinanceHistory(days) {
             try {
                 const requiredDays = Math.min(days, 1095); // 최대 3년
