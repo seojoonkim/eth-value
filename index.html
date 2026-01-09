@@ -29912,21 +29912,78 @@
             log('\n');
         }
         
+        // ═══════════════════════════════════════════════════════════════════
+        // 실패한 데이터셋 재시도 시스템
+        // ═══════════════════════════════════════════════════════════════════
+        const failedDatasets = new Map(); // { name: { fn, retryCount } }
+        const MAX_RETRIES = 3;
+        const RETRY_DELAY = 10000; // 10초
+
+        async function retryFailedDatasets() {
+            if (failedDatasets.size === 0) return;
+
+            log(`🔄 Retrying ${failedDatasets.size} failed datasets...`);
+            const retryPromises = [];
+            const toRetry = [];
+            let successCount = 0;
+
+            failedDatasets.forEach((data, name) => {
+                if (data.retryCount < MAX_RETRIES) {
+                    toRetry.push(name);
+                    retryPromises.push(
+                        data.fn().then(() => {
+                            log(`   ✅ ${name} succeeded on retry ${data.retryCount + 1}`);
+                            failedDatasets.delete(name);
+                            successCount++;
+                        }).catch(() => {
+                            data.retryCount++;
+                            log(`   ❌ ${name} failed (attempt ${data.retryCount}/${MAX_RETRIES})`);
+                        })
+                    );
+                } else {
+                    log(`   ⏭️ ${name} skipped (max retries reached)`);
+                    failedDatasets.delete(name);
+                }
+            });
+
+            if (retryPromises.length > 0) {
+                await Promise.allSettled(retryPromises);
+
+                // 성공한 데이터가 있으면 UI 업데이트
+                if (successCount > 0) {
+                    log(`   → Refreshing UI with recovered data...`);
+                    renderChartsFromData();
+                    renderValuations(true);
+                    updateVolumeChart(ChartManager.getDefaultPeriod());
+                    initHistoricalAnalysis();
+                }
+
+                // 아직 실패한 것이 있으면 다시 스케줄
+                if (failedDatasets.size > 0) {
+                    setTimeout(retryFailedDatasets, RETRY_DELAY);
+                } else {
+                    log('🎉 All failed datasets recovered!');
+                }
+            }
+        }
+
         async function fetchAll() {
             perf.start('fetchAll');
             log('========== fetchAll START ==========');
-            
+
             try {
                 // ═══════════════════════════════════════════════════════════════════
-                // STEP 1: Supabase 로드 (2초 타임아웃) - 실제 데이터 우선
+                // STEP 1: Supabase 로드 (10초 타임아웃) - 느린 네트워크 대응
                 // ═══════════════════════════════════════════════════════════════════
                 perf.start('supabase');
-                const supabaseTimeout = new Promise(r => setTimeout(() => r('timeout'), 2000));
+                const supabaseTimeout = new Promise(r => setTimeout(() => r('timeout'), 10000));
                 const result = await Promise.race([loadHistoricalFromSupabase(), supabaseTimeout]);
                 perf.end('supabase');
-                
+
                 if (result === 'timeout') {
-                    log('Supabase timeout - using fallback');
+                    log('Supabase timeout - using fallback, will retry in background');
+                    // Supabase 타임아웃 시 재시도 등록
+                    failedDatasets.set('supabase', { fn: loadHistoricalFromSupabase, retryCount: 0 });
                 }
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -30702,100 +30759,122 @@
         
         async function loadDataInBackground() {
             log('   Background: Checking for missing data...');
-            
+
             try {
                 // ═══════════════════════════════════════════════════════════════════
-                // 최적화: 우선순위 기반 병렬 로딩
+                // 최적화: 우선순위 기반 병렬 로딩 + 실패 추적
                 // ═══════════════════════════════════════════════════════════════════
-                
+
                 const MIN_DATA_POINTS = 30;
-                
+
                 // ★ Phase 1: 가격/CoinGecko 병렬 로드 (Overview 값 즉시 표시용)
-                const phase1 = Promise.allSettled([
-                    fetchBinancePrice(),
-                    fetchCoinGecko()
-                ]);
-                
-                // ★ Phase 1 완료 후 즉시 모델 카드 렌더링 (가격 데이터만으로)
-                phase1.then(() => {
-                    renderValuations(false);
-                    log('   → Phase 1 done: Valuations rendered with price data');
+                const phase1Calls = [
+                    { name: 'binancePrice', fn: fetchBinancePrice },
+                    { name: 'coinGecko', fn: fetchCoinGecko }
+                ];
+
+                const phase1Results = await Promise.allSettled(phase1Calls.map(c => c.fn()));
+
+                // Phase 1 실패 추적
+                phase1Results.forEach((result, i) => {
+                    if (result.status === 'rejected') {
+                        failedDatasets.set(phase1Calls[i].name, { fn: phase1Calls[i].fn, retryCount: 0 });
+                    }
                 });
-                
-                // Phase 2: 필요한 API들 수집
+
+                // Phase 1 완료 후 모델 렌더링
+                renderValuations(false);
+                log('   → Phase 1 done: Valuations rendered with price data');
+
+                // Phase 2: 필요한 API들 수집 (이름과 함수 함께)
                 const apiCalls = [];
-                
+
                 if (!state.supabasePriceHistory?.length || state.supabasePriceHistory.length < 900) {
-                    apiCalls.push(fetchBinanceHistory(1095));
+                    apiCalls.push({ name: 'binanceHistory', fn: () => fetchBinanceHistory(1095) });
                 }
-                
+
                 if (!state.volumeHistory?.length || state.volumeHistory.length < 30) {
-                    apiCalls.push(fetchVolumeFromCoinGecko(365));
+                    apiCalls.push({ name: 'volumeCoinGecko', fn: () => fetchVolumeFromCoinGecko(365) });
                 }
-                
+
                 if (!state.supabaseTvlHistory?.length || state.supabaseTvlHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(fetchDefiLlama());
+                    apiCalls.push({ name: 'defiLlama', fn: fetchDefiLlama });
                 }
-                
+
                 if (!state.supabaseStakingHistory?.length || state.supabaseStakingHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(fetchStaking());
+                    apiCalls.push({ name: 'staking', fn: fetchStaking });
                 }
-                
+
                 if (!state.supabaseFundingHistory?.length || state.supabaseFundingHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(fetchFundingRate());
+                    apiCalls.push({ name: 'fundingRate', fn: fetchFundingRate });
                 }
-                
+
                 if (!state.supabaseStablecoinHistory?.length || state.supabaseStablecoinHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(fetchStablecoinMcap());
+                    apiCalls.push({ name: 'stablecoinMcap', fn: fetchStablecoinMcap });
                 }
-                
+
                 if (!state.supabaseReserveHistory?.length || state.supabaseReserveHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(fetchExchangeReserve());
+                    apiCalls.push({ name: 'exchangeReserve', fn: fetchExchangeReserve });
                 }
-                
+
                 if (!state.supabaseGasHistory?.length || state.supabaseGasHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(updateGasPriceDisplay());
-                    apiCalls.push(fetchGasPrice());
+                    apiCalls.push({ name: 'gasDisplay', fn: updateGasPriceDisplay });
+                    apiCalls.push({ name: 'gasPrice', fn: fetchGasPrice });
                 }
-                
+
                 if (!state.supabaseBlobHistory?.length || state.supabaseBlobHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(fetchBlobFees());
+                    apiCalls.push({ name: 'blobFees', fn: fetchBlobFees });
                 }
-                
+
                 if (!state.supabaseLendingHistory?.length || state.supabaseLendingHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(fetchLendingProtocolsTVL());
+                    apiCalls.push({ name: 'lendingTVL', fn: fetchLendingProtocolsTVL });
                 }
-                
+
                 if (!state.supabaseDominanceHistory?.length || state.supabaseDominanceHistory.length < MIN_DATA_POINTS ||
                     !state.supabaseEthBtcHistory?.length || state.supabaseEthBtcHistory.length < MIN_DATA_POINTS) {
-                    apiCalls.push(fetchDominanceAndEthBtc(1095));
+                    apiCalls.push({ name: 'dominanceEthBtc', fn: () => fetchDominanceAndEthBtc(1095) });
                 }
-                
-                apiCalls.push(fetchFearGreed());
-                
-                // ★ Phase 1 완료 대기 + Phase 2 병렬 시작
-                await phase1;
-                
-                // Phase 2: 나머지 API + 계산 함수들 모두 병렬
-                if (apiCalls.length > 0) {
-                    log(`   Background: Fetching ${apiCalls.length} datasets in parallel...`);
+
+                apiCalls.push({ name: 'fearGreed', fn: fetchFearGreed });
+
+                // 추가 계산 함수들
+                const extraCalls = [
+                    { name: 'supplyDynamics', fn: fetchSupplyDynamics },
+                    { name: 'nvt', fn: calculateAndUpdateNVT },
+                    { name: 'volatility', fn: calculateVolatility }
+                ];
+
+                const allCalls = [...apiCalls, ...extraCalls];
+
+                // Phase 2: 병렬 실행 + 실패 추적
+                if (allCalls.length > 0) {
+                    log(`   Background: Fetching ${allCalls.length} datasets in parallel...`);
                 }
-                
-                await Promise.allSettled([
-                    ...apiCalls,
-                    fetchSupplyDynamics(),
-                    calculateAndUpdateNVT(),
-                    calculateVolatility()
-                ]);
-                
+
+                const phase2Results = await Promise.allSettled(allCalls.map(c => c.fn()));
+
+                // Phase 2 실패 추적
+                let failedCount = 0;
+                phase2Results.forEach((result, i) => {
+                    if (result.status === 'rejected') {
+                        failedDatasets.set(allCalls[i].name, { fn: allCalls[i].fn, retryCount: 0 });
+                        failedCount++;
+                    }
+                });
+
                 // Settlement Volume 차트 업데이트
                 updateVolumeChart(ChartManager.getDefaultPeriod());
-                
+
                 // ★ 히스토리 분석 - 최종 값 계산 및 Overview 업데이트
                 initHistoricalAnalysis();
-                
-                log('   Background: All data loaded ✓');
-                
+
+                if (failedCount > 0) {
+                    log(`   Background: ${allCalls.length - failedCount}/${allCalls.length} loaded, ${failedCount} failed - scheduling retry...`);
+                    setTimeout(retryFailedDatasets, RETRY_DELAY);
+                } else {
+                    log('   Background: All data loaded ✓');
+                }
+
             } catch (e) {
                 console.error('Background loading error:', e);
             }
