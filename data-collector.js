@@ -1,6 +1,13 @@
 /**
- * ETHval Data Collector v7.4
+ * ETHval Data Collector v7.5
  * 39개 전체 데이터셋 수집
+ *
+ * v7.5 Changes:
+ * - Dune queries now run sequentially to avoid parallel timeout issues
+ * - Improved Dune cache refresh: fetches from new execution instead of old cache
+ * - Extended Dune query timeout from 2min to 5min
+ * - All collectors now return consistent result objects
+ * - Scheduler logs now track warned_count separately
  * + ETH Price, ETH/BTC: Dune API
  * + Funding Rate: CryptoQuant API (Binance 대체)
  * + AI 일간 해설 생성 (Claude Haiku)
@@ -1238,14 +1245,16 @@ async function fetchDuneResults(queryId, maxRows = 10000, maxStaleDays = 2) {
         console.log('  ⚠️ No DUNE_API_KEY');
         return null;
     }
-    
+
     try {
+        let executionId = null;
+
         // 1. Check if cache is stale and needs refresh
         const checkUrl = `https://api.dune.com/api/v1/query/${queryId}/results?limit=10`;
-        const checkResponse = await fetch(checkUrl, { 
+        const checkResponse = await fetch(checkUrl, {
             headers: { 'X-Dune-API-Key': DUNE_API_KEY }
         });
-        
+
         if (checkResponse.ok) {
             const checkData = await checkResponse.json();
             const rows = checkData?.result?.rows || [];
@@ -1253,94 +1262,111 @@ async function fetchDuneResults(queryId, maxRows = 10000, maxStaleDays = 2) {
                 const dateVal = rows[0].block_date || rows[0].date || rows[0].day || '';
                 const latestDateStr = String(dateVal).split('T')[0].split(' ')[0];
                 const daysDiff = Math.floor((Date.now() - new Date(latestDateStr).getTime()) / (24*60*60*1000));
-                
+
                 if (daysDiff > maxStaleDays) {
                     console.log(`  ⚠️ Data stale: ${latestDateStr} (${daysDiff}d ago), refreshing...`);
-                    
+
                     // Execute fresh query
                     const execResponse = await fetch(`https://api.dune.com/api/v1/query/${queryId}/execute`, {
                         method: 'POST',
-                        headers: { 
+                        headers: {
                             'X-Dune-API-Key': DUNE_API_KEY,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({ performance: 'medium' })
                     });
-                    
+
                     if (execResponse.ok) {
                         const execData = await execResponse.json();
-                        const executionId = execData.execution_id;
+                        executionId = execData.execution_id;
                         console.log(`  ⏳ Execution started: ${executionId}`);
-                        
-                        // Poll for completion (max 2 min)
-                        for (let i = 0; i < 24; i++) {
+
+                        // Poll for completion (max 5 min - increased from 2 min)
+                        let completed = false;
+                        for (let i = 0; i < 60; i++) {
                             await sleep(5000);
                             const statusResponse = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/status`, {
                                 headers: { 'X-Dune-API-Key': DUNE_API_KEY }
                             });
                             if (!statusResponse.ok) continue;
-                            
+
                             const statusData = await statusResponse.json();
                             if (statusData.state === 'QUERY_STATE_COMPLETED') {
                                 console.log('  ✅ Query refresh completed');
+                                completed = true;
                                 break;
                             } else if (statusData.state === 'QUERY_STATE_FAILED') {
-                                console.log('  ❌ Query refresh failed');
+                                console.log(`  ❌ Query refresh failed: ${statusData.error || 'unknown error'}`);
+                                executionId = null; // Fall back to cached results
                                 break;
                             }
-                            console.log(`  ⏳ Waiting... (${statusData.state})`);
+                            if (i % 6 === 0) { // Log every 30 seconds
+                                console.log(`  ⏳ Waiting... (${statusData.state}) ${Math.floor(i * 5 / 60)}m${(i * 5) % 60}s`);
+                            }
                         }
+
+                        if (!completed && executionId) {
+                            console.log('  ⚠️ Query execution timed out, using cached data');
+                            executionId = null;
+                        }
+                    } else {
+                        const errText = await execResponse.text().catch(() => '');
+                        console.log(`  ⚠️ Failed to start query execution: ${execResponse.status} ${errText.slice(0, 100)}`);
                     }
                 } else {
                     console.log(`  📅 Cache fresh: ${latestDateStr} (${daysDiff}d ago) ✓`);
                 }
             }
         }
-        
-        // 2. Fetch all results
+
+        // 2. Fetch results - use execution results if we have a completed execution
         const allRows = [];
         const pageSize = 1000;
         let offset = 0;
-        
+
         while (offset < maxRows) {
-            const url = `https://api.dune.com/api/v1/query/${queryId}/results?limit=${pageSize}&offset=${offset}`;
-            const response = await fetch(url, { 
+            // If we have a fresh execution, fetch from that; otherwise use query results (cached)
+            const url = executionId
+                ? `https://api.dune.com/api/v1/execution/${executionId}/results?limit=${pageSize}&offset=${offset}`
+                : `https://api.dune.com/api/v1/query/${queryId}/results?limit=${pageSize}&offset=${offset}`;
+
+            const response = await fetch(url, {
                 headers: { 'X-Dune-API-Key': DUNE_API_KEY },
                 timeout: 30000
             });
-            
+
             if (!response.ok) {
                 const errorText = await response.text().catch(() => 'no body');
                 console.error(`  ❌ Dune API error: ${response.status} - ${errorText.slice(0, 200)}`);
                 break;
             }
-            
+
             const data = await response.json();
-            
+
             if (offset === 0) {
                 const state = data?.state || data?.execution_id ? 'has execution' : 'direct result';
-                console.log(`  📡 Query ${queryId}: state=${state}, has_result=${!!data?.result}`);
+                console.log(`  📡 Query ${queryId}: state=${state}, has_result=${!!data?.result}, from=${executionId ? 'fresh' : 'cache'}`);
                 if (data?.result?.rows?.length > 0) {
                     console.log(`  📋 Columns: ${Object.keys(data.result.rows[0]).join(', ')}`);
                 }
             }
-            
+
             const rows = data?.result?.rows || [];
-            
+
             if (rows.length === 0) {
                 if (offset === 0) {
                     console.log(`  ⚠️ Query ${queryId} returned 0 rows (state: ${data?.state || 'unknown'})`);
                 }
                 break;
             }
-            
+
             allRows.push(...rows);
             offset += pageSize;
-            
+
             if (rows.length < pageSize) break;
             await sleep(500);
         }
-        
+
         console.log(`  📊 Total rows fetched: ${allRows.length}`);
         return allRows;
     } catch (e) {
@@ -1722,37 +1748,61 @@ async function collect_active_addresses() {
 }
 
 // ============================================================
-// 8. ETH Supply (Ultrasound.money or estimate)
+// 8. ETH Supply (Ultrasound.money API)
 // ============================================================
 async function collect_eth_supply() {
-    // Try ultrasound.money API
+    // ultrasound.money API - supply-over-time
     const data = await fetchJSON('https://ultrasound.money/api/v2/fees/supply-over-time');
-    if (data && Array.isArray(data)) {
+
+    // New API format: { since_merge: [{supply, timestamp}, ...], ... }
+    if (data?.since_merge && Array.isArray(data.since_merge)) {
+        console.log(`  📦 Got ${data.since_merge.length} records from ultrasound.money`);
+
+        // Group by date and take daily average (API has multiple entries per day)
+        const dailyMap = new Map();
+        for (const d of data.since_merge) {
+            const date = d.timestamp.split('T')[0];
+            if (!dailyMap.has(date)) {
+                dailyMap.set(date, { total: 0, count: 0 });
+            }
+            const entry = dailyMap.get(date);
+            entry.total += d.supply;
+            entry.count += 1;
+        }
+
+        const records = [];
+        for (const [date, { total, count }] of dailyMap) {
+            records.push({
+                date,
+                eth_supply: parseFloat((total / count).toFixed(2)),
+                source: 'ultrasound'
+            });
+        }
+
+        // Sort by date descending (most recent first)
+        records.sort((a, b) => b.date.localeCompare(a.date));
+
+        if (records.length > 0) {
+            console.log(`  📅 Date range: ${records[records.length - 1].date} to ${records[0].date}`);
+            console.log(`  💎 Latest supply: ${records[0].eth_supply.toLocaleString()} ETH`);
+            const saved = await upsertBatch('historical_eth_supply', records);
+            return result.ok(saved);
+        }
+    }
+
+    // Old API format fallback (array with timestamp in seconds)
+    if (data && Array.isArray(data) && data.length > 0) {
         const records = data.slice(-1095).map(d => ({
             date: new Date(d.timestamp * 1000).toISOString().split('T')[0],
             eth_supply: parseFloat((d.supply / 1e18).toFixed(2)),
             source: 'ultrasound'
         }));
-        return await upsertBatch('historical_eth_supply', records);
+        const saved = await upsertBatch('historical_eth_supply', records);
+        return result.ok(saved);
     }
-    
-    // Fallback: estimate from known values
-    const today = new Date();
-    const records = [];
-    const baseSupply = 120400000;
-    for (let i = 0; i < 1095; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        // ETH supply changes ~0.001% per day post-merge
-        const daysDiff = i;
-        const supply = baseSupply + (daysDiff * 100); // rough estimate
-        records.push({
-            date: date.toISOString().split('T')[0],
-            eth_supply: supply,
-            source: 'estimated'
-        });
-    }
-    return await upsertBatch('historical_eth_supply', records);
+
+    console.log('  ❌ ultrasound.money API failed or returned unexpected format');
+    return result.fail('API failed');
 }
 
 // ============================================================
@@ -2300,17 +2350,17 @@ async function collect_nvt() {
 }
 
 // ============================================================
-// 21. Transactions (DefiLlama)
+// 21. Transactions (growthepie)
 // ============================================================
 async function collect_transactions() {
-    
+
     // growthepie API - 실제 트랜잭션 수
     const data = await fetchJSON('https://api.growthepie.xyz/v1/export/txcount.json');
     if (!data || !Array.isArray(data)) {
         console.log('  ⚠️ growthepie API failed');
-        return 0;
+        return result.fail('growthepie API failed');
     }
-    
+
     // Ethereum mainnet 데이터만 필터
     const ethRecords = data
         .filter(d => d.origin_key === 'ethereum' && d.metric_key === 'txcount')
@@ -2319,26 +2369,31 @@ async function collect_transactions() {
             tx_count: Math.floor(d.value),
             source: 'growthepie'
         }));
-    
+
+    if (ethRecords.length === 0) {
+        return result.warn(0, 'No ethereum data');
+    }
+
     console.log(`  📦 ${ethRecords.length} ETH mainnet tx records`);
-    return await upsertBatch('historical_transactions', ethRecords);
+    const saved = await upsertBatch('historical_transactions', ethRecords);
+    return result.ok(saved);
 }
 
 // ============================================================
 // 22. L2 Transactions (growthepie - 실제 데이터)
 // ============================================================
 async function collect_l2_transactions() {
-    
+
     // growthepie API - 모든 체인의 실제 트랜잭션 수
     const data = await fetchJSON('https://api.growthepie.xyz/v1/export/txcount.json');
     if (!data || !Array.isArray(data)) {
         console.log('  ⚠️ growthepie API failed');
-        return 0;
+        return result.fail('growthepie API failed');
     }
-    
+
     // L2 체인들 필터 (ethereum 제외)
     const l2Chains = ['arbitrum', 'optimism', 'base', 'zksync_era', 'linea', 'scroll', 'blast', 'manta', 'mode', 'zora', 'polygon_zkevm', 'starknet'];
-    
+
     const l2Records = data
         .filter(d => l2Chains.includes(d.origin_key) && d.metric_key === 'txcount')
         .map(d => ({
@@ -2347,9 +2402,14 @@ async function collect_l2_transactions() {
             tx_count: Math.floor(d.value),
             source: 'growthepie'
         }));
-    
+
+    if (l2Records.length === 0) {
+        return result.warn(0, 'No L2 data');
+    }
+
     console.log(`  📦 ${l2Records.length} L2 tx records across ${l2Chains.length} chains`);
-    return await upsertBatch('historical_l2_transactions', l2Records, 'date,chain');
+    const saved = await upsertBatch('historical_l2_transactions', l2Records, 'date,chain');
+    return result.ok(saved);
 }
 
 // ============================================================
@@ -2710,37 +2770,49 @@ async function collect_dune_bridge_total_volume() {
 
 // 36. Whale Transactions (Dune)
 async function collect_dune_whale() {
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
-    
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
+
     const rows = await fetchDuneResults(DUNE_QUERIES.WHALE_TX, 5000);
-    if (!rows || rows.length === 0) return 0;
-    
+    if (!rows) {
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        return result.warn(0, 'No data from Dune');
+    }
+
     const records = rows.map(r => ({
         date: r.block_date || r.date,
         whale_tx_count: parseInt(r.whale_tx_count || r.tx_count || 0),
         whale_volume_eth: parseFloat(r.whale_volume_eth || r.volume_eth || 0),
         source: 'dune'
     })).filter(r => r.date && r.whale_tx_count > 0);
-    
+
     console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_whale_tx', records);
+    const saved = await upsertBatch('historical_whale_tx', records);
+    return result.ok(saved);
 }
 
 // 37. New Addresses (Dune)
 async function collect_dune_new_addr() {
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
-    
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
+
     const rows = await fetchDuneResults(DUNE_QUERIES.NEW_ADDR, 5000);
-    if (!rows || rows.length === 0) return 0;
-    
+    if (!rows) {
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        return result.warn(0, 'No data from Dune');
+    }
+
     const records = rows.map(r => ({
         date: r.block_date || r.date,
         new_addresses: parseInt(r.new_addresses || r.new_wallets || 0),
         source: 'dune'
     })).filter(r => r.date && r.new_addresses > 0);
-    
+
     console.log(`  📊 Got ${records.length} records`);
-    return await upsertBatch('historical_new_addresses', records);
+    const saved = await upsertBatch('historical_new_addresses', records);
+    return result.ok(saved);
 }
 
 // 38. MVRV Ratio (Dune)
@@ -2826,14 +2898,22 @@ async function collect_dune_stablecoin_vol() {
 
 // 40. Gas Price (Dune) - Daily average gas price
 async function collect_dune_gas_price() {
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
-    if (DUNE_QUERIES.GAS_PRICE === 0) { 
-        console.log('  ⏭️ Skipped - Query ID not set'); 
-        return 0; 
+    if (!DUNE_API_KEY) {
+        console.log('  ⏭️ Skipped - No API key');
+        return result.skip('No API key');
     }
-    
+    if (DUNE_QUERIES.GAS_PRICE === 0) {
+        console.log('  ⏭️ Skipped - Query ID not set');
+        return result.skip('Query ID not set');
+    }
+
     const rows = await fetchDuneResults(DUNE_QUERIES.GAS_PRICE, 5000);
-    if (!rows || rows.length === 0) return 0;
+    if (!rows) {
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        return result.warn(0, 'No data from Dune');
+    }
     
     // Update historical_gas_burn table with gas price, eth_burnt, fees_usd data
     const records = rows.map(r => {
@@ -2885,7 +2965,7 @@ async function collect_dune_gas_price() {
     }
     
     console.log(`  ✅ Upserted ${updated} records in historical_gas_burn`);
-    return updated;
+    return result.ok(updated);
 }
 
 // ============================================================
@@ -2893,7 +2973,7 @@ async function collect_dune_gas_price() {
 // ============================================================
 async function main() {
     console.log('═'.repeat(60));
-    console.log('🚀 ETHval Data Collector v7.3');
+    console.log('🚀 ETHval Data Collector v7.5');
     console.log(`📅 ${new Date().toISOString()}`);
     console.log('═'.repeat(60));
     
@@ -3000,34 +3080,36 @@ async function main() {
     console.log(`  ✓ Other APIs: ${((Date.now() - otherStart) / 1000).toFixed(1)}s`);
     
     // ============================================================
-    // PHASE 4: Dune APIs (병렬)
+    // PHASE 4: Dune APIs (순차 실행 - 병렬 시 모든 쿼리가 동시에 refresh 시도하여 타임아웃 발생)
     // ============================================================
-    console.log('\n🔷 Phase 4: Dune APIs...');
+    console.log('\n🔷 Phase 4: Dune APIs (sequential)...');
     const duneStart = Date.now();
-    
+
     if (DUNE_API_KEY) {
-        const duneResults = await Promise.all([
-            collect_dune_blob(),
-            collect_dune_active_addr(),
-            collect_dune_l2_addr(),
-            collect_dune_bridge(),
-            collect_dune_l2_dex_volume(),
-            collect_dune_bridge_total_volume(),
-            collect_dune_whale(),
-            collect_dune_new_addr(),
-            collect_dune_mvrv(),
-            collect_dune_stablecoin_vol(),
-            collect_dune_gas_price()
-        ]);
-        
-        const duneNames = ['dune_blob', 'dune_active_addr', 'dune_l2_addr', 'dune_bridge', 'dune_l2_dex_volume', 'dune_bridge_total_volume', 'dune_whale', 'dune_new_addr', 'dune_mvrv', 'dune_stablecoin_vol', 'dune_gas_price'];
-        duneResults.forEach((res, i) => {
-            results[duneNames[i]] = wrapResult(res, true);
-            const r = results[duneNames[i]];
-            if (r.status === 'fail') console.log(`  ❌ ${duneNames[i]}: ${r.msg}`);
-            else if (r.status === 'warn' && r.count === 0) console.log(`  ⚠️ ${duneNames[i]}: ${r.msg}`);
-        });
-        
+        const duneCollectors = [
+            { name: 'dune_blob', fn: collect_dune_blob },
+            { name: 'dune_active_addr', fn: collect_dune_active_addr },
+            { name: 'dune_l2_addr', fn: collect_dune_l2_addr },
+            { name: 'dune_bridge', fn: collect_dune_bridge },
+            { name: 'dune_l2_dex_volume', fn: collect_dune_l2_dex_volume },
+            { name: 'dune_bridge_total_volume', fn: collect_dune_bridge_total_volume },
+            { name: 'dune_whale', fn: collect_dune_whale },
+            { name: 'dune_new_addr', fn: collect_dune_new_addr },
+            { name: 'dune_mvrv', fn: collect_dune_mvrv },
+            { name: 'dune_stablecoin_vol', fn: collect_dune_stablecoin_vol },
+            { name: 'dune_gas_price', fn: collect_dune_gas_price }
+        ];
+
+        for (const { name, fn } of duneCollectors) {
+            console.log(`  📡 ${name}...`);
+            const res = await fn();
+            results[name] = wrapResult(res, true);
+            const r = results[name];
+            if (r.status === 'fail') console.log(`    ❌ ${name}: ${r.msg}`);
+            else if (r.status === 'warn' && r.count === 0) console.log(`    ⚠️ ${name}: ${r.msg}`);
+            else console.log(`    ✅ ${name}: ${r.count}`);
+        }
+
         console.log(`  ✓ Dune: ${((Date.now() - duneStart) / 1000).toFixed(1)}s`);
     } else {
         console.log('  ⏭️ Skipped (no API key)');
@@ -3087,7 +3169,9 @@ async function main() {
     // Save scheduler log to Supabase
     const endTime = Date.now();
     const duration = Math.round((endTime - startTime) / 1000);
-    const logStatus = failed === 0 ? 'success' : (success > failed ? 'partial' : 'failed');
+    // warn도 문제 있는 것으로 처리: failed 또는 warned가 있으면 partial/failed
+    const logStatus = (failed === 0 && warned === 0) ? 'success' :
+                      (success > (failed + warned) ? 'partial' : 'failed');
     
     // Detect trigger type from GitHub Actions environment
     const triggerType = process.env.GITHUB_EVENT_NAME === 'schedule' ? 'schedule' : 'manual';
@@ -3100,6 +3184,7 @@ async function main() {
             trigger_type: triggerType,
             status: logStatus,
             success_count: success,
+            warned_count: warned,
             failed_count: failed,
             failed_datasets: JSON.stringify(failedDatasets),
             duration_seconds: duration,

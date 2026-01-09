@@ -122,12 +122,13 @@
                             <th>Status</th>
                             <th>Duration</th>
                             <th>Success</th>
+                            <th>Warned</th>
                             <th>Failed</th>
                             <th>Failed Datasets</th>
                         </tr>
                     </thead>
                     <tbody id="scheduler-logs-table">
-                        <tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading scheduler logs...</td></tr>
+                        <tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading scheduler logs...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -4072,7 +4073,7 @@
         // ══════════════════════════════════════════════════════════════
         async function refreshSchedulerLogs() {
             const tbody = document.getElementById('scheduler-logs-table');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading...</td></tr>';
             
             try {
                 // Get last 10 runs (not limited by date)
@@ -4085,7 +4086,7 @@
                 if (error) {
                     console.error('Scheduler logs error:', error);
                     // Table might not exist yet
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-muted);">
                         No scheduler logs yet. Logs will appear after the first automated run.<br>
                         <small style="opacity: 0.7;">Schedule: Daily at KST 13:30 (UTC 04:30)</small>
                     </td></tr>`;
@@ -4094,7 +4095,7 @@
                 }
                 
                 if (!logs || logs.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-muted);">
                         No scheduler runs yet.<br>
                         <small style="opacity: 0.7;">Schedule: Daily at KST 13:30 (UTC 04:30)</small>
                     </td></tr>`;
@@ -4134,6 +4135,7 @@
                         <td><span class="badge ${statusClass}">${statusIcon} ${log.status}</span></td>
                         <td>${log.duration_seconds ? log.duration_seconds + 's' : '-'}</td>
                         <td style="color: var(--success);">${log.success_count || 0}</td>
+                        <td style="color: ${(log.warned_count || 0) > 0 ? 'var(--warning)' : 'var(--text-muted)'};">${log.warned_count || 0}</td>
                         <td style="color: ${log.failed_count > 0 ? 'var(--error)' : 'var(--text-muted)'};">${log.failed_count || 0}</td>
                         <td>${failedList}</td>
                     </tr>`;
@@ -4141,7 +4143,7 @@
                 
             } catch (e) {
                 console.error('Failed to load scheduler logs:', e);
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--error);">Failed to load logs</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--error);">Failed to load logs</td></tr>';
             }
         }
         
