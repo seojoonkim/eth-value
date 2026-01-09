@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ETHval | Intrinsic Value Dashboard</title>
-    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⟠</text></svg>">
+
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PX7DBZL3ND"></script>
     <script>
@@ -30943,9 +30944,16 @@
             }, true);
         })();
 
+        // Global image error handler - fallback to default avatar for broken profile images
+        document.addEventListener('error', (e) => {
+            if (e.target.tagName === 'IMG' && e.target.src.includes('twimg.com/profile_images')) {
+                e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
+            }
+        }, true);
+
         document.addEventListener('DOMContentLoaded', () => {
             log('DOM loaded, initializing...');
-            
+
             // Remove no-transition class after a small delay to enable smooth transitions
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
