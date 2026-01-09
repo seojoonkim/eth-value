@@ -2408,7 +2408,15 @@ async function collect_protocol_tvl() {
             console.log(`  ${protocol}: ${recs.length}`);
         }
     }
-    return await upsertBatch('historical_protocol_tvl', all, 'date,protocol');
+    // 중복 제거 (같은 date+protocol 조합)
+    const seen = new Set();
+    const deduped = all.filter(r => {
+        const key = `${r.date}_${r.protocol}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+    return await upsertBatch('historical_protocol_tvl', deduped, 'date,protocol');
 }
 
 // ============================================================
@@ -2834,9 +2842,7 @@ async function collect_dune_stablecoin_vol() {
         
         return {
             date: dateStr,
-            daily_volume: parseFloat(r.daily_volume_usd || r.daily_volume || r.volume || 0),
-            tx_count: parseInt(r.tx_count || 0),
-            source: 'dune'
+            daily_volume: parseFloat(r.daily_volume_usd || r.daily_volume || r.volume || 0)
         };
     }).filter(r => r.date && r.daily_volume > 0);
     
