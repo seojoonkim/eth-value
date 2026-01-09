@@ -996,7 +996,7 @@
             line-height: 1.5;
             overflow-x: hidden;
             min-width: 320px;
-            padding-top: 50px; /* Space for fixed header (single line, 900px+) */
+            padding-top: 65px; /* Must match scroll-margin-top for consistent navigation */
             counter-reset: section-counter;
             min-height: 100vh;
             transition: background-color var(--theme-transition) ease, color var(--theme-transition) ease;
@@ -1005,14 +1005,14 @@
         /* 900px 이하: header + nav-bar 2줄 */
         @media (max-width: 900px) {
             body {
-                padding-top: 85px;
+                padding-top: 100px; /* Must match scroll-margin-top */
             }
         }
 
         /* 768px 이하: 더 작은 헤더 */
         @media (max-width: 768px) {
             body {
-                padding-top: 67px;
+                padding-top: 82px; /* Must match scroll-margin-top */
             }
         }
         
