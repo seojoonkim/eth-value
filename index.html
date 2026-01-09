@@ -24139,6 +24139,10 @@
                 // 시뮬레이터 마켓 프라이스도 업데이트
                 const simMarketPriceEl = document.getElementById('sim-market-price');
                 if (simMarketPriceEl) simMarketPriceEl.textContent = fmt.price(state.price);
+
+                // 차트 영역 시장 가격도 업데이트
+                const chartMarketPriceEl = document.getElementById('chart-market-price');
+                if (chartMarketPriceEl) chartMarketPriceEl.textContent = fmt.price(state.price);
                 
                 // Executive Summary 가격도 즉시 업데이트
                 const summaryPriceEl = document.getElementById('summary-current-price');
