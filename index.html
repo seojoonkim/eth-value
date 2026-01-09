@@ -15014,7 +15014,7 @@
                 <div class="price-card-left">
                     <div class="price-label">ETH / USD</div>
                     <div class="price-header-row">
-                        <span class="price-value" id="current-price">$--</span>
+                        <span class="price-value" id="current-price"><span class="loading-text">Loading</span></span>
                         <span class="price-change up" id="price-change">
                             <span id="price-change-text">--</span>
                         </span>
@@ -30061,11 +30061,11 @@
                     log('No price data yet, waiting for API...');
                 }
                 
-                // Only update price display if we have real data
+                // Supabase 캐시 가격은 차트/계산용으로만 사용, 현재 가격 UI는 실시간 API 결과만 표시
+                // current-price는 fetchBinancePrice()에서 CoinGecko 실시간 데이터로 업데이트됨
                 if (state.price > 0) {
                     state.marketCap = state.price * 120000000;
-                    setEl('current-price', '$' + state.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-                    setEl('summary-current-price', '$' + state.price.toLocaleString(undefined, {maximumFractionDigits: 0}));
+                    // current-price, summary-current-price는 실시간 API에서 업데이트하므로 여기서 설정하지 않음
                     setEl('market-cap', '$' + (state.marketCap / 1e9).toFixed(0) + 'B');
                     
                     // ATH 표시 (기본값 또는 CoinGecko 값)
