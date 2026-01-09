@@ -1447,30 +1447,41 @@
             font-weight: var(--weight-medium);
         }
 
-        /* Scroll offset for sticky header */
+        /* Scroll offset for sticky header
+           - 900px+: single row header (~45px) + 20px padding = 65px
+           - 768px-900px: header (~45px) + nav-bar (~40px) + 15px padding = 100px
+           - 768px-: header (~35px) + nav-bar (~32px) + 15px padding = 82px
+        */
         .section[id] {
-            scroll-margin-top: 55px;
+            scroll-margin-top: 65px;
         }
-        
-        /* 900px 이하에서 2행 헤더용 scroll-margin */
+
         @media (max-width: 900px) {
             .section[id] {
-                scroll-margin-top: 90px;
-            }
-
-            .summary-section {
-                padding-top: 20px;
+                scroll-margin-top: 100px;
             }
         }
 
         @media (max-width: 768px) {
             .section[id] {
-                scroll-margin-top: 85px;
+                scroll-margin-top: 82px;
             }
         }
 
         #top {
-            scroll-margin-top: 55px;
+            scroll-margin-top: 65px;
+        }
+
+        @media (max-width: 900px) {
+            #top {
+                scroll-margin-top: 100px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #top {
+                scroll-margin-top: 82px;
+            }
         }
 
         .logo {
