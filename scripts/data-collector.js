@@ -2859,11 +2859,7 @@ async function collect_dune_gas_price() {
     const rows = await fetchDuneResults(DUNE_QUERIES.GAS_PRICE, 5000);
     if (!rows || rows.length === 0) return 0;
     
-<<<<<<< HEAD
-    // Update historical_gas_burn table with gas price data
-=======
     // Update historical_gas_burn table with gas price, eth_burnt, fees_usd data
->>>>>>> 8bd0a61 (fix)
     const records = rows.map(r => {
         // Parse date: "2025-12-14 00:00" or "2025-12-14T00:00:00" -> "2025-12-14"
         let dateStr = r.block_date || r.date || '';
@@ -2878,41 +2874,21 @@ async function collect_dune_gas_price() {
             avg_gas_price_gwei: parseFloat(r.avg_gas_price_gwei || r.gas_price_gwei || r.avg_gas_price || 0),
             eth_burnt: parseFloat(r.eth_burnt || 0),
             gas_utilization: parseFloat(r.gas_utilization || r.utilization || 0),
-<<<<<<< HEAD
-            transaction_count: parseInt(r.tx_count || r.transaction_count || 0)
-=======
             transaction_count: parseInt(r.tx_count || r.transaction_count || 0),
             fees_usd: parseFloat(r.fees_usd || 0)
->>>>>>> 8bd0a61 (fix)
         };
     }).filter(r => r.date && r.avg_gas_price_gwei > 0);
     
     console.log(`  📊 Got ${records.length} records with gas price`);
     if (records.length > 0) {
         console.log(`  📅 Date range: ${records[records.length-1].date} to ${records[0].date}`);
-<<<<<<< HEAD
-        console.log(`  ⛽ Sample: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(2)} Gwei`);
-    }
-    
-    // Update existing records in historical_gas_burn (without source column)
-    let updated = 0;
-    for (const record of records) {
-        const updateData = { 
-            avg_gas_price_gwei: record.avg_gas_price_gwei
-        };
-        if (record.gas_utilization > 0) {
-            updateData.gas_utilization = record.gas_utilization;
-        }
-        if (record.transaction_count > 0) {
-            updateData.transaction_count = record.transaction_count;
-=======
         console.log(`  ⛽ Sample: ${records[0].date} = ${records[0].avg_gas_price_gwei.toFixed(2)} Gwei, ${records[0].eth_burnt.toFixed(2)} ETH burnt, $${(records[0].fees_usd/1000).toFixed(1)}K fees`);
     }
-    
+
     // Upsert records to historical_gas_burn (insert if not exists, update if exists)
     let updated = 0;
     for (const record of records) {
-        const upsertData = { 
+        const upsertData = {
             date: record.date,
             avg_gas_price_gwei: record.avg_gas_price_gwei,
             eth_burnt: record.eth_burnt,
@@ -2923,26 +2899,16 @@ async function collect_dune_gas_price() {
         }
         if (record.transaction_count > 0) {
             upsertData.transaction_count = record.transaction_count;
->>>>>>> 8bd0a61 (fix)
         }
-        
+
         const { error } = await supabase
             .from('historical_gas_burn')
-<<<<<<< HEAD
-            .update(updateData)
-            .eq('date', record.date);
-=======
             .upsert(upsertData, { onConflict: 'date' });
->>>>>>> 8bd0a61 (fix)
-        
+
         if (!error) updated++;
     }
-    
-<<<<<<< HEAD
-    console.log(`  ✅ Updated ${updated} records in historical_gas_burn`);
-=======
+
     console.log(`  ✅ Upserted ${updated} records in historical_gas_burn`);
->>>>>>> 8bd0a61 (fix)
     return updated;
 }
 
