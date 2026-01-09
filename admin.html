@@ -1225,8 +1225,8 @@
             // ═══════════════════════════════════════════════════════════════════
             
             // --- 🔶 Dune Analytics (Price Data) ---
-            eth_price: { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
-            eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
+            eth_price: { name: 'ETH Price', icon: '💰', table: 'historical_eth_price', valueField: 'close', format: 'price', expectedDays: 1095, phase: 1, source: '🔶 Dune', duneQueryId: 6390291 },
+            eth_btc: { name: 'ETH/BTC Ratio', icon: '₿', table: 'historical_eth_btc', valueField: 'ratio', format: 'ratio', expectedDays: 1095, phase: 1, source: '🔶 Dune', duneQueryId: 6390302 },
             
             // --- 🟡 Binance ---
             funding_rate: { name: 'Funding Rate', icon: '📊', table: 'historical_funding_rate', valueField: 'funding_rate', format: 'percent8', expectedDays: 1095, phase: 1, source: '🟠 CryptoQuant' },
@@ -1246,19 +1246,19 @@
             eth_dominance: { name: 'ETH Dominance', icon: '👑', table: 'historical_eth_dominance', valueField: 'eth_dominance', format: 'percent', expectedDays: 365, phase: 1, source: '🦎 CoinGecko' },
             
             // --- 🔶 Dune Analytics ---
-            blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, phase: 1, source: '🔶 Dune' },
-            l2_native_transfer: { name: 'L2 ETH Transfer', icon: '💸', table: 'historical_l2_total_volume', valueField: 'native_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'ETH transfers on L2s (excludes Mantle MNT). For Settlement Layer.', noCollect: true },
-            l1_total_volume: { name: 'L1 Total Volume', icon: '📊', table: 'historical_l1_total_volume', valueField: 'total_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (ETH + all ERC-20 tokens)' },
-            l1_eth_transfer: { name: 'L1 ETH Transfer', icon: '💸', table: 'historical_l1_total_volume', valueField: 'eth_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Native ETH transfers only. Now from L1 Total Volume table.', noCollect: true },
-            l2_total_volume: { name: 'L2 Total Volume', icon: '📈', table: 'historical_l2_total_volume', valueField: 'total_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (Native + all tokens) across 8 L2s' },
-            bridge_volume: { name: 'Bridge ETH Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune' },
-            l2_dex_volume: { name: 'L2 DEX Volume', icon: '🔄', table: 'historical_l2_dex_volume', valueField: 'dex_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Daily DEX trading volume on L2s' },
-            bridge_total_volume: { name: 'Bridge Total Volume', icon: '🌐', table: 'historical_bridge_total_volume', valueField: 'bridge_volume_usd', format: 'usd', aggregate: false, expectedDays: 1460, phase: 1, source: '🔶 Dune', description: 'All assets bridged to L2s (ETH + ERC-20)' },
-            whale_tx: { name: 'Whale TX', icon: '🐋', table: 'historical_whale_tx', valueField: 'whale_tx_count', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
-            mvrv_ratio: { name: 'MVRV Ratio', icon: '📊', table: 'historical_mvrv', valueField: 'mvrv_ratio', format: 'ratio', expectedDays: 2878, phase: 1, source: '🔶 Dune' },
-            stablecoin_volume: { name: 'Stablecoin Vol', icon: '💵', table: 'historical_stablecoin_volume', valueField: 'daily_volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
-            new_addresses: { name: 'New Addresses', icon: '🆕', table: 'historical_new_addresses', valueField: 'new_addresses', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
-            gas_price: { name: 'Gas Price', icon: '⛽', table: 'historical_gas_burn', valueField: 'avg_gas_price_gwei', format: 'gwei', expectedDays: 1095, phase: 1, source: '🔶 Dune' },
+            blob_data: { name: 'Blob Data', icon: '🫧', table: 'historical_blob_data', valueField: 'blob_count', format: 'number', expectedDays: 636, phase: 1, source: '🔶 Dune', duneQueryId: 6350774 },
+            l2_native_transfer: { name: 'L2 ETH Transfer', icon: '💸', table: 'historical_l2_total_volume', valueField: 'native_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'ETH transfers on L2s (excludes Mantle MNT). For Settlement Layer.', noCollect: true, duneQueryId: 6386591 },
+            l1_total_volume: { name: 'L1 Total Volume', icon: '📊', table: 'historical_l1_total_volume', valueField: 'total_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (ETH + all ERC-20 tokens)', duneQueryId: 6386589 },
+            l1_eth_transfer: { name: 'L1 ETH Transfer', icon: '💸', table: 'historical_l1_total_volume', valueField: 'eth_volume_usd', format: 'usd', expectedDays: 1095, phase: 1, source: '🔶 Dune', description: 'Native ETH transfers only. Now from L1 Total Volume table.', noCollect: true, duneQueryId: 6386589 },
+            l2_total_volume: { name: 'L2 Total Volume', icon: '📈', table: 'historical_l2_total_volume', valueField: 'total_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Total on-chain volume (Native + all tokens) across 8 L2s', duneQueryId: 6386591 },
+            bridge_volume: { name: 'Bridge ETH Volume', icon: '🌉', table: 'historical_bridge_volume', valueField: 'bridge_volume_eth', format: 'eth', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', duneQueryId: 6352417 },
+            l2_dex_volume: { name: 'L2 DEX Volume', icon: '🔄', table: 'historical_l2_dex_volume', valueField: 'dex_volume_usd', format: 'usd', aggregate: true, expectedDays: 3000, phase: 1, source: '🔶 Dune', description: 'Daily DEX trading volume on L2s', duneQueryId: 6395472 },
+            bridge_total_volume: { name: 'Bridge Total Volume', icon: '🌐', table: 'historical_bridge_total_volume', valueField: 'bridge_volume_usd', format: 'usd', aggregate: false, expectedDays: 1460, phase: 1, source: '🔶 Dune', description: 'All assets bridged to L2s (ETH + ERC-20)', duneQueryId: 6395474 },
+            whale_tx: { name: 'Whale TX', icon: '🐋', table: 'historical_whale_tx', valueField: 'whale_tx_count', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune', duneQueryId: 6352498 },
+            mvrv_ratio: { name: 'MVRV Ratio', icon: '📊', table: 'historical_mvrv', valueField: 'mvrv_ratio', format: 'ratio', expectedDays: 2878, phase: 1, source: '🔶 Dune', duneQueryId: 6354057 },
+            stablecoin_volume: { name: 'Stablecoin Vol', icon: '💵', table: 'historical_stablecoin_volume', valueField: 'daily_volume', format: 'tvl', expectedDays: 1095, phase: 1, source: '🔶 Dune', duneQueryId: 6353868 },
+            new_addresses: { name: 'New Addresses', icon: '🆕', table: 'historical_new_addresses', valueField: 'new_addresses', format: 'number', expectedDays: 1095, phase: 1, source: '🔶 Dune', duneQueryId: 6352513 },
+            gas_price: { name: 'Gas Price', icon: '⛽', table: 'historical_gas_burn', valueField: 'avg_gas_price_gwei', format: 'gwei', expectedDays: 1095, phase: 1, source: '🔶 Dune', duneQueryId: 6354506 },
             
             // --- 🥧 growthepie ---
             l2_transactions: { name: 'L2 Transactions', icon: '🔗', table: 'historical_l2_transactions', valueField: 'tx_count', format: 'number', aggregate: true, expectedDays: 3000, phase: 1, source: '🥧 growthepie' },
@@ -1268,7 +1268,7 @@
             // ═══════════════════════════════════════════════════════════════════
             volatility: { name: 'Volatility', icon: '📉', table: 'historical_volatility', valueField: 'volatility_30d', format: 'percent', expectedDays: 1065, phase: 2, source: '📊 Calculated', depends: ['eth_price'] },
             transactions: { name: 'L1 Transactions', icon: '📝', table: 'historical_transactions', valueField: 'tx_count', format: 'number', expectedDays: 1095, phase: 2, source: '🥧 growthepie' },
-            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true, expectedDays: 3000, phase: 2, source: '🔶 Dune' },
+            l2_addresses: { name: 'L2 Addresses', icon: '👤', table: 'historical_l2_addresses', valueField: 'active_addresses', format: 'number', aggregate: true, expectedDays: 3000, phase: 2, source: '🔶 Dune', duneQueryId: 6352308 },
             exchange_reserve: { name: 'Exchange Reserve', icon: '🏛️', table: 'historical_exchange_reserve', valueField: 'reserve_eth', format: 'eth', expectedDays: 1095, phase: 2, source: '🟠 CryptoQuant' },
             open_interest: { name: 'Open Interest', icon: '📈', table: 'historical_open_interest', valueField: 'open_interest', format: 'tvl', expectedDays: 1095, phase: 2, source: '🟠 CryptoQuant' },
             eth_supply: { name: 'ETH Supply', icon: '💎', table: 'historical_eth_supply', valueField: 'eth_supply', format: 'eth', expectedDays: 1095, phase: 2, source: '📄 CSV Required' },
@@ -1277,9 +1277,9 @@
             // ═══════════════════════════════════════════════════════════════════
             // 🟠 PHASE 3: Second-order Calculations (Depends on Phase 2)
             // ═══════════════════════════════════════════════════════════════════
-            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune', depends: ['eth_price', 'transactions'] },
-            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune' },
-            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔶 Dune', noCollect: true },
+            nvt: { name: 'NVT Ratio', icon: '📐', table: 'historical_nvt', valueField: 'nvt_ratio', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune', depends: ['eth_price', 'transactions'], duneQueryId: 6386589 },
+            active_addresses: { name: 'Active Addresses', icon: '👥', table: 'historical_active_addresses', valueField: 'active_addresses', format: 'number', expectedDays: 1095, phase: 3, source: '🔶 Dune', duneQueryId: 6352303 },
+            gas_burn: { name: 'Gas & Burn', icon: '🔥', table: 'historical_gas_burn', valueField: 'eth_burnt', format: 'eth', expectedDays: 1095, phase: 3, source: '🔶 Dune', noCollect: true, duneQueryId: 6354506 },
             fear_greed: { name: 'Fear & Greed', icon: '😱', table: 'historical_fear_greed', valueField: 'value', format: 'index', expectedDays: 1095, phase: 3, source: '📊 alternative.me' },
             
             // ═══════════════════════════════════════════════════════════════════
@@ -1796,7 +1796,12 @@
                 
                 // 테이블 생성
                 const columns = Object.keys(data[0]).filter(k => !k.startsWith('_'));
-                let html = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Table: <code>${ds.table}</code> | Records: ${data.length} | Value Field: <code>${ds.valueField}</code></div>`;
+                let html = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Table: <code>${ds.table}</code> | Records: ${data.length} | Value Field: <code>${ds.valueField}</code>`;
+                // Dune 링크 추가
+                if (ds.duneQueryId) {
+                    html += ` | <a href="https://dune.com/queries/${ds.duneQueryId}" target="_blank" rel="noopener noreferrer" style="color:#f59e0b;text-decoration:none;">View on Dune</a>`;
+                }
+                html += `</div>`;
                 html += '<table style="width:max-content;font-size:11px;border-collapse:collapse;"><thead><tr>';
                 for (const col of columns) {
                     const isValueField = col === ds.valueField;

@@ -2477,18 +2477,6 @@
         .data-source-badge.live { background: #dbeafe; color: #1e40af; }
         .data-source-badge.fallback { background: #fef3c7; color: #92400e; }
 
-        /* Data Source Link - 클릭 가능한 소스 링크 */
-        .data-source-link {
-            color: var(--muted);
-            text-decoration: none;
-            transition: color 0.15s ease;
-            cursor: pointer;
-        }
-        .data-source-link:hover {
-            color: var(--accent);
-            text-decoration: underline;
-        }
-        
         /* 메인 가격 차트 하단 정보 줄 - 미니차트와 동일 스타일 */
         .price-chart-footer {
             display: flex;
@@ -30925,86 +30913,6 @@
             // No dummy charts - loading spinners will show until real data arrives
         }
 
-        // 데이터 소스 링크 매핑 - 메트릭 ID별 외부 링크
-        const DATA_SOURCE_LINKS = {
-            // Dune Queries
-            'realizedPrice': 'https://dune.com/queries/6354057',
-            'mvrvRatio': 'https://dune.com/queries/6354057',
-            'whaleTx': 'https://dune.com/queries/6352498',
-            'gasPrice': 'https://dune.com/queries/6354506',
-            'activeAddresses': 'https://dune.com/queries/6352303',
-            'staking': 'https://dune.com/queries/6352308',
-            'newAddresses': 'https://dune.com/queries/6352513',
-            'l2ActiveAddresses': 'https://dune.com/queries/6352308',
-            'bridgeVolume': 'https://dune.com/queries/6352417',
-            'bridgeTotalVolume': 'https://dune.com/queries/6395474',
-            'l1TotalVolume': 'https://dune.com/queries/6386589',
-            'l1Volume': 'https://dune.com/queries/6386589',
-            'l2TotalVolume': 'https://dune.com/queries/6386591',
-            'l2DexVolume': 'https://dune.com/queries/6395472',
-            'stablecoinVol': 'https://dune.com/queries/6353868',
-            'l2StablecoinVol': 'https://dune.com/queries/6353868',
-            'l2StablecoinSupply': 'https://dune.com/queries/6353868',
-            'blobFees': 'https://dune.com/queries/6350774',
-            'blobCount': 'https://dune.com/queries/6350774',
-
-            // DefiLlama
-            'tvl': 'https://defillama.com/chain/Ethereum',
-            'dex': 'https://defillama.com/dexs/chains/ethereum',
-            'stables': 'https://defillama.com/stablecoins/Ethereum',
-            'stablesEth': 'https://defillama.com/stablecoins/Ethereum',
-            'lending': 'https://defillama.com/protocols/lending',
-            'defiRevenue': 'https://defillama.com/fees/ethereum',
-            'l2Tvl': 'https://defillama.com/chains',
-            'appCapital': 'https://defillama.com/chain/Ethereum',
-
-            // L2Beat
-            'l2Activity': 'https://l2beat.com/scaling/activity',
-
-            // CoinGecko
-            'ethbtc': 'https://www.coingecko.com/en/coins/ethereum/btc',
-            'dominance': 'https://www.coingecko.com/en/global-charts',
-            'stablecoin': 'https://www.coingecko.com/en/categories/stablecoins',
-
-            // Beaconcha.in
-            'stakingYield': 'https://beaconcha.in/charts/staking_rewards',
-            'dailyIssuance': 'https://beaconcha.in/charts/issuance',
-
-            // CryptoQuant
-            'funding': 'https://cryptoquant.com/asset/eth/chart/derivatives/funding-rate',
-            'openInterest': 'https://cryptoquant.com/asset/eth/chart/derivatives/open-interest',
-            'reserve': 'https://cryptoquant.com/asset/eth/chart/exchange/reserve',
-
-            // Alternative.me
-            'feargreed': 'https://alternative.me/crypto/fear-and-greed-index/',
-
-            // Etherscan
-            'txCount': 'https://etherscan.io/chart/tx',
-            'txVolume': 'https://etherscan.io/chart/tx'
-        };
-
-        // 페이지 로드 시 데이터 소스 링크 초기화
-        function initDataSourceLinks() {
-            document.querySelectorAll('.metric-footer > span:first-child').forEach(span => {
-                const card = span.closest('.metric-card');
-                if (!card) return;
-
-                const metricId = card.dataset.metric;
-                const link = DATA_SOURCE_LINKS[metricId];
-
-                if (link && !span.querySelector('a')) {
-                    const text = span.textContent.trim();
-                    span.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="data-source-link">${text}</a>`;
-                }
-            });
-        }
-
-        // DOM 로드 후 링크 초기화
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initDataSourceLinks);
-        } else {
-            initDataSourceLinks();
-        }
         // 이벤트 위임 - DOMContentLoaded 밖에서 즉시 등록
         (function() {
             // 클릭 이벤트 처리 중인지 추적 (중복 실행 방지)
