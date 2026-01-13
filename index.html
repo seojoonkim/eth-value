@@ -35,16 +35,22 @@
       })();
     </script>
     
+    <!-- DNS Prefetch for faster connections -->
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//rliwxwhvvkgdmwzqelep.supabase.co">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Montserrat:wght@600;700&family=Outfit:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=M+PLUS+1p:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
         html.no-transition,
@@ -23291,119 +23297,271 @@
             log('📦 SUPABASE_CONFIG:', SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey ? 'KEY_EXISTS' : 'NO_KEY');
             
             // ═══════════════════════════════════════════════════════════════════
-            // STEP 0: Cache disabled - always load fresh data
+            // STEP 0: Check cache first for faster initial load
             // ═══════════════════════════════════════════════════════════════════
-            // const cachedData = getCachedData();
-            // Cache temporarily disabled to debug chart issues
-            
-            // Load from Supabase
+            const cachedData = getCachedData();
+            if (cachedData) {
+                log('📦 Using cached data for instant load');
+                return cachedData;
+            }
+
+            // Load from Supabase if no cache
             return await fetchFreshSupabaseData();
         }
         
+        // Supabase fetch 헬퍼 (전역으로 사용)
+        let supabaseHeaders = null;
+        let supabaseBaseUrl = null;
+
+        const safeFetchSupabase = async (url) => {
+            const tableName = url.split('/rest/v1/')[1]?.split('?')[0] || 'unknown';
+            try {
+                const res = await fetch(url, { headers: supabaseHeaders });
+                if (res.ok) {
+                    const data = await res.json();
+                    const result = Array.isArray(data) ? data : [];
+                    if (result.length === 0) {
+                        log(`   ⚠️ ${tableName}: empty result`);
+                    }
+                    return result;
+                }
+                log(`   ❌ ${tableName}: HTTP ${res.status}`);
+                return [];
+            } catch (e) {
+                log(`   ❌ ${tableName}: ${e.message}`);
+                return [];
+            }
+        };
+
         async function fetchFreshSupabaseData() {
             // Supabase가 설정되지 않으면 스킵
             if (!SUPABASE_CONFIG.url || SUPABASE_CONFIG.url.includes('YOUR_PROJECT_ID') || !SUPABASE_CONFIG.anonKey || SUPABASE_CONFIG.anonKey === 'YOUR_ANON_KEY') {
                 log('📦 Supabase not configured - using external APIs only');
                 return false;
             }
-            
-            log('📦 Loading historical data from Supabase...');
+
+            log('📦 Loading historical data from Supabase (Progressive)...');
             const startTime = performance.now();
-            
+
             try {
-                const baseUrl = SUPABASE_CONFIG.url + '/rest/v1';
-                const headers = {
+                supabaseBaseUrl = SUPABASE_CONFIG.url + '/rest/v1';
+                supabaseHeaders = {
                     'apikey': SUPABASE_CONFIG.anonKey,
                     'Authorization': 'Bearer ' + SUPABASE_CONFIG.anonKey
                 };
-                
+
                 const limit = 1100;
-                
-                // 안전한 fetch 헬퍼 (디버깅 로그 포함)
-                const safeFetchSupabase = async (url) => {
-                    const tableName = url.split('/rest/v1/')[1]?.split('?')[0] || 'unknown';
-                    try {
-                        const res = await fetch(url, { headers });
-                        if (res.ok) {
-                            const data = await res.json();
-                            const result = Array.isArray(data) ? data : [];
-                            if (result.length === 0) {
-                                log(`   ⚠️ ${tableName}: empty result`);
-                            }
-                            return result;
-                        }
-                        log(`   ❌ ${tableName}: HTTP ${res.status}`);
-                        return [];
-                    } catch (e) {
-                        log(`   ❌ ${tableName}: ${e.message}`);
-                        return [];
-                    }
-                };
-                
-                // 모든 테이블 병렬 로딩
-                const [priceData, tvlData, stakingData, gasData, activeData, supplyData, fgData, defiRevenueData,
-                       ethBtcData, dominanceData, dexData, stablesData, stablesEthData, fundingData, reserveData, openInterestData, blobData, lendingData, volatilityData, l2TvlData, nvtData, issuanceData, txData, l2TxData, l1TotalVolumeData, l2TotalVolumeData, bridgeVolumeData, l2DexVolumeData, bridgeTotalVolumeData, whaleTxData, mvrvData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
+                const baseUrl = supabaseBaseUrl;
+
+                // ═══════════════════════════════════════════════════════════════════
+                // PHASE 1: 핵심 데이터 먼저 로드 (가격, TVL, 스테이킹, MVRV, Fees)
+                // Valuation 계산에 필수적인 데이터 우선
+                // ═══════════════════════════════════════════════════════════════════
+                log('📦 Phase 1: Loading critical data...');
+                const phase1Start = performance.now();
+
+                const [priceData, tvlData, stakingData, l2TvlData, stablesData, stablesEthData,
+                       defiRevenueData, blobData, l1TotalVolumeData, l2TotalVolumeData, mvrvData, lendingData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_eth_price?select=date,close,volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_ethereum_tvl?select=date,tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_staking?select=date,total_staked_eth,avg_apr,total_validators&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l2_tvl?select=date,chain,tvl&order=date.desc&limit=${limit * 15}`),
+                    safeFetchSupabase(`${baseUrl}/historical_stablecoins?select=date,total_mcap&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_stablecoins_eth?select=date,total_mcap&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_protocol_fees?select=date,fees&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_blob_data?select=date,blob_count,blob_fee_eth&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l1_total_volume?select=date,eth_volume_usd,total_volume_usd&order=date.desc&limit=${limit}`),
+                    safeFetchSupabase(`${baseUrl}/historical_l2_total_volume?select=date,chain,native_volume_usd,total_volume_usd&order=date.desc&limit=${limit * 15}`),
+                    safeFetchSupabase(`${baseUrl}/historical_mvrv?select=date,spot_price,realized_price,mvrv_ratio,mvrv_pct&order=date.desc&limit=3000`),
+                    safeFetchSupabase(`${baseUrl}/historical_lending_tvl?select=date,total_tvl&order=date.desc&limit=${limit}`)
+                ]);
+
+                log(`📦 Phase 1 complete: ${Math.round(performance.now() - phase1Start)}ms`);
+
+                // Phase 1 데이터 즉시 저장 (UI 렌더링 가능하도록)
+                processPhase1Data(priceData, tvlData, stakingData, l2TvlData, stablesData, stablesEthData,
+                                  defiRevenueData, blobData, l1TotalVolumeData, l2TotalVolumeData, mvrvData, lendingData);
+
+                // ═══════════════════════════════════════════════════════════════════
+                // PHASE 2: 나머지 데이터 백그라운드 로드 (차트/보조 지표용)
+                // ═══════════════════════════════════════════════════════════════════
+                log('📦 Phase 2: Loading secondary data in background...');
+
+                // Phase 2는 비동기로 실행 (await 하지 않음)
+                loadPhase2Data(baseUrl, limit);
+
+                const elapsed = Math.round(performance.now() - startTime);
+                log(`📦 Supabase Phase 1 loaded in ${elapsed}ms`);
+
+                return true;
+            } catch (e) {
+                console.error('Supabase loading error:', e);
+                log('📦 Falling back to external APIs');
+                return false;
+            }
+        }
+
+        // Phase 1 데이터 처리 (핵심 데이터)
+        function processPhase1Data(priceData, tvlData, stakingData, l2TvlData, stablesData, stablesEthData,
+                                   defiRevenueData, blobData, l1TotalVolumeData, l2TotalVolumeData, mvrvData, lendingData) {
+            // 데이터 저장 (10개 이상일 때만)
+            if (priceData.length > 10) {
+                log(`   ✓ Price: ${priceData.length} records`);
+                state.supabasePriceHistory = priceData.map(d => ({
+                    date: new Date(d.date), value: parseFloat(d.close), volume: parseFloat(d.volume || 0)
+                })).reverse();
+            }
+
+            if (tvlData.length > 10) {
+                log(`   ✓ TVL: ${tvlData.length} records`);
+                state.supabaseTvlHistory = tvlData.map(d => ({ date: new Date(d.date), value: parseFloat(d.tvl) })).reverse();
+            }
+
+            if (stakingData.length > 10) {
+                log(`   ✓ Staking: ${stakingData.length} records`);
+                state.supabaseStakingHistory = stakingData.map(d => ({
+                    date: new Date(d.date), value: parseFloat(d.total_staked_eth || 0), apr: parseFloat(d.avg_apr || 0), validators: parseInt(d.total_validators || 0)
+                })).reverse();
+            }
+
+            if (l2TvlData.length > 10) {
+                log(`   ✓ L2 TVL: ${l2TvlData.length} records`);
+                const tvlByDate = {};
+                l2TvlData.forEach(d => {
+                    const dateKey = d.date;
+                    if (!tvlByDate[dateKey]) tvlByDate[dateKey] = 0;
+                    tvlByDate[dateKey] += parseFloat(d.tvl || 0);
+                });
+                state.supabaseL2TvlHistory = Object.entries(tvlByDate)
+                    .map(([date, value]) => ({ date: new Date(date), value }))
+                    .sort((a, b) => a.date - b.date);
+            }
+
+            if (stablesData.length > 10) {
+                log(`   ✓ Stablecoins: ${stablesData.length} records`);
+                state.supabaseStablesHistory = stablesData.map(d => ({ date: new Date(d.date), value: parseFloat(d.total_mcap || 0) })).reverse();
+            }
+
+            if (stablesEthData.length > 10) {
+                log(`   ✓ Stablecoins ETH: ${stablesEthData.length} records`);
+                state.supabaseStablesEthHistory = stablesEthData.map(d => ({ date: new Date(d.date), value: parseFloat(d.total_mcap || 0) })).reverse();
+            }
+
+            if (defiRevenueData.length > 10) {
+                log(`   ✓ Protocol Fees: ${defiRevenueData.length} records`);
+                state.supabaseDefiRevenueHistory = defiRevenueData.map(d => ({ date: new Date(d.date), value: parseFloat(d.fees || 0) })).reverse();
+            }
+
+            if (blobData.length > 10) {
+                log(`   ✓ Blob: ${blobData.length} records`);
+                state.supabaseBlobHistory = blobData.map(d => ({
+                    date: new Date(d.date),
+                    count: parseInt(d.blob_count || 0),
+                    fee: parseFloat(d.blob_fee_eth || 0)
+                })).reverse();
+            }
+
+            if (l1TotalVolumeData.length > 10) {
+                log(`   ✓ L1 Total Volume: ${l1TotalVolumeData.length} records`);
+                state.supabaseL1TotalVolumeHistory = l1TotalVolumeData.map(d => ({
+                    date: new Date(d.date),
+                    ethVolume: parseFloat(d.eth_volume_usd || 0),
+                    totalVolume: parseFloat(d.total_volume_usd || 0)
+                })).reverse();
+            }
+
+            if (l2TotalVolumeData.length > 10) {
+                log(`   ✓ L2 Total Volume: ${l2TotalVolumeData.length} records`);
+                const volByDate = {};
+                l2TotalVolumeData.forEach(d => {
+                    const dateKey = d.date;
+                    if (!volByDate[dateKey]) volByDate[dateKey] = { native: 0, total: 0 };
+                    volByDate[dateKey].native += parseFloat(d.native_volume_usd || 0);
+                    volByDate[dateKey].total += parseFloat(d.total_volume_usd || 0);
+                });
+                state.supabaseL2TotalVolumeHistory = Object.entries(volByDate)
+                    .map(([date, v]) => ({ date: new Date(date), nativeVolume: v.native, totalVolume: v.total }))
+                    .sort((a, b) => a.date - b.date);
+            }
+
+            if (mvrvData.length > 10) {
+                log(`   ✓ MVRV: ${mvrvData.length} records`);
+                state.supabaseMvrvHistory = mvrvData.map(d => ({
+                    date: new Date(d.date),
+                    spotPrice: parseFloat(d.spot_price || 0),
+                    realizedPrice: parseFloat(d.realized_price || 0),
+                    mvrvRatio: parseFloat(d.mvrv_ratio || 0),
+                    mvrvPct: parseFloat(d.mvrv_pct || 0)
+                })).reverse();
+            }
+
+            if (lendingData.length > 10) {
+                log(`   ✓ Lending: ${lendingData.length} records`);
+                state.supabaseLendingHistory = lendingData.map(d => ({ date: new Date(d.date), value: parseFloat(d.total_tvl || 0) })).reverse();
+            }
+        }
+
+        // Phase 2 데이터 로드 (백그라운드)
+        async function loadPhase2Data(baseUrl, limit) {
+            try {
+                const [gasData, activeData, supplyData, fgData, ethBtcData, dominanceData, dexData,
+                       fundingData, reserveData, openInterestData, volatilityData, nvtData, issuanceData,
+                       txData, l2TxData, bridgeVolumeData, l2DexVolumeData, bridgeTotalVolumeData,
+                       whaleTxData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData] = await Promise.all([
                     safeFetchSupabase(`${baseUrl}/historical_gas_burn?select=date,avg_gas_price_gwei,eth_burnt,transaction_count,gas_utilization,fees_usd&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_active_addresses?select=date,active_addresses&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_eth_supply?select=date,eth_supply,eth2_staking,burnt_fees&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_fear_greed?select=date,value,classification&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_protocol_fees?select=date,fees&order=date.desc&limit=${limit}`),  // defiRevenueData - DeFi Protocol Revenue
                     safeFetchSupabase(`${baseUrl}/historical_eth_btc?select=date,ratio&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_eth_dominance?select=date,eth_dominance&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_dex_volume?select=date,volume&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_stablecoins?select=date,total_mcap&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_stablecoins_eth?select=date,total_mcap&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_funding_rate?select=date,funding_rate&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_exchange_reserve?select=date,reserve_eth&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_open_interest?select=date,open_interest&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_blob_data?select=date,blob_count,blob_fee_eth&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_lending_tvl?select=date,total_tvl&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_volatility?select=date,volatility_30d&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_tvl?select=date,chain,tvl&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_nvt?select=date,nvt_ratio&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_daily_issuance?select=date,daily_issuance&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_transactions?select=date,tx_count&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_transactions?select=date,chain,tx_count&order=date.desc&limit=${limit * 15}`),
-                    // REMOVED: historical_l2_tx_volume - now using historical_l2_total_volume.native_volume_usd
-                    safeFetchSupabase(`${baseUrl}/historical_l1_total_volume?select=date,eth_volume_usd,total_volume_usd&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_total_volume?select=date,chain,native_volume_usd,total_volume_usd&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_dex_volume?select=date,blockchain,dex_volume_usd&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_bridge_total_volume?select=date,destination_chain,bridge_volume_usd&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_mvrv?select=date,spot_price,realized_price,mvrv_ratio,mvrv_pct&order=date.desc&limit=3000`),
                     safeFetchSupabase(`${baseUrl}/historical_stablecoin_volume?select=date,daily_volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_new_addresses?select=date,new_addresses&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_addresses?select=date,chain,active_addresses&order=date.desc&limit=${limit * 15}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_stablecoin_daily?select=date,total&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_stablecoin_volume?select=date,chain,total_volume&order=date.desc&limit=${limit * 15}`)
                 ]);
-                
-                // 데이터 저장 (10개 이상일 때만)
-                if (priceData.length > 10) {
-                    log(`   ✓ Price: ${priceData.length} records`);
-                    state.supabasePriceHistory = priceData.map(d => ({
-                        date: new Date(d.date), value: parseFloat(d.close), volume: parseFloat(d.volume || 0)
-                    })).reverse();
-                } else {
-                    log(`   ⚠️ Price: only ${priceData.length} records (need >10), will use Binance API`);
+
+                log('📦 Phase 2 complete, processing secondary data...');
+
+                // Phase 2 데이터 처리
+                processPhase2Data(gasData, activeData, supplyData, fgData, ethBtcData, dominanceData, dexData,
+                                  fundingData, reserveData, openInterestData, volatilityData, nvtData, issuanceData,
+                                  txData, l2TxData, bridgeVolumeData, l2DexVolumeData, bridgeTotalVolumeData,
+                                  whaleTxData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData);
+
+                // Phase 2 완료 후 차트 업데이트
+                if (typeof renderChartsFromData === 'function') {
+                    renderChartsFromData();
+                    log('📦 Charts updated with Phase 2 data');
                 }
-                
-                if (tvlData.length > 10) {
-                    log(`   ✓ TVL: ${tvlData.length} records`);
-                    state.supabaseTvlHistory = tvlData.map(d => ({ date: new Date(d.date), value: parseFloat(d.tvl) })).reverse();
-                }
-                
-                if (stakingData.length > 10) {
-                    log(`   ✓ Staking: ${stakingData.length} records`);
-                    state.supabaseStakingHistory = stakingData.map(d => ({
-                        date: new Date(d.date), value: parseFloat(d.total_staked_eth || 0), apr: parseFloat(d.avg_apr || 0), validators: parseInt(d.total_validators || 0)
-                    })).reverse();
-                }
-                
+
+                // 캐시 저장
+                saveCacheAfterPhase2();
+
+            } catch (e) {
+                log('📦 Phase 2 error (non-critical):', e.message);
+            }
+        }
+
+        // Phase 2 데이터 처리
+        function processPhase2Data(gasData, activeData, supplyData, fgData, ethBtcData, dominanceData, dexData,
+                                   fundingData, reserveData, openInterestData, volatilityData, nvtData, issuanceData,
+                                   txData, l2TxData, bridgeVolumeData, l2DexVolumeData, bridgeTotalVolumeData,
+                                   whaleTxData, stablecoinVolData, newAddrData, l2AddrData, l2StablecoinSupplyData, l2StablecoinVolData) {
+
                 if (gasData.length > 10) {
                     log(`   ✓ Gas: ${gasData.length} records`);
                     // Exclude today and yesterday (incomplete data causes spikes)
@@ -24027,25 +24185,25 @@
                 // Apply outlier filtering to Supabase data
                 // ═══════════════════════════════════════════════════════════════════
                 log('🔧 Applying outlier filtering...');
-                
+
                 // Filter Staking data (handles Pectra consolidation spikes)
                 if (state.supabaseStakingHistory?.length > 0) {
                     const beforeLen = state.supabaseStakingHistory.length;
                     state.supabaseStakingHistory = filterStakingData(state.supabaseStakingHistory);
                     log(`   Staking: ${beforeLen} → ${state.supabaseStakingHistory.length} points (filtered)`);
                 }
-                
+
                 // NVT data from Dune is accurate, no filtering needed
                 if (state.supabaseNvtHistory?.length > 0) {
                     const lastNvt = state.supabaseNvtHistory[state.supabaseNvtHistory.length - 1]?.value;
                     log(`   NVT: ${lastNvt?.toFixed(1)} (from Supabase)`);
                 }
-                
-                log(`📦 Supabase loading complete in ${(performance.now() - startTime).toFixed(0)}ms`);
-                
-                // ═══════════════════════════════════════════════════════════════════
-                // Save to cache for instant reload next time
-                // ═══════════════════════════════════════════════════════════════════
+
+                log('📦 Phase 2 processing complete');
+        }
+
+        // Phase 2 완료 후 캐시 저장
+        function saveCacheAfterPhase2() {
                 const cacheableState = {
                     supabasePriceHistory: state.supabasePriceHistory,
                     supabaseTvlHistory: state.supabaseTvlHistory,
@@ -24063,26 +24221,21 @@
                     supabaseLendingHistory: state.supabaseLendingHistory,
                     supabaseVolatilityHistory: state.supabaseVolatilityHistory,
                     supabaseNvtHistory: state.supabaseNvtHistory,
+                    supabaseL2TvlHistory: state.supabaseL2TvlHistory,
+                    supabaseL1TotalVolumeHistory: state.supabaseL1TotalVolumeHistory,
+                    supabaseL2TotalVolumeHistory: state.supabaseL2TotalVolumeHistory,
+                    supabaseMvrvHistory: state.supabaseMvrvHistory,
+                    supabaseDefiRevenueHistory: state.supabaseDefiRevenueHistory,
+                    supabaseStablesHistory: state.supabaseStablesHistory,
+                    supabaseStablesEthHistory: state.supabaseStablesEthHistory,
                     historicalFairValues: state.historicalFairValues,
                     price: state.price,
                     tvl: state.tvl,
                     stakedEth: state.stakedEth,
                     stakingApr: state.stakingApr
                 };
-                // setCachedData(cacheableState); // Cache disabled
-                
-                // Re-render valuations with complete data (dailySettlement now available)
-                if (typeof renderValuations === 'function') {
-                    renderValuations();
-                    log('   → Valuations re-rendered with complete Supabase data');
-                }
-                
-                return true;
-            } catch (e) {
-                console.error('Supabase loading error:', e);
-                log('📦 Falling back to external APIs');
-                return false;
-            }
+                setCachedData(cacheableState);
+                log('📦 Cache saved with Phase 2 data');
         }
 
         // Fetch functions
@@ -29953,10 +30106,11 @@
 
             try {
                 // ═══════════════════════════════════════════════════════════════════
-                // STEP 1: Supabase 로드 (10초 타임아웃) - 느린 네트워크 대응
+                // STEP 1: Supabase Phase 1 로드 (5초 타임아웃) - Progressive Loading
+                // Phase 1은 핵심 데이터만 로드하므로 빠름, Phase 2는 백그라운드에서 실행
                 // ═══════════════════════════════════════════════════════════════════
                 perf.start('supabase');
-                const supabaseTimeout = new Promise(r => setTimeout(() => r('timeout'), 10000));
+                const supabaseTimeout = new Promise(r => setTimeout(() => r('timeout'), 5000));
                 const result = await Promise.race([loadHistoricalFromSupabase(), supabaseTimeout]);
                 perf.end('supabase');
 
