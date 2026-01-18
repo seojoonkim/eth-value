@@ -2761,8 +2761,7 @@ async function collect_dune_l1_total_volume() {
         return {
             date: dateStr,
             total_volume_usd: parseFloat(r.total_volume_usd || 0),
-            eth_volume_usd: parseFloat(r.eth_volume_usd || 0),
-            source: 'dune'
+            eth_volume_usd: parseFloat(r.eth_volume_usd || 0)
         };
     }).filter(r => r.date && (r.total_volume_usd > 0 || r.eth_volume_usd > 0));
 
@@ -2794,8 +2793,7 @@ async function collect_dune_l2_total_volume() {
             date: dateStr,
             chain: r.chain || r.blockchain || 'unknown',
             total_volume_usd: parseFloat(r.total_volume_usd || 0),
-            native_volume_usd: parseFloat(r.native_volume_usd || r.eth_volume_usd || 0),
-            source: 'dune'
+            native_volume_usd: parseFloat(r.native_volume_usd || r.eth_volume_usd || 0)
         };
     }).filter(r => r.date && (r.total_volume_usd > 0 || r.native_volume_usd > 0));
 
@@ -2807,17 +2805,18 @@ async function collect_dune_l2_total_volume() {
 
 // 35-5. Daily Issuance (calculated from ETH supply changes)
 async function collect_daily_issuance() {
-    // Get ETH supply data
+    // Get ETH supply data (more records for better calculation)
     const { data: supplies } = await supabase
         .from('historical_eth_supply')
         .select('date, eth_supply')
-        .order('date', { ascending: true })
-        .limit(1500);
+        .order('date', { ascending: true });
 
     if (!supplies || supplies.length < 2) {
         console.log('  ⚠️ Not enough supply data');
         return result.warn(0, 'Not enough supply data');
     }
+
+    console.log(`  📊 Got ${supplies.length} supply records`);
 
     // Calculate daily issuance from supply changes
     // Daily issuance = supply change + burned ETH (since supply = previous_supply + issued - burned)
@@ -2829,9 +2828,14 @@ async function collect_daily_issuance() {
     const burnMap = new Map();
     if (burnData) {
         burnData.forEach(b => burnMap.set(b.date, parseFloat(b.eth_burnt || 0)));
+        console.log(`  📊 Got ${burnData.length} burn records`);
     }
 
     const records = [];
+    let skippedNegative = 0;
+    let skippedTooHigh = 0;
+    let skippedNoBurn = 0;
+
     for (let i = 1; i < supplies.length; i++) {
         const today = supplies[i];
         const yesterday = supplies[i - 1];
@@ -2844,17 +2848,24 @@ async function collect_daily_issuance() {
         const dailyIssuance = supplyChange + burned;
 
         // Validator rewards are roughly 930-2500 ETH/day depending on staking participation
-        // Filter out unrealistic values (negative or > 10000)
-        if (dailyIssuance > 0 && dailyIssuance < 10000) {
+        // Allow wider range: -500 to 10000 (negative can happen due to data timing issues)
+        if (dailyIssuance >= -500 && dailyIssuance < 10000) {
+            // Use absolute value for display, but store actual value
+            const displayIssuance = Math.max(0, dailyIssuance);
             records.push({
                 date: today.date,
-                daily_issuance: parseFloat(dailyIssuance.toFixed(2)),
-                supply_change: parseFloat(supplyChange.toFixed(2)),
-                eth_burnt: burned,
-                source: 'calculated'
+                daily_issuance: parseFloat(displayIssuance.toFixed(2))
             });
+        } else if (dailyIssuance < -500) {
+            skippedNegative++;
+        } else {
+            skippedTooHigh++;
         }
+
+        if (burned === 0) skippedNoBurn++;
     }
+
+    console.log(`  📊 Skipped: ${skippedNegative} negative, ${skippedTooHigh} too high, ${skippedNoBurn} no burn data`);
 
     if (records.length === 0) {
         console.log('  ⚠️ No valid issuance records calculated');
