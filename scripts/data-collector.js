@@ -2740,6 +2740,133 @@ async function collect_dune_bridge_total_volume() {
     return result.ok(saved);
 }
 
+// 35-3. L1 Total Volume (Dune) - ETH + all ERC-20 transfers
+async function collect_dune_l1_total_volume() {
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
+
+    const rows = await fetchDuneResults(DUNE_QUERIES.L1_TOTAL_VOLUME, 2000);
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.L1_TOTAL_VOLUME);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
+
+    const records = rows.map(r => {
+        let dateStr = r.date || r.block_date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            total_volume_usd: parseFloat(r.total_volume_usd || 0),
+            eth_volume_usd: parseFloat(r.eth_volume_usd || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && (r.total_volume_usd > 0 || r.eth_volume_usd > 0));
+
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_l1_total_volume', records);
+    return result.ok(saved);
+}
+
+// 35-4. L2 Total Volume (Dune) - All L2 chains ETH + tokens
+async function collect_dune_l2_total_volume() {
+    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
+
+    const rows = await fetchDuneResults(DUNE_QUERIES.L2_TOTAL_VOLUME, 15000);
+    if (!rows) {
+        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.L2_TOTAL_VOLUME);
+        return result.warn(0, 'Query failed');
+    }
+    if (rows.length === 0) {
+        console.log('  ⚠️ Query returned empty - check if scheduled');
+        return result.warn(0, 'No data from Dune');
+    }
+
+    const records = rows.map(r => {
+        let dateStr = r.date || r.block_date || '';
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        return {
+            date: dateStr,
+            chain: r.chain || r.blockchain || 'unknown',
+            total_volume_usd: parseFloat(r.total_volume_usd || 0),
+            native_volume_usd: parseFloat(r.native_volume_usd || r.eth_volume_usd || 0),
+            source: 'dune'
+        };
+    }).filter(r => r.date && (r.total_volume_usd > 0 || r.native_volume_usd > 0));
+
+    console.log(`  ✓ ${records.length} records`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
+    const saved = await upsertBatch('historical_l2_total_volume', records, 'date,chain');
+    return result.ok(saved);
+}
+
+// 35-5. Daily Issuance (calculated from ETH supply changes)
+async function collect_daily_issuance() {
+    // Get ETH supply data
+    const { data: supplies } = await supabase
+        .from('historical_eth_supply')
+        .select('date, eth_supply')
+        .order('date', { ascending: true })
+        .limit(1500);
+
+    if (!supplies || supplies.length < 2) {
+        console.log('  ⚠️ Not enough supply data');
+        return result.warn(0, 'Not enough supply data');
+    }
+
+    // Calculate daily issuance from supply changes
+    // Daily issuance = supply change + burned ETH (since supply = previous_supply + issued - burned)
+    const { data: burnData } = await supabase
+        .from('historical_gas_burn')
+        .select('date, eth_burnt')
+        .order('date', { ascending: true });
+
+    const burnMap = new Map();
+    if (burnData) {
+        burnData.forEach(b => burnMap.set(b.date, parseFloat(b.eth_burnt || 0)));
+    }
+
+    const records = [];
+    for (let i = 1; i < supplies.length; i++) {
+        const today = supplies[i];
+        const yesterday = supplies[i - 1];
+
+        const supplyChange = parseFloat(today.eth_supply) - parseFloat(yesterday.eth_supply);
+        const burned = burnMap.get(today.date) || 0;
+
+        // Daily Issuance = Supply Change + Burned
+        // (because: new_supply = old_supply + issued - burned)
+        const dailyIssuance = supplyChange + burned;
+
+        // Validator rewards are roughly 930-2500 ETH/day depending on staking participation
+        // Filter out unrealistic values (negative or > 10000)
+        if (dailyIssuance > 0 && dailyIssuance < 10000) {
+            records.push({
+                date: today.date,
+                daily_issuance: parseFloat(dailyIssuance.toFixed(2)),
+                supply_change: parseFloat(supplyChange.toFixed(2)),
+                eth_burnt: burned,
+                source: 'calculated'
+            });
+        }
+    }
+
+    if (records.length === 0) {
+        console.log('  ⚠️ No valid issuance records calculated');
+        return result.warn(0, 'No valid records');
+    }
+
+    console.log(`  ✓ ${records.length} issuance records calculated`);
+    if (records.length > 0) console.log(`  📅 Latest: ${records[records.length - 1].date}`);
+    const saved = await upsertBatch('historical_daily_issuance', records);
+    return result.ok(saved);
+}
+
 // 36. Whale Transactions (Dune)
 async function collect_dune_whale() {
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return 0; }
@@ -3043,25 +3170,37 @@ async function main() {
             collect_dune_bridge(),
             collect_dune_l2_dex_volume(),
             collect_dune_bridge_total_volume(),
+            collect_dune_l1_total_volume(),
+            collect_dune_l2_total_volume(),
             collect_dune_whale(),
             collect_dune_new_addr(),
             collect_dune_mvrv(),
             collect_dune_stablecoin_vol(),
             collect_dune_gas_price()
         ]);
-        
-        const duneNames = ['dune_blob', 'dune_active_addr', 'dune_l2_addr', 'dune_bridge', 'dune_l2_dex_volume', 'dune_bridge_total_volume', 'dune_whale', 'dune_new_addr', 'dune_mvrv', 'dune_stablecoin_vol', 'dune_gas_price'];
+
+        const duneNames = ['dune_blob', 'dune_active_addr', 'dune_l2_addr', 'dune_bridge', 'dune_l2_dex_volume', 'dune_bridge_total_volume', 'dune_l1_total_volume', 'dune_l2_total_volume', 'dune_whale', 'dune_new_addr', 'dune_mvrv', 'dune_stablecoin_vol', 'dune_gas_price'];
         duneResults.forEach((res, i) => {
             results[duneNames[i]] = wrapResult(res, true);
             const r = results[duneNames[i]];
             if (r.status === 'fail') console.log(`  ❌ ${duneNames[i]}: ${r.msg}`);
             else if (r.status === 'warn' && r.count === 0) console.log(`  ⚠️ ${duneNames[i]}: ${r.msg}`);
         });
-        
+
         console.log(`  ✓ Dune: ${((Date.now() - duneStart) / 1000).toFixed(1)}s`);
     } else {
         console.log('  ⏭️ Skipped (no API key)');
     }
+
+    // ============================================================
+    // PHASE 5: Calculated metrics (depends on Phase 3 & 4)
+    // ============================================================
+    console.log('\n📐 Phase 5: Calculated Metrics...');
+    const calcStart = Date.now();
+
+    results.daily_issuance = await runCollector('Daily Issuance', collect_daily_issuance, 41, 41);
+
+    console.log(`  ✓ Calculated: ${((Date.now() - calcStart) / 1000).toFixed(1)}s`);
     
     // ============================================================
     // Summary
@@ -3133,7 +3272,7 @@ async function main() {
             failed_count: failed,
             failed_datasets: JSON.stringify(failedDatasets),
             duration_seconds: duration,
-            total_datasets: 38  // l1_volume, l2_volume 제거됨 (Total Volume 테이블로 통합)
+            total_datasets: 41  // +3: l1_total_volume, l2_total_volume, daily_issuance
         });
         
         if (error) console.error('Failed to save scheduler log:', error.message);
