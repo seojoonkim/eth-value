@@ -1056,16 +1056,43 @@ IMPORTANT:
                 if (codeBlockMatch) {
                     jsonStr = codeBlockMatch[1].trim();
                 }
-                // Fix: replace literal control characters inside JSON string values
-                // Claude sometimes embeds raw newlines/tabs in JSON string values
-                jsonStr = jsonStr.replace(/"((?:[^"\\]|\\.)*)"/gs, (match, inner) => {
-                    const fixed = inner
-                        .replace(/\n/g, '\\n')
-                        .replace(/\r/g, '\\r')
-                        .replace(/\t/g, '\\t');
-                    return '"' + fixed + '"';
-                });
-                const parsed = JSON.parse(jsonStr);
+
+                // Try direct JSON parse first
+                let parsed = null;
+                try {
+                    parsed = JSON.parse(jsonStr);
+                } catch (_e) {
+                    // Fix 1: Replace literal control chars (newlines etc) in JSON string values
+                    let fixed = jsonStr.replace(/"((?:[^"\\]|\\.)*)"/gs, (match, inner) => {
+                        return '"' + inner.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t') + '"';
+                    });
+                    try {
+                        parsed = JSON.parse(fixed);
+                    } catch (_e2) {
+                        // Fix 2: Extract fields with targeted regex (handles unescaped quotes in text)
+                        const scoresMatch = jsonStr.match(/"scores"\s*:\s*\[(\d+),\s*(\d+),\s*(\d+)\]/);
+                        const scores = scoresMatch ? [+scoresMatch[1], +scoresMatch[2], +scoresMatch[3]] : [50, 50, 50];
+                        
+                        // Extract reasoning array (each item between ["..." to "..."] )
+                        const reasoningMatch = jsonStr.match(/"reasoning"\s*:\s*\[([^\]]*)\]/s);
+                        let reasoning = ['No reasoning', 'No reasoning', 'No reasoning'];
+                        if (reasoningMatch) {
+                            const items = [...reasoningMatch[1].matchAll(/"((?:[^"\\]|\\.)*)"/gs)];
+                            if (items.length >= 3) reasoning = items.slice(0,3).map(m => m[1]);
+                        }
+                        
+                        // Extract text: take everything after "text":" until closing "}
+                        const textIdx = jsonStr.indexOf('"text":"');
+                        let textVal = content;
+                        if (textIdx !== -1) {
+                            textVal = jsonStr.slice(textIdx + 8).replace(/"\s*\}\s*$/, '').replace(/\\n/g, '\n');
+                        }
+                        
+                        console.log('  Parsed via targeted regex (unescaped quotes in content)');
+                        return { scores, reasoning, text: textVal };
+                    }
+                }
+
                 return {
                     scores: parsed.scores || [50, 50, 50],
                     reasoning: parsed.reasoning || ['No reasoning provided', 'No reasoning provided', 'No reasoning provided'],
