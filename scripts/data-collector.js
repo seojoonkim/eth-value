@@ -1024,10 +1024,19 @@ IMPORTANT:
             try {
                 // Handle markdown code blocks (e.g., ```json ... ```)
                 let jsonStr = content;
-                const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+                const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/s);
                 if (codeBlockMatch) {
                     jsonStr = codeBlockMatch[1].trim();
                 }
+                // Fix: replace literal control characters inside JSON string values
+                // Claude sometimes embeds raw newlines/tabs in JSON string values
+                jsonStr = jsonStr.replace(/"((?:[^"\\]|\\.)*)"/gs, (match, inner) => {
+                    const fixed = inner
+                        .replace(/\n/g, '\\n')
+                        .replace(/\r/g, '\\r')
+                        .replace(/\t/g, '\\t');
+                    return '"' + fixed + '"';
+                });
                 const parsed = JSON.parse(jsonStr);
                 return {
                     scores: parsed.scores || [50, 50, 50],
