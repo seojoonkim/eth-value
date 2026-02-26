@@ -1022,7 +1022,13 @@ IMPORTANT:
         if (isEnglish) {
             // 영어: JSON 파싱 (scores + reasoning + text)
             try {
-                const parsed = JSON.parse(content);
+                // Handle markdown code blocks (e.g., ```json ... ```)
+                let jsonStr = content;
+                const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+                if (codeBlockMatch) {
+                    jsonStr = codeBlockMatch[1].trim();
+                }
+                const parsed = JSON.parse(jsonStr);
                 return {
                     scores: parsed.scores || [50, 50, 50],
                     reasoning: parsed.reasoning || ['No reasoning provided', 'No reasoning provided', 'No reasoning provided'],
