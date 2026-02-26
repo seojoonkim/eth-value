@@ -14,6 +14,8 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DUNE_API_KEY = process.env.DUNE_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CRYPTOQUANT_API_KEY = process.env.CRYPTOQUANT_API_KEY;
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_ALERT_CHAT_ID = process.env.TELEGRAM_ALERT_CHAT_ID || '46291309';
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_KEY');
@@ -34,6 +36,32 @@ if (!CRYPTOQUANT_API_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+/**
+ * Telegram 알림 전송 (commentary 실패 등 긴급 이슈)
+ */
+async function sendTelegramAlert(message) {
+    if (!TELEGRAM_BOT_TOKEN) {
+        console.warn('⚠️ TELEGRAM_BOT_TOKEN 없음 — Telegram 알림 스킵');
+        return;
+    }
+    try {
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: TELEGRAM_ALERT_CHAT_ID, text: message, parse_mode: 'HTML' })
+        });
+        if (res.ok) {
+            console.log('📬 Telegram 알림 전송 완료');
+        } else {
+            const err = await res.text();
+            console.error(`📬 Telegram 알림 실패: ${res.status} - ${err}`);
+        }
+    } catch (e) {
+        console.error('📬 Telegram 알림 오류:', e.message);
+    }
+}
 
 // 결과 상태 헬퍼
 const result = {
@@ -3278,7 +3306,20 @@ async function main() {
     // AI Daily Commentary Generation
     // ============================================================
     const commentaryResults = await generateAllCommentaries();
-    
+
+    // 🚨 Commentary 실패 알림 (절반 이상 실패 시 Telegram 전송)
+    if (commentaryResults.success < 4) {
+        const today = new Date().toISOString().split('T')[0];
+        const alertMsg =
+            `🚨 <b>ETHval Commentary 생성 실패</b>\n\n` +
+            `📅 날짜: ${today}\n` +
+            `✅ 성공: ${commentaryResults.success}/7\n` +
+            `❌ 실패: ${7 - commentaryResults.success}/7\n\n` +
+            `원인 확인 필요: API 키, 모델명, 네트워크 이슈 등\n` +
+            `🔗 https://github.com/seojoonkim/eth-value/actions`;
+        await sendTelegramAlert(alertMsg);
+    }
+
     // Save scheduler log to Supabase
     const endTime = Date.now();
     const duration = Math.round((endTime - startTime) / 1000);
