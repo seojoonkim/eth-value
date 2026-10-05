@@ -29215,6 +29215,12 @@
             if (models.length === 0 || !state.price || state.price <= 0) {
                 return;
             }
+            // ★ Remember the last good inputs so repeat visits can show the headline immediately
+            try {
+                if (!window.__ethvalSnapshotRender && models.every(m => Number.isFinite(m.price) && m.price > 0)) {
+                    localStorage.setItem('ethval:lastModelData', JSON.stringify({ t: Date.now(), d: getCurrentModelData() }));
+                }
+            } catch (e) {}
 
             let buys = 0, holds = 0, sells = 0;
             const maxDiff = 100; // ±100% range for bar
@@ -30053,9 +30059,33 @@
             }
         }
 
+        function renderValuationSnapshot() {
+            let snap;
+            try { snap = JSON.parse(localStorage.getItem('ethval:lastModelData') || 'null'); } catch (e) { return; }
+            if (!snap || !snap.d || Date.now() - snap.t > 24 * 3600 * 1000) return;
+            const d = snap.d;
+            const map = { price: d.price, circulatingSupply: d.supply, tvl: d.tvl, stakedEth: d.stakedEth, l2Tvl: d.l2Tvl,
+                fees: d.fees, blobFees: 0, stablecoins: d.stables, stakingApr: d.stakingApr, dailySettlement: d.dailySettlement,
+                l1TotalVolume: d.l1TotalVolume, l2TotalVolume: d.l2TotalVolume, ethInDefi: d.ethInDefi };
+            const saved = {};
+            Object.keys(map).forEach(k => { saved[k] = state[k]; if (!(state[k] > 0)) state[k] = map[k]; });
+            window.__ethvalSnapshotRender = true;
+            try { renderValuations(true); } catch (e) { console.warn('snapshot render failed', e); }
+            finally {
+                window.__ethvalSnapshotRender = false;
+                // Restore so real data loading is never mixed with snapshot values
+                Object.keys(saved).forEach(k => { if (state[k] === map[k]) state[k] = saved[k]; });
+            }
+        }
+
         async function fetchAll() {
             perf.start('fetchAll');
             log('========== fetchAll START ==========');
+
+            // ★ Fast first paint: live price in parallel with Supabase, plus last snapshot (<=24h) for the headline
+            window.__ethvalPricePromise = fetchBinancePrice().catch(e => { window.__ethvalPricePromise = null; throw e; });
+            window.__ethvalPricePromise.catch(() => {});
+            renderValuationSnapshot();
 
             try {
                 // ═══════════════════════════════════════════════════════════════════
@@ -30855,7 +30885,7 @@
 
                 // ★ Phase 1: 가격/CoinGecko 병렬 로드 (Overview 값 즉시 표시용)
                 const phase1Calls = [
-                    { name: 'binancePrice', fn: fetchBinancePrice },
+                    { name: 'binancePrice', fn: () => window.__ethvalPricePromise || fetchBinancePrice() },
                     { name: 'coinGecko', fn: fetchCoinGecko }
                 ];
 
