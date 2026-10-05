@@ -25414,13 +25414,23 @@
             } catch (e) { console.error('Global error:', e); }
         }
 
+
+        // ★ Supabase 히스토리가 "충분하고 최신"인지 판단 (수집 중단 시 외부 API로 보충)
+        const SUPABASE_STALE_DAYS = 3;
+        function isFreshHistory(history, minPoints = 30) {
+            if (!Array.isArray(history) || history.length < minPoints) return false;
+            const last = history[history.length - 1];
+            const t = last && last.date ? new Date(last.date).getTime() : NaN;
+            return Number.isFinite(t) && (Date.now() - t) <= SUPABASE_STALE_DAYS * 86400000;
+        }
+
         async function fetchDefiLlama() {
             // Supabase 데이터가 충분하면 API 호출 건너뛰기
             const hasAllData = 
-                state.supabaseTvlHistory?.length > 30 &&
-                state.supabaseDexHistory?.length > 30 &&
-                state.supabaseFeesHistory?.length > 30 &&
-                state.supabaseStablecoinHistory?.length > 30;
+                isFreshHistory(state.supabaseTvlHistory, 31) &&
+                isFreshHistory(state.supabaseDexHistory, 31) &&
+                isFreshHistory(state.supabaseFeesHistory, 31) &&
+                isFreshHistory(state.supabaseStablecoinHistory, 31);
             
             if (hasAllData) {
                 log('fetchDefiLlama: Skipping - Supabase data sufficient');
@@ -28513,8 +28523,10 @@
             history = ChartManager.prepare(history, effectivePeriod);
             
             // 데이터 없으면 fallback 생성
+            let usedFallback = false;
             if (!history || history.length < 2) {
                 log(`${canvasId}: no data, generating fallback...`);
+                usedFallback = true;
                 history = [];
                 for (let i = effectivePeriod; i >= 0; i--) {
                     history.push({
@@ -28531,7 +28543,8 @@
             // ═══════════════════════════════════════════════════════════════════
             // ★★★ 차트 끝값으로 UI 값 자동 동기화 ★★★
             // ═══════════════════════════════════════════════════════════════════
-            if (chartLastValue !== null) {
+            // fallback(0으로 채운 가짜 히스토리)일 때는 실제 값(state/UI)을 덮어쓰지 않음
+            if (chartLastValue !== null && !usedFallback) {
                 const valueMapping = {
                     'l1Volume': { el: 'l1-volume-value', fmt: v => fmt.usd(v), state: 'l1DailyVolume' },
                     'l1TotalVolume': { el: 'l1-total-volume-value', fmt: v => '$' + (v / 1e9).toFixed(1) + 'B', state: 'l1TotalVolume' },
@@ -29231,6 +29244,7 @@
                 const toggle = card.querySelector('.model-toggle input');
                 if (toggle && toggle.checked) {
                     const price = parseFloat(card.dataset.price);
+                    if (!Number.isFinite(price) || price <= 0) return; // 값 없는 모델은 평균에서 제외
                     sum += price;
                     count++;
                     prices.push(price);
@@ -30777,41 +30791,41 @@
                     apiCalls.push({ name: 'volumeCoinGecko', fn: () => fetchVolumeFromCoinGecko(365) });
                 }
 
-                if (!state.supabaseTvlHistory?.length || state.supabaseTvlHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseTvlHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'defiLlama', fn: fetchDefiLlama });
                 }
 
-                if (!state.supabaseStakingHistory?.length || state.supabaseStakingHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseStakingHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'staking', fn: fetchStaking });
                 }
 
-                if (!state.supabaseFundingHistory?.length || state.supabaseFundingHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseFundingHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'fundingRate', fn: fetchFundingRate });
                 }
 
-                if (!state.supabaseStablecoinHistory?.length || state.supabaseStablecoinHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseStablecoinHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'stablecoinMcap', fn: fetchStablecoinMcap });
                 }
 
-                if (!state.supabaseReserveHistory?.length || state.supabaseReserveHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseReserveHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'exchangeReserve', fn: fetchExchangeReserve });
                 }
 
-                if (!state.supabaseGasHistory?.length || state.supabaseGasHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseGasHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'gasDisplay', fn: updateGasPriceDisplay });
                     apiCalls.push({ name: 'gasPrice', fn: fetchGasPrice });
                 }
 
-                if (!state.supabaseBlobHistory?.length || state.supabaseBlobHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseBlobHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'blobFees', fn: fetchBlobFees });
                 }
 
-                if (!state.supabaseLendingHistory?.length || state.supabaseLendingHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseLendingHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'lendingTVL', fn: fetchLendingProtocolsTVL });
                 }
 
-                if (!state.supabaseDominanceHistory?.length || state.supabaseDominanceHistory.length < MIN_DATA_POINTS ||
-                    !state.supabaseEthBtcHistory?.length || state.supabaseEthBtcHistory.length < MIN_DATA_POINTS) {
+                if (!isFreshHistory(state.supabaseDominanceHistory, MIN_DATA_POINTS) ||
+                    !isFreshHistory(state.supabaseEthBtcHistory, MIN_DATA_POINTS)) {
                     apiCalls.push({ name: 'dominanceEthBtc', fn: () => fetchDominanceAndEthBtc(1095) });
                 }
 
