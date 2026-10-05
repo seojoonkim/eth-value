@@ -37,13 +37,11 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Montserrat:wght@600;700&family=Outfit:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=M+PLUS+1p:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://rliwxedrifwxbudcutqs.supabase.co" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
@@ -195,7 +193,7 @@
             --weight-bold: 700;
             
             /* Legacy aliases (하위 호환) */
-            --text-2xs: 9px;
+            --text-2xs: 10px;
             --text-base: var(--text-sm);
             --text-5xl: 22px;
             --text-6xl: var(--text-3xl);
@@ -14361,6 +14359,30 @@
             }
         }, true);
     </script>
+    <style id="ethval-design-fixes">
+        /* 2026-10 design fixes */
+        /* Simulator: 1fr kept min-content width, so sliders overflowed 27px on phones */
+        .simulator-box-content { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+        .simulator-box-content > * { min-width: 0; }
+        @media (max-width: 768px) {
+            .simulator-box-content { grid-template-columns: minmax(0, 1fr); }
+            /* Onboarding banner started under the taller mobile header, clipping its first line */
+            .onboarding-banner { top: 76px; }
+            /* "online" pill sat underneath the floating login badge */
+            .live-visitors { bottom: 72px; }
+        }
+        /* Smallest text was 9px; raise to a readable floor */
+        .forum-table-header, .forum-post-category { font-size: 10px; }
+        /* Number columns line up when values change */
+        .model-price, .summary-value, .legend-value, .method-chart-value { font-variant-numeric: tabular-nums; }
+        /* Simulator result list: 2 columns overflowed by 12px on phones */
+        .sim-breakdown-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .sim-breakdown-item { min-width: 0; }
+        @media (max-width: 480px) {
+            .sim-breakdown-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+            .sim-breakdown-item:nth-last-child(2) { border-bottom: 1px solid var(--border); }
+        }
+    </style>
 </head>
 <body>
     <a id="top"></a>
@@ -14565,7 +14587,7 @@
                     
                     <!-- Simon Contact Info -->
                     <div class="summary-cta">
-                        <img src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;">
+                        <img loading="lazy" decoding="async" src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;">
                         <span class="contact-name">Simon Kim</span>
                         <span class="contact-title">CEO, Hashed</span>
                         <span class="contact-divider">|</span>
@@ -17375,7 +17397,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-write-row">
-                                    <img class="modal-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                    <img loading="lazy" decoding="async" class="modal-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                                     <div class="modal-write-input">
                                         <textarea placeholder="${t('modal.placeholder')}" maxlength="1000" id="modal-textarea-${modelId}" oninput="updatePostBtnState(this)"></textarea>
                                         <button class="modal-submit" id="modal-submit-${modelId}" onclick="submitModalReview('${modelId}')">${t('modal.post')}</button>
@@ -17773,13 +17795,46 @@
         window.initSimulatorGatedInteraction = initSimulatorGatedInteraction;
         
         // Load model ratings (comments 테이블의 rating에서)
+        // ★ 초기 렌더링 시 모델별로 72번 나가던 댓글 요청을 1번으로 합침.
+        //   글쓰기/삭제 등 이후 갱신은 invalidateCommentsCache() 후 개별 조회.
+        let _commentsBatch = null;
+        let _commentsBatchUsable = true;
+        function invalidateCommentsCache() { _commentsBatch = null; _commentsBatchUsable = false; }
+        function loadAllCommentsOnce() {
+            if (!_commentsBatchUsable) return Promise.resolve(null);
+            if (!_commentsBatch) {
+                _commentsBatch = supabaseClient
+                    .from('comments')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5000)
+                    .then(({ data, error }) => {
+                        if (error || !Array.isArray(data) || data.length >= 5000) return null;
+                        const byModel = {};
+                        data.forEach(c => { (byModel[c.model_id] = byModel[c.model_id] || []).push(c); });
+                        return byModel;
+                    })
+                    .catch(() => null);
+                // 짧게만 공유 (초기 렌더링 묶음 전용)
+                setTimeout(() => { _commentsBatchUsable = false; _commentsBatch = null; }, 15000);
+            }
+            return _commentsBatch;
+        }
+
         async function loadModelRatings(modelId) {
-            const { data, error } = await supabaseClient
-                .from('comments')
-                .select('rating, user_id')
-                .eq('model_id', modelId)
-                .not('rating', 'is', null)
-                .is('parent_id', null);
+            const batch = await loadAllCommentsOnce();
+            let data, error;
+            if (batch) {
+                data = (batch[modelId] || []).filter(c => c.rating != null && !c.parent_id)
+                    .map(c => ({ rating: c.rating, user_id: c.user_id }));
+            } else {
+                ({ data, error } = await supabaseClient
+                    .from('comments')
+                    .select('rating, user_id')
+                    .eq('model_id', modelId)
+                    .not('rating', 'is', null)
+                    .is('parent_id', null));
+            }
             
             if (error) {
                 console.error('Error loading ratings:', error);
@@ -17806,6 +17861,8 @@
         
         // Load comments/reviews
         async function loadComments(modelId) {
+            const batch = await loadAllCommentsOnce();
+            if (batch) return (batch[modelId] || []).slice(0, 100);
             const { data, error } = await supabaseClient
                 .from('comments')
                 .select('*')
@@ -17846,6 +17903,7 @@
                 
                 if (existingReview) {
                     // 기존 별점 리뷰를 피드백 글로 변환
+                    invalidateCommentsCache();
                     await supabaseClient
                         .from('comments')
                         .update({ rating: null })
@@ -17853,6 +17911,8 @@
                     log('Converted existing review to comment:', existingReview.id);
                 }
             }
+            
+            invalidateCommentsCache();
             
             const { data, error } = await supabaseClient.from('comments').insert({
                 model_id: modelId,
@@ -17917,7 +17977,7 @@
             const replyArea = document.createElement('div');
             replyArea.className = 'reply-input-area';
             replyArea.innerHTML = `
-                <img class="ig-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                <img loading="lazy" decoding="async" class="ig-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                 <input type="text" placeholder="Reply to @${authorHandle}..." maxlength="280" id="reply-input-${commentId}" onkeypress="if(event.key==='Enter')submitReply('${commentId}', '${modelId}')">
                 <button class="ig-post-btn" onclick="submitReply('${commentId}', '${modelId}')">Post</button>
             `;
@@ -17950,7 +18010,7 @@
                 
                 return `
                     <div class="comment-item ${isReply ? 'comment-reply' : ''}" data-comment-id="${c.id}" data-parent-id="${c.parent_id || ''}">
-                        <img class="comment-avatar" src="${c.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                        <img loading="lazy" decoding="async" class="comment-avatar" src="${c.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                         <div class="comment-body">
                             <div class="comment-header">
                                 <a class="comment-author-link" href="https://x.com/${c.user_handle}" target="_blank" rel="noopener noreferrer">${c.user_name || 'User'}</a>
@@ -18107,7 +18167,7 @@
                                 const handle = user?.user_handle || '';
                                 return `
                                     <a class="liker-item" href="https://x.com/${handle}" target="_blank" rel="noopener">
-                                        <img class="liker-avatar" src="${user?.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                        <img loading="lazy" decoding="async" class="liker-avatar" src="${user?.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                                         <div class="liker-info">
                                             <span class="liker-name">${user?.user_name || user?.user_handle || 'Unknown'}</span>
                                             ${handle ? `<span class="liker-handle">@${handle}</span>` : ''}
@@ -18202,6 +18262,7 @@
                 t('alert.deleteTitle'),
                 t('alert.deleteMessage'),
                 async () => {
+                    invalidateCommentsCache();
                     const { error } = await supabaseClient
                         .from('comments')
                         .delete()
@@ -18392,7 +18453,7 @@
                         ${topReviewers.length > 0 ? `
                         <div class="summary-avatars">
                             ${topReviewers.map(r => `
-                                <img class="summary-avatar" src="${r.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="${r.user_handle}" title="${r.user_handle}">
+                                <img loading="lazy" decoding="async" class="summary-avatar" src="${r.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="${r.user_handle}" title="${r.user_handle}">
                             `).join('')}
                             ${hasMoreReviewers ? '<span class="summary-avatars-more">...</span>' : ''}
                         </div>
@@ -18796,7 +18857,7 @@
                                                     </div>
                                                     <div class="modal-bar-voters">
                                                         ${voters.length > 0 ? voters.map(v => `
-                                                            <img class="modal-bar-avatar" src="${v.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="${v.name}" title="${v.name}">
+                                                            <img loading="lazy" decoding="async" class="modal-bar-avatar" src="${v.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="${v.name}" title="${v.name}">
                                                         `).join('') : ''}
                                                         ${hasMore ? `<span class="modal-bar-more">+${count - maxVotersPerStar}</span>` : ''}
                                                     </div>
@@ -18828,7 +18889,7 @@
                                             </div>
                                         </div>
                                         <div class="modal-write-row">
-                                            <img class="modal-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                            <img loading="lazy" decoding="async" class="modal-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                                             <div class="modal-write-input">
                                                 <textarea placeholder="${t('modal.placeholder')}" maxlength="1000" id="modal-textarea-${modelId}" oninput="updatePostBtnState(this)"></textarea>
                                                 <button class="modal-submit" id="modal-submit-${modelId}" onclick="submitModalReview('${modelId}')">${t('modal.post')}</button>
@@ -19400,7 +19461,7 @@
             
             return `
                 <div class="modal-review" data-comment-id="${review.id}">
-                    <img class="modal-review-avatar" src="${review.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="modal-review-avatar" src="${review.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                     <div class="modal-review-body">
                         <div class="modal-review-header">
                             <div class="modal-review-info">
@@ -19447,7 +19508,7 @@
             
             return `
                 <div class="modal-review modal-comment" data-comment-id="${comment.id}">
-                    <img class="modal-review-avatar" src="${comment.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="modal-review-avatar" src="${comment.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                     <div class="modal-review-body">
                         <div class="modal-review-header">
                             <div class="modal-review-info">
@@ -19494,7 +19555,7 @@
             
             return `
                 <div class="modal-reply" data-comment-id="${reply.id}">
-                    <img class="modal-reply-avatar" src="${reply.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="modal-reply-avatar" src="${reply.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                     <div class="modal-reply-body">
                         <div class="modal-reply-header">
                             <a class="modal-user-link" href="https://x.com/${reply.user_handle}" target="_blank" rel="noopener">
@@ -19542,7 +19603,7 @@
             
             const formHtml = `
                 <div class="modal-reply-form" id="modal-reply-form-${commentId}">
-                    <img class="modal-reply-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="modal-reply-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                     <input type="text" placeholder="${t('modal.replyPlaceholder')}" maxlength="280" id="modal-reply-input-${commentId}" oninput="updateReplyBtnState(this)">
                     <button id="modal-reply-btn-${commentId}" onclick="submitModalReply('${commentId}', '${modelId}')">${t('modal.reply')}</button>
                 </div>
@@ -19708,7 +19769,7 @@
             return `
                 <div class="amz-review" data-comment-id="${review.id}">
                     <div class="amz-review-header">
-                        <img class="amz-reviewer-avatar" src="${review.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                        <img loading="lazy" decoding="async" class="amz-reviewer-avatar" src="${review.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                         <a class="amz-reviewer-name" href="https://x.com/${review.user_handle}" target="_blank" rel="noopener noreferrer">${review.user_name || review.user_handle}</a>
                     </div>
                     <div class="amz-review-rating">
@@ -19745,7 +19806,7 @@
             const canDelete = currentUser && (currentUser.id === reply.user_id || isAdmin);
             return `
                 <div class="amz-reply" data-comment-id="${reply.id}">
-                    <img class="amz-reply-avatar" src="${reply.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="amz-reply-avatar" src="${reply.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                     <div class="amz-reply-content">
                         <div class="amz-reply-header">
                             <a class="amz-reply-name" href="https://x.com/${reply.user_handle}" target="_blank" rel="noopener noreferrer">${reply.user_name || reply.user_handle}</a>
@@ -19782,7 +19843,7 @@
             
             const formHtml = `
                 <div class="amz-reply-form" id="reply-form-${reviewId}">
-                    <img class="amz-reply-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="amz-reply-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                     <input type="text" placeholder="Write a comment..." maxlength="280" id="reply-input-${reviewId}" onkeypress="if(event.key==='Enter')submitReplyToReview('${reviewId}', '${modelId}')">
                     <button onclick="submitReplyToReview('${reviewId}', '${modelId}')">Post</button>
                 </div>
@@ -19862,7 +19923,7 @@
                     const hasMore = allUniqueParticipants.length > displayCount;
                     
                     let html = displayParticipants.map(p => 
-                        `<img src="${p.user_avatar}" alt="${p.user_handle || 'user'}" title="@${p.user_handle || 'user'}">`
+                        `<img loading="lazy" decoding="async" src="${p.user_avatar}" alt="${p.user_handle || 'user'}" title="@${p.user_handle || 'user'}">`
                     ).join('');
                     
                     if (hasMore) {
@@ -21962,8 +22023,39 @@
             window.history.replaceState(null, '', newUrl || '/');
         }
 
+        // ★ 필요할 때만 불러오는 리소스 (초기 로딩에서 제외)
+        const _lazyLoaded = {};
+        function loadScriptOnce(src) {
+            if (!_lazyLoaded[src]) {
+                _lazyLoaded[src] = new Promise((resolve, reject) => {
+                    const el = document.createElement('script');
+                    el.src = src; el.async = true;
+                    el.onload = resolve;
+                    el.onerror = () => { delete _lazyLoaded[src]; reject(new Error('load failed: ' + src)); };
+                    document.head.appendChild(el);
+                });
+            }
+            return _lazyLoaded[src];
+        }
+        function loadStylesheetOnce(href) {
+            if (_lazyLoaded[href]) return;
+            _lazyLoaded[href] = true;
+            const el = document.createElement('link');
+            el.rel = 'stylesheet'; el.href = href;
+            document.head.appendChild(el);
+        }
+        const CJK_FONT_CSS = {
+            ja: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&display=swap',
+            zh: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;600;700&display=swap'
+        };
+        function ensureHtml2Canvas() {
+            return window.html2canvas ? Promise.resolve() :
+                loadScriptOnce('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+        }
+
         function setLanguage(lang, updateUrl = true) {
             currentLang = lang;
+            if (CJK_FONT_CSS[lang]) loadStylesheetOnce(CJK_FONT_CSS[lang]);
             localStorage.setItem('ethval-lang', lang);
 
             // Update URL with language prefix
@@ -31522,12 +31614,12 @@
             shareCard.style.opacity = '1';
             
             setTimeout(() => {
-                html2canvas(shareCard, {
+                ensureHtml2Canvas().then(() => html2canvas(shareCard, {
                     backgroundColor: null,
                     scale: 2,
                     useCORS: true,
                     allowTaint: true
-                }).then(canvas => {
+                })).then(canvas => {
                     shareCard.style.left = '-9999px';
                     const imageUrl = canvas.toDataURL('image/png');
                     previewImg.src = imageUrl;
@@ -32331,9 +32423,9 @@ Check out ETHval 👇`;
                                 
                                 // Apply dark/light mode styles
                                 if (isDark) {
-                                    tooltipEl.style.cssText = 'position:absolute;background:rgba(22,27,34,0.95);backdrop-filter:blur(8px);border-radius:8px;padding:10px 12px;pointer-events:none;opacity:0;transition:opacity 0.15s ease;font-family:Inter,sans-serif;z-index:1000;min-width:180px;max-width:220px;box-shadow:0 4px 20px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);color:#e6edf3;';
+                                    tooltipEl.style.cssText = 'position:absolute;background:rgba(22,27,34,0.95);backdrop-filter:blur(8px);border-radius:8px;padding:10px 12px;pointer-events:none;opacity:0;transition:opacity 0.15s ease;font-family:var(--font-ui);z-index:1000;min-width:180px;max-width:220px;box-shadow:0 4px 20px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);color:#e6edf3;';
                                 } else {
-                                    tooltipEl.style.cssText = 'position:absolute;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-radius:8px;padding:10px 12px;pointer-events:none;opacity:0;transition:opacity 0.15s ease;font-family:Inter,sans-serif;z-index:1000;min-width:180px;max-width:220px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.08);';
+                                    tooltipEl.style.cssText = 'position:absolute;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-radius:8px;padding:10px 12px;pointer-events:none;opacity:0;transition:opacity 0.15s ease;font-family:var(--font-ui);z-index:1000;min-width:180px;max-width:220px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.08);';
                                 }
                                 
                                 const tooltipModel = context.tooltip;
@@ -33760,7 +33852,7 @@ Check out ETHval 👇`;
                         </div>
                         <div class="forum-cell forum-cell-author" onclick="event.stopPropagation()">
                             <div class="forum-author-info">
-                                <img class="forum-author-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                <img loading="lazy" decoding="async" class="forum-author-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                                 <a class="forum-author-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">${post.display_name || post.username}</a>
                             </div>
                             <div class="forum-mobile-stats">
@@ -34065,7 +34157,7 @@ Check out ETHval 👇`;
                 
                 return `
                     <div class="forum-modal-post-header">
-                        <img class="forum-modal-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                        <img loading="lazy" decoding="async" class="forum-modal-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                         <div class="forum-modal-post-meta">
                             <div class="forum-modal-author">
                                 <a class="forum-modal-name-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">${post.display_name || post.username}</a>
@@ -34179,7 +34271,7 @@ Check out ETHval 👇`;
                 
                 return `
                     <div class="forum-comment-composer">
-                        <img class="forum-comment-composer-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                        <img loading="lazy" decoding="async" class="forum-comment-composer-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                         <div class="forum-comment-composer-input">
                             <textarea class="forum-comment-textarea" id="forum-comment-input" placeholder="${t('community.commentPlaceholder', 'Write a comment...')}" maxlength="1000"></textarea>
                             <div class="forum-comment-composer-footer">
@@ -34257,7 +34349,7 @@ Check out ETHval 👇`;
                     
                     return `
                         <div class="forum-comment" data-comment-id="${comment.id}">
-                            <img class="forum-comment-avatar" src="${comment.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                            <img loading="lazy" decoding="async" class="forum-comment-avatar" src="${comment.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
                             <div class="forum-comment-body">
                                 <div class="forum-comment-header">
                                     <a class="forum-comment-name-link" href="https://x.com/${comment.username}" target="_blank" rel="noopener noreferrer">${comment.display_name || comment.username}</a>
@@ -35473,12 +35565,12 @@ Check out ETHval 👇`;
                     
                     const userCell = twitterUrl 
                         ? `<a href="${twitterUrl}" target="_blank" rel="noopener noreferrer" class="lb-user-compact">
-                               <img src="${avatarUrl}" alt="" class="lb-avatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22><rect fill=%22%237c3aed%22 width=%2236%22 height=%2236%22 rx=%2218%22/><text x=%2218%22 y=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2214%22 font-weight=%22600%22>${initial}</text></svg>'">
+                               <img loading="lazy" decoding="async" src="${avatarUrl}" alt="" class="lb-avatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22><rect fill=%22%237c3aed%22 width=%2236%22 height=%2236%22 rx=%2218%22/><text x=%2218%22 y=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2214%22 font-weight=%22600%22>${initial}</text></svg>'">
                                <span class="lb-name">${user.userName}</span>
                                ${handleDisplay}
                            </a>`
                         : `<div class="lb-user-compact">
-                               <img src="${avatarUrl}" alt="" class="lb-avatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22><rect fill=%22%237c3aed%22 width=%2236%22 height=%2236%22 rx=%2218%22/><text x=%2218%22 y=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2214%22 font-weight=%22600%22>${initial}</text></svg>'">
+                               <img loading="lazy" decoding="async" src="${avatarUrl}" alt="" class="lb-avatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22><rect fill=%22%237c3aed%22 width=%2236%22 height=%2236%22 rx=%2218%22/><text x=%2218%22 y=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2214%22 font-weight=%22600%22>${initial}</text></svg>'">
                                <span class="lb-name">${user.userName}</span>
                            </div>`;
                     
@@ -35883,7 +35975,7 @@ Check out ETHval 👇`;
                                 const defaultAvatar = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><rect fill="%237c3aed" width="36" height="36" rx="18"/></svg>';
                                 
                                 let html = recentUsers.map(u => 
-                                    `<img src="${u.avatar || defaultAvatar}" alt="" class="recent-voter-avatar" onerror="this.src='${defaultAvatar}'">`
+                                    `<img loading="lazy" decoding="async" src="${u.avatar || defaultAvatar}" alt="" class="recent-voter-avatar" onerror="this.src='${defaultAvatar}'">`
                                 ).join('');
                                 
                                 if (uniqueUsers.size > 5) {
