@@ -9,6 +9,10 @@ on:
   workflow_dispatch:
     # 수동 실행 가능
 
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   collect:
     runs-on: ubuntu-latest
@@ -48,3 +52,15 @@ jobs:
         if: always()
         run: |
           echo "✅ Data collection completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
+      # GitHub disables scheduled workflows after 60 days without repo activity
+      # (this stopped data collection on 2026-04-28). Re-enabling via the API
+      # resets that timer on every run.
+      - name: Keep scheduled workflows alive
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in collect-data.yml collect-historical-data.yml smoke-check.yml; do
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/$wf/enable" || true
+          done
