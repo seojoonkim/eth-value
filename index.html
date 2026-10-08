@@ -14456,6 +14456,33 @@
             }
             .mp-more::after { content: '▾'; font-size: 11px; transition: transform .2s ease; }
             .mp-open > .mp-more::after, .mp-open .mp-more::after { transform: rotate(180deg); }
+
+            /* Round 2 (2026-10) ------------------------------------------------ */
+            /* Simulator: slider full width, description below; 24px thumb on a 6px track */
+            .sim-slider-content { grid-template-columns: minmax(0, 1fr) !important; gap: 6px; }
+            .sim-slider-info { font-size: 12.5px !important; line-height: 1.5; color: var(--text-muted); padding-left: 0 !important; padding-right: 0 !important; }
+            .sim-range { height: 6px; margin: 12px 0; touch-action: pan-y; }
+            .sim-range::-webkit-slider-thumb { width: 24px; height: 24px; }
+            .sim-range::-moz-range-thumb { width: 24px; height: 24px; }
+            .sim-slider-item { padding: 14px; }
+
+            /* Model on/off switch: keep the 36x16 look, widen the hit area to 44x32 */
+            .model-toggle::after { content: ''; position: absolute; inset: -8px -4px; }
+
+            /* Methodology cards: footnote + paper links join the collapsed part */
+            .method-card:not(.mp-open) .method-note,
+            .method-card:not(.mp-open) .method-references { display: none; }
+            .method-card .mp-more { margin-top: 2px; }
+            .method-chart-area { height: 150px; }
+
+            /* Appendix: category one-liners only; full text on demand */
+            .category-card:not(.mp-open) .category-card-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+            .category-card:not(.mp-open) .model-item-desc { display: none; }
+            .category-card .model-item { padding-top: 8px; padding-bottom: 8px; }
+            .appendix-intro { font-size: 14px; line-height: 1.6; }
+
+            /* Simulator lock tooltip was nowrap → ran 14px past the screen edge when shown */
+            .simulator-unlock-tooltip { white-space: normal; max-width: calc(100vw - 24px); box-sizing: border-box; }
         }
         @media (min-width: 641px) { .mp-more { display: none !important; } }
     </style>
@@ -36328,6 +36355,7 @@ Check out ETHval 👇`;
                 }).observe(c, { childList: true });
             });
             document.querySelectorAll('.method-card').forEach(function (c) { addToggle(c, c.querySelector('.method-desc')); });
+            document.querySelectorAll('.category-card').forEach(function (c) { addToggle(c, c.querySelector('.model-list')); });
         }
         function relabel() { document.querySelectorAll('.mp-more').forEach(function (b) { b.textContent = label(b.getAttribute('aria-expanded') === 'true'); }); }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup); else setup();
