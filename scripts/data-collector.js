@@ -2050,48 +2050,9 @@ async function collect_funding_rate() {
         
         throw new Error('Insufficient data');
     } catch (e) {
-        console.log(`  ⚠️ funding_rate (CryptoQuant): ${e.message} → OKX fallback`);
-        try {
-            const saved = await collect_funding_rate_okx();
-            return result.ok(saved);
-        } catch (e2) {
-            console.log(`  ❌ funding_rate: ${e.message}; OKX: ${e2.message}`);
-            return result.fail(e2.message);
-        }
+        console.log(`  ❌ funding_rate: ${e.message}`);
+        return result.fail(e.message);
     }
-}
-
-// Free fallback: OKX ETH-USDT perpetual funding history (8h periods → daily mean).
-// Stored in percent units to match the CryptoQuant series (CQ funding_rates is already in %).
-async function collect_funding_rate_okx(maxPages = 12) {
-    const byDay = new Map();
-    let after = '';
-    for (let page = 0; page < maxPages; page++) {
-        const url = `https://www.okx.com/api/v5/public/funding-rate-history?instId=ETH-USDT-SWAP&limit=100${after ? `&after=${after}` : ''}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`OKX ${res.status}`);
-        const body = await res.json();
-        const rows = body?.data || [];
-        if (!rows.length) break;
-        for (const r of rows) {
-            const rate = parseFloat(r.realizedRate ?? r.fundingRate);
-            const ts = Number(r.fundingTime);
-            if (!Number.isFinite(rate) || !ts) continue;
-            const day = new Date(ts).toISOString().slice(0, 10);
-            const cur = byDay.get(day) || { sum: 0, n: 0 };
-            cur.sum += rate; cur.n += 1;
-            byDay.set(day, cur);
-        }
-        after = rows[rows.length - 1].fundingTime;
-        if (rows.length < 100) break;
-    }
-    const today = new Date().toISOString().slice(0, 10);
-    const records = [...byDay.entries()]
-        .filter(([day, v]) => day < today && v.n >= 2) // skip the incomplete current day
-        .map(([date, v]) => ({ date, funding_rate: (v.sum / v.n) * 100, source: 'okx' }));
-    if (!records.length) throw new Error('No data from OKX');
-    console.log(`  📦 Got ${records.length} daily funding records from OKX`);
-    return await upsertBatch('historical_funding_rate', records);
 }
 
 // ============================================================
