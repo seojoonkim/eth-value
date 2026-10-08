@@ -14383,6 +14383,82 @@
             .sim-breakdown-item:nth-last-child(2) { border-bottom: 1px solid var(--border); }
         }
     </style>
+    <!-- Mobile polish (2026-10): one-column reading, collapsible long text, 40px+ tap targets, 11px+ type -->
+    <style id="mobile-polish">
+        @media (max-width: 640px) {
+            /* Header & nav: tap targets */
+            .nav-item { min-height: 36px; display: inline-flex; align-items: center; padding-left: 10px; padding-right: 10px; }
+            .lang-btn { min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; }
+            .theme-toggle { width: 36px; height: 36px; }
+
+            /* Period tabs: real buttons, not 15px slivers */
+            .mini-tab, .metric-tab, .historical-tab, .method-chart-tab {
+                min-height: 30px; min-width: 38px; padding: 6px 10px; font-size: 12px;
+                display: inline-flex; align-items: center; justify-content: center;
+            }
+            .legend-btn { min-height: 34px; }
+            .sim-range { height: 24px; }
+
+            /* Metric cards (2-col): tabs were absolutely positioned over the value; put them in flow as a full-width segmented row */
+            .metric-card { position: relative; }
+            .metric-card .metric-header { flex-direction: column; align-items: stretch; gap: 6px; }
+            .metric-card .metric-tabs { position: static; display: flex; width: 100%; margin: 2px 0 4px; }
+            .metric-card .metric-tabs .metric-tab, .metric-card .metric-tabs .mini-tab { flex: 1 1 0; min-width: 0; padding: 6px 0; }
+            .metric-value-large { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .metric-footer .change, .metric-footer span, .metric-desc { font-size: 11px; }
+
+            /* Fixed overlays: keep them out of the reading area */
+            .onboarding-banner { padding: 8px 12px; gap: 10px; flex-wrap: nowrap; top: 94px !important; }
+            body.banner-visible { padding-top: 168px; }
+            .onboarding-banner .onboarding-text { font-size: 13px; line-height: 1.35; }
+            .onboarding-banner .onboarding-cta { padding: 8px 12px; white-space: nowrap; font-size: 13px; }
+            .floating-action-badge { padding: 8px 14px !important; bottom: 12px !important; right: 12px !important; }
+            .floating-action-badge .floating-badge-subtitle, .floating-action-badge .floating-badge-arrow { display: none; }
+            .floating-action-badge .floating-badge-title { font-size: 13px; }
+            .live-visitors { display: none !important; }
+
+            /* Small print floor */
+            .sim-summary-label, .sim-summary-badge, .sim-reset-btn, .sim-slider-info, .sim-breakdown-chg,
+            .ai-commentary-footer, .legend-item, .version-badge { font-size: 11px; }
+            .sim-reset-btn { min-height: 32px; padding: 6px 10px; }
+            .simulator-reset-all-btn { min-height: 36px; }
+            .contact-link, .method-ref-link, .telegram-link { display: inline-flex; align-items: center; min-height: 32px; }
+            .write-post-btn { min-height: 40px; }
+
+            /* Floor for tiny labels */
+            .model-formula, .signal-label, .chart-price-label, .chart-price-diff, .legend-value,
+            .model-count-badge, .legend-hint, .model-range-badge, .community-stat-name, .conclusion-verdict { font-size: 11px; }
+
+            /* Section rhythm */
+            .section { scroll-margin-top: 84px; }
+
+            /* AI commentary: show the lead section, collapse the rest (was 1,200–1,660px per block) */
+            .ai-commentary { padding: 14px 14px 10px; margin-bottom: 20px; }
+            .ai-commentary:not(.mp-open) .commentary-section ~ .commentary-section { display: none; }
+            .ai-commentary:not(.mp-open) .commentary-section-body {
+                display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; overflow: hidden;
+            }
+            .ai-commentary .commentary-section-body { font-size: 15px; line-height: 1.65; }
+
+            /* Methodology cards: single column so the text column isn't 150px wide */
+            .method-content { grid-template-columns: minmax(0, 1fr) !important; gap: 12px; }
+            .method-card { padding: 16px; min-height: 0; }
+            .method-card:not(.mp-open) .method-desc {
+                display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden;
+            }
+            .method-desc { font-size: 14px; line-height: 1.6; }
+            .method-formula { white-space: normal; word-break: break-word; }
+
+            /* Expand / collapse control */
+            .mp-more {
+                display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; padding: 8px 0; min-height: 36px;
+                background: none; border: 0; color: var(--primary); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+            }
+            .mp-more::after { content: '▾'; font-size: 11px; transition: transform .2s ease; }
+            .mp-open > .mp-more::after, .mp-open .mp-more::after { transform: rotate(180deg); }
+        }
+        @media (min-width: 641px) { .mp-more { display: none !important; } }
+    </style>
 </head>
 <body>
     <a id="top"></a>
@@ -22691,6 +22767,7 @@
         }
 
         // Formatters
+        const __chartLabelCache = new Map(); // "Mon 'YY" per year-month
         const fmt = {
             usd: (n, d=1) => n >= 1e12 ? '$'+(n/1e12).toFixed(d)+'T' : n >= 1e9 ? '$'+(n/1e9).toFixed(d)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(d)+'M' : n >= 1e3 ? '$'+(n/1e3).toFixed(d)+'K' : '$'+n.toFixed(d),
             num: (n, d=1) => n >= 1e9 ? (n/1e9).toFixed(d)+'B' : n >= 1e6 ? (n/1e6).toFixed(d)+'M' : n >= 1e3 ? (n/1e3).toFixed(d)+'K' : n.toFixed(d),
@@ -22699,6 +22776,18 @@
             // 차트 X축용 간결한 날짜 포맷: "Dec '22"
             chartLabel: (d) => {
                 const date = d instanceof Date ? d : new Date(d);
+                // perf: toLocaleDateString is slow and was called for every tick/point; cache per month
+                const t = date.getTime();
+                if (t === t) {
+                    const key = date.getFullYear() * 12 + date.getMonth();
+                    const hit = __chartLabelCache.get(key);
+                    if (hit !== undefined) return hit;
+                    const month = date.toLocaleDateString('en-US', { month: 'short' });
+                    const year = date.getFullYear().toString().slice(-2);
+                    const s = month + " '" + year;
+                    __chartLabelCache.set(key, s);
+                    return s;
+                }
                 const month = date.toLocaleDateString('en-US', { month: 'short' });
                 const year = date.getFullYear().toString().slice(-2);
                 return month + " '" + year;
@@ -30708,13 +30797,17 @@
                         const lastL2DateStr = lastL2Date.toISOString().split('T')[0];
                         
                         // L2 데이터가 있는 날만 포함 (불완전한 마지막 날 제외)
+                        // perf: day-key map instead of Array.find per row (first match per day, same as find)
+                        const l2ByDay = new Map();
+                        for (const l of state.supabaseL2TxHistory) {
+                            const k = l.date.toISOString().split('T')[0];
+                            if (!l2ByDay.has(k)) l2ByDay.set(k, l);
+                        }
                         state.txTotalHistory = state.supabaseTxHistory
                             .filter(d => d.date.toISOString().split('T')[0] <= lastL2DateStr)
                             .map(d => {
                                 const dateStr = d.date.toISOString().split('T')[0];
-                                const l2Data = state.supabaseL2TxHistory.find(l => 
-                                    l.date.toISOString().split('T')[0] === dateStr
-                                );
+                                const l2Data = l2ByDay.get(dateStr);
                                 return { date: d.date, value: d.value + (l2Data?.value || 0) };
                             });
                         
@@ -31861,15 +31954,40 @@ Check out ETHval 👇`;
             
             // Helper: find closest value in history array
             // maxDiffDays: 허용할 최대 날짜 차이 (기본 7일)
+            const __fcIndex = new WeakMap(); // per-call sorted-date index (histories are not mutated during this calculation)
             const findClosest = (history, date, maxDiffDays = 7) => {
                 if (!history || history.length === 0) return null;
-                let closest = history[0];
-                let minDiff = Math.abs(date - history[0].date);
-                for (const item of history) {
-                    const diff = Math.abs(date - item.date);
-                    if (diff < minDiff) {
-                        minDiff = diff;
-                        closest = item;
+                // perf: binary search on date-sorted history (was a full linear scan per call → ~O(n²)).
+                // Same semantics as the scan: smallest |diff|, ties → lower index.
+                let idx = __fcIndex.get(history);
+                if (idx === undefined) {
+                    const t = new Float64Array(history.length);
+                    let sorted = true;
+                    for (let i = 0; i < history.length; i++) {
+                        t[i] = +history[i].date;
+                        if (!(t[i] === t[i]) || (i > 0 && t[i] < t[i - 1])) { sorted = false; break; }
+                    }
+                    idx = sorted ? t : null;
+                    __fcIndex.set(history, idx);
+                }
+                let closest, minDiff;
+                const target = +date;
+                if (idx && target === target) {
+                    const lowerBound = (v) => { let lo = 0, hi = idx.length; while (lo < hi) { const m = (lo + hi) >> 1; if (idx[m] < v) lo = m + 1; else hi = m; } return lo; };
+                    const r = lowerBound(target);
+                    let best = -1, bestDiff = Infinity;
+                    if (r > 0) { const l = lowerBound(idx[r - 1]); best = l; bestDiff = target - idx[l]; }
+                    if (r < idx.length) { const d = idx[r] - target; if (d < bestDiff) { best = r; bestDiff = d; } }
+                    closest = history[best]; minDiff = bestDiff;
+                } else {
+                    closest = history[0];
+                    minDiff = Math.abs(date - history[0].date);
+                    for (const item of history) {
+                        const diff = Math.abs(date - item.date);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            closest = item;
+                        }
                     }
                 }
                 // 날짜 차이가 maxDiffDays 이상이면 null 반환 (데이터 범위 밖)
@@ -32288,21 +32406,27 @@ Check out ETHval 👇`;
             // Calculate dynamic composite based on active models only
             const calculateDynamicComposite = () => {
                 const compositeData = [];
+                // perf: per-model day lookup built once (was Array.find + 2 Date allocations per point per model).
+                // Keeps the first matching point per calendar day, same as Array.find.
+                const dayMaps = {};
+                activeModels.forEach(model => {
+                    const modelData = state.historicalFairValues[model];
+                    if (!modelData) return;
+                    const m = new Map();
+                    for (const d of modelData) { const k = new Date(d.date).toDateString(); if (!m.has(k)) m.set(k, d); }
+                    dayMaps[model] = m;
+                });
                 
                 for (let i = 0; i < priceData.length; i++) {
                     const currentDate = priceData[i].date;
+                    const targetKey = new Date(currentDate).toDateString();
                     let sum = 0;
                     let count = 0;
                     
                     activeModels.forEach(model => {
-                        const modelData = state.historicalFairValues[model];
-                        if (modelData) {
-                            // Find matching date in model data (date-based, not index-based)
-                            const matchingPoint = modelData.find(d => {
-                                const modelDate = new Date(d.date);
-                                const targetDate = new Date(currentDate);
-                                return modelDate.toDateString() === targetDate.toDateString();
-                            });
+                        const dayMap = dayMaps[model];
+                        if (dayMap) {
+                            const matchingPoint = dayMap.get(targetKey);
                             
                             if (matchingPoint && matchingPoint.value > 0 && isFinite(matchingPoint.value)) {
                                 sum += matchingPoint.value;
@@ -36176,5 +36300,39 @@ Check out ETHval 👇`;
         <span class="live-label">online</span>
     </div>
 
+    <script id="mobile-polish-js">
+    // Mobile polish: "more / less" toggles for long AI commentary and methodology text (≤640px only; CSS hides the button above).
+    (function () {
+        var L = {
+            en: ['Read more', 'Show less'], ko: ['더 보기', '접기'], zh: ['展开', '收起'], ja: ['もっと見る', '閉じる']
+        };
+        function label(open) { var l = (document.documentElement.lang || 'en').slice(0, 2); return (L[l] || L.en)[open ? 1 : 0]; }
+        function addToggle(host, after) {
+            if (!host || host.querySelector(':scope > .mp-more, :scope .mp-more')) return;
+            var b = document.createElement('button');
+            b.type = 'button'; b.className = 'mp-more'; b.setAttribute('aria-expanded', 'false'); b.textContent = label(false);
+            b.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var open = host.classList.toggle('mp-open');
+                b.setAttribute('aria-expanded', String(open)); b.textContent = label(open);
+                if (!open) { var r = host.getBoundingClientRect(); if (r.top < 0) window.scrollBy(0, r.top - 90); }
+            });
+            (after && after.parentNode) ? after.parentNode.insertBefore(b, after.nextSibling) : host.appendChild(b);
+        }
+        function setup() {
+            document.querySelectorAll('.ai-commentary').forEach(function (c) {
+                addToggle(c, c.querySelector('.ai-commentary-text'));
+                // commentary is re-rendered via innerHTML after the daily fetch, which drops the button → re-attach
+                new MutationObserver(function () {
+                    if (!c.querySelector('.mp-more')) { c.classList.remove('mp-open'); addToggle(c, c.querySelector('.ai-commentary-text')); }
+                }).observe(c, { childList: true });
+            });
+            document.querySelectorAll('.method-card').forEach(function (c) { addToggle(c, c.querySelector('.method-desc')); });
+        }
+        function relabel() { document.querySelectorAll('.mp-more').forEach(function (b) { b.textContent = label(b.getAttribute('aria-expanded') === 'true'); }); }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup); else setup();
+        new MutationObserver(relabel).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    })();
+    </script>
 </body>
 </html>
