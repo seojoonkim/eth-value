@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ETHval | Intrinsic Value Dashboard</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23667eea'/><stop offset='50%25' stop-color='%23764ba2'/><stop offset='100%25' stop-color='%23f093fb'/></linearGradient></defs><rect fill='url(%23g)' width='32' height='32' rx='6'/><path d='M16 4L9 16l7 4 7-4L16 4z' fill='rgba(255,255,255,0.9)'/><path d='M9 16l7 4V4L9 16z' fill='rgba(255,255,255,0.6)'/><path d='M6 26l5-4 5 2.5 5-6 5-2.5' stroke='white' stroke-width='1.5' stroke-linecap='round' fill='none'/></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2314161c'/><path d='M16 5.5L22.9 16.5 16 20.2 9.1 16.5Z' fill='white'/><path d='M9.1 18.7L16 22.4 22.9 18.7 16 26.5Z' fill='white' fill-opacity='.55'/><path d='M5.5 16.5H26.5' stroke='%238f9bff' stroke-width='2' stroke-linecap='round'/></svg>">
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PX7DBZL3ND"></script>
@@ -14383,6 +14383,8 @@
             .sim-breakdown-item:nth-last-child(2) { border-bottom: 1px solid var(--border); }
         }
     </style>
+    <link rel="stylesheet" href="v2/v2.css?v=2.0.0">
+    <script src="v2/v2.js?v=2.0.0"></script>
 </head>
 <body>
     <a id="top"></a>
@@ -14426,17 +14428,15 @@
         <header class="header">
             <div class="logo" style="text-decoration: none; cursor: pointer;" onclick="updateUrlWithLang(currentLang, 'valuation'); window.scrollTo({top: 0, behavior: 'instant'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelectorAll('.nav-item[data-i18n=\'nav.valuation\']').forEach(n => n.classList.add('active'));">
                 <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 이더리움 다이아몬드 -->
-                        <path d="M12 1.5L6 12l6 3.5 6-3.5L12 1.5z" fill="rgba(255,255,255,0.9)"/>
-                        <path d="M6 12l6 3.5V1.5L6 12z" fill="rgba(255,255,255,0.6)"/>
-                        <!-- 상승 차트 라인 -->
-                        <path d="M4 20l4-3 4 2 4-5 4-2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                        <circle cx="20" cy="12" r="1.5" fill="white"/>
+                    <svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <!-- ETHval 2.0 mark: Ether diamond with a value line (fair value) -->
+                        <path d="M13 4.5 L18.6 13.4 L13 16.4 L7.4 13.4 Z" fill="#ffffff"/>
+                        <path d="M7.4 15.2 L13 18.2 L18.6 15.2 L13 21.5 Z" fill="#ffffff" fill-opacity="0.55"/>
+                        <path d="M4.5 13.4 H21.5" stroke="#8f9bff" stroke-width="1.6" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <span class="logo-text">ETHval</span>
-                <span class="version-badge">v0.6.2</span>
+                <span class="logo-text">ETH<span class="lt-val">val</span></span>
+                <span class="version-badge">v2.0</span>
             </div>
             <nav class="nav-bar-inline">
                 <a class="nav-item active" href="#valuation" data-i18n="nav.valuation">Valuation</a>
@@ -14487,6 +14487,46 @@
                 <div class="section-title"><span data-i18n="nav.valuation">Valuation</span></div>
             </div>
             
+            <!-- ETHval 2.0 hero: one representative value + range + three lenses -->
+            <div class="v2-hero is-loading" id="v2-hero">
+                <div class="v2-hero-main">
+                    <div class="v2-eyebrow" id="v2-eyebrow">ETH fair value</div>
+                    <div class="v2-value" id="v2-value">Calculating…</div>
+                    <div class="v2-gap" id="v2-gap"></div>
+                    <div class="v2-gauge" aria-hidden="true">
+                        <div class="v2-gauge-track"></div>
+                        <div class="v2-gauge-band" id="v2-gauge-band"></div>
+                        <div class="v2-gauge-mark fair" id="v2-gauge-fair"></div>
+                        <div class="v2-gauge-mark price" id="v2-gauge-price"></div>
+                    </div>
+                    <div class="v2-range-row">
+                        <span class="v2-range-label" id="v2-range-label">Model range (middle 50%)</span>
+                        <span class="v2-range" id="v2-range">$— – $—</span>
+                        <span class="v2-verdict" id="v2-verdict"></span>
+                    </div>
+                    <p class="v2-method"><span id="v2-method"></span> <span class="v2-asof" id="v2-asof"></span></p>
+                </div>
+                <div class="v2-hero-side">
+                    <div class="v2-side-title" id="v2-axes-title">Three ways to value ETH</div>
+                    <div class="v2-axis" data-axis="cash"><div><div class="v2-axis-name" id="v2-axis-cash-name">Cash flow</div><div class="v2-axis-q" id="v2-axis-cash-q"></div></div><div class="v2-axis-num"><div class="v2-axis-value" id="v2-axis-cash-value">$—</div><div class="v2-axis-gap" id="v2-axis-cash-gap"></div></div></div>
+                    <div class="v2-axis" data-axis="network"><div><div class="v2-axis-name" id="v2-axis-network-name">Network &amp; usage</div><div class="v2-axis-q" id="v2-axis-network-q"></div></div><div class="v2-axis-num"><div class="v2-axis-value" id="v2-axis-network-value">$—</div><div class="v2-axis-gap" id="v2-axis-network-gap"></div></div></div>
+                    <div class="v2-axis" data-axis="money"><div><div class="v2-axis-name" id="v2-axis-money-name">Money &amp; settlement</div><div class="v2-axis-q" id="v2-axis-money-q"></div></div><div class="v2-axis-num"><div class="v2-axis-value" id="v2-axis-money-value">$—</div><div class="v2-axis-gap" id="v2-axis-money-gap"></div></div></div>
+                </div>
+            </div>
+            <div class="v2-band-wrap">
+                <div class="v2-band-head">
+                    <span class="v2-band-title" id="v2-band-title">3-year valuation band</span>
+                    <span class="v2-legend"><i class="lg-price"></i><span id="v2-l-price">ETH price</span><i class="lg-fair"></i><span id="v2-l-fair">Fair value</span><i class="lg-band"></i><span id="v2-l-band">Model range</span></span>
+                </div>
+                <div class="v2-band-canvas-box"><canvas id="v2-band-canvas"></canvas></div>
+                <div class="v2-track">
+                    <strong id="v2-track-title">Track record</strong>
+                    <span id="v2-track-text"></span>
+                    <em id="v2-track-note"></em>
+                </div>
+                <div class="v2-stale" id="v2-stale" hidden></div>
+            </div>
+
             <!-- 가로 레이아웃 컨테이너 -->
             <div class="summary-layout">
                 <!-- Valuation 영역 - 박스 안 -->
@@ -14753,7 +14793,7 @@
                             <span class="value" id="summary-current">$--</span>
                         </div>
                         <div class="current-vs-model-row">
-                            <span class="label" data-i18n="valuation.median">Median</span>
+                            <span class="label" data-i18n="valuation.median">Simple average</span>
                             <span class="value" id="summary-median" style="color: var(--text-muted); font-size: var(--text-sm);">$--</span>
                         </div>
                         <div class="current-vs-model-row">
@@ -14763,7 +14803,7 @@
                     </div>
                     
                     <div class="conclusion-note" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: var(--text-sm); color: var(--text-muted); line-height: 1.4;">
-                        <span data-i18n="conclusion.notePrefix">Simple average of</span> <span id="active-model-count">12</span> <span data-i18n="conclusion.noteSuffix">active models. Toggle off any model to exclude it from the calculation.</span>
+                        <span data-i18n="conclusion.notePrefix">Median (30-day smoothed) of</span> <span id="active-model-count">12</span> <span data-i18n="conclusion.noteSuffix">active models. Toggle off any model to exclude it from the calculation.</span>
                     </div>
 
                 </div>
@@ -17112,7 +17152,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v0.6.2</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: var(--text-sm);">🔧 Admin</a>
+                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v2.0</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: var(--text-sm);">🔧 Admin</a>
             </div>
         </footer>
     </div>
@@ -20198,8 +20238,8 @@
                 'chart.compositeFairValue': 'Composite Fair Value',
                 'chart.autoScale': 'Auto Scale',
                 'chart.movingAvg7d': '7D Moving Avg',
-                'conclusion.notePrefix': 'Simple average of',
-                'conclusion.noteSuffix': 'active models. Toggle off any model to exclude it from the calculation.',
+                'conclusion.notePrefix': 'Median (30-day smoothed) of',
+                'conclusion.noteSuffix': 'active models. Price-anchored models start off. Toggle any model to change the calculation.',
                 'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. Investment decisions should consider multiple factors comprehensively.',
                 'footer.disclaimer': 'Auto-refresh 120s · For informational purposes only · Not financial advice',
                 'criteria.title': 'Appendix: Reliability Assessment Criteria',
@@ -20345,7 +20385,7 @@
                 'valuation.vsCurrent': 'vs Current',
                 'valuation.currentPrice': 'Current Price',
                 'valuation.weightedAvg': 'Weighted Avg',
-                'valuation.median': 'Median',
+                'valuation.median': 'Simple average',
                 'valuation.potential': 'Potential',
                 'valuation.reliabilityWeighting': 'Reliability Weighting',
                 'signal.buy': 'Buy',
@@ -20685,7 +20725,7 @@
                 'chart.autoScale': '자동 스케일',
                 'chart.movingAvg7d': '7일 이동평균',
                 'conclusion.notePrefix': '',
-                'conclusion.noteSuffix': '개 활성 모델의 단순 평균입니다. 모델을 토글하여 계산에서 제외할 수 있습니다.',
+                'conclusion.noteSuffix': '개 활성 모델의 중앙값(30일 평활)입니다. 가격 고정 모델은 기본 제외이며, 토글로 계산에 넣거나 뺄 수 있습니다.',
                 'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
                 'footer.disclaimer': '120초 자동 새로고침 · 정보 제공 목적 · 투자 조언이 아닙니다',
                 'criteria.title': '부록: 신뢰도 평가 기준',
@@ -20829,7 +20869,7 @@
                 'valuation.vsCurrent': '현재가 대비',
                 'valuation.currentPrice': '현재 가격',
                 'valuation.weightedAvg': '가중 평균',
-                'valuation.median': '중앙값',
+                'valuation.median': '단순 평균',
                 'valuation.potential': '상승 여력',
                 'valuation.reliabilityWeighting': '신뢰도 가중치',
                 'signal.buy': '매수',
@@ -21159,7 +21199,7 @@
                 'chart.marketPrice': '市场价格',
                 'chart.compositeFairValue': '反馈公允价值',
                 'conclusion.notePrefix': '',
-                'conclusion.noteSuffix': '个活跃模型的简单平均。关闭任意模型可将其从计算中排除。',
+                'conclusion.noteSuffix': '个活跃模型的中位数（30日平滑）。价格锚定模型默认排除，可通过开关调整。',
                 'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应反馈考虑多种因素。',
                 'footer.disclaimer': '自动刷新120秒 · 仅供信息参考 · 非投资建议',
                 'criteria.title': '附录：可靠性评估标准',
@@ -21305,7 +21345,7 @@
                 'valuation.vsCurrent': '较当前价',
                 'valuation.currentPrice': '当前价格',
                 'valuation.weightedAvg': '加权平均',
-                'valuation.median': '中位数',
+                'valuation.median': '简单平均',
                 'valuation.potential': '潜在涨幅',
                 'valuation.reliabilityWeighting': '可靠性加权',
                 'signal.buy': '买入',
@@ -21640,7 +21680,7 @@
                 'chart.marketPrice': '市場価格',
                 'chart.compositeFairValue': '総合適正価値',
                 'conclusion.notePrefix': '',
-                'conclusion.noteSuffix': '個のアクティブモデルの単純平均。モデルをトグルして計算から除外できます。',
+                'conclusion.noteSuffix': '個のアクティブモデルの中央値（30日平滑）。価格連動モデルは初期状態で除外され、トグルで変更できます。',
                 'disclaimer.text': '<strong>⚠️ 免責事項：</strong>これらのバリュエーションモデルは参考用です。各モデルには独自の仮定と限界があります。投資判断は複数の要素を総合的に考慮する必要があります。',
                 'footer.disclaimer': '120秒自動更新 · 情報提供のみ · 投資アドバイスではありません',
                 'criteria.title': '付録：信頼性評価基準',
@@ -21786,7 +21826,7 @@
                 'valuation.vsCurrent': '現在価格比',
                 'valuation.currentPrice': '現在価格',
                 'valuation.weightedAvg': '加重平均',
-                'valuation.median': '中央値',
+                'valuation.median': '単純平均',
                 'valuation.potential': '上昇余地',
                 'valuation.reliabilityWeighting': '信頼性加重',
                 'signal.buy': '買い',
@@ -29355,7 +29395,12 @@
                 }
             });
             
-            const avgPrice = count > 0 ? sum / count : 0;
+            const avgPriceMean = count > 0 ? sum / count : 0;
+            // ETHval 2.0: headline = median of 30-day-smoothed independent models (single source in v2/v2.js)
+            let v2h = null;
+            try { v2h = window.ETHvalV2 ? ETHvalV2.headline(prices.map(p => ({ price: p }))) : null; } catch (e) { v2h = null; }
+            if (window.ETHvalV2 && !(v2h && v2h.value > 0)) return; // keep skeleton until the real headline is ready
+            const avgPrice = v2h && v2h.value > 0 ? v2h.value : avgPriceMean;
             state.compositeFairValue = avgPrice; // Store for chart display
             const medianPrice = prices.length > 0 
                 ? prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] 
@@ -29414,10 +29459,11 @@
             upsideEl.style.color = avgDiff >= 0 ? 'var(--green)' : 'var(--red)';
             
             // Median 참고값 표시
-            const medianDiff = state.price > 0 ? ((medianPrice - state.price) / state.price) * 100 : 0;
+            // v2: headline is already the median; show the plain mean as a reference row
+            const medianDiff = state.price > 0 ? ((avgPriceMean - state.price) / state.price) * 100 : 0;
             const medianEl = document.getElementById('summary-median');
             if (medianEl) {
-                medianEl.textContent = fmt.price(medianPrice) + ' (' + fmt.pct(medianDiff) + ')';
+                medianEl.textContent = fmt.price(avgPriceMean) + ' (' + fmt.pct(medianDiff) + ')';
             }
             
             // 상단 Executive Summary 업데이트
@@ -32102,6 +32148,10 @@ Check out ETHval 👇`;
 
             // Now assign to state AFTER syncing values
             state.historicalFairValues = results;
+            // ETHval 2.0: composite history uses the same method as the headline
+            if (window.ETHvalV2) {
+                try { results.composite = ETHvalV2.compositeSeries(results, state.priceHistory); } catch (e) { console.warn('v2 composite', e); }
+            }
             state.historicalDataLoaded = true;
             
             log('✅ Historical fair values calculated:', {
@@ -32287,6 +32337,9 @@ Check out ETHval 👇`;
             
             // Calculate dynamic composite based on active models only
             const calculateDynamicComposite = () => {
+                if (window.ETHvalV2) {
+                    try { return ETHvalV2.seriesFor(state.historicalFairValues, activeModels, priceData); } catch (e) { console.warn('v2 series', e); }
+                }
                 const compositeData = [];
                 
                 for (let i = 0; i < priceData.length; i++) {
