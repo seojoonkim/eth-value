@@ -1053,7 +1053,8 @@ paragraph1 text here|||paragraph2 text here|||paragraph3 text here
 CRITICAL RULES:
 - ${config.instruction}
 - Exactly 3 paragraphs separated by ||| (no other separators, no line breaks, no headings)
-- Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
+- Paragraph 1 (Current Status): Focus on TODAY's spot data (current values and their percentiles)
+- Use only timeframes present in the data above (current, 90-day). Never mention, apologise for, or speculate about data that is not provided (e.g. weekly / 7-day comparisons)
 - Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
 - Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
 - Each paragraph: 4-5 sentences (similar length to an 80-120 word English paragraph)
