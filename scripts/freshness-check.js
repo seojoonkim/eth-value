@@ -9,6 +9,7 @@ const path = require('path');
 const EXPECT_SOURCE = {
     historical_active_addresses: 'coinmetrics',
     historical_l2_addresses: 'growthepie',
+    historical_open_interest: 'binance',
 };
 
 const TABLES = {
@@ -24,6 +25,8 @@ const TABLES = {
     historical_l2_addresses: 4,
     historical_staking_apr: 4,
     historical_fear_greed: 3,
+    historical_l2_stablecoin_daily: 4,
+    historical_l2_stablecoin_volume: 4,
     daily_commentary: 2,
 };
 

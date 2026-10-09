@@ -28,3 +28,6 @@ jobs:
       - name: Data freshness
         if: always()
         run: node scripts/freshness-check.js
+      - name: Chart audit (every chart has real data)
+        if: always()
+        run: node scripts/chart-audit.js "https://ethval.com/?cb=${{ github.run_id }}"
