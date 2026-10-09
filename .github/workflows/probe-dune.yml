@@ -1,0 +1,21 @@
+name: probe-dune
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: One chain × 31 days on Dune (no secrets printed)
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+        run: |
+          node -e "
+          const m=require('./scripts/dune-l2-recent.js');
+          (async()=>{for (const c of [m.CHAINS[0], m.CHAINS[7]]) {
+            const t0=Date.now();
+            try { const r=await m.runDuneSQL(process.env.DUNE_API_KEY, m.l2ChainSQL(c,'2026-04-25','2026-05-26'),{log:()=>{}});
+              console.log('PASS',c[0],r.length,'rows',((Date.now()-t0)/1e3).toFixed(0)+'s',JSON.stringify(r[0]));
+            } catch(e){ console.log('FAIL',c[0],e.message.slice(0,200)); }
+          }})()"

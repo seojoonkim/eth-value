@@ -13,27 +13,31 @@ const CHAINS = [
     ['Mantle', 'mantle', 'mnt'],
 ];
 
-function l2RecentSQL(days = 10) {
-    const since = `CURRENT_DATE - INTERVAL '${days}' DAY`;
-    const parts = CHAINS.map(([name, t, px]) => `
-  SELECT n.date, '${name}' AS chain,
-         n.native_amount * p.price AS native_volume_usd,
-         n.native_amount * p.price + COALESCE(k.token_volume_usd, 0) AS total_volume_usd
-  FROM (SELECT DATE_TRUNC('day', block_time) AS date, SUM(value / 1e18) AS native_amount
-        FROM ${t}.transactions WHERE block_time >= ${since} AND value > 0 AND success = true GROUP BY 1) n
-  JOIN ${px}_prices p ON p.date = n.date
-  LEFT JOIN (SELECT DATE_TRUNC('day', block_time) AS date, SUM(amount_usd) AS token_volume_usd
-             FROM tokens.transfers WHERE blockchain = '${t}' AND block_time >= ${since}
-               AND amount_usd > 0 AND amount_usd < 1e12 GROUP BY 1) k ON k.date = n.date`).join('\n  UNION ALL');
-    return `WITH eth_prices AS (
-  SELECT DATE_TRUNC('day', minute) AS date, AVG(price) AS price FROM prices.usd
-  WHERE blockchain = 'ethereum' AND contract_address = 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 AND minute >= ${since} GROUP BY 1
-), mnt_prices AS (
-  SELECT DATE_TRUNC('day', minute) AS date, AVG(price) AS price FROM prices.usd
-  WHERE blockchain = 'mantle' AND contract_address = 0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8 AND minute >= ${since} GROUP BY 1
+// One chain, one date window → small enough for Dune's planner (the 8-chain UNION fails with "too many stages").
+function l2ChainSQL(chain, fromDate, toDate) {
+    const [name, t, px] = chain;
+    const token = px === 'mnt'
+        ? "blockchain = 'mantle' AND contract_address = 0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8"
+        : "blockchain = 'ethereum' AND contract_address = 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+    const win = (col) => `${col} >= DATE '${fromDate}' AND ${col} < DATE '${toDate}'`;
+    return `WITH p AS (
+  SELECT DATE_TRUNC('day', minute) AS date, AVG(price) AS price FROM prices.usd WHERE ${token} AND ${win('minute')} GROUP BY 1
+), n AS (
+  SELECT DATE_TRUNC('day', block_time) AS date, SUM(value / 1e18) AS native_amount
+  FROM ${t}.transactions WHERE ${win('block_time')} AND value > 0 AND success = true GROUP BY 1
+), k AS (
+  SELECT DATE_TRUNC('day', block_time) AS date, SUM(amount_usd) AS token_volume_usd
+  FROM tokens.transfers WHERE blockchain = '${t}' AND ${win('block_time')} AND amount_usd > 0 AND amount_usd < 1e12 GROUP BY 1
 )
-SELECT * FROM (${parts}
-) ORDER BY date DESC, chain`;
+SELECT n.date, '${name}' AS chain, n.native_amount * p.price AS native_volume_usd,
+       n.native_amount * p.price + COALESCE(k.token_volume_usd, 0) AS total_volume_usd
+FROM n JOIN p ON p.date = n.date LEFT JOIN k ON k.date = n.date ORDER BY 1`;
+}
+
+// Backward-compatible name used in tests: SQL for one chain over the last `days` days.
+function l2RecentSQL(days = 10, chain = CHAINS[0]) {
+    const d = (ms) => new Date(ms).toISOString().slice(0, 10);
+    return l2ChainSQL(chain, d(Date.now() - days * 864e5), d(Date.now() + 864e5));
 }
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -66,4 +70,19 @@ async function runDuneSQL(apiKey, sql, { log = console.log, maxWaitMs = 600000 }
     return res.result.rows || [];
 }
 
-module.exports = { l2RecentSQL, runDuneSQL, CHAINS };
+// Collect [fromDate, toDate) for all chains in chunks of `chunkDays`. Failures are per chunk, not all-or-nothing.
+async function collectL2Range(apiKey, fromDate, toDate, { chunkDays = 31, log = console.log } = {}) {
+    const rows = [], failures = [];
+    for (const chain of CHAINS) {
+        for (let a = Date.parse(fromDate); a < Date.parse(toDate); a += chunkDays * 864e5) {
+            const f = new Date(a).toISOString().slice(0, 10);
+            const t = new Date(Math.min(a + chunkDays * 864e5, Date.parse(toDate))).toISOString().slice(0, 10);
+            try { rows.push(...await runDuneSQL(apiKey, l2ChainSQL(chain, f, t), { log: () => {} })); }
+            catch (e) { failures.push(`${chain[0]} ${f}: ${e.message.slice(0, 80)}`); }
+        }
+        log(`  ↪ L2 ${chain[0]}: rows so far ${rows.length}`);
+    }
+    return { rows, failures };
+}
+
+module.exports = { l2RecentSQL, l2ChainSQL, collectL2Range, runDuneSQL, CHAINS };

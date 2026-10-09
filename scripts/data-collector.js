@@ -2904,14 +2904,16 @@ async function collect_dune_l2_total_volume() {
         // Saved query 6386591 fails on Dune ("too many stages"); rerun the same method for recent days only.
         console.log(`  ⚠️ L2 total volume query ${rows ? 'empty' : 'failed'} → recent-window SQL fallback`);
         try {
-            const { l2RecentSQL, runDuneSQL } = require('./dune-l2-recent.js');
+            const { collectL2Range } = require('./dune-l2-recent.js');
             const today = new Date().toISOString().slice(0, 10);
-            // Window: from the last stored day (minus overlap) — fills the whole gap on the first run, ~5 days after.
+            // Window: from the last stored day (minus overlap) — fills the whole gap on the first run, a few days after.
             const { data: lastRow } = await supabase.from('historical_l2_total_volume').select('date').order('date', { ascending: false }).limit(1);
             const lastDate = lastRow && lastRow[0] ? lastRow[0].date : '2026-01-01';
-            const windowDays = Math.min(400, Math.max(5, Math.ceil((Date.now() - Date.parse(lastDate)) / 864e5) + 3));
-            console.log(`  ↪ fallback window ${windowDays}d (last stored ${lastDate})`);
-            const recent = (await runDuneSQL(DUNE_API_KEY, l2RecentSQL(windowDays)))
+            const fromDate = new Date(Math.max(Date.parse(lastDate) - 3 * 864e5, Date.now() - 400 * 864e5)).toISOString().slice(0, 10);
+            console.log(`  ↪ fallback ${fromDate} → ${today} (last stored ${lastDate}), per chain/31d chunks`);
+            const { rows: l2rows, failures } = await collectL2Range(DUNE_API_KEY, fromDate, today);
+            if (failures.length) console.log(`  ⚠️ L2 chunks failed (${failures.length}): ${failures.slice(0, 3).join(' | ')}`);
+            const recent = l2rows
                 .map(r => ({
                     date: String(r.date).slice(0, 10),
                     chain: r.chain,
@@ -3367,6 +3369,7 @@ async function main() {
     
     let success = 0, warned = 0, failed = 0;
     const failedDatasets = []; // 실패한 데이터셋 목록
+    const warnDatasets = []; // 경고(대체 소스 등) 데이터셋 목록
     
     Object.entries(results).forEach(([key, res]) => {
         const { count, status, msg } = res;
@@ -3384,7 +3387,7 @@ async function main() {
             icon = '⚠️';
             display = `${count.toLocaleString()} (${msg})`;
             warned++;
-            failedDatasets.push(key); // warn도 실패 목록에 추가
+            warnDatasets.push(key); // warn(대체 소스 사용 등)은 실패와 따로 표시
         } else {
             icon = '❌';
             display = msg || 'failed';
@@ -3399,6 +3402,9 @@ async function main() {
     console.log(`✅ OK: ${success}  |  ⚠️ Warn: ${warned}  |  ❌ Fail: ${failed}  |  ⏱️ ${totalTime}s`);
     if (failedDatasets.length > 0) {
         console.log(`❌ Failed: ${failedDatasets.join(', ')}`);
+    }
+    if (warnDatasets.length > 0) {
+        console.log(`⚠️ Warn: ${warnDatasets.join(', ')}`);
     }
     console.log('='.repeat(60));
     
