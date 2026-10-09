@@ -10,6 +10,8 @@
 const { createClient } = require('@supabase/supabase-js');
 const fallbackSources = require('./fallback-sources.js');
 const { normalizeParagraphs } = require('./commentary-format.js');
+const extraSources = require('./extra-sources.js');
+const { runDuneSQL } = require('./dune-l2-recent.js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -1880,6 +1882,62 @@ async function collect_eth_supply() {
     return note ? result.warn(saved, note) : result.ok(saved);
 }
 
+// L2 stablecoin supply (DefiLlama per-chain circulating, all pegs). The old feed stopped 2025-12-14 and had
+// no collector in this repo; DefiLlama covers the full history, so the whole series is rewritten from one
+// source (mixing the two would leave a ~15% step: per-chain levels differ 0.6x-1.6x).
+async function collect_l2_stablecoin_supply() {
+    const records = await extraSources.l2StablecoinSupplyRecords();
+    if (!records.length) return result.fail('defillama stablecoins empty');
+    // Drop old-source rows outside DefiLlama coverage so the series stays single-source.
+    const { error } = await supabase.from('historical_l2_stablecoin_daily').delete().lt('date', records[0].date);
+    if (error) console.log(`  ⚠️ l2 stablecoin purge: ${error.message}`);
+    const saved = await upsertBatch('historical_l2_stablecoin_daily', records);
+    console.log(`  ✓ L2 stablecoin supply ${records.length} days → ${records.at(-1).date} $${(records.at(-1).total / 1e9).toFixed(2)}B`);
+    return result.ok(saved);
+}
+
+// L2 stablecoin transfer volume (Dune tokens.transfers, per chain). The old saved query stopped 2025-12-14.
+// Incremental from the last stored day; chains run in parallel, 10-day windows, time-boxed so a run
+// never blows the workflow timeout — the backlog catches up over the next runs.
+async function collect_l2_stablecoin_volume() {
+    if (!DUNE_API_KEY) return result.skip('No API key');
+    const today = new Date().toISOString().slice(0, 10);
+    const deadline = Date.now() + 12 * 60 * 1000;
+    const saved = [], failed = [];
+    await Promise.all(extraSources.L2_STABLEVOL_CHAINS.map(async (chain) => {
+        const { data: last } = await supabase.from('historical_l2_stablecoin_volume')
+            .select('date').eq('chain', chain).gt('total_volume', 0).order('date', { ascending: false }).limit(1);
+        let from = last?.[0]?.date
+            ? new Date(Date.parse(last[0].date) - 2 * 864e5).toISOString().slice(0, 10)
+            : new Date(Date.now() - 1095 * 864e5).toISOString().slice(0, 10);
+        while (from < today && Date.now() < deadline) {
+            const to = new Date(Math.min(Date.parse(from) + 10 * 864e5, Date.parse(today))).toISOString().slice(0, 10);
+            try {
+                const rows = await runDuneSQL(DUNE_API_KEY, extraSources.l2StablecoinVolSQL(chain, from, to), { log: () => {}, maxWaitMs: 300000 });
+                const recs = rows.map(r => ({
+                    date: String(r.date).slice(0, 10), timestamp: Date.parse(String(r.date).slice(0, 10)), chain,
+                    total_volume: +r.total_volume || 0, usdc_volume: +r.usdc_volume || 0, usdt_volume: +r.usdt_volume || 0,
+                    dai_volume: +r.dai_volume || 0, usde_volume: +r.usde_volume || 0, tx_count: +r.tx_count || 0, source: 'dune',
+                })).filter(r => r.date < today && r.total_volume > 0);
+                // Table has no (date, chain) unique key → replace the window explicitly instead of upsert.
+                if (recs.length) {
+                    const { error: de } = await supabase.from('historical_l2_stablecoin_volume').delete()
+                        .eq('chain', chain).gte('date', from).lt('date', to);
+                    if (de) throw new Error('delete ' + de.message);
+                    const { error: ie } = await supabase.from('historical_l2_stablecoin_volume').insert(recs);
+                    if (ie) throw new Error('insert ' + ie.message);
+                    saved.push(recs.length);
+                }
+            } catch (e) { failed.push(`${chain} ${from}: ${e.message.slice(0, 80)}`); break; }
+            from = to;
+        }
+    }));
+    const n = saved.reduce((a, b) => a + b, 0);
+    console.log(`  ✓ L2 stablecoin volume +${n} chain-days${failed.length ? `, failed: ${failed.join('; ')}` : ''}`);
+    if (!n && failed.length) return result.fail(failed[0]);
+    return failed.length ? result.warn(n, `${failed.length} chains failed`) : result.ok(n);
+}
+
 // Remove placeholder rows that real data did not overwrite (e.g. a leftover "today" estimate).
 // Only touches rows explicitly marked synthetic; real rows are never deleted.
 async function purgeSynthetic(table, filter = (q) => q.eq('source', 'estimated')) {
@@ -2190,55 +2248,25 @@ async function collect_eth_dominance() {
 // 16-2. Open Interest (CryptoQuant API via Cloudflare Proxy)
 // ============================================================
 async function collect_open_interest() {
-    const PROXY_URL = 'https://cryptoquant-proxy.seojoon-kim.workers.dev';
-    
-    try {
-        const response = await fetch(
-            `${PROXY_URL}/?endpoint=/v1/eth/market-data/open-interest&window=day&exchange=all_exchange&symbol=all_symbol&limit=1095`
-        );
-        
-        if (!response.ok) {
-            throw new Error(`Proxy error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.status?.code !== 200) {
-            throw new Error(data.status?.message || 'API error');
-        }
-        
-        const rows = data?.result?.data || [];
-        
-        if (rows.length === 0) {
-            throw new Error('No data from CryptoQuant');
-        }
-        
-        console.log(`  📦 Got ${rows.length} open interest records from CryptoQuant`);
-        
-        const records = rows.map(row => ({
-            date: row.date,
-            open_interest: parseFloat(row.open_interest || 0),
-            source: 'cryptoquant'
-        })).filter(r => r.date && !isNaN(r.open_interest) && r.open_interest > 0);
-        
-        if (records.length > 100) {
-            const saved = await upsertBatch('historical_open_interest', records);
-            return result.ok(saved);
-        }
-        
-        throw new Error('Insufficient data');
-    } catch (e) {
-        console.log(`  ⚠️ open_interest: CryptoQuant failed (${e.message}) → fallback openInterestFromCoinGecko`);
-        try {
-            const records = await fallbackSources.openInterestFromCoinGecko();
-            if (!records.length) throw new Error('fallback returned 0 rows');
-            const saved = await upsertBatch('historical_open_interest', records);
-            return result.warn(saved, `fallback ${records[0].source} (CryptoQuant: ${e.message})`);
-        } catch (fe) {
-            console.log(`  ❌ open_interest: fallback failed too: ${fe.message}`);
-            return result.fail(`${e.message}; fallback: ${fe.message}`);
-        }
-    }
+    // CryptoQuant (all exchanges) stopped 2026-04-04 and no free all-exchange daily history exists.
+    // Single source for the whole chart: Binance ETH futures OI (USDT-M ETHUSDT + COIN-M ETHUSD_PERP) from the
+    // public archive. Old CryptoQuant rows are kept in data/archive/open_interest_cryptoquant.json.
+    const { data: last } = await supabase.from('historical_open_interest')
+        .select('date').eq('source', 'binance').order('date', { ascending: false }).limit(1);
+    const start = last?.[0]?.date
+        ? new Date(Date.parse(last[0].date) - 3 * 864e5).toISOString().slice(0, 10)   // re-check last 3 days
+        : new Date(Date.now() - 1095 * 864e5).toISOString().slice(0, 10);
+    const end = new Date().toISOString().slice(0, 10);
+    const { records, failed } = await extraSources.binanceOIRange(start, end, { log: console.log });
+    if (failed.length) console.log(`  ⚠️ binance OI failed days: ${failed.slice(0, 3).join('; ')}${failed.length > 3 ? ` (+${failed.length - 3})` : ''}`);
+    if (!records.length) return result.fail('binance OI archive returned no days');
+    const saved = await upsertBatch('historical_open_interest', records);
+    // Any row not from Binance (old CryptoQuant / one-off CoinGecko) would mix two definitions in one chart.
+    const { error } = await supabase.from('historical_open_interest').delete().neq('source', 'binance');
+    if (error) console.log(`  ⚠️ OI cleanup: ${error.message}`);
+    const lastRow = records[records.length - 1];
+    console.log(`  ✓ Binance OI ${records.length} days → ${lastRow.date} $${(lastRow.open_interest / 1e9).toFixed(2)}B`);
+    return failed.length ? result.warn(saved, `${failed.length} days failed`) : result.ok(saved);
 }
 
 // ============================================================
@@ -3200,10 +3228,12 @@ async function main() {
         collect_open_interest(),
         collect_blob_data(),
         collect_active_addresses(),
-        collect_gas_burn()
+        collect_gas_burn(),
+        collect_l2_stablecoin_supply(),
+        collect_l2_stablecoin_volume()
     ]);
     
-    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'gas_burn'];
+    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'gas_burn', 'l2_stablecoin_supply', 'l2_stablecoin_volume'];
     phase3Results.forEach((res, i) => {
         results[phase3Names[i]] = wrapResult(res);
         const r = results[phase3Names[i]];

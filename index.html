@@ -15265,7 +15265,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="funding-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>CryptoQuant</span>
+                        <span>Deribit</span>
                         <span class="change" id="funding-sentiment">--</span>
                         <div class="metric-desc" data-i18n="desc.funding">Perpetual futures funding. Positive = longs pay shorts, market bullish.</div>
                     </div>
@@ -15285,9 +15285,9 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="open-interest-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>CryptoQuant</span>
+                        <span>Binance</span>
                         <span class="change" id="open-interest-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.openInterest">Total open derivative positions. Rising OI + price = strong trend confirmation.</div>
+                        <div class="metric-desc" data-i18n="desc.openInterest">ETH futures open interest on Binance (USDT-M + COIN-M). Rising OI + price = strong trend confirmation.</div>
                     </div>
                 </div>
 
@@ -15306,7 +15306,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="reserve-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>CryptoQuant</span>
+                        <span>Coin Metrics</span>
                         <span class="change" id="reserve-change">--</span>
                         <div class="metric-desc" data-i18n="desc.reserve">ETH held on exchanges. Declining reserve = accumulation, bullish signal.</div>
                     </div>
@@ -29914,8 +29914,8 @@
             
             if (filtered.length === 0) return;
             
-            // All-exchange OI history has a hole (CryptoQuant stopped 2026-04-04; free sources only give
-            // today's total). Break the line at gaps > 7 days instead of drawing a fake straight line across it.
+            // Guard: break the line at any multi-day hole in OI history (archive outage) instead of
+            // drawing a fake straight line across it.
             const GAP_MS = 7 * 86400000;
             const pts = [];
             filtered.forEach((d, i) => {
@@ -30513,7 +30513,7 @@
                 }
                 setEl('exchange-reserve', (state.exchangeReserve / 1e6).toFixed(2) + 'M ETH');
                 safeCall(() => updateMetricChart('reserve-chart', reserveChart, state.reserveHistory, '#f59e0b', 'reserve'), 'reserve');
-                setDataSource('reserve-chart', reserveSource, 'CryptoQuant');
+                setDataSource('reserve-chart', reserveSource, 'Coin Metrics');
                 setChange('reserve-change', state.reserveHistory);
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -30528,7 +30528,7 @@
                 if (state.openInterest > 0) {
                     setEl('open-interest-value', '$' + (state.openInterest / 1e9).toFixed(2) + 'B');
                     safeCall(() => updateOpenInterestChartWithPeriod(ChartManager.getDefaultPeriod()), 'openInterest');
-                    setDataSource('open-interest-chart', openInterestSource, 'CryptoQuant');
+                    setDataSource('open-interest-chart', openInterestSource, 'Binance');
                     setChange('open-interest-change', state.openInterestHistory);
                 } else {
                     setEl('open-interest-value', 'No Data');
@@ -30589,7 +30589,7 @@
                 }
                 setEl('funding-rate', (state.fundingRate * 100).toFixed(4) + '%');
                 safeCall(() => updateFundingChart(ChartManager.getDefaultPeriod()), 'funding');
-                setDataSource('funding-chart', fundingSource, 'Binance');
+                setDataSource('funding-chart', fundingSource, 'Deribit');
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // 13. Dominance & ETH/BTC
