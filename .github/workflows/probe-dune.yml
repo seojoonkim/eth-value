@@ -1,0 +1,18 @@
+name: probe-dune
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dune query 6386591 state (no secrets printed)
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+        run: |
+          for q in 6386591; do
+            echo "== query $q results meta"
+            curl -s -H "X-Dune-API-Key: $DUNE_API_KEY" "https://api.dune.com/api/v1/query/$q/results?limit=3" | python3 -c "import json,sys;d=json.load(sys.stdin);r=d.get('result',{});print('state',d.get('state'),'exec_ended',d.get('execution_ended_at'),'rows',r.get('metadata',{}).get('total_row_count'),'err',d.get('error'));print('cols',r.get('metadata',{}).get('column_names'));[print(x) for x in r.get('rows',[])[:3]]"
+            echo "== query $q latest rows by date"
+            curl -s -H "X-Dune-API-Key: $DUNE_API_KEY" "https://api.dune.com/api/v1/query/$q/results?limit=5&sort_by=date%20desc" | python3 -c "import json,sys;d=json.load(sys.stdin);[print(x) for x in d.get('result',{}).get('rows',[])[:5]];print('err',d.get('error'))"
+            echo "== query $q definition"
+            curl -s -H "X-Dune-API-Key: $DUNE_API_KEY" "https://api.dune.com/api/v1/query/$q" | python3 -c "import json,sys;d=json.load(sys.stdin);print('name',d.get('name'),'archived',d.get('is_archived'),'private',d.get('is_private'),'err',d.get('error'));print((d.get('query_sql') or '')[:3000])"
+          done
