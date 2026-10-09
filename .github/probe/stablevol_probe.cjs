@@ -1,7 +1,7 @@
 // Probe (CI only): why L2 stablecoin volume for polygon/arbitrum stopped advancing.
 // Runs the collector's own SQL for a recent window + a symbol census. Prints row counts only.
-const { runDuneSQL } = require('../scripts/dune-l2-recent.js');
-const extra = require('../scripts/extra-sources.js');
+const { runDuneSQL } = require('../../scripts/dune-l2-recent.js');
+const extra = require('../../scripts/extra-sources.js');
 const KEY = process.env.DUNE_API_KEY;
 (async () => {
     for (const [chain, from, to] of [['polygon', '2026-03-19', '2026-03-29'], ['polygon', '2026-09-28', '2026-10-08'], ['arbitrum', '2026-08-06', '2026-08-16'], ['arbitrum', '2026-09-28', '2026-10-08'], ['base', '2026-09-28', '2026-10-08']]) {
