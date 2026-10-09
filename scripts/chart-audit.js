@@ -10,7 +10,18 @@ const URL = process.argv[2] || 'https://ethval.com/';
 const MIN_POINTS = 5;
 
 (async () => {
-    const browser = await chromium.launch();
+    // CI installs the matching headless shell; local machines may only have a cached full chromium-* build.
+    let browser;
+    try { browser = await chromium.launch(); }
+    catch (e) {
+        const fs = require('fs'), path = require('path'), os = require('os');
+        const cache = path.join(os.homedir(), 'Library/Caches/ms-playwright');
+        const exe = fs.existsSync(cache) && fs.readdirSync(cache).filter(d => /^chromium-\d+$/.test(d)).sort().reverse()
+            .map(d => path.join(cache, d, 'chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'))
+            .find(p => fs.existsSync(p));
+        if (!exe) throw e;
+        browser = await chromium.launch({ executablePath: exe });
+    }
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     await page.goto(URL + (URL.includes('?') ? '&' : '?') + 'audit=' + Date.now(), { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(8000);
