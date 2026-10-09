@@ -1,0 +1,18 @@
+name: probe-sources
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: CryptoQuant direct API with repo secret (status only, key never printed)
+        env:
+          CQ: ${{ secrets.CRYPTOQUANT_API_KEY }}
+        run: |
+          echo "key length: ${#CQ}"
+          for e in market-data/funding-rates exchange-flows/reserve market-data/open-interest; do
+            code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" -H "Authorization: Bearer $CQ" \
+              "https://api.cryptoquant.com/v1/eth/$e?window=day&exchange=all_exchange&limit=2")
+            echo "cq $e HTTP $code $(head -c 220 /tmp/r.json | tr -d '\n')"
+          done
+          echo "proxy: $(curl -s -m 20 'https://cryptoquant-proxy.seojoon-kim.workers.dev/?endpoint=/v1/eth/market-data/funding-rates&window=day&exchange=all_exchange&limit=2' | head -c 160)"
