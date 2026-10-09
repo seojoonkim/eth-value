@@ -24,7 +24,7 @@ async function getJSON(url) {
 // Drop today's UTC day: it is still accumulating (same rule as checkAndRemoveIncomplete).
 const completeDaysOnly = (records) => { const today = isoDay(Date.now()); return records.filter(r => r.date < today); };
 
-async function fundingFromBinance(days = 1095) {
+async function fundingFromBinanceOnly(days = 1095) {
     const byDay = new Map();
     let start = Date.now() - days * DAY;
     for (let i = 0; i < 6; i++) {               // 1000 rows ≈ 333 days of 8h funding
@@ -43,6 +43,38 @@ async function fundingFromBinance(days = 1095) {
         .filter(([, v]) => v.length >= 2)
         .map(([date, v]) => ({ date, funding_rate: +(v.reduce((s, x) => s + x, 0) / v.length * 100).toFixed(6), source: 'binance' }));
     return completeDaysOnly(records).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// Deribit ETH-PERPETUAL: hourly records carry `interest_8h` (fraction per 8h, same basis as Binance).
+// Reachable from GitHub's US runners, where Binance returns HTTP 451 (geo-block).
+async function fundingFromDeribit(days = 1095) {
+    const byDay = new Map();
+    const end = Date.now();
+    for (let s = end - days * DAY; s < end; s += 20 * DAY) {      // 480 rows/call = 20 days hourly
+        const j = await getJSON(`https://www.deribit.com/api/v2/public/get_funding_rate_history?instrument_name=ETH-PERPETUAL&start_timestamp=${s}&end_timestamp=${Math.min(s + 20 * DAY, end)}`);
+        for (const r of j.result || []) {
+            if (typeof r.interest_8h !== 'number') continue;
+            const d = isoDay(r.timestamp);
+            if (!byDay.has(d)) byDay.set(d, []);
+            byDay.get(d).push(r.interest_8h);
+        }
+    }
+    const records = [...byDay.entries()]
+        .filter(([, v]) => v.length >= 12)
+        .map(([date, v]) => ({ date, funding_rate: +(v.reduce((s, x) => s + x, 0) / v.length * 100).toFixed(6), source: 'deribit' }));
+    return completeDaysOnly(records).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// Binance first (deepest liquidity); Deribit when Binance is geo-blocked or down.
+async function fundingFromBinance(days = 1095) {
+    try {
+        const r = await fundingFromBinanceOnly(days);
+        if (r.length > 100) return r;
+        throw new Error(`only ${r.length} rows`);
+    } catch (e) {
+        console.log(`  ↪ funding: Binance unavailable (${e.message}) → Deribit`);
+        return fundingFromDeribit(days);
+    }
 }
 
 async function reserveFromCoinMetrics(days = 1095) {
@@ -70,4 +102,4 @@ async function openInterestFromCoinGecko() {
     return [{ date: isoDay(Date.now()), open_interest: total, source: 'coingecko_major' }];
 }
 
-module.exports = { fundingFromBinance, reserveFromCoinMetrics, openInterestFromCoinGecko };
+module.exports = { fundingFromBinance, fundingFromDeribit, reserveFromCoinMetrics, openInterestFromCoinGecko };
