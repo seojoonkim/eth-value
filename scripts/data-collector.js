@@ -1863,20 +1863,43 @@ async function collect_active_addresses() {
 // ============================================================
 // 8. ETH Supply (Ultrasound.money or estimate)
 // ============================================================
+// ultrasound.money /api/v2/fees/supply-over-time → [{date, eth_supply}] using the last sample of each UTC day.
+function ultrasoundDailySupply(data) {
+    if (!data || typeof data !== 'object') return [];
+    const pts = [...(data.since_merge || []), ...(data.d30 || []), ...(data.d7 || [])]
+        .filter(p => p && p.timestamp && Number.isFinite(+p.supply));
+    const byDay = new Map();
+    for (const p of pts) {
+        const d = String(p.timestamp).slice(0, 10);
+        const prev = byDay.get(d);
+        if (!prev || p.timestamp > prev.timestamp) byDay.set(d, p);
+    }
+    return [...byDay.entries()].sort().map(([date, p]) => ({ date, eth_supply: parseFloat((+p.supply).toFixed(2)) }));
+}
+
 async function collect_eth_supply() {
     // Real sources only: Coin Metrics SplyCur (full history), then ultrasound.money on top when reachable.
     // The old fallback ("120.4M + 100/day") put supply at an all-time low and the AI commentary repeated it.
     let saved = 0, note = '';
     try { saved = await upsertBatch('historical_eth_supply', await fallbackSources.supplyFromCoinMetrics()); }
     catch (e) { note = `coinmetrics: ${e.message}`; }
-    const data = await fetchJSON('https://ultrasound.money/api/v2/fees/supply-over-time');
-    if (data && Array.isArray(data) && data.length > 100) {
-        const records = data.slice(-1095).map(d => ({
-            date: new Date(d.timestamp * 1000).toISOString().split('T')[0],
-            eth_supply: parseFloat((d.supply / 1e18).toFixed(2)),
-            source: 'ultrasound'
-        }));
-        saved += await upsertBatch('historical_eth_supply', records);
+    // ultrasound.money v2 now returns { d1, d7, d30, since_merge, ... } with { supply (ETH), timestamp (ISO) }.
+    // Only fill days Coin Metrics has not published yet (its feed lags 1-2 days). Rows keep their real label
+    // 'ultrasound'; the next Coin Metrics upsert (same date key) replaces them. Same on-chain supply, diff ~0.001%.
+    const us = await fetchJSON('https://ultrasound.money/api/v2/fees/supply-over-time');
+    const usRecords = ultrasoundDailySupply(us);
+    if (usRecords.length) {
+        const { data: lastCm } = await supabase.from('historical_eth_supply').select('date,eth_supply').order('date', { ascending: false }).limit(1);
+        const lastDate = lastCm?.[0]?.date || '';
+        const overlap = usRecords.find(r => r.date === lastDate);
+        const drift = overlap ? Math.abs(overlap.eth_supply - lastCm[0].eth_supply) / lastCm[0].eth_supply : null;
+        const today = new Date().toISOString().slice(0, 10);
+        const fresh = usRecords.filter(r => r.date > lastDate && r.date < today);
+        if (drift !== null && drift > 0.001) note = `ultrasound drift ${(drift * 100).toFixed(3)}% vs coinmetrics — not used`;
+        else if (fresh.length) {
+            saved += await upsertBatch('historical_eth_supply', fresh.map(r => ({ ...r, source: 'ultrasound' })));
+            console.log(`  ✓ eth_supply +${fresh.length} recent day(s) from ultrasound (drift ${drift === null ? 'n/a' : (drift * 100).toFixed(4) + '%'})`);
+        }
     } else note = note || 'ultrasound unavailable';
     await purgeSynthetic('historical_eth_supply');
     if (!saved) return result.fail(note || 'no supply source');
@@ -1904,7 +1927,7 @@ async function collect_l2_stablecoin_volume() {
     if (!DUNE_API_KEY) return result.skip('No API key');
     const today = new Date().toISOString().slice(0, 10);
     const deadline = Date.now() + 12 * 60 * 1000;
-    const saved = [], failed = [];
+    const saved = [], failed = [], pending = [];
     await Promise.all(extraSources.L2_STABLEVOL_CHAINS.map(async (chain) => {
         const { data: last } = await supabase.from('historical_l2_stablecoin_volume')
             .select('date').eq('chain', chain).gt('total_volume', 0).order('date', { ascending: false }).limit(1);
@@ -1932,9 +1955,11 @@ async function collect_l2_stablecoin_volume() {
             } catch (e) { failed.push(`${chain} ${from}: ${e.message.slice(0, 80)}`); break; }
             from = to;
         }
+        // Time box reached before catching up: say so (silent stops looked like a frozen feed for 200 days).
+        if (from < today) { pending.push(`${chain} from ${from}`); }
     }));
     const n = saved.reduce((a, b) => a + b, 0);
-    console.log(`  ✓ L2 stablecoin volume +${n} chain-days${failed.length ? `, failed: ${failed.join('; ')}` : ''}`);
+    console.log(`  ✓ L2 stablecoin volume +${n} chain-days${failed.length ? `, failed: ${failed.join('; ')}` : ''}${pending.length ? `, continues next run: ${pending.join(', ')}` : ''}`);
     if (!n && failed.length) return result.fail(failed[0]);
     return failed.length ? result.warn(n, `${failed.length} chains failed`) : result.ok(n);
 }
@@ -2063,34 +2088,47 @@ async function collect_eth_btc() {
     }
 }
 
+// CryptoQuant: direct API with the repo key first. The Cloudflare proxy started answering {"ok":true}
+// with no data (seen 2026-10), which silently pushed funding/reserve/OI onto fallbacks for months.
+async function cryptoQuantRows(endpoint, limit = 1095) {
+    const qs = `window=day&exchange=all_exchange&limit=${limit}`;
+    const tries = [];
+    if (CRYPTOQUANT_API_KEY) tries.push(['direct', `https://api.cryptoquant.com${endpoint}?${qs}`, { headers: { Authorization: `Bearer ${CRYPTOQUANT_API_KEY}` } }]);
+    tries.push(['proxy', `https://cryptoquant-proxy.seojoon-kim.workers.dev/?endpoint=${endpoint}&${qs}`, {}]);
+    const errs = [];
+    for (const [name, url, opts] of tries) {
+        try {
+            const r = await fetch(url, opts);
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            const j = await r.json();
+            if (j?.status?.code !== 200) throw new Error(j?.status?.message || `unexpected body ${JSON.stringify(j).slice(0, 60)}`);
+            const rows = j?.result?.data || [];
+            if (!rows.length) throw new Error('0 rows');
+            console.log(`  📦 CryptoQuant ${endpoint} via ${name}: ${rows.length} rows → ${rows[0].date}`);
+            return rows;
+        } catch (e) { errs.push(`${name}: ${e.message}`); }
+    }
+    throw new Error(errs.join('; '));
+}
+
+// Upsert the primary source, then drop other-source rows inside the range it covers, so one chart never
+// mixes two definitions (e.g. CryptoQuant all-exchange vs a single-exchange fallback). Older rows outside
+// the covered range are kept untouched.
+async function replaceWithSource(table, records, source) {
+    const saved = await upsertBatch(table, records);
+    const from = records.reduce((m, r) => (r.date < m ? r.date : m), records[0].date);
+    const { error } = await supabase.from(table).delete().neq('source', source).gte('date', from);
+    if (error) console.log(`  ⚠️ ${table} cleanup: ${error.message}`);
+    return saved;
+}
+
 // ============================================================
-// 14. Funding Rate (CryptoQuant API via Cloudflare Proxy)
+// 14. Funding Rate (CryptoQuant direct API; Deribit fallback)
 // ============================================================
 async function collect_funding_rate() {
-    const PROXY_URL = 'https://cryptoquant-proxy.seojoon-kim.workers.dev';
-    
     try {
-        const response = await fetch(
-            `${PROXY_URL}/?endpoint=/v1/eth/market-data/funding-rates&window=day&exchange=all_exchange&limit=1095`
-        );
+        const rows = await cryptoQuantRows('/v1/eth/market-data/funding-rates', 2000);
         
-        if (!response.ok) {
-            throw new Error(`Proxy error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.status?.code !== 200) {
-            throw new Error(data.status?.message || 'API error');
-        }
-        
-        const rows = data?.result?.data || [];
-        
-        if (rows.length === 0) {
-            throw new Error('No data from CryptoQuant');
-        }
-        
-        console.log(`  📦 Got ${rows.length} funding rate records from CryptoQuant`);
         
         const records = rows.map(row => ({
             date: row.date,
@@ -2099,7 +2137,7 @@ async function collect_funding_rate() {
         })).filter(r => r.date && !isNaN(r.funding_rate));
         
         if (records.length > 100) {
-            const saved = await upsertBatch('historical_funding_rate', records);
+            const saved = await replaceWithSource('historical_funding_rate', records, 'cryptoquant');
             return result.ok(saved);
         }
         
@@ -2119,33 +2157,12 @@ async function collect_funding_rate() {
 }
 
 // ============================================================
-// 15. Exchange Reserve (CryptoQuant API via Cloudflare Proxy)
+// 15. Exchange Reserve (CryptoQuant direct API; Coin Metrics fallback)
 // ============================================================
 async function collect_exchange_reserve() {
-    const PROXY_URL = 'https://cryptoquant-proxy.seojoon-kim.workers.dev';
-    
     try {
-        const response = await fetch(
-            `${PROXY_URL}/?endpoint=/v1/eth/exchange-flows/reserve&window=day&exchange=all_exchange&limit=1095`
-        );
+        const rows = await cryptoQuantRows('/v1/eth/exchange-flows/reserve', 2000);
         
-        if (!response.ok) {
-            throw new Error(`Proxy error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.status?.code !== 200) {
-            throw new Error(data.status?.message || 'API error');
-        }
-        
-        const rows = data?.result?.data || [];
-        
-        if (rows.length === 0) {
-            throw new Error('No data from CryptoQuant');
-        }
-        
-        console.log(`  📦 Got ${rows.length} exchange reserve records from CryptoQuant`);
         
         const records = rows.map(row => ({
             date: row.date,
@@ -2154,7 +2171,7 @@ async function collect_exchange_reserve() {
         })).filter(r => r.date && !isNaN(r.reserve_eth) && r.reserve_eth > 0);
         
         if (records.length > 100) {
-            const saved = await upsertBatch('historical_exchange_reserve', records);
+            const saved = await replaceWithSource('historical_exchange_reserve', records, 'cryptoquant');
             return result.ok(saved);
         }
         
@@ -2246,12 +2263,25 @@ async function collect_eth_dominance() {
 }
 
 // ============================================================
-// 16-2. Open Interest (CryptoQuant API via Cloudflare Proxy)
+// 16-2. Open Interest (CryptoQuant direct API; Binance archive fallback)
 // ============================================================
 async function collect_open_interest() {
-    // CryptoQuant (all exchanges) stopped 2026-04-04 and no free all-exchange daily history exists.
-    // Single source for the whole chart: Binance ETH futures OI (USDT-M ETHUSDT + COIN-M ETHUSD_PERP) from the
-    // public archive. Old CryptoQuant rows are kept in data/archive/open_interest_cryptoquant.json.
+    // Primary: CryptoQuant all-exchange OI (the card's original definition). It looked "stopped 2026-04-04"
+    // only because the Cloudflare proxy broke; the direct API with the repo key works.
+    try {
+        const rows = await cryptoQuantRows('/v1/eth/market-data/open-interest', 2000);
+        const records = rows.map(r => ({ date: r.date, open_interest: parseFloat(r.open_interest || 0), source: 'cryptoquant' }))
+            .filter(r => r.date && r.open_interest > 0);
+        if (records.length > 100) {
+            const saved = await replaceWithSource('historical_open_interest', records, 'cryptoquant');
+            console.log(`  ✓ CryptoQuant OI ${records.length} days → ${records[0].date} $${(records[0].open_interest / 1e9).toFixed(2)}B`);
+            return result.ok(saved);
+        }
+        throw new Error(`only ${records.length} rows`);
+    } catch (e) {
+        console.log(`  ⚠️ open_interest: CryptoQuant failed (${e.message}) → fallback Binance archive`);
+    }
+    // Fallback: Binance ETH futures OI (USDT-M ETHUSDT + COIN-M ETHUSD_PERP) from the public archive.
     const { data: last } = await supabase.from('historical_open_interest')
         .select('date').eq('source', 'binance').order('date', { ascending: false }).limit(1);
     const start = last?.[0]?.date
@@ -2261,13 +2291,11 @@ async function collect_open_interest() {
     const { records, failed } = await extraSources.binanceOIRange(start, end, { log: console.log });
     if (failed.length) console.log(`  ⚠️ binance OI failed days: ${failed.slice(0, 3).join('; ')}${failed.length > 3 ? ` (+${failed.length - 3})` : ''}`);
     if (!records.length) return result.fail('binance OI archive returned no days');
+    // Fallback only appends recent Binance days; it never deletes the CryptoQuant history.
     const saved = await upsertBatch('historical_open_interest', records);
-    // Any row not from Binance (old CryptoQuant / one-off CoinGecko) would mix two definitions in one chart.
-    const { error } = await supabase.from('historical_open_interest').delete().neq('source', 'binance');
-    if (error) console.log(`  ⚠️ OI cleanup: ${error.message}`);
     const lastRow = records[records.length - 1];
     console.log(`  ✓ Binance OI ${records.length} days → ${lastRow.date} $${(lastRow.open_interest / 1e9).toFixed(2)}B`);
-    return failed.length ? result.warn(saved, `${failed.length} days failed`) : result.ok(saved);
+    return result.warn(saved, `fallback binance (CryptoQuant failed)${failed.length ? `, ${failed.length} days failed` : ''}`);
 }
 
 // ============================================================
@@ -2829,10 +2857,10 @@ async function collect_dune_l1_total_volume() {
 async function collect_dune_l2_total_volume() {
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
 
-    const rows = await fetchDuneResults(DUNE_QUERIES.L2_TOTAL_VOLUME, 15000);
-    if (!rows || rows.length === 0) {
-        // Saved query 6386591 fails on Dune ("too many stages"); rerun the same method for recent days only.
-        console.log(`  ⚠️ L2 total volume query ${rows ? 'empty' : 'failed'} → recent-window SQL fallback`);
+    // Saved query 6386591 fails on Dune ("too many stages") because it rescans every chain since 2022.
+    // History (2022-01 → now) is already stored, so the per-chain incremental SQL is the primary path:
+    // it reruns the same method from the last stored day. Only if it fails do we try the saved query.
+    {
         try {
             const { collectL2Range } = require('./dune-l2-recent.js');
             const today = new Date().toISOString().slice(0, 10);
@@ -2840,7 +2868,7 @@ async function collect_dune_l2_total_volume() {
             const { data: lastRow } = await supabase.from('historical_l2_total_volume').select('date').order('date', { ascending: false }).limit(1);
             const lastDate = lastRow && lastRow[0] ? lastRow[0].date : '2026-01-01';
             const fromDate = new Date(Math.max(Date.parse(lastDate) - 3 * 864e5, Date.now() - 400 * 864e5)).toISOString().slice(0, 10);
-            console.log(`  ↪ fallback ${fromDate} → ${today} (last stored ${lastDate}), per chain/31d chunks`);
+            console.log(`  ↪ L2 total volume ${fromDate} → ${today} (last stored ${lastDate}), per chain/31d chunks`);
             const { rows: l2rows, failures } = await collectL2Range(DUNE_API_KEY, fromDate, today);
             if (failures.length) console.log(`  ⚠️ L2 chunks failed (${failures.length}): ${failures.slice(0, 3).join(' | ')}`);
             const recent = l2rows
@@ -2851,15 +2879,16 @@ async function collect_dune_l2_total_volume() {
                     native_volume_usd: parseFloat(r.native_volume_usd || 0)
                 }))
                 .filter(r => r.date && r.date < today && (r.total_volume_usd > 0 || r.native_volume_usd > 0));
-            if (!recent.length) return result.warn(0, 'fallback SQL returned 0 rows');
-            console.log(`  ✓ ${recent.length} records (fallback, latest ${recent[0].date})`);
+            if (!recent.length) return result.warn(0, 'incremental SQL returned 0 rows');
+            console.log(`  ✓ ${recent.length} records (incremental SQL, latest ${recent.at(-1).date})`);
             const saved = await upsertBatch('historical_l2_total_volume', recent, 'date,chain');
-            return result.warn(saved, `fallback recent SQL (query ${DUNE_QUERIES.L2_TOTAL_VOLUME} failing)`);
+            return failures.length ? result.warn(saved, `${failures.length} chain windows failed`) : result.ok(saved);
         } catch (e) {
-            console.log(`  ❌ L2 total volume fallback failed: ${e.message}`);
-            return result.fail(`query ${DUNE_QUERIES.L2_TOTAL_VOLUME} failing; fallback: ${e.message}`);
+            console.log(`  ⚠️ L2 total volume incremental SQL failed: ${e.message} → trying saved query`);
         }
     }
+    const rows = await fetchDuneResults(DUNE_QUERIES.L2_TOTAL_VOLUME, 15000);
+    if (!rows || !rows.length) return result.fail(`incremental SQL and saved query ${DUNE_QUERIES.L2_TOTAL_VOLUME} both failed`);
 
     const records = rows.map(r => {
         let dateStr = r.date || r.block_date || '';

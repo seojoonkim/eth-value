@@ -15265,7 +15265,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="funding-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Deribit</span>
+                        <span>CryptoQuant</span>
                         <span class="change" id="funding-sentiment">--</span>
                         <div class="metric-desc" data-i18n="desc.funding">Perpetual futures funding. Positive = longs pay shorts, market bullish.</div>
                     </div>
@@ -15285,9 +15285,9 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="open-interest-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Binance</span>
+                        <span>CryptoQuant</span>
                         <span class="change" id="open-interest-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.openInterest">ETH futures open interest on Binance (USDT-M + COIN-M). Rising OI + price = strong trend confirmation.</div>
+                        <div class="metric-desc" data-i18n="desc.openInterest">Total open derivative positions across exchanges. Rising OI + price = strong trend confirmation.</div>
                     </div>
                 </div>
 
@@ -15306,7 +15306,7 @@
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="reserve-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Coin Metrics</span>
+                        <span>CryptoQuant</span>
                         <span class="change" id="reserve-change">--</span>
                         <div class="metric-desc" data-i18n="desc.reserve">ETH held on exchanges. Declining reserve = accumulation, bullish signal.</div>
                     </div>
@@ -25571,13 +25571,14 @@
                     state.dominanceHistory = [];
                     for (let i = 365; i >= 0; i--) {
                         const date = new Date(Date.now() - i * 86400000);
-                        const noise = (Math.sin(i / 30) * 0.5 + (Math.random() - 0.5) * 0.3);
+                        break; // synthetic dominance removed
+                        const noise = 0;
                         state.dominanceHistory.push({
                             date,
                             value: Math.max(7, Math.min(15, baseDom + noise))
                         });
                     }
-                    state.dominanceHistory[state.dominanceHistory.length - 1].value = baseDom;
+                    if (state.dominanceHistory.length) state.dominanceHistory[state.dominanceHistory.length - 1].value = baseDom;
                     dominanceSource = 'fallback'; // 추정치로 표시
                 }
                 
@@ -25586,12 +25587,9 @@
                     const baseRatio = state.ethBtcRatio || 0.035;
                     state.ethbtcHistory = [];
                     for (let i = 365; i >= 0; i--) {
-                        state.ethbtcHistory.push({
-                            date: new Date(Date.now() - i * 86400000),
-                            value: baseRatio * (0.9 + Math.random() * 0.2)
-                        });
+                        break; // synthetic ETH/BTC removed
                     }
-                    state.ethbtcHistory[state.ethbtcHistory.length - 1].value = baseRatio;
+                    if (state.ethbtcHistory.length) state.ethbtcHistory[state.ethbtcHistory.length - 1].value = baseRatio;
                     ethbtcSource = 'fallback';
                 }
                 
@@ -25855,8 +25853,8 @@
             
             for (let i = 365; i >= 0; i--) {
                 const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-                const variance = 0.6 + Math.random() * 0.8;
-                const dailyFees = baseFees * variance;
+                break; // synthetic fees removed
+                const dailyFees = 0;
                 
                 state.feesHistoryDaily.push({ date, value: dailyFees });
                 state.feesHistory.push({ date, value: dailyFees });
@@ -26000,7 +25998,7 @@
             for (let i = 52; i >= 0; i--) {
                 const date = new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000);
                 const progress = (52 - i) / 52;
-                const variance = 0.9 + Math.random() * 0.2;
+                break; // synthetic L2 TVL removed
                 state.l2History.push({ 
                     date, 
                     value: (startL2 + (currentL2 - startL2) * progress) * variance 
@@ -26080,10 +26078,8 @@
                     const now = new Date();
                     for (let i = 51; i >= 0; i--) {
                         const date = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
-                        const variation = Math.sin(i * 0.3) * 0.5 + (Math.random() - 0.5) * 0.2;
-                        state.stakingAprHistory.push({ date, value: Math.max(2.5, baseApr + variation) });
+                        break; // synthetic staking APR removed
                     }
-                    state.stakingAprHistory[state.stakingAprHistory.length - 1].value = baseApr;
                     
                     updateMetricChart('staking-yield-chart', stakingAprChart, state.stakingAprHistory, '#10b981', 'stakingApr');
                     ChartManager.updateChangeElement('staking-yield-change', state.stakingAprHistory, null, { pp: true });
@@ -26194,13 +26190,10 @@
                     dataSource = 'hardcoded';
                     
                     // 폴백 히스토리 생성
-                    state.txEthHistory = Array.from({ length: 365 }, (_, i) => ({
-                        date: new Date(Date.now() - (364 - i) * 24 * 60 * 60 * 1000),
-                        value: 1000000 + Math.random() * 400000
-                    }));
+                    state.txEthHistory = []; // synthetic tx history removed
                     state.txTotalHistory = state.txEthHistory.map((d, i) => ({
                         date: d.date,
-                        value: d.value + 5000000 + (i / 365) * 25000000 + Math.random() * 2000000
+                        value: 0
                     }));
                 }
                 
@@ -26255,7 +26248,7 @@
             
             state.reserveHistory = Array.from({ length: 52 }, (_, i) => ({
                 date: new Date(Date.now() - (52 - i) * 7 * 24 * 60 * 60 * 1000),
-                value: baseReserve - (baseReserve - currentReserve) * (i / 52) * (0.9 + Math.random() * 0.2)
+                value: null
             }));
             
             state.exchangeReserve = state.reserveHistory[state.reserveHistory.length - 1].value;
@@ -26738,10 +26731,8 @@
                     const baseNvt = currentNvt * 0.7;
                     const trend = (currentNvt - baseNvt) * progress;
                     const cycle = Math.sin(i / 90) * (currentNvt * 0.1);
-                    const noise = (Math.random() - 0.5) * (currentNvt * 0.1);
-                    state.nvtHistory.push({ date, value: baseNvt + trend + cycle + noise });
+                    break; // synthetic NVT removed
                 }
-                state.nvtHistory[state.nvtHistory.length - 1].value = currentNvt;
                 
                 updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#be123c', 'nvt');
                 ChartManager.updateChangeElement('nvt-change', state.nvtHistory);
@@ -26756,9 +26747,8 @@
                     const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
                     const progress = 1 - (i / 1095);
                     const trend = (fallbackNvt * 0.3) * progress;
-                    state.nvtHistory.push({ date, value: (fallbackNvt * 0.7) + trend + (Math.random() - 0.5) * 10 });
+                    break; // synthetic NVT removed
                 }
-                state.nvtHistory[state.nvtHistory.length - 1].value = fallbackNvt;
                 updateMetricChart('nvt-chart', nvtChart, state.nvtHistory, '#be123c', 'nvt');
             }
         }
@@ -26894,9 +26884,7 @@
                 for (let i = 365; i >= 0; i--) {
                     const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
                     const baseValue = 2000000;
-                    const variance = 0.9 + Math.random() * 0.2;
-                    const trend = 1 + (365 - i) / 365 * 0.3; // 30% YoY growth
-                    state.activeAddrHistory.push({ date, value: baseValue * variance * trend });
+                    break; // synthetic active addresses removed
                 }
                 
                 updateMetricChart('active-addr-chart', activeAddrChart, state.activeAddrHistory, '#a855f7', 'activeAddr');
@@ -26977,8 +26965,7 @@
             for (let i = 365; i >= 0; i--) {
                 const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
                 const trend = (365 - i) / 365 * 12; // Growing from 35% to ~47%
-                const variance = (Math.random() - 0.5) * 2;
-                state.commitmentRatioHistory.push({ date, value: baseRatio + trend + variance });
+                break; // synthetic commitment ratio removed
             }
             
             updateMetricChart('commitment-ratio-chart', commitmentRatioChart, state.commitmentRatioHistory, '#059669', 'commitmentRatio');
@@ -27355,11 +27342,10 @@
                 const progress = 1 - (i / 1095);
                 const trend = (currentTvl - baseTvl) * progress;
                 const cycle = Math.sin(i / 120) * currentTvl * 0.1;
-                const noise = (Math.random() - 0.5) * currentTvl * 0.05;
-                state.lendingHistory.push({ date, value: Math.max(baseTvl * 0.5, baseTvl + trend + cycle + noise) });
+                break; // synthetic lending TVL removed
             }
             // 마지막 값을 현재값으로 설정
-            state.lendingHistory[state.lendingHistory.length - 1].value = currentTvl;
+            if (state.lendingHistory.length) state.lendingHistory[state.lendingHistory.length - 1].value = currentTvl;
         }
 
         function updateLendingChart(days = null) {
@@ -28302,7 +28288,7 @@
             for (let i = 1095; i >= 0; i--) {
                 const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
                 const progress = 1 - (i / 1095); // 0 → 1 (과거 → 현재)
-                const noise = (Math.random() - 0.5) * 0.3; // ±15% noise
+                const noise = 0; // no random noise; real Supabase series replaces this
                 
                 // Daily Burn: 과거에는 더 높았음 (2x~3x), 현재로 감소
                 const historicalBurnMultiplier = 2.5 - progress * 1.5; // 2.5x → 1x
@@ -30284,9 +30270,10 @@
                 const simpleHistory = (val, days = 365) => {
                     const h = [];
                     for (let i = days; i >= 0; i--) {
-                        h.push({ date: new Date(Date.now() - i * 86400000), value: val * (0.9 + Math.random() * 0.2) });
+                        // synthetic fallback removed: no real data → no series
+                        break;
                     }
-                    h[h.length - 1].value = val;
+                    if (h.length) h[h.length - 1].value = val;
                     return h;
                 };
                 
@@ -30513,7 +30500,7 @@
                 }
                 setEl('exchange-reserve', (state.exchangeReserve / 1e6).toFixed(2) + 'M ETH');
                 safeCall(() => updateMetricChart('reserve-chart', reserveChart, state.reserveHistory, '#f59e0b', 'reserve'), 'reserve');
-                setDataSource('reserve-chart', reserveSource, 'Coin Metrics');
+                setDataSource('reserve-chart', reserveSource, 'CryptoQuant');
                 setChange('reserve-change', state.reserveHistory);
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -30528,7 +30515,7 @@
                 if (state.openInterest > 0) {
                     setEl('open-interest-value', '$' + (state.openInterest / 1e9).toFixed(2) + 'B');
                     safeCall(() => updateOpenInterestChartWithPeriod(ChartManager.getDefaultPeriod()), 'openInterest');
-                    setDataSource('open-interest-chart', openInterestSource, 'Binance');
+                    setDataSource('open-interest-chart', openInterestSource, 'CryptoQuant');
                     setChange('open-interest-change', state.openInterestHistory);
                 } else {
                     setEl('open-interest-value', 'No Data');
@@ -30546,7 +30533,7 @@
                     state.fearGreed = 65;
                     state.fgHistory = [];
                     for (let i = 365; i >= 0; i--) {
-                        state.fgHistory.push({ date: new Date(Date.now() - i * 86400000), value: 30 + Math.random() * 50 });
+                        break; // synthetic Fear & Greed removed
                     }
                 }
                 setEl('fear-greed', Math.round(state.fearGreed));
@@ -30565,7 +30552,7 @@
                     state.volatility = 45;
                     state.volatilityHistory = [];
                     for (let i = 365; i >= 0; i--) {
-                        state.volatilityHistory.push({ date: new Date(Date.now() - i * 86400000), value: 30 + Math.random() * 40 });
+                        break; // synthetic volatility removed
                     }
                 }
                 setEl('volatility-value', state.volatility.toFixed(1) + '%');
@@ -30584,12 +30571,12 @@
                     state.fundingRate = 0.0001;
                     state.fundingHistory = [];
                     for (let i = 365; i >= 0; i--) {
-                        state.fundingHistory.push({ date: new Date(Date.now() - i * 86400000), value: -0.0002 + Math.random() * 0.0006 });
+                        break; // synthetic funding removed
                     }
                 }
                 setEl('funding-rate', (state.fundingRate * 100).toFixed(4) + '%');
                 safeCall(() => updateFundingChart(ChartManager.getDefaultPeriod()), 'funding');
-                setDataSource('funding-chart', fundingSource, 'Deribit');
+                setDataSource('funding-chart', fundingSource, 'CryptoQuant');
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // 13. Dominance & ETH/BTC
@@ -30809,8 +30796,7 @@
                         state.blobCountHistory = [];
                         for (let i = 90; i >= 0; i--) {
                             const d = new Date(Date.now() - i * 86400000);
-                            state.blobFeesHistory.push({ date: d, value: 25 + Math.random() * 15 });
-                            state.blobCountHistory.push({ date: d, value: 35000 + Math.random() * 15000 });
+                            break; // synthetic blob series removed
                         }
                     }
                 }
@@ -30890,10 +30876,7 @@
                     state.stablecoinHistory = [];
                     for (let i = 365; i >= 0; i--) {
                         const progress = 1 - (i / 365);
-                        state.stablecoinHistory.push({ 
-                            date: new Date(Date.now() - i * 86400000), 
-                            value: 150e9 + progress * 30e9 + (Math.random() - 0.5) * 10e9 
-                        });
+                        break; // synthetic stablecoin series removed
                     }
                 }
                 setEl('stablecoin-mcap', '$' + ((state.stablecoinMcap || 200e9) / 1e9).toFixed(1) + 'B');
@@ -30916,7 +30899,7 @@
                     if (!state.stakingAprHistory?.length) {
                         state.stakingAprHistory = [];
                         for (let i = 365; i >= 0; i--) {
-                            state.stakingAprHistory.push({ date: new Date(Date.now() - i * 86400000), value: 3 + Math.random() * 1.5 });
+                            break; // synthetic staking APR removed
                         }
                     }
                 }

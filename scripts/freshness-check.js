@@ -9,7 +9,7 @@ const path = require('path');
 const EXPECT_SOURCE = {
     historical_active_addresses: 'coinmetrics',
     historical_l2_addresses: 'growthepie',
-    historical_open_interest: 'binance',
+    historical_open_interest: 'cryptoquant',
 };
 
 const TABLES = {
@@ -28,6 +28,13 @@ const TABLES = {
     historical_l2_stablecoin_daily: 4,
     historical_l2_stablecoin_volume: 4,
     daily_commentary: 2,
+};
+
+// Multi-chain tables: every listed chain must be current, not just the newest row.
+// Blast is excluded: its Dune data ends 2025-09-26 (kept as history, no longer collected).
+const CHAIN_TABLES = {
+    historical_l2_stablecoin_volume: { col: 'chain', maxAge: 4, chains: ['arbitrum', 'base', 'optimism', 'polygon', 'zksync', 'linea', 'scroll'] },
+    historical_l2_total_volume: { col: 'chain', maxAge: 4, chains: ['Arbitrum', 'Base', 'Optimism', 'zkSync Era', 'Scroll', 'Linea', 'Mantle'] },
 };
 
 (async () => {
@@ -54,5 +61,18 @@ const TABLES = {
         } catch (e) { console.log(`SKIP  ${t} (${e.message})`); }
     }
     console.log(bad ? `FAIL: ${bad} stale, synthetic or mixed-source table(s)` : 'PASS');
+    // Per-chain lag: a table's newest row can be fresh while one chain is months behind (seen 2026-10:
+    // L2 stablecoin volume — Polygon stuck at 2026-03, Arbitrum at 2026-08 — the chart total silently dropped).
+    for (const [t, { col, chains, maxAge }] of Object.entries(CHAIN_TABLES)) {
+        for (const c of chains) {
+            try {
+                const r = await fetch(`${url}/rest/v1/${t}?select=date&${col}=eq.${encodeURIComponent(c)}&order=date.desc&limit=1`, { headers: H });
+                const [row] = r.ok ? await r.json() : [];
+                const age = row ? Math.floor((Date.now() - Date.parse(String(row.date).slice(0, 10))) / 864e5) : Infinity;
+                if (age > maxAge) { bad++; console.log(`LAG   ${t} ${c} ${row ? String(row.date).slice(0, 10) : 'none'} ${age}d (max ${maxAge}d)`); }
+            } catch (e) { console.log(`SKIP  ${t} ${c} (${e.message})`); }
+        }
+    }
+    console.log(bad ? `FAIL: ${bad} stale, synthetic, mixed-source or lagging-chain item(s)` : 'PASS chains');
     process.exit(bad ? 1 : 0);
 })();
