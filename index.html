@@ -23990,10 +23990,11 @@
                         }))
                         .sort((a, b) => a.date - b.date);
                     
-                    // Use helper to get second-to-last (skip incomplete last day)
-                    const latestValid = state.whaleTxHistory.length >= 2 
-                        ? state.whaleTxHistory[state.whaleTxHistory.length - 2]
-                        : state.whaleTxHistory[state.whaleTxHistory.length - 1];
+                    // Drop the incomplete last day from the history itself: the card value is
+                    // re-read from the chart's last point (updateMetricChart), so skipping it only
+                    // here still showed the partial count (e.g. 16 txs vs ~210 normal).
+                    if (state.whaleTxHistory.length >= 2) state.whaleTxHistory.pop();
+                    const latestValid = state.whaleTxHistory[state.whaleTxHistory.length - 1];
                     
                     if (latestValid) {
                         state.whaleTxCount = latestValid.value;

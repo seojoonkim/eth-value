@@ -253,8 +253,9 @@ async function fetchHistoricalStats(tableName, fieldName) {
         
         if (error || !data || data.length < 30) return null;
         
-        // 유효한 값만 추출
-        const values = data
+        // 유효한 값만 추출 — 최신 행은 수집 중인 부분일(partial day)일 수 있어 제외
+        // (fetchSectionMetrics의 checkAndRemoveIncomplete와 동일 기준; 미제외 시 고래 거래 16건→0th percentile 오판)
+        const values = data.slice(1)
             .map(d => d[fieldName])
             .filter(v => v !== null && v !== undefined && !isNaN(v) && isFinite(v));
         
