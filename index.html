@@ -24554,14 +24554,8 @@
             let filtered = prepareChartData(state.fundingHistory, days, 60);
             
             if (filtered.length < 3) {
-                log('funding-chart: no data, using fallback');
-                filtered = [];
-                for (let i = 90; i >= 0; i--) {
-                    filtered.push({
-                        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 0.01
-                    });
-                }
+                log('funding-chart: no data');
+                filtered = []; // 가짜 0.01% 막대 대신 빈 차트
             }
             
             if (fundingChart) fundingChart.destroy();
@@ -30568,13 +30562,15 @@
                     state.fundingRate = state.fundingHistory[state.fundingHistory.length - 1].value;
                     fundingSource = 'supabase';
                 } else if (!state.fundingHistory?.length) {
-                    state.fundingRate = 0.0001;
+                    // 데이터 없음 → 가짜 값 대신 빈 상태
+                    state.fundingRate = null;
                     state.fundingHistory = [];
-                    for (let i = 365; i >= 0; i--) {
-                        break; // synthetic funding removed
-                    }
                 }
-                setEl('funding-rate', (state.fundingRate * 100).toFixed(4) + '%');
+                // funding_rate는 이미 % 단위로 저장됨 (CryptoQuant funding_rates = %, Binance fallback도 ×100 저장).
+                // 예전엔 여기서 ×100을 한 번 더 해서 카드 값이 100배로 표시됐음 (2026-10-10 수정).
+                setEl('funding-rate', Number.isFinite(state.fundingRate)
+                    ? (state.fundingRate >= 0 ? '+' : '') + state.fundingRate.toFixed(4) + '%'
+                    : '--');
                 safeCall(() => updateFundingChart(ChartManager.getDefaultPeriod()), 'funding');
                 setDataSource('funding-chart', fundingSource, 'CryptoQuant');
                 
