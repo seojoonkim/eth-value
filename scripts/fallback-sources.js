@@ -77,7 +77,9 @@ async function fundingFromBinance(days = 1095) {
     }
 }
 
-async function reserveFromCoinMetrics(days = 1095) {
+// Default window reaches back to 2022-12-01 so it overwrites every legacy CryptoQuant row
+// (oldest 2022-12-22); mixing the two sources creates a ~10% fake step in the chart.
+async function reserveFromCoinMetrics(days = Math.ceil((Date.now() - Date.parse('2022-12-01')) / DAY)) {
     const start = isoDay(Date.now() - days * DAY);
     let url = `https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=SplyExNtv&frequency=1d&start_time=${start}&page_size=10000`;
     const out = [];

@@ -2644,17 +2644,8 @@ async function collect_dex_by_protocol() {
 // ============================================================
 // 29. Network Stats (beaconcha.in)
 // ============================================================
-async function collect_network_stats() {
-    const data = await fetchJSON('https://beaconcha.in/api/v1/epoch/latest');
-    if (!data?.data) return 0;
-    const today = new Date().toISOString().split('T')[0];
-    const records = [{
-        date: today,
-        block_count: 7200, // ~7200 blocks/day
-        avg_block_time: 12
-    }];
-    return await upsertBatch('historical_network_stats', records);
-}
+// REMOVED: collect_network_stats — beaconcha.in now requires an API key (401), the rows were
+// fixed placeholders (7200 blocks / 12s), and index.html never reads historical_network_stats.
 
 // ============================================================
 // DUNE API COLLECTIONS (30-39)
@@ -2895,13 +2886,33 @@ async function collect_dune_l2_total_volume() {
     if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
 
     const rows = await fetchDuneResults(DUNE_QUERIES.L2_TOTAL_VOLUME, 15000);
-    if (!rows) {
-        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.L2_TOTAL_VOLUME);
-        return result.warn(0, 'Query failed');
-    }
-    if (rows.length === 0) {
-        console.log('  ⚠️ Query returned empty - check if scheduled');
-        return result.warn(0, 'No data from Dune');
+    if (!rows || rows.length === 0) {
+        // Saved query 6386591 fails on Dune ("too many stages"); rerun the same method for recent days only.
+        console.log(`  ⚠️ L2 total volume query ${rows ? 'empty' : 'failed'} → recent-window SQL fallback`);
+        try {
+            const { l2RecentSQL, runDuneSQL } = require('./dune-l2-recent.js');
+            const today = new Date().toISOString().slice(0, 10);
+            // Window: from the last stored day (minus overlap) — fills the whole gap on the first run, ~5 days after.
+            const { data: lastRow } = await supabase.from('historical_l2_total_volume').select('date').order('date', { ascending: false }).limit(1);
+            const lastDate = lastRow && lastRow[0] ? lastRow[0].date : '2026-01-01';
+            const windowDays = Math.min(400, Math.max(5, Math.ceil((Date.now() - Date.parse(lastDate)) / 864e5) + 3));
+            console.log(`  ↪ fallback window ${windowDays}d (last stored ${lastDate})`);
+            const recent = (await runDuneSQL(DUNE_API_KEY, l2RecentSQL(windowDays)))
+                .map(r => ({
+                    date: String(r.date).slice(0, 10),
+                    chain: r.chain,
+                    total_volume_usd: parseFloat(r.total_volume_usd || 0),
+                    native_volume_usd: parseFloat(r.native_volume_usd || 0)
+                }))
+                .filter(r => r.date && r.date < today && (r.total_volume_usd > 0 || r.native_volume_usd > 0));
+            if (!recent.length) return result.warn(0, 'fallback SQL returned 0 rows');
+            console.log(`  ✓ ${recent.length} records (fallback, latest ${recent[0].date})`);
+            const saved = await upsertBatch('historical_l2_total_volume', recent, 'date,chain');
+            return result.warn(saved, `fallback recent SQL (query ${DUNE_QUERIES.L2_TOTAL_VOLUME} failing)`);
+        } catch (e) {
+            console.log(`  ❌ L2 total volume fallback failed: ${e.message}`);
+            return result.fail(`query ${DUNE_QUERIES.L2_TOTAL_VOLUME} failing; fallback: ${e.message}`);
+        }
     }
 
     const records = rows.map(r => {
@@ -3272,11 +3283,10 @@ async function main() {
         collect_open_interest(),
         collect_blob_data(),
         collect_active_addresses(),
-        collect_network_stats(),
         collect_gas_burn()
     ]);
     
-    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'network_stats', 'gas_burn'];
+    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'gas_burn'];
     phase3Results.forEach((res, i) => {
         results[phase3Names[i]] = wrapResult(res);
         const r = results[phase3Names[i]];
