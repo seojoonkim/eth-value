@@ -986,7 +986,8 @@ REQUIRED JSON FORMAT (output ONLY this, no markdown):
 
 SCORE DEFINITIONS (0-100 scale, 50 is neutral):
 - Score 1 (Current Status - Market Temperature): 0-44=cold/fear, 45-55=neutral, 56-100=hot/greed
-  * Based on: Fear & Greed Index, Funding Rate, current percentile vs historical
+  * Based on: this section's own metrics vs their history (current percentiles; Fear & Greed / Funding Rate only if they appear in the data below)
+  * Never mention or apologise for metrics that are not in the data below
   * Low score = market fear/cooling, High score = market greed/overheating
   
 - Score 2 (90-Day Trend - Momentum): 0-44=downtrend, 45-55=sideways, 56-100=uptrend  
