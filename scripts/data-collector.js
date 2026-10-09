@@ -9,6 +9,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const fallbackSources = require('./fallback-sources.js');
+const { normalizeParagraphs } = require('./commentary-format.js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -1014,19 +1015,18 @@ CRITICAL RULES:
 - Output ONLY valid JSON, no markdown code blocks
 - scores array must have exactly 3 integers between 0-100
 - reasoning array must have exactly 3 strings explaining each score
-- text field contains 3 paragraphs separated by |||
-- EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
-- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT paragraphs - describe trends qualitatively only
-- ⚠️ Use descriptive words: "historically low", "near all-time highs", "below median"
-- Professional analyst tone, qualitative analysis only
-- Minimum 180 words per paragraph`;
+- text field contains exactly 3 paragraphs separated by ||| (no other separators, no line breaks)
+- Each paragraph: 4-5 sentences, roughly 80-120 words
+- Cite at most 2-3 key numbers in total across the text (e.g. a percentile, a 90-day % change); round them and only use values present in the data above
+- Never invent numbers; prefer plain words ("near the 3-year low") for everything else
+- Professional analyst tone`;
 
         userPrompt = `Analyze these ${section.title} metrics. Output JSON with scores, reasoning, and text.
 
 ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
 IMPORTANT REQUIREMENTS:
-1. Each paragraph MUST contain exactly 5 sentences
+1. Exactly 3 paragraphs in text, separated by |||
 2. Provide clear reasoning for each score using the data above
 3. Output format: {"scores":[X,Y,Z],"reasoning":["...","...","..."],"text":"para1|||para2|||para3"}
 
@@ -1047,24 +1047,23 @@ paragraph1 text here|||paragraph2 text here|||paragraph3 text here
 
 CRITICAL RULES:
 - ${config.instruction}
-- EACH PARAGRAPH MUST HAVE EXACTLY 5 SENTENCES - this is mandatory
+- Exactly 3 paragraphs separated by ||| (no other separators, no line breaks, no headings)
 - Paragraph 1 (Current Status): Focus on TODAY's spot data primarily, with brief 7-day context
 - Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
 - Paragraph 3 (Valuation): Investment implications, bullish/bearish outlook
-- ⚠️ ABSOLUTELY NO NUMBERS IN TEXT - describe trends qualitatively (상승/하락/횡보, 上涨/下跌/横盘, 上昇/下落/横ばい)
-- ⚠️ DO NOT include any specific percentages, dollar amounts, ratios, or numerical values
-- ⚠️ Use descriptive words only
-- Professional analyst tone, qualitative analysis only
-- Minimum 180 words per paragraph`;
+- Each paragraph: 4-5 sentences (similar length to an 80-120 word English paragraph)
+- Cite at most 2-3 key numbers in total across the text (rounded, only values present in the data above); describe everything else in plain words
+- Never invent numbers
+- Professional analyst tone`;
 
         userPrompt = `Analyze these ${section.title} metrics. Output ONLY 3 paragraphs separated by |||
 
 ${section.context ? `CRITICAL CONTEXT FOR THIS SECTION:\n${section.context}\n\n` : ''}${metricsPrompt}
 
 IMPORTANT: 
-1. Each paragraph MUST contain exactly 5 sentences
+1. Exactly 3 paragraphs separated by |||
 2. Output format: para1|||para2|||para3 (no JSON, no scores)
-3. NO NUMBERS in the text - use qualitative descriptions only`;
+3. At most 2-3 key numbers in total, taken from the data above`;
     }
 
     try {
@@ -1146,6 +1145,21 @@ IMPORTANT:
     }
 }
 
+// Ask once more when the paragraph structure is broken, then repair locally; never save a broken shape.
+async function generateWithFormat(sectionKey, metricsData, lang, existingScores) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+        const r = await generateCommentary(sectionKey, metricsData, lang, existingScores);
+        if (!r || !r.text) continue;
+        const n = normalizeParagraphs(r.text);
+        if (n && (!n.repaired || attempt === 2)) {
+            if (n.repaired) console.log(`  🔧 ${lang.toUpperCase()}: paragraph split repaired`);
+            return { ...r, text: n.text };
+        }
+        console.log(`  ↻ ${lang.toUpperCase()}: paragraph split broken (attempt ${attempt}), regenerating`);
+    }
+    return null;
+}
+
 /**
  * Save commentary to Supabase (with multilingual support, scores, and reasoning)
  */
@@ -1217,7 +1231,7 @@ async function generateAllCommentaries() {
         let reasoning = null;
         
         // 1. 영어 먼저 생성 (점수 + reasoning 포함)
-        const enResult = await generateCommentary(sectionKey, metricsData, 'en', null);
+        const enResult = await generateWithFormat(sectionKey, metricsData, 'en', null);
         if (enResult) {
             commentaries.en = enResult.text;
             scores = enResult.scores;
@@ -1236,7 +1250,7 @@ async function generateAllCommentaries() {
         
         // 2. 다른 언어 생성 (영어 점수 전달, 본문만 생성)
         for (const lang of ['ko', 'zh', 'ja']) {
-            const result = await generateCommentary(sectionKey, metricsData, lang, scores);
+            const result = await generateWithFormat(sectionKey, metricsData, lang, scores);
             if (result) {
                 commentaries[lang] = result.text;
                 console.log(`  ✓ ${lang.toUpperCase()}: ${result.text.length} chars`);
