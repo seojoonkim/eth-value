@@ -29914,18 +29914,32 @@
             
             if (filtered.length === 0) return;
             
+            // All-exchange OI history has a hole (CryptoQuant stopped 2026-04-04; free sources only give
+            // today's total). Break the line at gaps > 7 days instead of drawing a fake straight line across it.
+            const GAP_MS = 7 * 86400000;
+            const pts = [];
+            filtered.forEach((d, i) => {
+                if (i > 0 && d.date - filtered[i - 1].date > GAP_MS) pts.push({ date: new Date(+filtered[i - 1].date + 86400000), value: null });
+                pts.push(d);
+            });
+            
             if (openInterestChart) openInterestChart.destroy();
             openInterestChart = new Chart(ctx.getContext('2d'), chartConfig(
                 '#9580fa',
-                filtered.map(d => d.value),
-                filtered.map(d => fmt.chartLabel(d.date)),
+                pts.map(d => d.value),
+                pts.map(d => fmt.chartLabel(d.date)),
                 (v) => '$' + (v / 1e9).toFixed(2) + 'B',
                 'dollar',
-                filtered.map(d => d.date)
+                pts.map(d => d.date)
             ));
             
-            // ★ ChartManager로 변화율 업데이트 (통일된 계산)
-            ChartManager.updateChangeElement('open-interest-change', state.openInterestHistory, days);
+            // Change % only over the continuous segment ending today (never across the hole).
+            const hist = state.openInterestHistory;
+            let seg = hist.length - 1;
+            while (seg > 0 && hist[seg].date - hist[seg - 1].date <= GAP_MS) seg--;
+            ChartManager.updateChangeElement('open-interest-change', hist.slice(seg), days);
+            const chg = document.getElementById('open-interest-change');
+            if (chg && hist.length - seg < 2) { chg.textContent = 'Rebuilding history'; chg.className = 'change'; }
         }
 
         // L2 Stablecoin Volume 차트 기간별 업데이트
