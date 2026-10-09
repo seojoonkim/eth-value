@@ -405,6 +405,8 @@ async function fetchSectionMetrics(sectionKey) {
                 const { data: recent } = await supabase
                     .from(tableName)
                     .select('date, active_addresses')
+                    .or('source.is.null,source.neq.estimated')   // legacy synthetic rows (pre-2023-10) excluded
+                    .neq('chain', 'ethereum')                     // L1 must not be summed into L2
                     .gte('date', ninetyFiveDaysAgo)
                     .order('date', { ascending: false });
                 
@@ -1840,52 +1842,52 @@ async function collect_gas_burn() {
 // 7. Active Addresses (Etherscan or estimate)
 // ============================================================
 async function collect_active_addresses() {
-    // Using transactions as proxy - real data would need Etherscan API
-    const { data: txs } = await supabase.from('historical_transactions').select('date, tx_count').order('date');
-    if (!txs || txs.length === 0) {
-        console.log('  ⚠️ No transaction data, skipping');
-        return 0;
+    // Coin Metrics AdrActCnt (real daily active addresses). The old "tx_count × 0.4" estimate is gone:
+    // synthetic rows made the chart and AI commentary describe numbers that never happened.
+    try {
+        const records = await fallbackSources.activeAddressesFromCoinMetrics();
+        if (records.length < 1000) return result.fail(`coinmetrics returned ${records.length} rows`);
+        const saved = await upsertBatch('historical_active_addresses', records);
+        // Every real day is now overwritten; drop leftover estimate rows past Coin Metrics' last day.
+        const lastReal = records[records.length - 1].date;
+        await purgeSynthetic('historical_active_addresses', (q) => q.gt('date', lastReal).or('source.is.null,source.eq.estimated'));
+        return saved;
+    } catch (e) {
+        return result.fail(`coinmetrics AdrActCnt: ${e.message}`);
     }
-    const records = txs.map(t => ({
-        date: t.date,
-        active_addresses: Math.floor(t.tx_count * 0.4), // Rough estimate
-        source: 'estimated'
-    }));
-    return await upsertBatch('historical_active_addresses', records);
 }
 
 // ============================================================
 // 8. ETH Supply (Ultrasound.money or estimate)
 // ============================================================
 async function collect_eth_supply() {
-    // Try ultrasound.money API
+    // Real sources only: Coin Metrics SplyCur (full history), then ultrasound.money on top when reachable.
+    // The old fallback ("120.4M + 100/day") put supply at an all-time low and the AI commentary repeated it.
+    let saved = 0, note = '';
+    try { saved = await upsertBatch('historical_eth_supply', await fallbackSources.supplyFromCoinMetrics()); }
+    catch (e) { note = `coinmetrics: ${e.message}`; }
     const data = await fetchJSON('https://ultrasound.money/api/v2/fees/supply-over-time');
-    if (data && Array.isArray(data)) {
+    if (data && Array.isArray(data) && data.length > 100) {
         const records = data.slice(-1095).map(d => ({
             date: new Date(d.timestamp * 1000).toISOString().split('T')[0],
             eth_supply: parseFloat((d.supply / 1e18).toFixed(2)),
             source: 'ultrasound'
         }));
-        return await upsertBatch('historical_eth_supply', records);
-    }
-    
-    // Fallback: estimate from known values
-    const today = new Date();
-    const records = [];
-    const baseSupply = 120400000;
-    for (let i = 0; i < 1095; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        // ETH supply changes ~0.001% per day post-merge
-        const daysDiff = i;
-        const supply = baseSupply + (daysDiff * 100); // rough estimate
-        records.push({
-            date: date.toISOString().split('T')[0],
-            eth_supply: supply,
-            source: 'estimated'
-        });
-    }
-    return await upsertBatch('historical_eth_supply', records);
+        saved += await upsertBatch('historical_eth_supply', records);
+    } else note = note || 'ultrasound unavailable';
+    await purgeSynthetic('historical_eth_supply');
+    if (!saved) return result.fail(note || 'no supply source');
+    return note ? result.warn(saved, note) : result.ok(saved);
+}
+
+// Remove placeholder rows that real data did not overwrite (e.g. a leftover "today" estimate).
+// Only touches rows explicitly marked synthetic; real rows are never deleted.
+async function purgeSynthetic(table, filter = (q) => q.eq('source', 'estimated')) {
+    try {
+        const { error, count } = await filter(supabase.from(table).delete({ count: 'exact' }));
+        if (error) console.log(`  ⚠️ purge ${table}: ${error.message}`);
+        else if (count) console.log(`  🧹 ${table}: removed ${count} synthetic row(s)`);
+    } catch (e) { console.log(`  ⚠️ purge ${table}: ${e.message}`); }
 }
 
 // ============================================================
@@ -1905,53 +1907,8 @@ async function collect_fear_greed() {
         return await upsertBatch('historical_fear_greed', records);
     }
     
-    // Fallback: ETH 가격 변동 기반 추정
-    console.log('  ⚠️ API failed, generating price-based estimates...');
-    const { data: prices } = await supabase.from('historical_eth_price')
-        .select('date, close')
-        .order('date', { ascending: true })
-        .limit(1100);
-    
-    if (!prices || prices.length < 30) {
-        console.log('  ❌ Not enough price data for fallback');
-        return 0;
-    }
-    
-    const records = [];
-    for (let i = 30; i < prices.length; i++) {
-        const current = prices[i].close;
-        const prev30 = prices[i - 30].close;
-        const change30d = ((current - prev30) / prev30) * 100;
-        
-        // 30일 변동률 기반 Fear & Greed 추정
-        let value;
-        if (change30d < -30) value = 10 + Math.random() * 10;
-        else if (change30d < -15) value = 20 + (change30d + 30) / 15 * 20;
-        else if (change30d < -5) value = 40 + (change30d + 15) / 10 * 10;
-        else if (change30d < 5) value = 45 + (change30d + 5) / 10 * 10;
-        else if (change30d < 15) value = 55 + (change30d - 5) / 10 * 10;
-        else if (change30d < 30) value = 65 + (change30d - 15) / 15 * 15;
-        else value = 80 + Math.min(15, (change30d - 30) / 20 * 15);
-        
-        value = Math.max(5, Math.min(95, Math.round(value)));
-        
-        let classification;
-        if (value < 25) classification = 'Extreme Fear';
-        else if (value < 40) classification = 'Fear';
-        else if (value < 60) classification = 'Neutral';
-        else if (value < 75) classification = 'Greed';
-        else classification = 'Extreme Greed';
-        
-        records.push({
-            date: prices[i].date,
-            value,
-            classification,
-            source: 'estimated'
-        });
-    }
-    
-    console.log(`  📦 Generated ${records.length} estimated records`);
-    return await upsertBatch('historical_fear_greed', records);
+    // No synthetic fallback: a price-derived 'sentiment' would overwrite real index values.
+    return result.fail('alternative.me unavailable (kept existing rows)');
 }
 
 // ============================================================
@@ -2513,13 +2470,15 @@ async function collect_l2_transactions() {
 // 23. L2 Addresses (estimate)
 // ============================================================
 async function collect_l2_addresses() {
-    const { data: txs } = await supabase.from('historical_l2_transactions').select('date, chain, tx_count').order('date');
-    if (!txs) return 0;
-    const records = txs.map(t => ({
-        date: t.date, chain: t.chain,
-        active_addresses: Math.floor(t.tx_count * 0.3),
-        source: 'estimated'
-    }));
+    // growthepie daily active addresses (real). Dune query 6352308 stopped at 2026-03-31; values match it
+    // within ~0.5% on overlapping days. Chain keys follow the existing Dune naming (zksync_era → zksync).
+    const data = await fetchJSON('https://api.growthepie.xyz/v1/export/daa.json');
+    if (!Array.isArray(data) || data.length < 1000) return result.fail('growthepie daa unavailable');
+    const keyMap = { arbitrum: 'arbitrum', base: 'base', optimism: 'optimism', linea: 'linea', mantle: 'mantle', scroll: 'scroll', zksync_era: 'zksync', blast: 'blast' };
+    const today = new Date().toISOString().slice(0, 10);
+    const records = data
+        .filter(d => d.metric_key === 'daa' && keyMap[d.origin_key] && d.value > 0 && d.date < today)
+        .map(d => ({ date: d.date, chain: keyMap[d.origin_key], active_addresses: Math.round(d.value), source: 'growthepie' }));
     return await upsertBatch('historical_l2_addresses', records, 'date,chain');
 }
 
@@ -2559,31 +2518,8 @@ async function collect_staking_apr() {
     const data = await fetchJSON('https://yields.llama.fi/chart/747c1d2a-c668-4682-b9f9-296708a3dd90');
     
     if (!data?.data || data.data.length === 0) {
-        console.log('  ⚠️ DefiLlama yields API failed, using estimates');
-        
-        // Fallback: Generate estimated APR data (3-4% range)
-        const today = new Date();
-        const records = [];
-        
-        for (let i = 0; i < 1095; i++) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            
-            // APR 추세: 2022년 ~5% → 2025년 ~3.5%
-            const daysFromStart = 1095 - i;
-            const progress = daysFromStart / 1095;
-            const baseApr = 5.0 - (1.5 * progress);
-            const variation = Math.sin(daysFromStart * 0.05) * 0.3;
-            
-            records.push({
-                date: date.toISOString().split('T')[0],
-                lido_apr: parseFloat((baseApr + variation).toFixed(2)),
-                source: 'estimated'
-            });
-        }
-        
-        const count = await upsertBatch('historical_staking_apr', records);
-        return result.warn(count, 'Using estimated data');
+        // No synthetic fallback: the old sine-wave estimate overwrote 3 years of real APR on one bad response.
+        return result.fail('DefiLlama yields unavailable (kept existing rows)');
     }
     
     console.log(`  📦 Got ${data.data.length} records from DefiLlama`);
@@ -2599,23 +2535,8 @@ async function collect_staking_apr() {
 // 26. ETH in DeFi (estimate from TVL)
 // ============================================================
 async function collect_eth_in_defi() {
-    const { data: tvl } = await supabase.from('historical_ethereum_tvl').select('date, tvl').order('date');
-    const { data: prices } = await supabase.from('historical_eth_price').select('date, close').order('date');
-    if (!tvl || !prices) return 0;
-    
-    const priceMap = new Map();
-    prices.forEach(p => priceMap.set(p.date, p.close));
-    
-    const records = tvl.map(t => {
-        const price = priceMap.get(t.date) || 3000;
-        return {
-            date: t.date,
-            eth_locked: parseFloat((t.tvl * 0.3 / price).toFixed(2)), // ~30% is ETH
-            source: 'estimated'
-        };
-    }).filter(r => r.eth_locked > 0);
-    
-    return await upsertBatch('historical_eth_in_defi', records);
+    // Disabled: this was "TVL × 30% ÷ price", a made-up ratio, and no page or commentary reads the table.
+    return result.skip('disabled: synthetic estimate, unused');
 }
 
 // ============================================================

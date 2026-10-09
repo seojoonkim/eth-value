@@ -94,6 +94,36 @@ async function reserveFromCoinMetrics(days = Math.ceil((Date.now() - Date.parse(
     return completeDaysOnly(out);
 }
 
+// Coin Metrics daily asset metrics from `start` (YYYY-MM-DD). Returns [{date, ...metrics as numbers}].
+async function coinMetricsDaily(metrics, start) {
+    let url = `https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=${metrics.join(',')}&frequency=1d&start_time=${start}&page_size=10000`;
+    const out = [];
+    for (let i = 0; i < 10 && url; i++) {
+        const j = await getJSON(url);
+        for (const r of j.data || []) {
+            const row = { date: r.time.slice(0, 10) };
+            for (const m of metrics) row[m] = parseFloat(r[m]);
+            out.push(row);
+        }
+        url = j.next_page_url || null;
+    }
+    return completeDaysOnly(out);
+}
+
+// Real circulating supply (replaces the old "120.4M + 100/day" placeholder that made supply look like an all-time low).
+async function supplyFromCoinMetrics(start = '2015-07-30') {
+    return (await coinMetricsDaily(['SplyCur'], start))
+        .filter(r => r.SplyCur > 7e7)
+        .map(r => ({ date: r.date, eth_supply: +r.SplyCur.toFixed(2), source: 'coinmetrics' }));
+}
+
+// Real daily active addresses (replaces the old "tx_count × 0.4" estimate).
+async function activeAddressesFromCoinMetrics(start = '2015-07-30') {
+    return (await coinMetricsDaily(['AdrActCnt'], start))
+        .filter(r => r.AdrActCnt > 0)
+        .map(r => ({ date: r.date, active_addresses: Math.round(r.AdrActCnt), source: 'coinmetrics' }));
+}
+
 const MAJOR_DERIV = /^(Binance|Bybit|OKX|Bitget|Deribit|BitMEX|Kraken|HTX|Huobi|Bitfinex|Gate \(Futures\))/i;
 async function openInterestFromCoinGecko() {
     const list = await getJSON('https://api.coingecko.com/api/v3/derivatives');
@@ -104,4 +134,4 @@ async function openInterestFromCoinGecko() {
     return [{ date: isoDay(Date.now()), open_interest: total, source: 'coingecko_major' }];
 }
 
-module.exports = { fundingFromBinance, fundingFromDeribit, reserveFromCoinMetrics, openInterestFromCoinGecko };
+module.exports = { fundingFromBinance, fundingFromDeribit, reserveFromCoinMetrics, openInterestFromCoinGecko, supplyFromCoinMetrics, activeAddressesFromCoinMetrics };

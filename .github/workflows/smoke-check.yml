@@ -1,7 +1,8 @@
 name: Site Smoke Check
 
 # Loads https://ethval.com in a real browser and fails if the headline
-# valuation shows NaN, a model has no price, or TVL / L2 TVL are zero.
+# valuation shows NaN, a model has no price, or TVL / L2 TVL are zero,
+# and fails when any data table the site reads stops advancing (freshness gate).
 # A failed run triggers GitHub's default failure email to the repo owner.
 on:
   schedule:
@@ -24,3 +25,6 @@ jobs:
         run: npm i --no-save playwright@1.58 && npx playwright install --with-deps chromium
       - name: Smoke check
         run: node scripts/smoke-check.js "https://ethval.com/?cb=${{ github.run_id }}"
+      - name: Data freshness
+        if: always()
+        run: node scripts/freshness-check.js
