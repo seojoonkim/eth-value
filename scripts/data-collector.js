@@ -8,11 +8,18 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
+const fallbackSources = require('./fallback-sources.js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DUNE_API_KEY = process.env.DUNE_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+// AI commentary model: GPT-6 Luna when OPENAI_API_KEY is set; Claude Haiku 4.5 stays as fallback
+// so a missing/empty OpenAI key or a failed Luna call never leaves the commentary blank.
+const LUNA_MODEL = process.env.COMMENTARY_MODEL || 'gpt-6-luna';
+const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+const HAS_LLM = !!(OPENAI_API_KEY || ANTHROPIC_API_KEY);
 const CRYPTOQUANT_API_KEY = process.env.CRYPTOQUANT_API_KEY;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_ALERT_CHAT_ID = process.env.TELEGRAM_ALERT_CHAT_ID || '46291309';
@@ -26,8 +33,8 @@ if (!DUNE_API_KEY) {
     console.warn('⚠️ Missing DUNE_API_KEY - Dune data collection will be skipped');
 }
 
-if (!ANTHROPIC_API_KEY) {
-    console.warn('⚠️ Missing ANTHROPIC_API_KEY - AI commentary will be skipped');
+if (!HAS_LLM) {
+    console.warn('⚠️ Missing OPENAI_API_KEY and ANTHROPIC_API_KEY - AI commentary will be skipped');
 }
 
 if (!CRYPTOQUANT_API_KEY) {
@@ -869,11 +876,52 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
 }
 
 /**
- * Call Claude Haiku API to generate commentary
- * @param {string} lang - Language code: 'en', 'ko', 'zh', 'ja'
+/**
+ * One LLM call for commentary. GPT-6 Luna first (if OPENAI_API_KEY), Claude Haiku 4.5 as fallback.
+ * Returns the raw text (same shape the old Anthropic path returned) or null.
  */
-async function generateCommentary(sectionKey, metricsData, lang = 'en', existingScores = null) {
+async function callCommentaryLLM(systemPrompt, userPrompt, wantJson) {
+    if (OPENAI_API_KEY) {
+        try {
+            const body = {
+                model: LUNA_MODEL,
+                max_completion_tokens: 3000,
+                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
+            };
+            if (wantJson) body.response_format = { type: 'json_object' };
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
+            const j = await res.json();
+            const text = j.choices?.[0]?.message?.content || null;
+            if (text) {
+                console.log(`  🤖 ${LUNA_MODEL} (${j.usage?.prompt_tokens || '?'} in / ${j.usage?.completion_tokens || '?'} out)`);
+                return text;
+            }
+            throw new Error('empty completion');
+        } catch (e) {
+            console.error(`  ⚠️ ${LUNA_MODEL} failed: ${e.message}${ANTHROPIC_API_KEY ? ' → falling back to Haiku' : ''}`);
+        }
+    }
     if (!ANTHROPIC_API_KEY) return null;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: HAIKU_MODEL, max_tokens: 3000, messages: [{ role: 'user', content: userPrompt }], system: systemPrompt })
+    });
+    if (!response.ok) {
+        console.error(`  Claude API error: ${response.status} - ${await response.text()}`);
+        return null;
+    }
+    const result = await response.json();
+    return result.content?.[0]?.text || null;
+}
+
+async function generateCommentary(sectionKey, metricsData, lang = 'en', existingScores = null) {
+    if (!HAS_LLM) return null;
     
     const section = COMMENTARY_SECTIONS[sectionKey];
     const metricsPrompt = formatMetricsForPrompt(sectionKey, metricsData);
@@ -1020,31 +1068,7 @@ IMPORTANT:
     }
 
     try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': ANTHROPIC_API_KEY,
-                'anthropic-version': '2023-06-01'
-            },
-            body: JSON.stringify({
-                model: 'claude-haiku-4-5-20251001',
-                max_tokens: 3000,
-                messages: [
-                    { role: 'user', content: userPrompt }
-                ],
-                system: systemPrompt
-            })
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`  Claude API error: ${response.status} - ${errorText}`);
-            return null;
-        }
-        
-        const result = await response.json();
-        const content = result.content?.[0]?.text || null;
+        const content = await callCommentaryLLM(systemPrompt, userPrompt, isEnglish);
         
         if (!content) return null;
         
@@ -1159,8 +1183,8 @@ async function saveCommentary(sectionKey, commentaries, scores, reasoning, metri
  * Generate all section commentaries (4 languages: EN, KO, ZH, JA)
  */
 async function generateAllCommentaries() {
-    if (!ANTHROPIC_API_KEY) {
-        console.log('\n⏭️ Skipping AI commentary - No ANTHROPIC_API_KEY');
+    if (!HAS_LLM) {
+        console.log('\n⏭️ Skipping AI commentary - No OPENAI_API_KEY / ANTHROPIC_API_KEY');
         return { success: 0, failed: 0 };
     }
     
@@ -2051,8 +2075,16 @@ async function collect_funding_rate() {
         
         throw new Error('Insufficient data');
     } catch (e) {
-        console.log(`  ❌ funding_rate: ${e.message}`);
-        return result.fail(e.message);
+        console.log(`  ⚠️ funding_rate: CryptoQuant failed (${e.message}) → fallback fundingFromBinance`);
+        try {
+            const records = await fallbackSources.fundingFromBinance();
+            if (!records.length) throw new Error('fallback returned 0 rows');
+            const saved = await upsertBatch('historical_funding_rate', records);
+            return result.warn(saved, `fallback ${records[0].source} (CryptoQuant: ${e.message})`);
+        } catch (fe) {
+            console.log(`  ❌ funding_rate: fallback failed too: ${fe.message}`);
+            return result.fail(`${e.message}; fallback: ${fe.message}`);
+        }
     }
 }
 
@@ -2098,8 +2130,16 @@ async function collect_exchange_reserve() {
         
         throw new Error('Insufficient data');
     } catch (e) {
-        console.log(`  ❌ exchange_reserve: ${e.message}`);
-        return result.fail(e.message);
+        console.log(`  ⚠️ exchange_reserve: CryptoQuant failed (${e.message}) → fallback reserveFromCoinMetrics`);
+        try {
+            const records = await fallbackSources.reserveFromCoinMetrics();
+            if (!records.length) throw new Error('fallback returned 0 rows');
+            const saved = await upsertBatch('historical_exchange_reserve', records);
+            return result.warn(saved, `fallback ${records[0].source} (CryptoQuant: ${e.message})`);
+        } catch (fe) {
+            console.log(`  ❌ exchange_reserve: fallback failed too: ${fe.message}`);
+            return result.fail(`${e.message}; fallback: ${fe.message}`);
+        }
     }
 }
 
@@ -2217,8 +2257,16 @@ async function collect_open_interest() {
         
         throw new Error('Insufficient data');
     } catch (e) {
-        console.log(`  ❌ open_interest: ${e.message}`);
-        return result.fail(e.message);
+        console.log(`  ⚠️ open_interest: CryptoQuant failed (${e.message}) → fallback openInterestFromCoinGecko`);
+        try {
+            const records = await fallbackSources.openInterestFromCoinGecko();
+            if (!records.length) throw new Error('fallback returned 0 rows');
+            const saved = await upsertBatch('historical_open_interest', records);
+            return result.warn(saved, `fallback ${records[0].source} (CryptoQuant: ${e.message})`);
+        } catch (fe) {
+            console.log(`  ❌ open_interest: fallback failed too: ${fe.message}`);
+            return result.fail(`${e.message}; fallback: ${fe.message}`);
+        }
     }
 }
 
