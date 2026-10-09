@@ -6,6 +6,11 @@ const fs = require('fs');
 const path = require('path');
 
 // table → max allowed age in days (daily feeds publish D-1; allow a 2-day slack for provider lag)
+const EXPECT_SOURCE = {
+    historical_active_addresses: 'coinmetrics',
+    historical_l2_addresses: 'growthepie',
+};
+
 const TABLES = {
     historical_eth_price: 3,
     historical_funding_rate: 3,
@@ -36,11 +41,15 @@ const TABLES = {
             if (!row) { console.log(`STALE ${t} empty`); bad++; continue; }
             const age = Math.floor((Date.now() - Date.parse(String(row.date).slice(0, 10))) / 864e5);
             const synthetic = row.source === 'estimated';   // placeholder values must never be the latest row
-            const ok = age <= maxAge && !synthetic;
+            // Single source of record: a different (or missing) source on the latest row means two collectors
+            // with different definitions are overwriting each other (seen 2026-10: Dune vs Coin Metrics).
+            const want = EXPECT_SOURCE[t];
+            const mixed = want && row.source !== want;
+            const ok = age <= maxAge && !synthetic && !mixed;
             if (!ok) bad++;
-            console.log(`${ok ? 'ok   ' : synthetic ? 'SYNTH' : 'STALE'} ${t.padEnd(30)} ${String(row.date).slice(0, 10)} ${age}d (max ${maxAge}d)${row.source ? ' ' + row.source : ''}`);
+            console.log(`${ok ? 'ok   ' : synthetic ? 'SYNTH' : mixed ? 'MIXED' : 'STALE'} ${t.padEnd(30)} ${String(row.date).slice(0, 10)} ${age}d (max ${maxAge}d)${row.source ? ' ' + row.source : ''}`);
         } catch (e) { console.log(`SKIP  ${t} (${e.message})`); }
     }
-    console.log(bad ? `FAIL: ${bad} stale or synthetic table(s)` : 'PASS');
+    console.log(bad ? `FAIL: ${bad} stale, synthetic or mixed-source table(s)` : 'PASS');
     process.exit(bad ? 1 : 0);
 })();

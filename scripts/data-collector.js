@@ -1850,7 +1850,7 @@ async function collect_active_addresses() {
         const saved = await upsertBatch('historical_active_addresses', records);
         // Every real day is now overwritten; drop leftover estimate rows past Coin Metrics' last day.
         const lastReal = records[records.length - 1].date;
-        await purgeSynthetic('historical_active_addresses', (q) => q.gt('date', lastReal).or('source.is.null,source.eq.estimated'));
+        await purgeSynthetic('historical_active_addresses', (q) => q.gt('date', lastReal));   // partial/estimated days past CM's last full day
         return saved;
     } catch (e) {
         return result.fail(`coinmetrics AdrActCnt: ${e.message}`);
@@ -2535,7 +2535,9 @@ async function collect_staking_apr() {
 // 26. ETH in DeFi (estimate from TVL)
 // ============================================================
 async function collect_eth_in_defi() {
-    // Disabled: this was "TVL × 30% ÷ price", a made-up ratio, and no page or commentary reads the table.
+    // Disabled: this was "TVL x 30% / price", a made-up ratio, and no page or commentary reads the table.
+    // Clear the placeholder rows so nothing can pick them up later.
+    await purgeSynthetic('historical_eth_in_defi');
     return result.skip('disabled: synthetic estimate, unused');
 }
 
@@ -2626,32 +2628,10 @@ async function collect_dune_blob() {
 
 // 32. Active Addresses L1 (Dune)
 async function collect_dune_active_addr() {
-    if (!DUNE_API_KEY) { console.log('  ⏭️ Skipped - No API key'); return result.skip('No API key'); }
-    
-    const rows = await fetchDuneResults(DUNE_QUERIES.ACTIVE_ADDR, 5000);
-    if (!rows) {
-        console.log('  ⚠️ Query returned null - check query ID: ' + DUNE_QUERIES.ACTIVE_ADDR);
-        return result.warn(0, 'Query failed');
-    }
-    if (rows.length === 0) {
-        console.log('  ⚠️ Query returned empty - check if scheduled');
-        return result.warn(0, 'No data from Dune');
-    }
-    
-    const records = rows.map(r => {
-        let dateStr = r.block_date || r.date || '';
-        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
-        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
-        return {
-            date: dateStr,
-            active_addresses: parseInt(r.active_addresses || r.unique_addresses || 0)
-        };
-    }).filter(r => r.date && r.active_addresses > 0);
-    
-    console.log(`  ✓ ${records.length} records`);
-    if (records.length > 0) console.log(`  📅 Latest: ${records[0].date}`);
-    const saved = await upsertBatch('historical_active_addresses', records);
-    return result.ok(saved);
+    // Disabled: Coin Metrics AdrActCnt (collect_active_addresses) is the single source for L1 active addresses.
+    // This Dune query uses a different definition (~30% lower) and wrote today's partial count, so running both
+    // overwrote real Coin Metrics days with a mismatched series.
+    return result.skip('disabled: Coin Metrics is the source of record');
 }
 
 // 33. L2 Active Addresses (Dune)
