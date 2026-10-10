@@ -14352,9 +14352,41 @@
         }
     </style>
     <script>
+        // Avatars: stored Twitter avatar URLs die when a user changes their picture (pbs.twimg.com 404).
+        // ethvalAvatar() returns the default avatar for URLs already known dead, so they are not requested again.
+        // Known-dead URLs = seed list (checked 2026-10-10) + any twimg profile image that failed in this browser (kept 7 days).
+        (function() {
+            var DEFAULT = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
+            var KEY = 'ethval_dead_avatars_v1', TTL = 7 * 864e5;
+            var SEED = [
+                'https://pbs.twimg.com/profile_images/2091509386992857088/s5Kmi3UO_normal.jpg',
+                'https://pbs.twimg.com/profile_images/1522943608399462400/2QSXCZic_normal.jpg'
+            ];
+            var dead = {};
+            try {
+                var saved = JSON.parse(localStorage.getItem(KEY) || '{}'), now = Date.now();
+                for (var u in saved) if (now - saved[u] < TTL) dead[u] = saved[u];
+            } catch (e) {}
+            SEED.forEach(function(u) { dead[u] = dead[u] || 1; });
+            window.ETHVAL_DEFAULT_AVATAR = DEFAULT;
+            window.ethvalAvatar = function(url, fallback) {
+                return (!url || dead[url]) ? (fallback || DEFAULT) : url;
+            };
+            window.ethvalMarkDeadAvatar = function(url) {
+                if (!url || dead[url]) return;
+                dead[url] = Date.now();
+                try {
+                    var keep = {};
+                    Object.keys(dead).filter(function(u) { return SEED.indexOf(u) < 0; }).slice(-200)
+                        .forEach(function(u) { keep[u] = dead[u]; });
+                    localStorage.setItem(KEY, JSON.stringify(keep));
+                } catch (e) {}
+            };
+        })();
         // Early handler for broken Twitter avatar images (before DOM loads)
         document.addEventListener('error', function(e) {
             if (e.target.tagName === 'IMG' && e.target.src.includes('twimg.com')) {
+                if (e.target.src.includes('/profile_images/')) window.ethvalMarkDeadAvatar(e.target.src);
                 e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
             }
         }, true);
@@ -17500,7 +17532,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-write-row">
-                                    <img loading="lazy" decoding="async" class="modal-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                    <img loading="lazy" decoding="async" class="modal-avatar" src="${ethvalAvatar(currentUser.avatar)}" alt="">
                                     <div class="modal-write-input">
                                         <textarea placeholder="${t('modal.placeholder')}" maxlength="1000" id="modal-textarea-${modelId}" oninput="updatePostBtnState(this)"></textarea>
                                         <button class="modal-submit" id="modal-submit-${modelId}" onclick="submitModalReview('${modelId}')">${t('modal.post')}</button>
@@ -18080,7 +18112,7 @@
             const replyArea = document.createElement('div');
             replyArea.className = 'reply-input-area';
             replyArea.innerHTML = `
-                <img loading="lazy" decoding="async" class="ig-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                <img loading="lazy" decoding="async" class="ig-avatar" src="${ethvalAvatar(currentUser.avatar)}" alt="">
                 <input type="text" placeholder="Reply to @${authorHandle}..." maxlength="280" id="reply-input-${commentId}" onkeypress="if(event.key==='Enter')submitReply('${commentId}', '${modelId}')">
                 <button class="ig-post-btn" onclick="submitReply('${commentId}', '${modelId}')">Post</button>
             `;
@@ -18113,7 +18145,7 @@
                 
                 return `
                     <div class="comment-item ${isReply ? 'comment-reply' : ''}" data-comment-id="${c.id}" data-parent-id="${c.parent_id || ''}">
-                        <img loading="lazy" decoding="async" class="comment-avatar" src="${c.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                        <img loading="lazy" decoding="async" class="comment-avatar" src="${ethvalAvatar(c.user_avatar)}" alt="">
                         <div class="comment-body">
                             <div class="comment-header">
                                 <a class="comment-author-link" href="https://x.com/${c.user_handle}" target="_blank" rel="noopener noreferrer">${c.user_name || 'User'}</a>
@@ -18270,7 +18302,7 @@
                                 const handle = user?.user_handle || '';
                                 return `
                                     <a class="liker-item" href="https://x.com/${handle}" target="_blank" rel="noopener">
-                                        <img loading="lazy" decoding="async" class="liker-avatar" src="${user?.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                        <img loading="lazy" decoding="async" class="liker-avatar" src="${ethvalAvatar(user?.user_avatar)}" alt="">
                                         <div class="liker-info">
                                             <span class="liker-name">${user?.user_name || user?.user_handle || 'Unknown'}</span>
                                             ${handle ? `<span class="liker-handle">@${handle}</span>` : ''}
@@ -18556,7 +18588,7 @@
                         ${topReviewers.length > 0 ? `
                         <div class="summary-avatars">
                             ${topReviewers.map(r => `
-                                <img loading="lazy" decoding="async" class="summary-avatar" src="${r.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="${r.user_handle}" title="${r.user_handle}">
+                                <img loading="lazy" decoding="async" class="summary-avatar" src="${ethvalAvatar(r.user_avatar)}" alt="${r.user_handle}" title="${r.user_handle}">
                             `).join('')}
                             ${hasMoreReviewers ? '<span class="summary-avatars-more">...</span>' : ''}
                         </div>
@@ -18960,7 +18992,7 @@
                                                     </div>
                                                     <div class="modal-bar-voters">
                                                         ${voters.length > 0 ? voters.map(v => `
-                                                            <img loading="lazy" decoding="async" class="modal-bar-avatar" src="${v.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="${v.name}" title="${v.name}">
+                                                            <img loading="lazy" decoding="async" class="modal-bar-avatar" src="${ethvalAvatar(v.avatar)}" alt="${v.name}" title="${v.name}">
                                                         `).join('') : ''}
                                                         ${hasMore ? `<span class="modal-bar-more">+${count - maxVotersPerStar}</span>` : ''}
                                                     </div>
@@ -18992,7 +19024,7 @@
                                             </div>
                                         </div>
                                         <div class="modal-write-row">
-                                            <img loading="lazy" decoding="async" class="modal-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                            <img loading="lazy" decoding="async" class="modal-avatar" src="${ethvalAvatar(currentUser.avatar)}" alt="">
                                             <div class="modal-write-input">
                                                 <textarea placeholder="${t('modal.placeholder')}" maxlength="1000" id="modal-textarea-${modelId}" oninput="updatePostBtnState(this)"></textarea>
                                                 <button class="modal-submit" id="modal-submit-${modelId}" onclick="submitModalReview('${modelId}')">${t('modal.post')}</button>
@@ -19564,7 +19596,7 @@
             
             return `
                 <div class="modal-review" data-comment-id="${review.id}">
-                    <img loading="lazy" decoding="async" class="modal-review-avatar" src="${review.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="modal-review-avatar" src="${ethvalAvatar(review.user_avatar)}" alt="">
                     <div class="modal-review-body">
                         <div class="modal-review-header">
                             <div class="modal-review-info">
@@ -19611,7 +19643,7 @@
             
             return `
                 <div class="modal-review modal-comment" data-comment-id="${comment.id}">
-                    <img loading="lazy" decoding="async" class="modal-review-avatar" src="${comment.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="modal-review-avatar" src="${ethvalAvatar(comment.user_avatar)}" alt="">
                     <div class="modal-review-body">
                         <div class="modal-review-header">
                             <div class="modal-review-info">
@@ -19658,7 +19690,7 @@
             
             return `
                 <div class="modal-reply" data-comment-id="${reply.id}">
-                    <img loading="lazy" decoding="async" class="modal-reply-avatar" src="${reply.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="modal-reply-avatar" src="${ethvalAvatar(reply.user_avatar)}" alt="">
                     <div class="modal-reply-body">
                         <div class="modal-reply-header">
                             <a class="modal-user-link" href="https://x.com/${reply.user_handle}" target="_blank" rel="noopener">
@@ -19706,7 +19738,7 @@
             
             const formHtml = `
                 <div class="modal-reply-form" id="modal-reply-form-${commentId}">
-                    <img loading="lazy" decoding="async" class="modal-reply-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="modal-reply-avatar" src="${ethvalAvatar(currentUser.avatar)}" alt="">
                     <input type="text" placeholder="${t('modal.replyPlaceholder')}" maxlength="280" id="modal-reply-input-${commentId}" oninput="updateReplyBtnState(this)">
                     <button id="modal-reply-btn-${commentId}" onclick="submitModalReply('${commentId}', '${modelId}')">${t('modal.reply')}</button>
                 </div>
@@ -19872,7 +19904,7 @@
             return `
                 <div class="amz-review" data-comment-id="${review.id}">
                     <div class="amz-review-header">
-                        <img loading="lazy" decoding="async" class="amz-reviewer-avatar" src="${review.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                        <img loading="lazy" decoding="async" class="amz-reviewer-avatar" src="${ethvalAvatar(review.user_avatar)}" alt="">
                         <a class="amz-reviewer-name" href="https://x.com/${review.user_handle}" target="_blank" rel="noopener noreferrer">${review.user_name || review.user_handle}</a>
                     </div>
                     <div class="amz-review-rating">
@@ -19909,7 +19941,7 @@
             const canDelete = currentUser && (currentUser.id === reply.user_id || isAdmin);
             return `
                 <div class="amz-reply" data-comment-id="${reply.id}">
-                    <img loading="lazy" decoding="async" class="amz-reply-avatar" src="${reply.user_avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="amz-reply-avatar" src="${ethvalAvatar(reply.user_avatar)}" alt="">
                     <div class="amz-reply-content">
                         <div class="amz-reply-header">
                             <a class="amz-reply-name" href="https://x.com/${reply.user_handle}" target="_blank" rel="noopener noreferrer">${reply.user_name || reply.user_handle}</a>
@@ -19946,7 +19978,7 @@
             
             const formHtml = `
                 <div class="amz-reply-form" id="reply-form-${reviewId}">
-                    <img loading="lazy" decoding="async" class="amz-reply-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                    <img loading="lazy" decoding="async" class="amz-reply-avatar" src="${ethvalAvatar(currentUser.avatar)}" alt="">
                     <input type="text" placeholder="Write a comment..." maxlength="280" id="reply-input-${reviewId}" onkeypress="if(event.key==='Enter')submitReplyToReview('${reviewId}', '${modelId}')">
                     <button onclick="submitReplyToReview('${reviewId}', '${modelId}')">Post</button>
                 </div>
@@ -20026,7 +20058,7 @@
                     const hasMore = allUniqueParticipants.length > displayCount;
                     
                     let html = displayParticipants.map(p => 
-                        `<img loading="lazy" decoding="async" src="${p.user_avatar}" alt="${p.user_handle || 'user'}" title="@${p.user_handle || 'user'}">`
+                        `<img loading="lazy" decoding="async" src="${ethvalAvatar(p.user_avatar)}" alt="${p.user_handle || 'user'}" title="@${p.user_handle || 'user'}">`
                     ).join('');
                     
                     if (hasMore) {
@@ -31338,6 +31370,7 @@
         // Global image error handler - fallback to default avatar for broken profile images
         document.addEventListener('error', (e) => {
             if (e.target.tagName === 'IMG' && e.target.src.includes('twimg.com/profile_images')) {
+                if (window.ethvalMarkDeadAvatar) window.ethvalMarkDeadAvatar(e.target.src);
                 e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
             }
         }, true);
@@ -33682,7 +33715,7 @@ Check out ETHval 👇`;
                     if (currentUser) {
                         if (loginPrompt) loginPrompt.style.display = 'none';
                         if (composerForm) composerForm.style.display = 'flex';
-                        if (composerAvatar) composerAvatar.src = currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
+                        if (composerAvatar) composerAvatar.src = ethvalAvatar(currentUser.avatar);
                         
                         // Add updates option for admin only
                         if (categorySelect && isAdmin) {
@@ -34001,7 +34034,7 @@ Check out ETHval 👇`;
                         </div>
                         <div class="forum-cell forum-cell-author" onclick="event.stopPropagation()">
                             <div class="forum-author-info">
-                                <img loading="lazy" decoding="async" class="forum-author-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                                <img loading="lazy" decoding="async" class="forum-author-avatar" src="${ethvalAvatar(post.avatar_url)}" alt="">
                                 <a class="forum-author-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">${post.display_name || post.username}</a>
                             </div>
                             <div class="forum-mobile-stats">
@@ -34306,7 +34339,7 @@ Check out ETHval 👇`;
                 
                 return `
                     <div class="forum-modal-post-header">
-                        <img loading="lazy" decoding="async" class="forum-modal-avatar" src="${post.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                        <img loading="lazy" decoding="async" class="forum-modal-avatar" src="${ethvalAvatar(post.avatar_url)}" alt="">
                         <div class="forum-modal-post-meta">
                             <div class="forum-modal-author">
                                 <a class="forum-modal-name-link" href="https://x.com/${post.username}" target="_blank" rel="noopener noreferrer">${post.display_name || post.username}</a>
@@ -34420,7 +34453,7 @@ Check out ETHval 👇`;
                 
                 return `
                     <div class="forum-comment-composer">
-                        <img loading="lazy" decoding="async" class="forum-comment-composer-avatar" src="${currentUser.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                        <img loading="lazy" decoding="async" class="forum-comment-composer-avatar" src="${ethvalAvatar(currentUser.avatar)}" alt="">
                         <div class="forum-comment-composer-input">
                             <textarea class="forum-comment-textarea" id="forum-comment-input" placeholder="${t('community.commentPlaceholder', 'Write a comment...')}" maxlength="1000"></textarea>
                             <div class="forum-comment-composer-footer">
@@ -34498,7 +34531,7 @@ Check out ETHval 👇`;
                     
                     return `
                         <div class="forum-comment" data-comment-id="${comment.id}">
-                            <img loading="lazy" decoding="async" class="forum-comment-avatar" src="${comment.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}" alt="">
+                            <img loading="lazy" decoding="async" class="forum-comment-avatar" src="${ethvalAvatar(comment.avatar_url)}" alt="">
                             <div class="forum-comment-body">
                                 <div class="forum-comment-header">
                                     <a class="forum-comment-name-link" href="https://x.com/${comment.username}" target="_blank" rel="noopener noreferrer">${comment.display_name || comment.username}</a>
@@ -35635,7 +35668,7 @@ Check out ETHval 👇`;
                         .slice(0, 8);
                     
                     let avatarsHtml = usersWithAvatars.map(user => 
-                        `<img src="${user.userAvatar}" alt="${user.userName}" title="${user.userName}">`
+                        `<img src="${ethvalAvatar(user.userAvatar)}" alt="${user.userName}" title="${user.userName}">`
                     ).join('');
                     
                     if (uniqueUsers > 8) {
@@ -35706,7 +35739,7 @@ Check out ETHval 👇`;
                     
                     // Avatar - use stored avatar or fallback
                     const defaultAvatar = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
-                    const avatarUrl = user.userAvatar || defaultAvatar;
+                    const avatarUrl = ethvalAvatar(user.userAvatar, defaultAvatar);
                     const initial = user.userName.charAt(0).toUpperCase();
                     
                     // Compact horizontal user cell
@@ -36124,7 +36157,7 @@ Check out ETHval 👇`;
                                 const defaultAvatar = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><rect fill="%237c3aed" width="36" height="36" rx="18"/></svg>';
                                 
                                 let html = recentUsers.map(u => 
-                                    `<img loading="lazy" decoding="async" src="${u.avatar || defaultAvatar}" alt="" class="recent-voter-avatar" onerror="this.src='${defaultAvatar}'">`
+                                    `<img loading="lazy" decoding="async" src="${ethvalAvatar(u.avatar, defaultAvatar)}" alt="" class="recent-voter-avatar" onerror="this.src='${defaultAvatar}'">`
                                 ).join('');
                                 
                                 if (uniqueUsers.size > 5) {
