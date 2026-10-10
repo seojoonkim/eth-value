@@ -24349,6 +24349,15 @@
             try { localStorage.setItem(CG_LS_PREFIX + key, JSON.stringify({ t: Date.now(), d })); } catch (e) {}
         }
         const CG_ETH_TTL = 90 * 1000;
+        // CoinGecko가 실패하면(대부분 429 → 브라우저엔 CORS 차단으로 보임) 2분간 호출 쉬기.
+        // 그동안 새로고침해도 다시 두드리지 않고 바로 대체 경로(Coinbase 가격 등)로 감. 데이터는 저장하지 않음.
+        const CG_COOLDOWN_MS = 2 * 60 * 1000;
+        function cgCoolingDown() { return !!cgLsGet('cooldown', CG_COOLDOWN_MS); }
+        function cgMarkFailed() { cgLsSet('cooldown', 1); }
+        function cgGuardedFetch(url) {
+            if (cgCoolingDown()) return Promise.reject(new Error('CoinGecko cooldown (recent failure)'));
+            return fetch(url).then(r => { if (r.status === 429) cgMarkFailed(); return r; }, e => { cgMarkFailed(); throw e; });
+        }
         let __cgEthPromise = null, __cgEthAt = 0;
         function getCoinGeckoEth() {
             if (__cgEthPromise && Date.now() - __cgEthAt < 60000) return __cgEthPromise;
@@ -24359,7 +24368,7 @@
                 return __cgEthPromise;
             }
             __cgEthAt = Date.now();
-            __cgEthPromise = fetch('https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false')
+            __cgEthPromise = cgGuardedFetch('https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false')
                 .then(r => { if (!r.ok) throw new Error('CoinGecko HTTP ' + r.status); return r.json(); })
                 .then(d => {
                     if (!d?.market_data?.current_price?.usd) throw new Error('CoinGecko: no market_data');
@@ -24391,12 +24400,13 @@
                 if (cached) {
                     pr = Promise.resolve(new Response(JSON.stringify(cached), { status: 200, headers: { 'Content-Type': 'application/json' } }));
                 } else {
-                    pr = fetch(url);
+                    pr = cgGuardedFetch(url);
                     if (persist) pr.then(r => r.ok ? r.clone().json() : null).then(d => {
                         if (d && Array.isArray(d.total_volumes) && d.total_volumes.length) cgLsSet(url, { total_volumes: d.total_volumes, market_caps: d.market_caps || [] });
                     }).catch(() => {});
                 }
-                pr.catch(() => __cgGetCache.delete(url));
+                // 실패(429→CORS 차단 포함)도 이 페이지 안에선 기억 → 같은 URL을 다시 불러 또 실패하지 않음
+                pr.catch(() => {});
                 __cgGetCache.set(url, pr);
             }
             return __cgGetCache.get(url).then(r => r.clone());
