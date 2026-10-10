@@ -33186,6 +33186,7 @@ Check out ETHval 👇`;
             }
             
             function formatVal(v) {
+                if (typeof v !== 'number' || !isFinite(v)) return '$--';
                 if (v >= 1e12) return '$' + (v / 1e12).toFixed(1) + 'T';
                 if (v >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
                 if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
@@ -33194,6 +33195,7 @@ Check out ETHval 👇`;
             }
             
             function formatCount(v) {
+                if (typeof v !== 'number' || !isFinite(v)) return '--';
                 if (v >= 1e6) return (v / 1e6).toFixed(1) + 'M';
                 if (v >= 1e3) return (v / 1e3).toFixed(0) + 'K';
                 return v.toFixed(0);
@@ -33345,6 +33347,9 @@ Check out ETHval 👇`;
             }
             
             function updateSimulation(fromSliderInput) {
+                // initSimulator()가 baseParams를 채우기 전(가격 대기 중)에 외부 동기화가 호출하면 건너뜀
+                // (예전엔 baseParams={} 상태에서 formatVal(undefined) → TypeError가 간헐적으로 났음)
+                if (!baseParams || baseParams.tvl === undefined) return;
                 // Skip update if simulator is locked AND triggered by slider input
                 const simulatorSection = document.getElementById('simulator-section');
                 if (fromSliderInput && simulatorSection && simulatorSection.classList.contains('gated-locked')) {
