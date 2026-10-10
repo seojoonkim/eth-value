@@ -24334,22 +24334,68 @@
         // 브라우저 콘솔엔 "blocked by CORS"로 찍힘. 예전엔 simple/price·coins/ethereum·
         // simple/price를 연달아 3번 불러 429가 났음 → 한 번만 불러 결과를 같이 씀.
         // ═══════════════════════════════════════════════════════════════════
+        // + 브라우저 localStorage 캐시 (같은 사람이 새로고침/재방문해도 다시 안 부름 → 429 방지)
+        //   현재가(coins/ethereum): 90초 / 일간 차트(market_chart interval=daily): 6시간.
+        //   캐시엔 CoinGecko 응답 중 실제 쓰는 필드만 그대로 저장 (값을 만들거나 바꾸지 않음).
+        const CG_LS_PREFIX = 'ethval_cg:';
+        function cgLsGet(key, ttlMs) {
+            try {
+                const c = JSON.parse(localStorage.getItem(CG_LS_PREFIX + key) || 'null');
+                if (c && c.t && Date.now() - c.t < ttlMs && c.d) return c.d;
+            } catch (e) {}
+            return null;
+        }
+        function cgLsSet(key, d) {
+            try { localStorage.setItem(CG_LS_PREFIX + key, JSON.stringify({ t: Date.now(), d })); } catch (e) {}
+        }
+        const CG_ETH_TTL = 90 * 1000;
         let __cgEthPromise = null, __cgEthAt = 0;
         function getCoinGeckoEth() {
             if (__cgEthPromise && Date.now() - __cgEthAt < 60000) return __cgEthPromise;
+            const cached = cgLsGet('eth', CG_ETH_TTL);
+            if (cached?.market_data?.current_price?.usd) {
+                __cgEthAt = Date.now();
+                __cgEthPromise = Promise.resolve(cached);
+                return __cgEthPromise;
+            }
             __cgEthAt = Date.now();
             __cgEthPromise = fetch('https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false')
                 .then(r => { if (!r.ok) throw new Error('CoinGecko HTTP ' + r.status); return r.json(); })
-                .then(d => { if (!d?.market_data?.current_price?.usd) throw new Error('CoinGecko: no market_data'); return d; });
+                .then(d => {
+                    if (!d?.market_data?.current_price?.usd) throw new Error('CoinGecko: no market_data');
+                    const m = d.market_data;
+                    cgLsSet('eth', { market_data: {
+                        current_price: { usd: m.current_price?.usd, btc: m.current_price?.btc },
+                        price_change_percentage_24h: m.price_change_percentage_24h,
+                        total_volume: { usd: m.total_volume?.usd },
+                        market_cap: { usd: m.market_cap?.usd },
+                        ath: { usd: m.ath?.usd },
+                        ath_change_percentage: { usd: m.ath_change_percentage?.usd },
+                        circulating_supply: m.circulating_supply,
+                    } });
+                    return d;
+                });
             __cgEthPromise.catch(() => {});
             return __cgEthPromise;
         }
 
         // 같은 CoinGecko URL은 페이지에서 한 번만 호출 (Response는 clone해서 각자 .json() 가능)
+        // 일간(interval=daily) market_chart는 localStorage에 6시간 보관 (total_volumes·market_caps만)
+        const CG_CHART_TTL = 6 * 60 * 60 * 1000;
         const __cgGetCache = new Map();
         function cgFetch(url) {
             if (!__cgGetCache.has(url)) {
-                const pr = fetch(url);
+                const persist = /\/market_chart\?.*interval=daily/.test(url);
+                const cached = persist ? cgLsGet(url, CG_CHART_TTL) : null;
+                let pr;
+                if (cached) {
+                    pr = Promise.resolve(new Response(JSON.stringify(cached), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+                } else {
+                    pr = fetch(url);
+                    if (persist) pr.then(r => r.ok ? r.clone().json() : null).then(d => {
+                        if (d && Array.isArray(d.total_volumes) && d.total_volumes.length) cgLsSet(url, { total_volumes: d.total_volumes, market_caps: d.market_caps || [] });
+                    }).catch(() => {});
+                }
                 pr.catch(() => __cgGetCache.delete(url));
                 __cgGetCache.set(url, pr);
             }
