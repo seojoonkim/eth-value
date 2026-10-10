@@ -24296,40 +24296,74 @@
 
         // Fetch functions
 
-        // 실시간 ETH 가격 가져오기 (CoinGecko 사용, Binance는 CORS 문제로 제외)
+        // ═══════════════════════════════════════════════════════════════════
+        // CoinGecko 공용 호출 (페이지당 1회, 60초 캐시)
+        // 무료 API는 IP당 분당 호출 제한이 있고 429 응답엔 CORS 헤더가 없어서
+        // 브라우저 콘솔엔 "blocked by CORS"로 찍힘. 예전엔 simple/price·coins/ethereum·
+        // simple/price를 연달아 3번 불러 429가 났음 → 한 번만 불러 결과를 같이 씀.
+        // ═══════════════════════════════════════════════════════════════════
+        let __cgEthPromise = null, __cgEthAt = 0;
+        function getCoinGeckoEth() {
+            if (__cgEthPromise && Date.now() - __cgEthAt < 60000) return __cgEthPromise;
+            __cgEthAt = Date.now();
+            __cgEthPromise = fetch('https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false')
+                .then(r => { if (!r.ok) throw new Error('CoinGecko HTTP ' + r.status); return r.json(); })
+                .then(d => { if (!d?.market_data?.current_price?.usd) throw new Error('CoinGecko: no market_data'); return d; });
+            __cgEthPromise.catch(() => {});
+            return __cgEthPromise;
+        }
+
+        // 같은 CoinGecko URL은 페이지에서 한 번만 호출 (Response는 clone해서 각자 .json() 가능)
+        const __cgGetCache = new Map();
+        function cgFetch(url) {
+            if (!__cgGetCache.has(url)) {
+                const pr = fetch(url);
+                pr.catch(() => __cgGetCache.delete(url));
+                __cgGetCache.set(url, pr);
+            }
+            return __cgGetCache.get(url).then(r => r.clone());
+        }
+
+        // CoinGecko 실패 시 실시간 가격 대체: Coinbase Exchange 공개 API (CORS 허용, 키 불필요)
+        // stats.open = 24시간 전 가격 → 24h 변화율. 거래량은 Coinbase 단일 거래소 값이라 시장 전체 거래량으로 쓰지 않음.
+        async function fetchCoinbaseSpot() {
+            const r = await fetch('https://api.exchange.coinbase.com/products/ETH-USD/stats');
+            if (!r.ok) throw new Error('Coinbase HTTP ' + r.status);
+            const d = await r.json();
+            const last = parseFloat(d.last), open = parseFloat(d.open);
+            if (!(last > 0)) throw new Error('Coinbase: no price');
+            return { price: last, change24h: open > 0 ? (last / open - 1) * 100 : null };
+        }
+
+        // 실시간 ETH 가격 가져오기 (CoinGecko → 실패 시 Coinbase. Binance는 CORS/지역 차단 문제로 제외)
         async function fetchBinancePrice() {
             try {
-                // ═══════════════════════════════════════════════════════════════════
-                // CoinGecko에서 가격, 24h 변화율, 총 시장 거래량 가져오기
-                // ═══════════════════════════════════════════════════════════════════
-                const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true');
-
-                if (!cgRes.ok) {
-                    throw new Error(`CoinGecko API failed: ${cgRes.status}`);
+                let price, change24h = null, volume24h = null, ethBtc = null, priceSource;
+                try {
+                    const md = (await getCoinGeckoEth()).market_data;
+                    price = md.current_price.usd;
+                    change24h = md.price_change_percentage_24h;
+                    volume24h = md.total_volume?.usd || null;
+                    ethBtc = md.current_price.btc || null;
+                    priceSource = 'CoinGecko';
+                } catch (cgErr) {
+                    log('   CoinGecko price unavailable (' + cgErr.message + '), using Coinbase');
+                    const cb = await fetchCoinbaseSpot();
+                    price = cb.price;
+                    change24h = cb.change24h;
+                    priceSource = 'Coinbase';
                 }
 
-                const cgData = await cgRes.json();
+                state.price = price;
+                if (change24h !== null && isFinite(change24h)) state.change24h = change24h;
+                if (volume24h) state.volume24h = volume24h;
+                if (ethBtc) state.ethBtcRatio = ethBtc;
 
-                if (!cgData.ethereum) {
-                    throw new Error('CoinGecko: No ethereum data');
-                }
-
-                state.price = cgData.ethereum.usd;
-                state.change24h = cgData.ethereum.usd_24h_change;
-                state.volume24h = cgData.ethereum.usd_24h_vol;
-
-                // ETH/BTC 비율 계산
-                if (cgData.bitcoin && cgData.bitcoin.usd) {
-                    state.ethBtcRatio = cgData.ethereum.usd / cgData.bitcoin.usd;
-                }
-
-                log(`   Price: $${state.price.toFixed(2)} (CoinGecko)`);
-                log(`   24h Change: ${state.change24h.toFixed(2)}%`);
-                log(`   Volume: $${(state.volume24h/1e9).toFixed(2)}B`);
+                log(`   Price: $${state.price.toFixed(2)} (${priceSource})`);
 
                 // 메인 가격 표시
                 document.getElementById('current-price').textContent = fmt.price(state.price);
-                document.getElementById('volume-24h').textContent = fmt.usd(state.volume24h);
+                if (state.volume24h) document.getElementById('volume-24h').textContent = fmt.usd(state.volume24h);
 
                 // 시뮬레이터 마켓 프라이스도 업데이트
                 const simMarketPriceEl = document.getElementById('sim-market-price');
@@ -24349,8 +24383,10 @@
 
                 // 24h 변화율 UI 업데이트
                 const changeEl = document.getElementById('price-change');
-                document.getElementById('price-change-text').textContent = fmt.pct(state.change24h) + ' (24h)';
-                changeEl.className = 'price-change ' + (state.change24h >= 0 ? 'up' : 'down');
+                if (typeof state.change24h === 'number' && isFinite(state.change24h)) {
+                    document.getElementById('price-change-text').textContent = fmt.pct(state.change24h) + ' (24h)';
+                    changeEl.className = 'price-change ' + (state.change24h >= 0 ? 'up' : 'down');
+                }
                 
                 // ═══════════════════════════════════════════════════════════════════
                 // 가격 히스토리 마지막 포인트도 실시간으로 업데이트
@@ -24364,7 +24400,7 @@
                         state.priceHistory.push({ date: new Date(todayStr), value: state.price });
                     }
                 }
-                if (state.volumeHistory && state.volumeHistory.length > 0) {
+                if (volume24h && state.volumeHistory && state.volumeHistory.length > 0) {
                     const lastDateStr = state.volumeHistory[state.volumeHistory.length - 1].date.toISOString().split('T')[0];
                     if (lastDateStr === todayStr) {
                         state.volumeHistory[state.volumeHistory.length - 1].value = state.volume24h;
@@ -25091,15 +25127,9 @@
         
         async function fetchCoinGecko() {
             try {
-                // log('   Fetching CoinGecko basic data...');
-                const res = await fetch('https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false');
-                
-                if (!res.ok) {
-                    console.error('   CoinGecko API failed:', res.status);
-                    return;
-                }
-                
-                const data = await res.json();
+                let data;
+                try { data = await getCoinGeckoEth(); }
+                catch (cgErr) { log('   CoinGecko unavailable:', cgErr.message); return; }
                 const md = data.market_data;
                 
                 log('   CoinGecko data received, price:', md.current_price.usd);
@@ -25245,16 +25275,12 @@
         // ═══════════════════════════════════════════════════════════════════
         async function updateTodayWithRealtime() {
             try {
-                // CoinGecko simple API로 현재 가격 및 24h 볼륨, 24h 변화율 가져오기
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true');
-                if (!res.ok) return;
-                
-                const data = await res.json();
-                if (!data.ethereum) return;
-                
-                const realtimePrice = data.ethereum.usd;
-                const realtimeVolume = data.ethereum.usd_24h_vol;
-                const change24h = data.ethereum.usd_24h_change || 0;
+                // CoinGecko 공용 호출(getCoinGeckoEth)로 현재 가격·24h 볼륨·24h 변화율 (실패 시 그대로 둠)
+                const md = (await getCoinGeckoEth()).market_data;
+                const realtimePrice = md.current_price.usd;
+                const realtimeVolume = md.total_volume?.usd;
+                const change24h = md.price_change_percentage_24h || 0;
+                if (!realtimePrice || !realtimeVolume) return;
                 
                 // 오늘 날짜 (로컬 타임존 기준)
                 const now = new Date();
@@ -25353,7 +25379,7 @@
             try {
                 log('Fetching additional volume from CoinGecko...');
                 const apiDays = Math.min(days || 365, 365); // CoinGecko는 365일 제한
-                const res = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=${apiDays}&interval=daily`);
+                const res = await cgFetch(`https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=${apiDays}&interval=daily`);
                 
                 if (!res.ok) {
                     log('CoinGecko volume fetch failed:', res.status);
@@ -25485,7 +25511,7 @@
                         await new Promise(r => setTimeout(r, 1500));
                         
                         // ETH market cap 히스토리 (최대 365일)
-                        const ethRes = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=365&interval=daily');
+                        const ethRes = await cgFetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=365&interval=daily');
                         
                         if (ethRes.ok) {
                             const ethData = await ethRes.json();
@@ -27419,26 +27445,9 @@
                 let currentGasPrice = 0;
                 let dataSource = 'estimate';
                 
-                // Parallel fetch both gas APIs
-                const [etherscanResult, blocknativeResult] = await Promise.allSettled([
-                    fetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle').then(r => r.json()),
-                    fetch('https://api.blocknative.com/gasprices/blockprices').then(r => r.json())
-                ]);
-                
-                // Try Etherscan first
-                if (etherscanResult.status === 'fulfilled' && etherscanResult.value?.status === '1') {
-                    currentGasPrice = parseFloat(etherscanResult.value.result?.ProposeGasPrice) || 0;
-                    if (currentGasPrice > 0) dataSource = 'etherscan';
-                }
-                
-                // Fallback to Blocknative
-                if (currentGasPrice === 0 && blocknativeResult.status === 'fulfilled') {
-                    const data = blocknativeResult.value;
-                    if (data?.blockPrices?.[0]) {
-                        currentGasPrice = data.blockPrices[0].estimatedPrices?.[0]?.price || 0;
-                        if (currentGasPrice > 0) dataSource = 'blocknative';
-                    }
-                }
+                // 2026-10-10: 브라우저 실시간 가스 호출 제거.
+                // Etherscan V1 gasoracle은 폐기(항상 NOTOK, V2는 키 필요), Blocknative는 키 없으면 연결 거부.
+                // 둘 다 값을 준 적이 없어서 카드 값은 이미 아래 Dune 일별 히스토리의 마지막 값이었음 → 동작 동일.
                 
                 // Use Supabase gas history if available, otherwise calculate from fees
                 let gasPriceDataSource = 'dune';
