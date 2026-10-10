@@ -1943,8 +1943,8 @@
                             open: parseFloat(row.open) || parseFloat(row.avg_price),
                             high: parseFloat(row.high) || parseFloat(row.avg_price),
                             low: parseFloat(row.low) || parseFloat(row.avg_price),
-                            close: parseFloat(row.close) || parseFloat(row.avg_price),
-                            volume: 0
+                            close: parseFloat(row.close) || parseFloat(row.avg_price)
+                            // volume: Dune 쿼리에 없음 → 쓰지 않음 (예전 volume: 0 placeholder가 실제 거래량처럼 저장됐음)
                         };
                     });
                     

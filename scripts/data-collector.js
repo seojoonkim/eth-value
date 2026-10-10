@@ -1589,6 +1589,15 @@ async function collect_eth_price() {
             } catch (e) {
                 console.error('  ⚠️ ETH volume (CoinGecko) skipped:', e.message);
             }
+            try {
+                // 거래량 0은 실제 값이 아님(컬럼 기본값/예전 placeholder) → NULL로 통일해 '값 없음'과 구분
+                const { data: z, error: ze } = await supabase.from('historical_eth_price')
+                    .update({ volume: null }).eq('volume', 0).select('date');
+                if (ze) throw new Error(ze.message);
+                if (z?.length) console.log(`  ETH volume: ${z.length} placeholder 0 → NULL`);
+            } catch (e) {
+                console.error('  ⚠️ ETH volume zero→null skipped:', e.message);
+            }
             return result.ok(saved);
         }
         
