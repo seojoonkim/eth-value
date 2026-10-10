@@ -24717,14 +24717,8 @@
             let filtered = prepareChartData(state.volatilityHistory, days, 90);
             
             if (filtered.length < 3) {
-                log('volatility-chart: no data, using fallback');
-                filtered = [];
-                for (let i = 90; i >= 0; i--) {
-                    filtered.push({
-                        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 50
-                    });
-                }
+                log('volatility-chart: no data');
+                filtered = []; // 가짜 평평한 상수선 대신 빈 차트
             }
             
             if (volatilityChart) volatilityChart.destroy();
@@ -24835,25 +24829,21 @@
             let filtered = prepareChartData(state.stablecoinHistory, days, 90);
             
             if (filtered.length < 3) {
-                log('stablecoin-chart: no data, using fallback');
-                filtered = [];
-                for (let i = 90; i >= 0; i--) {
-                    filtered.push({
-                        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 100e9
-                    });
-                }
+                log('stablecoin-chart: no data');
+                filtered = []; // 가짜 평평한 상수선 대신 빈 차트
             }
             
             if (stablecoinChart) stablecoinChart.destroy();
             
             // Calculate period change
-            const latest = filtered[filtered.length - 1].value;
-            const oldest = filtered[0].value;
-            const change = ((latest - oldest) / oldest) * 100;
+            const latest = filtered.length ? filtered[filtered.length - 1].value : null;
+            const oldest = filtered.length ? filtered[0].value : null;
+            const change = (latest !== null && oldest) ? ((latest - oldest) / oldest) * 100 : null;
             
             const changeEl = document.getElementById('stablecoin-change');
-            if (changeEl) {
+            if (changeEl && change === null) {
+                changeEl.textContent = '';
+            } else if (changeEl) {
                 const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
@@ -25003,14 +24993,8 @@
             let filtered = prepareChartData(state.fgHistory, days, 90);
             
             if (filtered.length < 3) {
-                log('feargreed-chart: no data, using fallback');
-                filtered = [];
-                for (let i = 90; i >= 0; i--) {
-                    filtered.push({
-                        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 50
-                    });
-                }
+                log('feargreed-chart: no data');
+                filtered = []; // 가짜 평평한 상수선 대신 빈 차트
             }
             
             // ═══════════════════════════════════════════════════════════════════
@@ -27556,25 +27540,21 @@
             let filtered = prepareChartData(state.gasPriceHistory, days, 60);
             
             if (filtered.length < 3) {
-                log('gas-price-chart: no data, using fallback');
-                filtered = [];
-                for (let i = 90; i >= 0; i--) {
-                    filtered.push({
-                        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 20
-                    });
-                }
+                log('gas-price-chart: no data');
+                filtered = []; // 가짜 평평한 상수선 대신 빈 차트
             }
             
             if (gasPriceChart) gasPriceChart.destroy();
             
             // Calculate period change
-            const latest = filtered[filtered.length - 1].value;
-            const oldest = filtered[0].value;
-            const change = ((latest - oldest) / oldest) * 100;
+            const latest = filtered.length ? filtered[filtered.length - 1].value : null;
+            const oldest = filtered.length ? filtered[0].value : null;
+            const change = (latest !== null && oldest) ? ((latest - oldest) / oldest) * 100 : null;
             
             const changeEl = document.getElementById('gas-price-change');
-            if (changeEl) {
+            if (changeEl && change === null) {
+                changeEl.textContent = '';
+            } else if (changeEl) {
                 const periodLabel = ChartManager.getPeriodLabel(days);
                 changeEl.textContent = fmt.pct(change) + ' ' + periodLabel;
                 changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
@@ -28596,15 +28576,8 @@
             let history = ChartManager.prepare(state.dominanceHistory, ChartManager.getDefaultPeriod());
             
             if (!history || history.length === 0) {
-                log('dominance-chart: no data, using fallback');
-                const defaultPeriod = ChartManager.getDefaultPeriod();
-                history = [];
-                for (let i = defaultPeriod; i >= 0; i--) {
-                    history.push({
-                        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 9
-                    });
-                }
+                log('dominance-chart: no data');
+                history = []; // 가짜 평평한 상수선 대신 빈 차트
             }
             
             try {
@@ -28654,15 +28627,8 @@
             let history = ChartManager.prepare(state.ethbtcHistory, ChartManager.getDefaultPeriod());
             
             if (!history || history.length === 0) {
-                log('ethbtc-chart: no data, using fallback');
-                const defaultPeriod = ChartManager.getDefaultPeriod();
-                history = [];
-                for (let i = defaultPeriod; i >= 0; i--) {
-                    history.push({
-                        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 0.035
-                    });
-                }
+                log('ethbtc-chart: no data');
+                history = []; // 가짜 평평한 상수선 대신 빈 차트
             }
             
             try {
@@ -28714,15 +28680,9 @@
             // 데이터 없으면 fallback 생성
             let usedFallback = false;
             if (!history || history.length < 2) {
-                log(`${canvasId}: no data, generating fallback...`);
+                log(`${canvasId}: no data`);
                 usedFallback = true;
-                history = [];
-                for (let i = effectivePeriod; i >= 0; i--) {
-                    history.push({
-                        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-                        value: 0
-                    });
-                }
+                history = []; // 0으로 채운 가짜 히스토리 대신 빈 차트
             }
             
             // ★ 차트에 실제로 표시될 마지막 값 저장
