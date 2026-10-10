@@ -1501,6 +1501,44 @@ async function upsertBatch(table, records, conflict = 'date') {
 
 const cutoff3Y = () => Date.now() / 1000 - (1095 * 24 * 60 * 60);
 
+// CoinGecko ETH market_chart 365d — 거래량 채우기와 ETH Dominance가 같은 응답을 공유 (호출 1회, rate limit 절약)
+let _cgEthChartPromise = null;
+function getCgEthMarketChart() {
+    if (!_cgEthChartPromise) {
+        _cgEthChartPromise = fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=365&interval=daily')
+            .then(d => { if (!d) _cgEthChartPromise = null; return d; }) // fetchJSON은 실패 시 null 반환 → 캐시하지 않음
+            .catch(e => { _cgEthChartPromise = null; throw e; });
+    }
+    return _cgEthChartPromise;
+}
+
+// historical_eth_price.volume 채우기: CoinGecko total_volumes(일별, UTC 00:00 포인트)를
+// 프론트의 CoinGecko 경로와 같은 날짜 매핑(포인트 timestamp의 UTC 날짜)으로 저장.
+// 이미 가격 행이 있는 날짜만 갱신하고, 장중 스냅샷(00:00이 아닌 마지막 포인트)은 제외.
+async function fillEthVolumeFromCoinGecko() {
+    const data = await getCgEthMarketChart();
+    const vols = data?.total_volumes;
+    if (!Array.isArray(vols) || vols.length < 100) throw new Error('CoinGecko total_volumes missing');
+    const byDate = new Map();
+    for (const [ts, v] of vols) {
+        const d = new Date(ts);
+        if (d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0) continue; // 장중 스냅샷 제외
+        if (!(v > 1e8)) continue; // 비정상 값 제외 (ETH 일 거래량은 수십억 달러대)
+        byDate.set(d.toISOString().slice(0, 10), v);
+    }
+    const dates = [...byDate.keys()].sort();
+    if (!dates.length) return 0;
+    const { data: rows, error } = await supabase.from('historical_eth_price')
+        .select('date, timestamp, open, high, low, close')
+        .gte('date', dates[0]).lte('date', dates[dates.length - 1]);
+    if (error) throw new Error(error.message);
+    const updates = (rows || [])
+        .filter(r => byDate.has(r.date))
+        .map(r => ({ ...r, volume: parseFloat(byDate.get(r.date).toFixed(2)) }));
+    if (!updates.length) return 0;
+    return upsertBatch('historical_eth_price', updates);
+}
+
 // ============================================================
 // 1. ETH Price (Dune API - 안정적)
 // ============================================================
@@ -1537,13 +1575,20 @@ async function collect_eth_price() {
                 open: parseFloat(row.open) || parseFloat(row.avg_price),
                 high: parseFloat(row.high) || parseFloat(row.avg_price),
                 low: parseFloat(row.low) || parseFloat(row.avg_price),
-                close: parseFloat(row.close) || parseFloat(row.avg_price),
-                volume: 0  // Dune에서 volume 없음
+                close: parseFloat(row.close) || parseFloat(row.avg_price)
+                // volume: Dune 쿼리에 없음 → 여기서 쓰지 않음 (예전엔 0으로 덮어써서 거래량이 매일 지워졌음).
+                // 거래량은 아래 fillEthVolumeFromCoinGecko()가 CoinGecko total_volumes로 채움.
             };
         });
         
         if (records.length > 100) {
             const saved = await upsertBatch('historical_eth_price', records);
+            try {
+                const vol = await fillEthVolumeFromCoinGecko();
+                console.log(`  ETH volume (CoinGecko): ${vol} rows updated`);
+            } catch (e) {
+                console.error('  ⚠️ ETH volume (CoinGecko) skipped:', e.message);
+            }
             return result.ok(saved);
         }
         
@@ -2198,7 +2243,7 @@ async function collect_eth_dominance() {
     try {
         // CoinGecko API (admin.html과 동일)
         const [ethData, btcData, globalData] = await Promise.all([
-            fetchJSON('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=365&interval=daily'),
+            getCgEthMarketChart(),
             fetchJSON('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily'),
             fetchJSON('https://api.coingecko.com/api/v3/global')
         ]);
