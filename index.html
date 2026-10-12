@@ -14430,6 +14430,12 @@
             .sim-breakdown-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
             .sim-breakdown-item:nth-last-child(2) { border-bottom: 1px solid var(--border); }
         }
+        /* 2026-10-13 minor polish */
+        .outlier-filter-label { white-space: nowrap; }
+        .historical-tabs-wrapper { flex-wrap: wrap; row-gap: 8px; }
+        .sim-breakdown-name { color: var(--text-secondary); }
+        .sim-breakdown-chg { font-variant-numeric: tabular-nums; }
+        .sim-breakdown-val, .summary-value, .conclusion-price { font-variant-numeric: tabular-nums; }
     </style>
     <!-- Mobile polish (2026-10): one-column reading, collapsible long text, 40px+ tap targets, 11px+ type -->
     <style id="mobile-polish">
@@ -14662,7 +14668,7 @@ body.dark .model-formula { color: #a3a9b4; }
                     <div class="summary-valuation-row">
                         <span class="summary-label">
                             <span data-i18n="valuation.compositeFairValue">Composite Fair Value</span>
-                            <span class="model-count-light model-count-break">(<span id="active-model-count">12</span> / 12 models)</span>
+                            <span class="model-count-light model-count-break">(<span id="active-model-count">12</span> / 12 <span data-i18n="common.models">models</span>)</span>
                         </span>
                         <span class="summary-value" id="summary-fair-value"><span class="skeleton-block skeleton-price" style="display: inline-block;"></span></span>
                     </div>
@@ -14911,7 +14917,7 @@ body.dark .model-formula { color: #a3a9b4; }
                 </div>
 
                 <div class="conclusion-panel">
-                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="model-count-light">(<span id="conclusion-model-count">12</span> / 12 models)</span></div>
+                    <div class="conclusion-label"><span data-i18n="valuation.compositeFairValue">Composite Fair Value</span> <span class="model-count-light">(<span id="conclusion-model-count">12</span> / 12 <span data-i18n="common.models">models</span>)</span></div>
                     <div class="conclusion-price" id="composite-price">$--</div>
                     <div class="conclusion-diff up" id="composite-diff">-- vs Current</div>
                     <div class="conclusion-verdict bullish" id="verdict">--</div>
@@ -14947,7 +14953,7 @@ body.dark .model-formula { color: #a3a9b4; }
                     </div>
                     
                     <div class="conclusion-note" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: var(--text-sm); color: var(--text-muted); line-height: 1.4;">
-                        <span data-i18n="conclusion.notePrefix">Simple average of</span> <span id="active-model-count">12</span> <span data-i18n="conclusion.noteSuffix">active models. Toggle off any model to exclude it from the calculation.</span>
+                        <span data-i18n="conclusion.notePrefix">Simple average of </span><span id="active-model-count">12</span><span data-i18n="conclusion.noteSuffix"> active models. Toggle off any model to exclude it from the calculation.</span>
                     </div>
 
                 </div>
@@ -14962,7 +14968,7 @@ body.dark .model-formula { color: #a3a9b4; }
             <!-- Historical Chart (integrated) -->
             <div class="historical-main-chart" style="margin-top: 20px;">
                 <div class="historical-chart-header" style="display: flex; justify-content: center; align-items: center; gap: 12px;">
-                    <div class="conclusion-label"><span data-i18n="chart.historicalTitle">FAIR VALUE TREND</span> <span class="model-count-light">(<span id="chart-model-count">12</span> / 12 models)</span></div>
+                    <div class="conclusion-label"><span data-i18n="chart.historicalTitle">FAIR VALUE TREND</span> <span class="model-count-light">(<span id="chart-model-count">12</span> / 12 <span data-i18n="common.models">models</span>)</span></div>
                     <div class="gated-hint" id="historical-3y-hint" style="display: none; position: static;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <span data-i18n="gated.hint3Y">Rate 2+ valuation models to unlock 3Y data</span>
@@ -15128,7 +15134,7 @@ body.dark .model-formula { color: #a3a9b4; }
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Total Value Locked (TVL)</span>
                                 <span class="sim-slider-value"><span id="sim-tvl-current">$70B</span> → <span id="sim-tvl-new" class="sim-new-val">$70B</span> <span id="sim-tvl-change" class="sim-change-pct"></span></span>
-                                <button class="sim-reset-btn" data-reset="tvl">↺ Reset</button>
+                                <button class="sim-reset-btn" data-reset="tvl" data-i18n="simulator.reset">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
                                 <div class="sim-range-container">
@@ -15143,7 +15149,7 @@ body.dark .model-formula { color: #a3a9b4; }
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Daily Network Fees <span style="opacity: 0.6; font-weight: var(--weight-normal);">(L1 + Blob)</span></span>
                                 <span class="sim-slider-value"><span id="sim-fees-current">$2.1M</span> → <span id="sim-fees-new" class="sim-new-val">$2.1M</span> <span id="sim-fees-change" class="sim-change-pct"></span></span>
-                                <button class="sim-reset-btn" data-reset="fees">↺ Reset</button>
+                                <button class="sim-reset-btn" data-reset="fees" data-i18n="simulator.reset">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
                                 <div class="sim-range-container">
@@ -15158,7 +15164,7 @@ body.dark .model-formula { color: #a3a9b4; }
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Staking Ratio</span>
                                 <span class="sim-slider-value"><span id="sim-staking-current">28%</span> → <span id="sim-staking-new" class="sim-new-val">28%</span> <span id="sim-staking-change" class="sim-change-pct"></span></span>
-                                <button class="sim-reset-btn" data-reset="staking">↺ Reset</button>
+                                <button class="sim-reset-btn" data-reset="staking" data-i18n="simulator.reset">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
                                 <div class="sim-range-container">
@@ -15173,7 +15179,7 @@ body.dark .model-formula { color: #a3a9b4; }
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">Stablecoins on Ethereum</span>
                                 <span class="sim-slider-value"><span id="sim-stables-current">$166B</span> → <span id="sim-stables-new" class="sim-new-val">$166B</span> <span id="sim-stables-change" class="sim-change-pct"></span></span>
-                                <button class="sim-reset-btn" data-reset="stables">↺ Reset</button>
+                                <button class="sim-reset-btn" data-reset="stables" data-i18n="simulator.reset">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
                                 <div class="sim-range-container">
@@ -15188,7 +15194,7 @@ body.dark .model-formula { color: #a3a9b4; }
                             <div class="sim-slider-top">
                                 <span class="sim-slider-label">L1 Daily Active Addresses</span>
                                 <span class="sim-slider-value"><span id="sim-activeAddresses-current">400K</span> → <span id="sim-activeAddresses-new" class="sim-new-val">400K</span> <span id="sim-activeAddresses-change" class="sim-change-pct"></span></span>
-                                <button class="sim-reset-btn" data-reset="activeAddresses">↺ Reset</button>
+                                <button class="sim-reset-btn" data-reset="activeAddresses" data-i18n="simulator.reset">↺ Reset</button>
                             </div>
                             <div class="sim-slider-content">
                                 <div class="sim-range-container">
@@ -20384,8 +20390,9 @@ body.dark .model-formula { color: #a3a9b4; }
                 'chart.compositeFairValue': 'Composite Fair Value',
                 'chart.autoScale': 'Auto Scale',
                 'chart.movingAvg7d': '7D Moving Avg',
-                'conclusion.notePrefix': 'Simple average of',
-                'conclusion.noteSuffix': 'active models. Toggle off any model to exclude it from the calculation.',
+                'conclusion.notePrefix': 'Simple average of ',
+                'common.models': 'models',
+                'conclusion.noteSuffix': ' active models. Toggle off any model to exclude it from the calculation.',
                 'disclaimer.text': '<strong>⚠️ Disclaimer:</strong> These valuation models are for reference only. Each model has its own assumptions and limitations. Investment decisions should consider multiple factors comprehensively.',
                 'footer.disclaimer': 'Auto-refresh 120s · For informational purposes only · Not financial advice',
                 'criteria.title': 'Appendix: Reliability Assessment Criteria',
@@ -20873,6 +20880,7 @@ body.dark .model-formula { color: #a3a9b4; }
                 'chart.autoScale': '자동 스케일',
                 'chart.movingAvg7d': '7일 이동평균',
                 'conclusion.notePrefix': '',
+                'common.models': '모델',
                 'conclusion.noteSuffix': '개 활성 모델의 단순 평균입니다. 모델을 토글하여 계산에서 제외할 수 있습니다.',
                 'disclaimer.text': '<strong>⚠️ 면책조항:</strong> 이 밸류에이션 모델들은 참고용입니다. 각 모델은 고유한 가정과 한계를 가지고 있습니다. 투자 결정은 다양한 요소를 종합적으로 고려해야 합니다.',
                 'footer.disclaimer': '120초 자동 새로고침 · 정보 제공 목적 · 투자 조언이 아닙니다',
@@ -21338,19 +21346,22 @@ body.dark .model-formula { color: #a3a9b4; }
                 'community.table.comments': '评论',
                 'community.table.views': '浏览',
                 'community.table.date': '日期',
-                'valuation.compositeFairValue': '反馈公允价值',
+                'valuation.compositeFairValue': '综合公允价值',
                 'valuation.sub.models': '模型与公允价值',
                 'valuation.sub.historical': '历史趋势',
                 'valuation.sub.simulator': '情景模拟器',
                 'valuation.sub.modelsFull': '01.2 — 模型与公允价值',
                 'valuation.sub.historicalFull': '01.3 — 历史趋势',
                 'valuation.sub.simulatorFull': '01.4 — 情景模拟器',
-                'chart.historicalTitle': '反馈公允价值的变化',
+                'chart.historicalTitle': '综合公允价值的变化',
                 'chart.marketPrice': '市场价格',
-                'chart.compositeFairValue': '反馈公允价值',
+                'chart.compositeFairValue': '综合公允价值',
+                'chart.autoScale': '自动缩放',
+                'chart.movingAvg7d': '7日移动平均',
                 'conclusion.notePrefix': '',
+                'common.models': '模型',
                 'conclusion.noteSuffix': '个活跃模型的简单平均。关闭任意模型可将其从计算中排除。',
-                'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应反馈考虑多种因素。',
+                'disclaimer.text': '<strong>⚠️ 免责声明：</strong>这些估值模型仅供参考。每个模型都有其自身的假设和局限性。投资决策应综合考虑多种因素。',
                 'footer.disclaimer': '自动刷新120秒 · 仅供信息参考 · 非投资建议',
                 'criteria.title': '附录：可靠性评估标准',
                 'criteria.subtitle': '每个模型通过三个维度进行评估，以确定其可靠性级别',
@@ -21831,7 +21842,10 @@ body.dark .model-formula { color: #a3a9b4; }
                 'chart.historicalTitle': '総合適正価格の変化',
                 'chart.marketPrice': '市場価格',
                 'chart.compositeFairValue': '総合適正価値',
+                'chart.autoScale': 'オートスケール',
+                'chart.movingAvg7d': '7日移動平均',
                 'conclusion.notePrefix': '',
+                'common.models': 'モデル',
                 'conclusion.noteSuffix': '個のアクティブモデルの単純平均。モデルをトグルして計算から除外できます。',
                 'disclaimer.text': '<strong>⚠️ 免責事項：</strong>これらのバリュエーションモデルは参考用です。各モデルには独自の仮定と限界があります。投資判断は複数の要素を総合的に考慮する必要があります。',
                 'footer.disclaimer': '120秒自動更新 · 情報提供のみ · 投資アドバイスではありません',
@@ -33717,9 +33731,9 @@ Check out ETHval 👇`;
                     var item = breakdown[k];
                     var cc = item.chg > 0.5 ? 'positive' : item.chg < -0.5 ? 'negative' : '';
                     html += '<div class="sim-breakdown-item">' +
-                        '<span class="sim-breakdown-name"><span class="sim-breakdown-dot" style="background:' + item.color + '"></span><span style="color:' + item.color + '">' + item.name + '</span></span>' +
+                        '<span class="sim-breakdown-name"><span class="sim-breakdown-dot" style="background:' + item.color + '"></span><span>' + item.name + '</span></span>' +
                         '<span><span class="sim-breakdown-val">' + formatPrice(item.sim) + '</span>' +
-                        '<span class="sim-breakdown-chg ' + cc + '">' + (item.chg >= 0 ? '+' : '') + item.chg.toFixed(0) + '%</span></span>' +
+                        '<span class="sim-breakdown-chg ' + cc + '">' + (Math.abs(item.chg) < 0.5 ? '0%' : (item.chg > 0 ? '+' : '') + item.chg.toFixed(0) + '%') + '</span></span>' +
                         '</div>';
                 }
                 grid.innerHTML = html;
