@@ -21,7 +21,7 @@
     const UP = '#10b981', DOWN = '#ef4444', FLAT = '#94a3b8';
     const T = {
         en: {
-            title: 'News Impact', mxTitle: 'Impact by week', mxHint: 'Net score per category, last 4 weeks (bullish − bearish points). Tap a cell to see its cards.', mxClear: 'Clear', sub: 'How this week\'s news moves ETH', net7: '7D net impact', bull: 'Bullish', bear: 'Bearish', mixed: 'Mixed',
+            title: 'News Impact', mxTitle: 'Impact by week', mxHint: 'Net score per category, last 4 weeks. Tap a cell to see its cards.', mxN: n => `${n} news`, lgScore: 'Net score (bullish − bearish)', lgCount: 'News count', lgHi: 'Includes high-impact news', lgBear: 'Bearish', lgBull: 'Bullish', mxClear: 'Clear', sub: 'How this week\'s news moves ETH', net7: '7D net impact', bull: 'Bullish', bear: 'Bearish', mixed: 'Mixed',
             top: 'Biggest event', all: 'All', none: 'No events in this range yet.', loading: 'Loading news…', err: 'News data unavailable right now.',
             impact: { 3: 'High', 2: 'Medium', 1: 'Low' }, horizon: { immediate: 'Immediate', short: 'Short-term', structural: 'Structural' },
             after: 'ETH after', sources: 'Sources', events: ' events', price: 'ETH price', panel: '01.1 — News Impact on Price',
@@ -31,7 +31,7 @@
             cats: { macro: 'Macro & Rates', flows: 'Fund Flows', regulation: 'Regulation & Tax', protocol: 'Ethereum Upgrades', security: 'Security', competitors: 'Competing Chains', ecosystem: 'L2 · DeFi · RWA', market: 'Market Structure' }
         },
         ko: {
-            title: '뉴스 영향', mxTitle: '주별 영향 지도', mxHint: '최근 4주, 카테고리별 순영향(호재 − 악재 점수)이에요. 칸을 누르면 그 주·카테고리 카드만 보여요.', mxClear: '해제', sub: '이번 주 뉴스가 ETH 가격에 주는 영향', net7: '최근 7일 순영향', bull: '호재', bear: '악재', mixed: '혼재',
+            title: '뉴스 영향', mxTitle: '주별 영향 지도', mxHint: '최근 4주 카테고리별 뉴스 영향이에요. 칸을 누르면 해당 뉴스만 보여요.', mxN: n => `${n}건`, lgScore: '순영향 점수 (호재 − 악재)', lgCount: '뉴스 건수', lgHi: '큰 뉴스 포함', lgBear: '악재', lgBull: '호재', mxClear: '해제', sub: '이번 주 뉴스가 ETH 가격에 주는 영향', net7: '최근 7일 순영향', bull: '호재', bear: '악재', mixed: '혼재',
             top: '가장 큰 사건', all: '전체', none: '이 기간에는 아직 사건이 없어요.', loading: '뉴스 불러오는 중…', err: '지금은 뉴스 데이터를 불러올 수 없어요.',
             impact: { 3: '상', 2: '중', 1: '하' }, horizon: { immediate: '즉시', short: '단기', structural: '구조적' },
             after: '이후 ETH', sources: '출처', events: '건', price: 'ETH 가격', panel: '01.1 — 뉴스와 가격',
@@ -41,7 +41,7 @@
             cats: { macro: '거시·금리', flows: '자금 흐름', regulation: '제도·규제·과세', protocol: '이더리움 개선', security: '사고·보안', competitors: '경쟁 체인', ecosystem: 'L2·DeFi·RWA', market: '시장 구조·심리' }
         },
         zh: {
-            title: '新闻影响', mxTitle: '每周影响矩阵', mxHint: '近 4 周各类别净影响（利好 − 利空分值）。点击格子只看该周该类别的卡片。', mxClear: '清除', sub: '本周新闻如何影响 ETH 价格', net7: '近 7 日净影响', bull: '利好', bear: '利空', mixed: '中性',
+            title: '新闻影响', mxTitle: '每周影响矩阵', mxHint: '近 4 周各类别新闻影响。点击格子只看对应新闻。', mxN: n => `${n}条`, lgScore: '净影响分（利好 − 利空）', lgCount: '新闻条数', lgHi: '含重大新闻', lgBear: '利空', lgBull: '利好', mxClear: '清除', sub: '本周新闻如何影响 ETH 价格', net7: '近 7 日净影响', bull: '利好', bear: '利空', mixed: '中性',
             top: '最大事件', all: '全部', none: '该区间暂无事件。', loading: '正在加载新闻…', err: '暂时无法加载新闻数据。',
             impact: { 3: '高', 2: '中', 1: '低' }, horizon: { immediate: '即时', short: '短期', structural: '结构性' },
             after: '之后 ETH', sources: '来源', events: '条', price: 'ETH 价格', panel: '01.1 — 新闻与价格',
@@ -51,7 +51,7 @@
             cats: { macro: '宏观·利率', flows: '资金流向', regulation: '监管·税收', protocol: '以太坊升级', security: '安全事件', competitors: '竞争公链', ecosystem: 'L2·DeFi·RWA', market: '市场结构' }
         },
         ja: {
-            title: 'ニュース影響', mxTitle: '週別インパクト表', mxHint: '直近4週・カテゴリ別の純影響（好材料 − 悪材料の点数）。セルをタップでその週・カテゴリのカードだけ表示。', mxClear: '解除', sub: '今週のニュースが ETH 価格に与える影響', net7: '直近7日の純影響', bull: '好材料', bear: '悪材料', mixed: '中立',
+            title: 'ニュース影響', mxTitle: '週別インパクト表', mxHint: '直近4週・カテゴリ別のニュース影響。セルをタップで該当ニュースだけ表示。', mxN: n => `${n}件`, lgScore: '純影響スコア（好材料 − 悪材料）', lgCount: 'ニュース件数', lgHi: '大きなニュースを含む', lgBear: '悪材料', lgBull: '好材料', mxClear: '解除', sub: '今週のニュースが ETH 価格に与える影響', net7: '直近7日の純影響', bull: '好材料', bear: '悪材料', mixed: '中立',
             top: '最大の出来事', all: 'すべて', none: 'この期間のイベントはまだありません。', loading: 'ニュースを読み込み中…', err: '現在ニュースデータを取得できません。',
             impact: { 3: '大', 2: '中', 1: '小' }, horizon: { immediate: '即時', short: '短期', structural: '構造的' },
             after: 'その後のETH', sources: '出典', events: '件', price: 'ETH 価格', panel: '01.1 — ニュースと価格',
@@ -179,15 +179,15 @@
         const head = spans.map(([a, b], w) => `<div class="ni-mx-wk${S.week === w ? ' on' : ''}"><span>${esc(mmdd(a))}–</span><span>${esc(mmdd(b))}</span></div>`).join('');
         const rows = CATS.map(cat => `<div class="ni-mx-cat"><i style="background:${CAT_COLOR[cat]}"></i><span>${esc(L.cats[cat])}</span></div>` + [0, 1, 2, 3].map(w => {
             const c = cell[cat + w];
-            if (!c) return `<div class="ni-mx-cell empty" data-cat="${cat}" data-week="${w}" aria-hidden="true"><b>·</b><small>0</small></div>`;
+            if (!c) return `<div class="ni-mx-cell empty" data-cat="${cat}" data-week="${w}" aria-hidden="true"><b>·</b></div>`;
             const a = Math.min(Math.abs(c.s), 6) / 6;
             const bg = c.s ? `color-mix(in srgb, ${c.s > 0 ? 'var(--up)' : 'var(--down)'} ${Math.round(10 + a * 30)}%, var(--bg-card))` : 'var(--bg-subtle)';
             const tone = c.s > 0 ? 'up' : c.s < 0 ? 'down' : 'flat';
             const lbl = `${L.cats[cat]} ${mmdd(spans[w][0])}–${mmdd(spans[w][1])}: ${c.s > 0 ? '+' : ''}${c.s}${L.pts}, ${L.selN(c.n)}`;
-            return `<button type="button" class="ni-mx-cell ${tone}${S.week === w && S.cat === cat ? ' on' : ''}" data-cat="${cat}" data-week="${w}" style="background:${bg}" title="${esc(lbl)}" aria-label="${esc(lbl)}">${c.hi ? '<span class="ni-mx-big"></span>' : ''}<b>${c.s > 0 ? '+' : c.s < 0 ? '−' : ''}${Math.abs(c.s)}</b><small>${c.n}</small></button>`;
+            return `<button type="button" class="ni-mx-cell ${tone}${S.week === w && S.cat === cat ? ' on' : ''}" data-cat="${cat}" data-week="${w}" style="background:${bg}" title="${esc(lbl)}" aria-label="${esc(lbl)}">${c.hi ? '<span class="ni-mx-big"></span>' : ''}<b>${c.s > 0 ? '+' : c.s < 0 ? '−' : ''}${Math.abs(c.s)}</b><small>${esc(L.mxN(c.n))}</small></button>`;
         }).join('')).join('');
         const pill = S.week != null ? `<button type="button" class="ni-wk-pill"><span>${esc(mmdd(spans[S.week][0]))}–${esc(mmdd(spans[S.week][1]))}${S.cat !== 'all' ? ' · ' + esc(L.cats[S.cat]) : ''}</span> ${esc(L.mxClear)} ×</button>` : '';
-        return `<div class="ni-mx-head"><span class="ni-mx-title">${esc(L.mxTitle)}</span><span class="ni-mx-hint">${esc(L.mxHint)}</span>${pill}</div><div class="ni-mx-grid"><div class="ni-mx-corner"></div>${head}${rows}</div>`;
+        return `<div class="ni-mx-head"><span class="ni-mx-title">${esc(L.mxTitle)}</span><span class="ni-mx-hint">${esc(L.mxHint)}</span>${pill}</div><div class="ni-mx-grid"><div class="ni-mx-corner"></div>${head}${rows}</div><div class="ni-mx-legend"><span class="ni-lg-key"><span class="ni-lg-cell"><b>+4</b><small>${esc(L.mxN(2))}</small></span><span class="ni-lg-txt"><span><b>+4</b> ${esc(L.lgScore)}</span><span><small>${esc(L.mxN(2))}</small> ${esc(L.lgCount)}</span></span></span><span class="ni-lg-row"><span class="ni-lg-dot"></span>${esc(L.lgHi)}</span><span class="ni-lg-row">${esc(L.lgBear)}<span class="ni-lg-scale"></span>${esc(L.lgBull)}</span></div>`;
     }
 
     function icon(dir, imp) {

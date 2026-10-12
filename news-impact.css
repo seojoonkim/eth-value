@@ -183,3 +183,24 @@
   .ni-mx-cell { flex-direction: column; gap: 0; min-height: 44px; padding: 3px 2px; }
   .ni-mx-cell b { font-size: 12.5px; }
 }
+
+/* 2026-10-13 matrix cell clarity: score big, count as "N건" muted, explicit legend */
+.ni-mx-cell b { font-family: var(--font-ui); font-variant-numeric: tabular-nums; font-size: 14px; line-height: 1.1; letter-spacing: -0.01em; }
+.ni-mx-cell small { font-family: var(--font-ui); font-size: 11px; font-weight: 500; color: var(--text); opacity: .62; line-height: 1.2; }
+.ni-mx-cell.empty b { font-weight: 400; }
+.ni-mx-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-light); font-size: 11.5px; color: var(--text-muted); }
+.ni-lg-key { display: inline-flex; align-items: center; gap: 8px; }
+.ni-lg-cell { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 46px; padding: 3px 6px; border-radius: 3px; border: 1px solid var(--border-light); background: color-mix(in srgb, var(--up) 25%, var(--bg-card)); color: var(--text); }
+.ni-lg-cell b { font-size: 13px; font-weight: 700; line-height: 1.1; }
+.ni-lg-cell small { font-size: 10.5px; opacity: .62; }
+.ni-lg-txt { display: inline-flex; flex-direction: column; gap: 1px; line-height: 1.35; }
+.ni-lg-txt b { color: var(--text); font-weight: 700; }
+.ni-lg-txt small { color: var(--text); opacity: .62; font-size: 11px; }
+.ni-lg-row { display: inline-flex; align-items: center; gap: 6px; }
+.ni-lg-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text); opacity: .7; }
+.ni-lg-scale { width: 56px; height: 8px; border-radius: 2px; background: linear-gradient(90deg, color-mix(in srgb, var(--down) 40%, var(--bg-card)), var(--bg-subtle), color-mix(in srgb, var(--up) 40%, var(--bg-card))); }
+@media (max-width: 640px) {
+  .ni-mx-cell b { font-size: 14px; }
+  .ni-mx-cell small { font-size: 11px; }
+  .ni-mx-legend { gap: 8px 14px; }
+}
