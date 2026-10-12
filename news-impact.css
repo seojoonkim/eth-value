@@ -150,3 +150,36 @@
   .ni-chip { min-height: 32px; padding: 5px 12px; }
   .ni-drv { min-height: 36px; }
 }
+
+/* 영향 매트릭스 (카테고리 8 × 최근 4주) */
+.ni-matrix { margin-top: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm, 4px); background: var(--bg-card); padding: 14px; }
+.ni-mx-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 10px; }
+.ni-mx-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.ni-mx-hint { font-size: 11.5px; color: var(--text-muted); flex: 1 1 260px; min-width: 0; }
+.ni-wk-pill { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--accent); background: var(--bg-card); color: var(--text); border-radius: 999px; padding: 4px 10px; font: 600 11px var(--font-mono); cursor: pointer; white-space: nowrap; min-height: 28px; }
+.ni-wk-pill span { color: var(--text-secondary); }
+.ni-mx-grid { display: grid; grid-template-columns: minmax(124px, 1.1fr) repeat(4, minmax(0, 1fr)); gap: 4px; }
+.ni-mx-corner { min-height: 1px; }
+.ni-mx-wk { display: flex; justify-content: center; flex-wrap: wrap; font: 600 11px var(--font-mono); color: var(--text-muted); text-align: center; padding: 2px 0 4px; line-height: 1.3; }
+.ni-mx-wk.on { color: var(--text); }
+.ni-mx-cat { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); min-width: 0; line-height: 1.25; }
+.ni-mx-cat i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.ni-mx-cat span { min-width: 0; overflow-wrap: anywhere; }
+.ni-mx-cell { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 4px; border: 1px solid var(--border-light); border-radius: 3px; background: var(--bg-subtle); color: var(--text); font-family: var(--font-mono); cursor: pointer; min-width: 0; }
+.ni-mx-cell b { font-size: 13px; font-weight: 700; }
+.ni-mx-cell b { color: var(--text); }
+.ni-mx-cell small { font-size: 11px; color: var(--text); font-weight: 600; }
+.ni-mx-cell.empty { cursor: default; color: var(--text-muted); opacity: .55; background: transparent; border-style: dashed; }
+.ni-mx-cell.empty small { display: none; }
+.ni-mx-cell:not(.empty):hover { border-color: var(--text-muted); }
+.ni-mx-cell.on { outline: 2px solid var(--text); outline-offset: -1px; }
+.ni-mx-big { position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--text); opacity: .7; }
+@media (max-width: 520px) {
+  .ni-matrix { padding: 12px 8px; }
+  .ni-wk-pill { margin-left: 0; }
+  .ni-mx-grid { grid-template-columns: minmax(78px, 1fr) repeat(4, minmax(0, 1fr)); gap: 3px; }
+  .ni-mx-wk { flex-direction: column; font-size: 11px; }
+  .ni-mx-cat { font-size: 11px; gap: 4px; }
+  .ni-mx-cell { flex-direction: column; gap: 0; min-height: 44px; padding: 3px 2px; }
+  .ni-mx-cell b { font-size: 12.5px; }
+}
