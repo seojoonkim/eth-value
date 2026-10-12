@@ -1,79 +1,108 @@
-/* ETHval News Impact */
-#news-impact-strip { margin: 0 0 18px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm, 4px); background: var(--bg-card); display: flex; flex-direction: column; gap: 10px; }
-.ni-strip-msg { color: var(--text-muted); font-size: 12px; }
+/* ETHval News Impact v1.1 — styled to match the Valuation .metric-card system
+   (same border, radius, padding, heading font, pill badges via --up-bg / --down-bg). */
+
+/* ── Shared atoms ─────────────────────────────────────────── */
+.up { color: var(--up); } .down { color: var(--down); }
+.ni-ico { flex: none; display: block; }
+.ni-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-semibold); line-height: 1.5; white-space: nowrap; letter-spacing: .02em; }
+.ni-pill.up { background: var(--up-bg); color: var(--up); }
+.ni-pill.down { background: var(--down-bg); color: var(--down); }
+.ni-pill.flat { background: var(--bg-subtle); color: var(--text-muted); }
+.ni-dir { font-size: var(--text-xs); font-weight: var(--weight-semibold); white-space: nowrap; }
+.ni-dir.flat, .ni-gauge-val.flat, .ni-chip-n.flat { color: var(--text-muted); }
+.ni-seg { display: inline-flex; gap: 2px; padding: 2px; background: var(--bg-subtle); border-radius: var(--radius-sm); }
+.ni-seg button { border: 0; background: transparent; color: var(--text-muted); font: var(--weight-medium) var(--text-xs) var(--font-mono); padding: 3px 8px; border-radius: 3px; cursor: pointer; white-space: nowrap; }
+.ni-seg button.on { background: var(--bg-card); color: var(--accent); box-shadow: var(--shadow-sm); }
+.ni-seg button:hover:not(.on) { color: var(--text); }
+
+/* ── Strip (top of Valuation) = one metric-card ───────────── */
+#news-impact-strip { margin: 0 0 18px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); display: flex; flex-direction: column; gap: 10px; transition: border-color .2s ease; }
+#news-impact-strip:hover { border-color: var(--text-muted); }
+.ni-strip-msg { color: var(--text-muted); font-size: var(--text-sm); }
 .ni-strip-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.ni-strip-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
-.ni-strip-title strong { font-size: 14px; color: var(--text); letter-spacing: .01em; }
-.ni-strip-title span { font-size: 12px; color: var(--text-muted); }
+.ni-strip-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ni-strip-title strong { font-family: var(--font-heading); font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--text); }
+.ni-strip-title span { font-size: var(--text-sm); color: var(--text-muted); }
 .ni-gauge { display: grid; grid-template-columns: auto auto; grid-template-areas: "l v" "b c"; column-gap: 12px; row-gap: 4px; align-items: center; cursor: help; }
-.ni-gauge-label { grid-area: l; font-size: 11px; color: var(--text-muted); }
-.ni-gauge-val { grid-area: v; font-family: var(--font-mono); font-size: 16px; font-weight: 700; text-align: right; white-space: nowrap; }
-.ni-gauge-val small { font-family: inherit; font-size: 11px; font-weight: 600; margin-left: 4px; }
-.ni-gauge-bar { grid-area: b; position: relative; width: 180px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--down) 0%, var(--bg-secondary) 50%, var(--up) 100%); opacity: .9; }
+.ni-gauge-label { grid-area: l; font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.ni-gauge-val { grid-area: v; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 20px; font-weight: var(--weight-bold); letter-spacing: -.3px; text-align: right; white-space: nowrap; }
+.ni-gauge-val small { font-family: var(--font-ui, inherit); font-size: var(--text-xs); font-weight: var(--weight-semibold); margin-left: 6px; padding: 2px 8px; border-radius: var(--radius-full); vertical-align: 3px; letter-spacing: .02em; }
+.ni-gauge-val.up small { background: var(--up-bg); } .ni-gauge-val.down small { background: var(--down-bg); } .ni-gauge-val.flat small { background: var(--bg-subtle); }
+.ni-gauge-bar { grid-area: b; position: relative; width: 180px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--down) 0%, var(--bg-subtle) 50%, var(--up) 100%); }
 .ni-gauge-mid { position: absolute; left: 50%; top: -2px; width: 1px; height: 10px; background: var(--text-muted); }
 .ni-gauge-dot { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--text-muted); }
 .ni-gauge-dot.up { border-color: var(--up); } .ni-gauge-dot.down { border-color: var(--down); }
-.ni-gauge-count { grid-area: c; font-size: 11px; color: var(--text-muted); text-align: right; }
-.up { color: var(--up); } .down { color: var(--down); }
-.ni-gauge-val.flat, .ni-chip-n.flat { color: var(--text-muted); }
-.ni-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.ni-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border: 1px solid var(--border-light); border-radius: 999px; background: var(--bg-subtle); color: var(--text-secondary); font-size: 11.5px; line-height: 1.3; cursor: pointer; white-space: nowrap; font-family: inherit; }
-.ni-chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
-.ni-chip.empty { opacity: .55; }
-.ni-chip.on { border-color: var(--text); color: var(--text); background: var(--bg-card); }
-.ni-chip:hover { border-color: var(--text-muted); }
-.ni-chip-n { font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; }
-.ni-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; text-align: left; padding: 8px 10px; border: 0; border-left: 3px solid var(--primary); background: var(--bg-subtle); border-radius: 0 4px 4px 0; cursor: pointer; font-family: inherit; color: var(--text); width: 100%; }
-.ni-top-k { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
-.ni-top-t { font-size: 13px; font-weight: 600; }
-.ni-top-m { font-size: 11.5px; color: var(--text-secondary); flex-basis: 100%; }
-.ni-dir { font-size: 11px; font-weight: 600; white-space: nowrap; }
-.ni-dir.flat { color: var(--text-muted); }
+.ni-gauge-count { grid-area: c; font-size: var(--text-xs); color: var(--text-muted); text-align: right; font-family: var(--font-mono); }
 
+/* Category chips — same pill language as .metric-badge */
+.ni-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ni-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--border); border-radius: var(--radius-full); background: var(--bg-card); color: var(--text-secondary); font-size: var(--text-sm); line-height: 1.4; cursor: pointer; white-space: nowrap; font-family: inherit; transition: border-color .15s ease; }
+.ni-chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+.ni-chip.empty { opacity: .5; }
+.ni-chip.on { border-color: var(--accent); color: var(--text); background: var(--primary-light); }
+.ni-chip:hover { border-color: var(--text-muted); }
+.ni-chip-n { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--weight-semibold); display: inline-flex; gap: 4px; }
+
+/* Biggest event — reads like a card row, not a quote */
+.ni-top { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 3px; align-items: center; text-align: left; padding: 9px 10px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg-subtle); cursor: pointer; font-family: inherit; color: var(--text); width: 100%; }
+.ni-top:hover { border-color: var(--text-muted); }
+.ni-top-k { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+.ni-top-t { grid-column: 1 / -1; font-family: var(--font-heading); font-size: var(--text-md); font-weight: var(--weight-semibold); line-height: 1.4; }
+.ni-top-m { grid-column: 1 / -1; font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; }
+
+/* ── Panel ────────────────────────────────────────────────── */
 #news-impact-panel { margin: 0 0 26px; }
-.ni-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-.ni-range { display: inline-flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-.ni-range button { border: 0; background: var(--bg-card); color: var(--text-secondary); font: 600 11px var(--font-mono); padding: 5px 10px; cursor: pointer; }
-.ni-range button + button { border-left: 1px solid var(--border); }
-.ni-range button.on { background: var(--text); color: var(--bg-card); }
+.ni-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.ni-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.ni-hint { font-size: var(--text-sm); color: var(--text-muted); margin: 0; flex: 1 1 320px; line-height: 1.5; }
 .ni-panel-chips { margin-bottom: 10px; }
-.ni-hint { font-size: 11px; color: var(--text-muted); margin: 0 0 8px; }
-.ni-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
-.ni-chart-box { position: relative; height: 380px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-card); padding: 10px 8px 6px; }
-.ni-list { height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
-.ni-empty { color: var(--text-muted); font-size: 12px; padding: 16px; border: 1px dashed var(--border); border-radius: 4px; text-align: center; }
-.ni-card { border: 1px solid var(--border-light); border-left: 3px solid var(--cat); border-radius: 0 4px 4px 0; background: var(--bg-card); padding: 9px 11px; cursor: pointer; flex: none; }
-.ni-card:hover { border-color: var(--text-muted); border-left-color: var(--cat); }
-.ni-card.open { box-shadow: 0 0 0 1px var(--cat); }
-.ni-card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--text-muted); }
-.ni-date { font-family: var(--font-mono); }
-.ni-cat { color: var(--cat); font-weight: 600; }
-.ni-hz { margin-left: auto; }
-.ni-card-title { margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
-.ni-card-mech { margin-top: 3px; font-size: 11.5px; color: var(--text-secondary); line-height: 1.45; }
-.ni-card-more { display: none; margin-top: 8px; font-size: 11.5px; color: var(--text-body); line-height: 1.5; }
+.ni-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.ni-chart-box { position: relative; height: 400px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); padding: 10px 8px 6px; }
+.ni-list { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; scroll-padding-top: 44px; }
+.ni-empty { color: var(--text-muted); font-size: var(--text-sm); padding: 16px; border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center; }
+
+/* Selected-bucket header (after tapping a chart marker) */
+.ni-sel { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; border: 1px solid var(--accent); border-radius: var(--radius-sm); background: var(--bg-card); font: var(--weight-semibold) var(--text-sm) var(--font-mono); color: var(--text); flex: none; }
+.ni-sel-clear { border: 0; background: var(--bg-subtle); color: var(--text-secondary); font: var(--weight-medium) var(--text-xs) inherit; padding: 3px 8px; border-radius: var(--radius-full); cursor: pointer; }
+.ni-sel-clear:hover { color: var(--text); }
+
+/* Event card = .metric-card (1px border, 4px radius, 10/12 padding). Category shown as a dot, not a thick bar. */
+.ni-card { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); padding: 10px 12px; cursor: pointer; flex: none; transition: border-color .2s ease, box-shadow .2s ease; }
+.ni-card:hover { border-color: var(--text-muted); }
+.ni-card.hl { border-color: var(--accent); }
+.ni-card.open { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.ni-card-top { display: flex; align-items: center; gap: 6px 8px; flex-wrap: wrap; font-size: var(--text-xs); color: var(--text-muted); }
+.ni-date { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--text-secondary); }
+.ni-cat { display: inline-flex; align-items: center; gap: 5px; color: var(--text-secondary); font-size: var(--text-xs); font-weight: var(--weight-medium); }
+.ni-cat i { width: 7px; height: 7px; border-radius: 50%; background: var(--cat); flex: none; }
+.ni-hz { margin-left: auto; font-size: var(--text-xs); color: var(--text-muted); }
+.ni-card-title { margin-top: 6px; font-family: var(--font-heading); font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--text); line-height: 1.45; }
+.ni-card-mech { margin-top: 4px; font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.55; }
+.ni-card-more { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-light); font-size: var(--text-sm); color: var(--text-body); line-height: 1.55; }
 .ni-card.open .ni-card-more { display: block; }
-.ni-card-more p { margin: 0 0 6px; }
-.ni-metrics { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
-.ni-metrics span { font-size: 10.5px; padding: 2px 6px; border-radius: 3px; background: var(--bg-subtle); color: var(--text-secondary); }
-.ni-rxs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; font-family: var(--font-mono); font-size: 11px; }
-.ni-rx-k { font-family: inherit; color: var(--text-muted); }
-.ni-rx { font-weight: 600; }
-.ni-src { font-size: 11px; color: var(--text-muted); }
+.ni-card-more p { margin: 0 0 8px; }
+.ni-metrics { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.ni-metrics span { font-size: var(--text-xs); padding: 2px 8px; border-radius: var(--radius-full); background: var(--primary-light); color: var(--primary); font-weight: var(--weight-medium); }
+.ni-rxs { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; font-family: var(--font-mono); font-size: var(--text-xs); }
+.ni-rx-k { font-family: var(--font-ui, inherit); color: var(--text-muted); margin-right: 2px; }
+.ni-rx { font-weight: var(--weight-semibold); padding: 2px 7px; border-radius: var(--radius-full); }
+.ni-rx.up { background: var(--up-bg); } .ni-rx.down { background: var(--down-bg); }
+.ni-src { font-size: var(--text-xs); color: var(--text-muted); }
 .ni-src a { color: var(--accent); text-decoration: none; }
 .ni-src a:hover { text-decoration: underline; }
+
 @media (max-width: 900px) {
   .ni-grid { grid-template-columns: 1fr; }
   .ni-chart-box { height: 300px; }
-  .ni-list { height: auto; max-height: 520px; }
+  .ni-list { height: auto; max-height: 560px; }
 }
 @media (max-width: 520px) {
-  #news-impact-strip { padding: 12px; }
   .ni-strip-head { flex-direction: column; align-items: stretch; gap: 10px; }
   .ni-gauge { grid-template-columns: 1fr auto; }
   .ni-gauge-bar { width: 100%; }
   .ni-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
   .ni-chips::-webkit-scrollbar { display: none; }
-  .ni-chart-box { height: 260px; }
+  .ni-tools { margin-left: 0; width: 100%; justify-content: space-between; }
+  .ni-chart-box { height: 270px; }
   .ni-hz { margin-left: 0; }
 }
