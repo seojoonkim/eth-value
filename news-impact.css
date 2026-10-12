@@ -16,7 +16,11 @@
 .ni-seg button:hover:not(.on) { color: var(--text); }
 
 /* ── Strip (top of Valuation) = one metric-card ───────────── */
-#news-impact-strip { margin: 0 0 18px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); display: flex; flex-direction: column; gap: 10px; transition: border-color .2s ease; }
+#news-impact-strip { margin: 0; padding: 16px 18px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); display: flex; flex-direction: column; gap: 12px; transition: border-color .2s ease; min-width: 0; }
+/* Same padding steps as .summary-valuation-box so the two boxes' text edges line up */
+@media (max-width: 1000px) and (min-width: 601px) { #news-impact-strip { padding: 20px; } }
+@media (max-width: 600px) { #news-impact-strip { padding: 16px; } }
+.summary-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 #news-impact-strip:hover { border-color: var(--text-muted); }
 .ni-strip-msg { color: var(--text-muted); font-size: var(--text-sm); }
 .ni-strip-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
