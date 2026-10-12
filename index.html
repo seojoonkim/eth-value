@@ -37,7 +37,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     <link rel="preconnect" href="https://rliwxedrifwxbudcutqs.supabase.co" crossorigin>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
@@ -10413,8 +10413,9 @@
         
         .sim-range::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--bg-card);
             background: var(--primary);
             border-radius: 50%;
             cursor: pointer;
@@ -10428,12 +10429,12 @@
         }
         
         .sim-range::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
+            width: 20px;
+            height: 20px;
             background: var(--primary);
             border-radius: 50%;
             cursor: pointer;
-            border: none;
+            border: 3px solid var(--bg-card);
             animation: thumbPulse 2s ease-in-out infinite;
         }
         
@@ -14551,6 +14552,36 @@ body.dark .summary-valuation-box, body.dark .valuation-model, body.dark #news-im
 .model-formula { color: var(--text-secondary); }
 body:not(.dark) .model-formula { background: var(--bg-subtle); border-color: var(--border-light); }
 body.dark .model-formula { color: #a3a9b4; }
+/* 2026-10-13 type & tone refinement */
+/* Type: one modern family. Numbers use Pretendard tabular figures instead of a coding mono. */
+:root { --font-mono: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+body { font-variant-numeric: tabular-nums; letter-spacing: -0.003em; }
+body { font-feature-settings: "tnum" 1, "ss06" 1; }
+.section-title { letter-spacing: -0.03em; font-weight: 750; }
+h1, h2, h3, .card-title, .chart-title { letter-spacing: -0.015em; }
+.summary-value, .summary-valuation-value, .method-chart-value, .sim-breakdown-val, .stat-number, .community-stat-number { letter-spacing: -0.02em; font-weight: 650; }
+.summary-label { font-size: 12px; letter-spacing: 0.07em; font-weight: 600; color: var(--text-muted); }
+body.dark .summary-label { color: var(--text-muted); }
+/* Tone: welcome banner as a calm tinted surface instead of a saturated purple slab */
+.onboarding-banner { background: color-mix(in srgb, var(--primary) 9%, var(--bg-card)); color: var(--text);
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  box-shadow: 0 6px 18px -12px rgba(20, 16, 40, 0.35); backdrop-filter: saturate(140%) blur(10px); }
+.onboarding-banner .onboarding-text, .onboarding-banner .onboarding-text * { color: var(--text); }
+.onboarding-banner .onboarding-close { color: var(--text-muted); }
+.onboarding-cta { background: var(--primary); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+body.dark .onboarding-cta { color: #15121f; }
+/* Floating CTA: solid, softer glow */
+.floating-action-badge, .floating-action-badge.rate-mode { background: var(--primary); border-color: rgba(255,255,255,.10);
+  box-shadow: 0 10px 28px -12px color-mix(in srgb, var(--primary) 70%, transparent); }
+body.dark .floating-action-badge, body.dark .floating-action-badge.rate-mode { background: #5f4bd0; }
+
+/* Slider: larger, calmer handle (was 14px pulsing dot) on a 6px track */
+.sim-range { height: 6px; border-radius: 999px; padding: 0; margin: 12px 0; touch-action: pan-y; }
+.sim-range::-webkit-slider-thumb { width: 22px; height: 22px; background: #fff; border: 2px solid var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,.25); animation: none; }
+.sim-range::-moz-range-thumb { width: 22px; height: 22px; background: #fff; border: 2px solid var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,.25); animation: none; }
+.sim-range:focus-visible { outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent); outline-offset: 6px; }
     </style>
 </head>
 <body>
@@ -33227,6 +33258,7 @@ Check out ETHval 👇`;
             ];
             
             // Model calculations with full names and matching colors (same as historical chart legend)
+            var cardModel = function(id, p) { var r = calculateSingleModel(id, { price: p.price, supply: p.supply, tvl: p.tvl, stakedEth: p.stakedEth, l2Tvl: p.l2Tvl, fees: p.fees, stables: p.stablecoins, stakingApr: p.stakingApr, dailySettlement: p.dailySettlement, l1TotalVolume: p.l1TotalVolume, l2TotalVolume: p.l2TotalVolume, ethInDefi: p.price > 0 ? p.tvl / p.price : 0 }); return r ? r.value : NaN; };
             const MODELS = {
                 tvlMultiple: {
                     name: 'TVL Multiple',
@@ -33241,16 +33273,10 @@ Check out ETHval 👇`;
                 metcalfe: {
                     name: "Metcalfe's Law",
                     color: '#eab308',
-                    calc: function(p) { 
-                        // Metcalfe's Law: Network value ∝ n² (users squared)
-                        // Using active addresses as proxy for network users
-                        var users = p.activeAddresses || 400000;
-                        var coefficient = 0.00015; // Calibrated to current market
-                        return (coefficient * Math.pow(users, 1.5)) / p.supply * p.price;
-                    }
+                    calc: function(p) { return cardModel('metcalfe', p); }
                 },
                 dcf: {
-                    name: 'DCF (Staking)',
+                    name: 'Staking DCF',
                     color: '#84cc16',
                     calc: function(p) { return Math.min(p.price * (1 + p.stakingApr / 100) / 0.06, p.price * 3); }
                 },
@@ -33262,12 +33288,12 @@ Check out ETHval 👇`;
                 ps: {
                     name: 'P/S Ratio (25x)',
                     color: '#14b8a6',
-                    calc: function(p) { return (p.fees * 365 * 25) / p.supply; }
+                    calc: function(p) { return cardModel('ps', p); }
                 },
                 revenueYield: {
                     name: 'Fee Yield',
                     color: '#06b6d4',
-                    calc: function(p) { return ((p.fees * 365) / 0.032) / p.supply; }
+                    calc: function(p) { return cardModel('revenueYield', p); }
                 },
                 commitmentPremium: {
                     name: 'Liquidity Premium',
@@ -33431,13 +33457,14 @@ Check out ETHval 👇`;
                 var l2TotalVolumeValue = state.l2TotalVolume > 0 ? state.l2TotalVolume : getHistoryValue(state.l2TotalVolumeHistory);
 
                 // Store base parameters - all from Supabase (day before latest)
+                var cardData = getCurrentModelData();
                 baseParams = {
                     price: state.price,
                     supply: supply,
                     tvl: tvlValue,
-                    fees: totalFees,
+                    fees: (cardData.fees > 0 ? cardData.fees : totalFees),
                     stakedEth: supply * (baseStakingRatio / 100),
-                    stakingApr: state.stakingApr || 3.2,
+                    stakingApr: cardData.stakingApr || state.stakingApr || 3.2,
                     stablecoins: stablesValue,
                     l2Tvl: state.l2Tvl || 12000000000,
                     dailySettlement: state.dailySettlement || (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0),
