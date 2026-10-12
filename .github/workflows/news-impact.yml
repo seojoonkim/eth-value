@@ -1,0 +1,43 @@
+name: ETHval News Impact
+
+on:
+  schedule:
+    # KST 09:20 / 21:20
+    - cron: '20 0 * * *'
+    - cron: '20 12 * * *'
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: 'Backfill N days (0 = normal daily run)'
+        required: false
+        default: '0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: news-impact
+  cancel-in-progress: false
+
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Collect and classify news
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          BF="${{ github.event.inputs.backfill }}"
+          if [ -n "$BF" ] && [ "$BF" != "0" ]; then
+            node scripts/news-collector.js --backfill "$BF"
+          else
+            node scripts/news-collector.js
+          fi
