@@ -177,7 +177,22 @@
         }).join('');
     }
 
+    // Keep the strip directly under the price box even if a stale cached HTML still has it above (Simon 2026-10-13).
+    function placeStrip() {
+        const el = document.getElementById('news-impact-strip');
+        const box = document.querySelector('.summary-valuation-box');
+        if (!el || !box || box.nextElementSibling === el) return;
+        if (!box.parentElement.classList.contains('summary-left')) {
+            const wrap = document.createElement('div');
+            wrap.className = 'summary-left';
+            box.parentElement.insertBefore(wrap, box);
+            wrap.appendChild(box);
+        }
+        box.insertAdjacentElement('afterend', el);
+    }
+
     function renderStrip() {
+        placeStrip();
         const el = document.getElementById('news-impact-strip');
         if (!el) return;
         const L = tr();
