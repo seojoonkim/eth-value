@@ -21,7 +21,7 @@
     const UP = '#10b981', DOWN = '#ef4444', FLAT = '#94a3b8';
     const T = {
         en: {
-            title: 'News Impact', mxTitle: 'Impact by week', mxHint: 'Net score per category, last 4 weeks. Tap a cell to see its cards.', mxN: n => `${n} news`, lgScore: 'Net score (bullish − bearish)', lgCount: 'News count', lgHi: 'Includes high-impact news', lgBear: 'Bearish', lgBull: 'Bullish', mxClear: 'Clear', sub: 'How this week\'s news moves ETH', net7: '7D net impact', bull: 'Bullish', bear: 'Bearish', mixed: 'Mixed',
+            title: 'News Impact', mb: n => `${n} news`, mbTip: n => `${n} news in the last 30 days point to this metric. Tap to see them.`, mbHead: 'Last 30 days', mbClear: 'Clear', mxTitle: 'Impact by week', mxHint: 'Net score per category, last 4 weeks. Tap a cell to see its cards.', mxN: n => `${n} news`, lgScore: 'Net score (bullish − bearish)', lgCount: 'News count', lgHi: 'Includes high-impact news', lgBear: 'Bearish', lgBull: 'Bullish', mxClear: 'Clear', sub: 'How this week\'s news moves ETH', net7: '7D net impact', bull: 'Bullish', bear: 'Bearish', mixed: 'Mixed',
             top: 'Biggest event', all: 'All', none: 'No events in this range yet.', loading: 'Loading news…', err: 'News data unavailable right now.',
             impact: { 3: 'High', 2: 'Medium', 1: 'Low' }, horizon: { immediate: 'Immediate', short: 'Short-term', structural: 'Structural' },
             after: 'ETH after', sources: 'Sources', events: ' events', price: 'ETH price', panel: '01.1 — News Impact on Price',
@@ -31,7 +31,7 @@
             cats: { macro: 'Macro & Rates', flows: 'Fund Flows', regulation: 'Regulation & Tax', protocol: 'Ethereum Upgrades', security: 'Security', competitors: 'Competing Chains', ecosystem: 'L2 · DeFi · RWA', market: 'Market Structure' }
         },
         ko: {
-            title: '뉴스 영향', mxTitle: '주별 영향 지도', mxHint: '최근 4주 카테고리별 뉴스 영향이에요. 칸을 누르면 해당 뉴스만 보여요.', mxN: n => `${n}건`, lgScore: '순영향 점수 (호재 − 악재)', lgCount: '뉴스 건수', lgHi: '큰 뉴스 포함', lgBear: '악재', lgBull: '호재', mxClear: '해제', sub: '이번 주 뉴스가 ETH 가격에 주는 영향', net7: '최근 7일 순영향', bull: '호재', bear: '악재', mixed: '혼재',
+            title: '뉴스 영향', mb: n => `관련 뉴스 ${n}건`, mbTip: n => `최근 30일 이 지표를 움직인 뉴스 ${n}건. 누르면 뉴스를 보여줘요.`, mbHead: '최근 30일', mbClear: '해제', mxTitle: '주별 영향 지도', mxHint: '최근 4주 카테고리별 뉴스 영향이에요. 칸을 누르면 해당 뉴스만 보여요.', mxN: n => `${n}건`, lgScore: '순영향 점수 (호재 − 악재)', lgCount: '뉴스 건수', lgHi: '큰 뉴스 포함', lgBear: '악재', lgBull: '호재', mxClear: '해제', sub: '이번 주 뉴스가 ETH 가격에 주는 영향', net7: '최근 7일 순영향', bull: '호재', bear: '악재', mixed: '혼재',
             top: '가장 큰 사건', all: '전체', none: '이 기간에는 아직 사건이 없어요.', loading: '뉴스 불러오는 중…', err: '지금은 뉴스 데이터를 불러올 수 없어요.',
             impact: { 3: '상', 2: '중', 1: '하' }, horizon: { immediate: '즉시', short: '단기', structural: '구조적' },
             after: '이후 ETH', sources: '출처', events: '건', price: 'ETH 가격', panel: '01.1 — 뉴스와 가격',
@@ -41,7 +41,7 @@
             cats: { macro: '거시·금리', flows: '자금 흐름', regulation: '제도·규제·과세', protocol: '이더리움 개선', security: '사고·보안', competitors: '경쟁 체인', ecosystem: 'L2·DeFi·RWA', market: '시장 구조·심리' }
         },
         zh: {
-            title: '新闻影响', mxTitle: '每周影响矩阵', mxHint: '近 4 周各类别新闻影响。点击格子只看对应新闻。', mxN: n => `${n}条`, lgScore: '净影响分（利好 − 利空）', lgCount: '新闻条数', lgHi: '含重大新闻', lgBear: '利空', lgBull: '利好', mxClear: '清除', sub: '本周新闻如何影响 ETH 价格', net7: '近 7 日净影响', bull: '利好', bear: '利空', mixed: '中性',
+            title: '新闻影响', mb: n => `相关新闻 ${n} 条`, mbTip: n => `近 30 日有 ${n} 条新闻影响此指标，点击查看。`, mbHead: '近 30 日', mbClear: '清除', mxTitle: '每周影响矩阵', mxHint: '近 4 周各类别新闻影响。点击格子只看对应新闻。', mxN: n => `${n}条`, lgScore: '净影响分（利好 − 利空）', lgCount: '新闻条数', lgHi: '含重大新闻', lgBear: '利空', lgBull: '利好', mxClear: '清除', sub: '本周新闻如何影响 ETH 价格', net7: '近 7 日净影响', bull: '利好', bear: '利空', mixed: '中性',
             top: '最大事件', all: '全部', none: '该区间暂无事件。', loading: '正在加载新闻…', err: '暂时无法加载新闻数据。',
             impact: { 3: '高', 2: '中', 1: '低' }, horizon: { immediate: '即时', short: '短期', structural: '结构性' },
             after: '之后 ETH', sources: '来源', events: '条', price: 'ETH 价格', panel: '01.1 — 新闻与价格',
@@ -51,7 +51,7 @@
             cats: { macro: '宏观·利率', flows: '资金流向', regulation: '监管·税收', protocol: '以太坊升级', security: '安全事件', competitors: '竞争公链', ecosystem: 'L2·DeFi·RWA', market: '市场结构' }
         },
         ja: {
-            title: 'ニュース影響', mxTitle: '週別インパクト表', mxHint: '直近4週・カテゴリ別のニュース影響。セルをタップで該当ニュースだけ表示。', mxN: n => `${n}件`, lgScore: '純影響スコア（好材料 − 悪材料）', lgCount: 'ニュース件数', lgHi: '大きなニュースを含む', lgBear: '悪材料', lgBull: '好材料', mxClear: '解除', sub: '今週のニュースが ETH 価格に与える影響', net7: '直近7日の純影響', bull: '好材料', bear: '悪材料', mixed: '中立',
+            title: 'ニュース影響', mb: n => `関連ニュース ${n}件`, mbTip: n => `直近30日でこの指標を動かしたニュース ${n}件。タップで表示。`, mbHead: '直近30日', mbClear: '解除', mxTitle: '週別インパクト表', mxHint: '直近4週・カテゴリ別のニュース影響。セルをタップで該当ニュースだけ表示。', mxN: n => `${n}件`, lgScore: '純影響スコア（好材料 − 悪材料）', lgCount: 'ニュース件数', lgHi: '大きなニュースを含む', lgBear: '悪材料', lgBull: '好材料', mxClear: '解除', sub: '今週のニュースが ETH 価格に与える影響', net7: '直近7日の純影響', bull: '好材料', bear: '悪材料', mixed: '中立',
             top: '最大の出来事', all: 'すべて', none: 'この期間のイベントはまだありません。', loading: 'ニュースを読み込み中…', err: '現在ニュースデータを取得できません。',
             impact: { 3: '大', 2: '中', 1: '小' }, horizon: { immediate: '即時', short: '短期', structural: '構造的' },
             after: 'その後のETH', sources: '出典', events: '件', price: 'ETH 価格', panel: '01.1 — ニュースと価格',
@@ -67,8 +67,17 @@
         l2_activity: 'L2 Activity', dominance: 'Dominance', rates: 'Rates', dxy: 'Dollar', btc: 'BTC', volatility: 'Volatility', active_addresses: 'Active Addr.'
     };
 
+    // news_events.metrics key -> Fundamentals card data-metric ids (only keys that have a matching card).
+    const METRIC_CARDS = {
+        fear_greed: ['feargreed'], funding_rate: ['funding'], open_interest: ['openInterest'], exchange_reserve: ['reserve'],
+        staking: ['staking', 'stakingApr'], burn: ['daily-burn'], supply: ['supply', 'net-supply'], fees: ['fees'], tvl: ['tvl'],
+        stablecoins: ['stablecoin', 'stables'], l2_activity: ['l2'], dominance: ['dominance'], btc: ['ethbtc'], volatility: ['volatility'],
+        active_addresses: ['l1ActiveAddr']
+    };
+    const MB_DAYS = 30;
+
     // minImp: impact filter (1 all, 2 medium+, 3 high only). sel: selected bucket key. hl: highlighted bucket key.
-    const S = { events: [], prices: [], cat: 'all', range: 90, minImp: 2, sel: null, hl: null, bd: 1, origin: 0, pts: [], chart: null, openId: null, week: null, status: 'loading' };
+    const S = { events: [], prices: [], cat: 'all', range: 90, minImp: 2, sel: null, hl: null, bd: 1, origin: 0, pts: [], chart: null, openId: null, week: null, metric: null, status: 'loading' };
 
     const lang = () => { const l = (typeof currentLang !== 'undefined' && currentLang) || document.documentElement.lang || 'en'; return T[l] ? l : 'en'; };
     const tr = () => T[lang()];
@@ -139,6 +148,7 @@
     function rangeCut() { return Date.now() - S.range * dayMs; }
     // Events drawn on the chart AND listed as cards — one filter for both so they always match.
     function visible() {
+        if (S.metric) { const cut = Date.now() - MB_DAYS * dayMs; return S.events.filter(e => tOf(e) >= cut && (e.metrics || []).includes(S.metric)); }
         if (S.week != null) { const [a, b] = weekSpan(S.week); return S.events.filter(e => e.date >= a && e.date <= b && (S.cat === 'all' || e.category === S.cat)); }
         const cut = rangeCut();
         return S.events.filter(e => tOf(e) >= cut && e.impact >= S.minImp && (S.cat === 'all' || e.category === S.cat));
@@ -312,7 +322,8 @@
         computeBuckets();
         const evs = visible();
         const shown = S.sel == null ? evs : evs.filter(e => bucketOf(tOf(e)) === S.sel);
-        const selHead = S.sel == null ? '' : `<div class="ni-sel"><span>${esc(bucketLabel(S.sel))} · ${esc(L.selN(shown.length))}</span><button type="button" class="ni-sel-clear">${esc(L.showAll)} ×</button></div>`;
+        const mHead = S.metric ? `<div class="ni-sel ni-msel"><span>${esc(METRIC_LABEL[S.metric] || S.metric)} · ${esc(L.mbHead)} · ${esc(L.selN(evs.length))}</span><button type="button" class="ni-metric-clear">${esc(L.mbClear)} ×</button></div>` : '';
+        const selHead = S.sel == null ? mHead : `<div class="ni-sel"><span>${esc(bucketLabel(S.sel))} · ${esc(L.selN(shown.length))}</span><button type="button" class="ni-sel-clear">${esc(L.showAll)} ×</button></div>`;
         list.innerHTML = selHead + (shown.length ? shown.map(cardHtml).join('') : `<div class="ni-empty">${esc(L.none)}</div>`);
         list.scrollTop = 0;
         drawChart(evs);
@@ -476,7 +487,7 @@
             if (S.cat !== 'all' && ev.category !== S.cat) S.cat = 'all';
             if (Date.now() - tOf(ev) > S.range * dayMs) S.range = 365;
             if (ev.impact < S.minImp) S.minImp = ev.impact;
-            S.sel = null; S.week = null;
+            S.sel = null; S.week = null; S.metric = null;
         }
         if (!scroll) {
             const card = document.querySelector(`#news-impact-panel .ni-card[data-id="${CSS.escape(id)}"]`);
@@ -498,12 +509,36 @@
         }
     }
 
-    function render() { renderStrip(); renderPanel(); }
+    // "News that moved this metric" badge on each Fundamentals card (last 30 days, every impact level).
+    function renderBadges() {
+        document.querySelectorAll('.ni-mbadge').forEach(b => b.remove());
+        if (S.status !== 'ok') return;
+        const L = tr(), cut = Date.now() - MB_DAYS * dayMs;
+        Object.entries(METRIC_CARDS).forEach(([key, ids]) => {
+            const n = S.events.filter(e => tOf(e) >= cut && (e.metrics || []).includes(key)).length;
+            if (!n) return;
+            ids.forEach(id => {
+                const info = document.querySelector(`.metric-card[data-metric="${CSS.escape(id)}"] .metric-info`);
+                if (!info) return;
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'ni-mbadge' + (S.metric === key ? ' on' : ''); b.dataset.nkey = key;
+                b.title = L.mbTip(n); b.setAttribute('aria-label', L.mbTip(n));
+                b.innerHTML = `<i aria-hidden="true"></i>${esc(L.mb(n))}`;
+                info.appendChild(b);
+            });
+        });
+    }
+
+    function render() { renderStrip(); renderPanel(); renderBadges(); }
 
     function bind() {
         document.addEventListener('click', (e) => {
             const chip = e.target.closest('#news-impact-strip .ni-drv, #news-impact-panel .ni-chip');
+            const mb = e.target.closest('.ni-mbadge');
+            if (mb) { S.metric = mb.dataset.nkey; S.week = null; S.cat = 'all'; S.range = MB_DAYS; S.sel = null; S.hl = null; S.openId = null; render(); scrollPanel(); return; }
+            if (e.target.closest('#news-impact-panel .ni-metric-clear')) { S.metric = null; S.range = 90; S.sel = null; S.hl = null; render(); return; }
             const mc = e.target.closest('#news-impact-panel .ni-mx-cell:not(.empty)');
+            if (mc || chip || e.target.closest('#news-impact-panel .ni-range button, #news-impact-panel .ni-imp button, #news-impact-strip .ni-top, #news-impact-panel .ni-wk-pill')) S.metric = null;
             if (mc) {
                 const w = +mc.dataset.week;
                 if (S.week === w && S.cat === mc.dataset.cat) { S.week = null; S.cat = 'all'; } else { S.week = w; S.cat = mc.dataset.cat; }
@@ -546,10 +581,11 @@
     }
     function scrollPanel() {
         const p = document.getElementById('news-impact-panel');
-        if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Far jumps (e.g. from a Fundamentals badge, ~8000px on mobile) go instantly; smooth only for short hops.
+        if (p) p.scrollIntoView({ behavior: Math.abs(p.getBoundingClientRect().top) > 2500 ? 'auto' : 'smooth', block: 'start' });
     }
 
     function start() { bind(); render(); load(); }
-    window.ETHvalNewsImpact = { state: S, reload: load, render, visible, points: () => S.pts };
+    window.ETHvalNewsImpact = { state: S, METRIC_CARDS, reload: load, render, visible, points: () => S.pts };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
