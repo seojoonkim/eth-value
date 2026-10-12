@@ -43,6 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <link rel="stylesheet" href="news-impact.css?v=1.0.0">
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
         html.no-transition,
@@ -14571,7 +14572,7 @@
                     </svg>
                 </div>
                 <span class="logo-text">ETHval</span>
-                <span class="version-badge">v0.6.2</span>
+                <span class="version-badge">v1.0.0</span>
             </div>
             <nav class="nav-bar-inline">
                 <a class="nav-item active" href="#valuation" data-i18n="nav.valuation">Valuation</a>
@@ -14622,6 +14623,9 @@
                 <div class="section-title"><span data-i18n="nav.valuation">Valuation</span></div>
             </div>
             
+            <!-- NEWS IMPACT STRIP -->
+            <div id="news-impact-strip" aria-live="polite"></div>
+
             <!-- 가로 레이아웃 컨테이너 -->
             <div class="summary-layout">
                 <!-- Valuation 영역 - 박스 안 -->
@@ -14741,6 +14745,23 @@
 
         <!-- VALUATION MODELS (Part of Valuation Section) -->
         <section class="section" id="section-valuation" style="padding-top: 0; margin-top: -20px;">
+
+            <!-- 01.0 — News Impact on Price -->
+            <div id="news-impact-panel">
+                <div class="metrics-subgroup" style="margin-bottom: 10px;">
+                    <span class="metrics-subgroup-title ni-panel-title">01.0 — News Impact on Price</span>
+                    <div class="metrics-subgroup-line"></div>
+                </div>
+                <div class="ni-panel-head">
+                    <p class="ni-hint"></p>
+                    <div class="ni-range"><button type="button" data-range="30">30D</button><button type="button" data-range="90" class="on">90D</button><button type="button" data-range="365">1Y</button></div>
+                </div>
+                <div class="ni-chips ni-panel-chips"></div>
+                <div class="ni-grid">
+                    <div class="ni-chart-box"><canvas id="news-impact-chart"></canvas></div>
+                    <div class="ni-list"></div>
+                </div>
+            </div>
 
             <!-- 01.1 — Models & Fair Value -->
             <div class="metrics-subgroup" style="margin-bottom: 20px;">
@@ -17247,7 +17268,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v0.6.2</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: var(--text-sm);">🔧 Admin</a>
+                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v1.0.0</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: var(--text-sm);">🔧 Admin</a>
             </div>
         </footer>
     </div>
@@ -36419,5 +36440,6 @@ Check out ETHval 👇`;
         new MutationObserver(relabel).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     })();
     </script>
+    <script src="news-impact.js?v=1.0.0" defer></script>
 </body>
 </html>
