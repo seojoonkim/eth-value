@@ -43,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <link rel="stylesheet" href="news-impact.css?v=20261013c">
+    <link rel="stylesheet" href="news-impact.css?v=20261013d">
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
         html.no-transition,
@@ -172,7 +172,7 @@
                ======================================== */
             
             /* Size Scale - 7단계 (단순화) */
-            --text-xs: 10px;     /* 배지, 태그, 메타 정보 */
+            --text-xs: 11px;     /* 배지, 태그, 메타 정보 */
             --text-sm: 12px;     /* 본문, 피드백 라벨 */
             --text-md: 13px;     /* 강조 라벨 */
             --text-lg: 14px;     /* 카드 제목, 네비게이션 */
@@ -194,7 +194,7 @@
             --weight-bold: 700;
             
             /* Legacy aliases (하위 호환) */
-            --text-2xs: 10px;
+            --text-2xs: 11px;
             --text-base: var(--text-sm);
             --text-5xl: 22px;
             --text-6xl: var(--text-3xl);
@@ -2837,6 +2837,12 @@
             align-items: center;
             gap: 6px;
             flex-shrink: 0;
+        }
+
+        .model-toggle::before {
+            content: '';
+            position: absolute;
+            inset: -12px -8px;
         }
 
         .model-toggle {
@@ -13586,6 +13592,12 @@
             opacity: 1;
         }
         
+        .onboarding-banner.show.tucked {
+            transform: translateY(-140%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .onboarding-banner.hidden {
             display: none;
         }
@@ -14541,10 +14553,10 @@ body.dark .model-formula { color: #a3a9b4; }
     <!-- Onboarding Banner for First-time Visitors -->
     <div class="onboarding-banner" id="onboarding-banner">
         <span class="onboarding-text">
-            <strong>👋 Welcome!</strong> Rate valuation models to see how your view compares with the community
+            <span data-i18n="onboarding.text"><strong>👋 Welcome!</strong> Rate valuation models to see how your view compares with the community</span>
         </span>
-        <button class="onboarding-cta" onclick="goToDiscussionSection()">Start Rating ⭐</button>
-        <button class="onboarding-close" onclick="dismissOnboardingBanner()">&times;</button>
+        <button class="onboarding-cta" onclick="goToDiscussionSection()" data-i18n="onboarding.cta">Start Rating ⭐</button>
+        <button class="onboarding-close" onclick="dismissOnboardingBanner()" aria-label="Close">&times;</button>
     </div>
     
     <!-- Floating Action Button (hidden - replaced by floating-action-badge) -->
@@ -20188,6 +20200,8 @@ body.dark .model-formula { color: #a3a9b4; }
                 'nav.metrics': 'Fundamentals',
                 'nav.metricsShort': 'Fundamentals',
                 'nav.valuation': 'Valuation',
+                'onboarding.text': '<strong>👋 Welcome!</strong> Rate valuation models to see how your view compares with the community',
+                'onboarding.cta': 'Start Rating ⭐',
                 'nav.historical': 'Historical',
                 'nav.methodology': 'Ratings',
                 'nav.methodologyShort': 'Ratings',
@@ -20674,6 +20688,8 @@ body.dark .model-formula { color: #a3a9b4; }
                 'nav.metrics': '기초 지표',
                 'nav.metricsShort': '기초 지표',
                 'nav.valuation': '밸류에이션',
+                'onboarding.text': '<strong>👋 환영해요!</strong> 밸류에이션 모델을 평가하고 내 관점을 커뮤니티와 비교해 보세요',
+                'onboarding.cta': '평가 시작 ⭐',
                 'nav.historical': '히스토리',
                 'nav.methodology': '평가',
                 'nav.methodologyShort': '평가',
@@ -21159,6 +21175,8 @@ body.dark .model-formula { color: #a3a9b4; }
                 'nav.metrics': '基本面',
                 'nav.metricsShort': '基本面',
                 'nav.valuation': '估值',
+                'onboarding.text': '<strong>👋 欢迎！</strong> 为估值模型打分，看看你的观点与社区有何不同',
+                'onboarding.cta': '开始评分 ⭐',
                 'nav.historical': '历史分析',
                 'nav.methodology': '评分',
                 'nav.methodologyShort': '评分',
@@ -21640,6 +21658,8 @@ body.dark .model-formula { color: #a3a9b4; }
                 'nav.metrics': 'ファンダメンタルズ',
                 'nav.metricsShort': '基礎指標',
                 'nav.valuation': 'バリュエーション',
+                'onboarding.text': '<strong>👋 ようこそ！</strong> バリュエーションモデルを評価して、コミュニティとの見方の違いを確認しましょう',
+                'onboarding.cta': '評価をはじめる ⭐',
                 'nav.historical': '履歴分析',
                 'nav.methodology': '方法論',
                 'nav.methodologyShort': '方法論',
@@ -35962,6 +35982,16 @@ Check out ETHval 👇`;
                         banner.classList.add('show');
                         document.body.classList.add('banner-visible');
                     }, 1500);
+                    // Tuck the fixed banner away while reading further down; bring it back near the top.
+                    let tuckTick = false;
+                    window.addEventListener('scroll', () => {
+                        if (tuckTick) return;
+                        tuckTick = true;
+                        requestAnimationFrame(() => {
+                            banner.classList.toggle('tucked', window.scrollY > 160);
+                            tuckTick = false;
+                        });
+                    }, { passive: true });
                 }
             }
             
