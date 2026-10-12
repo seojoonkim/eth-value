@@ -21,6 +21,7 @@
     const UP = '#10b981', DOWN = '#ef4444', FLAT = '#94a3b8';
     const T = {
         en: {
+            scTitle: 'Call scorecard', scHint: 'Share of calls where ETH moved the called way 7 days later (bullish = up, bearish = down). Neutral calls excluded; 50% is a coin flip.', scAll: 'All categories', scHold: 'Too few to judge', scOf: (k, n) => `${k} of ${n}`, scPend: n => `${n} newer calls wait for their 7 days.`, scMin: 'Under 10 calls: not judged yet.',
             up: 'Upcoming', upNone: 'No scheduled FOMC, CPI or mainnet upgrade in the next 60 days.', upSep: 'with projections', upTent: 'Fed dates are tentative until confirmed at the prior meeting.', upKind: { fomc: 'FOMC rate decision', cpi: 'US CPI release', upgrade: 'Ethereum mainnet upgrade' }, dday: n => n === 0 ? 'Today' : `D-${n}`,
             title: 'News Impact', mb: n => `${n} news`, mbTip: n => `${n} news in the last 30 days point to this metric. Tap to see them.`, mbHead: 'Last 30 days', mbClear: 'Clear', mxTitle: 'Impact by week', mxHint: 'Net score per category, last 4 weeks. Tap a cell to see its cards.', mxN: n => `${n} news`, lgScore: 'Net score (bullish − bearish)', lgCount: 'News count', lgHi: 'Includes high-impact news', lgBear: 'Bearish', lgBull: 'Bullish', mxClear: 'Clear', sub: 'How this week\'s news moves ETH', net7: '7D net impact', bull: 'Bullish', bear: 'Bearish', mixed: 'Mixed',
             top: 'Biggest event', all: 'All', none: 'No events in this range yet.', loading: 'Loading news…', err: 'News data unavailable right now.',
@@ -32,6 +33,7 @@
             cats: { macro: 'Macro & Rates', flows: 'Fund Flows', regulation: 'Regulation & Tax', protocol: 'Ethereum Upgrades', security: 'Security', competitors: 'Competing Chains', ecosystem: 'L2 · DeFi · RWA', market: 'Market Structure' }
         },
         ko: {
+            scTitle: '판단 성적표', scHint: '사건 7일 뒤 ETH 가격이 판단 방향(호재=상승, 악재=하락)대로 움직인 비율이에요. 중립 판단은 빼고, 50%는 동전 던지기 수준이에요.', scAll: '전체', scHold: '판단 보류', scOf: (k, n) => `${n}건 중 ${k}건`, scPend: n => `최근 ${n}건은 7일이 아직 안 지나 채점 대기예요.`, scMin: '표본 10건 미만은 판단 보류로 표시해요.',
             up: '예정 일정', upNone: '앞으로 60일 안에 잡힌 FOMC·CPI·메인넷 업그레이드가 없어요.', upSep: '경제전망 포함', upTent: '연준 일정은 직전 회의에서 확정되기 전까지 잠정이에요.', upKind: { fomc: 'FOMC 금리 결정', cpi: '미국 CPI 발표', upgrade: '이더리움 메인넷 업그레이드' }, dday: n => n === 0 ? '오늘' : `D-${n}`,
             title: '뉴스 영향', mb: n => `관련 뉴스 ${n}건`, mbTip: n => `최근 30일 이 지표를 움직인 뉴스 ${n}건. 누르면 뉴스를 보여줘요.`, mbHead: '최근 30일', mbClear: '해제', mxTitle: '주별 영향 지도', mxHint: '최근 4주 카테고리별 뉴스 영향이에요. 칸을 누르면 해당 뉴스만 보여요.', mxN: n => `${n}건`, lgScore: '순영향 점수 (호재 − 악재)', lgCount: '뉴스 건수', lgHi: '큰 뉴스 포함', lgBear: '악재', lgBull: '호재', mxClear: '해제', sub: '이번 주 뉴스가 ETH 가격에 주는 영향', net7: '최근 7일 순영향', bull: '호재', bear: '악재', mixed: '혼재',
             top: '가장 큰 사건', all: '전체', none: '이 기간에는 아직 사건이 없어요.', loading: '뉴스 불러오는 중…', err: '지금은 뉴스 데이터를 불러올 수 없어요.',
@@ -43,6 +45,7 @@
             cats: { macro: '거시·금리', flows: '자금 흐름', regulation: '제도·규제·과세', protocol: '이더리움 개선', security: '사고·보안', competitors: '경쟁 체인', ecosystem: 'L2·DeFi·RWA', market: '시장 구조·심리' }
         },
         zh: {
+            scTitle: '判断成绩单', scHint: '事件 7 日后 ETH 价格按判断方向（利好=上涨，利空=下跌）变动的比例。不含中性判断；50% 相当于掷硬币。', scAll: '全部', scHold: '暂不评判', scOf: (k, n) => `${n} 条中 ${k} 条`, scPend: n => `最近 ${n} 条未满 7 日，待评分。`, scMin: '样本少于 10 条时暂不评判。',
             up: '即将到来', upNone: '未来 60 日内没有已排定的 FOMC、CPI 或主网升级。', upSep: '含经济预测', upTent: '美联储日程在上次会议确认前均为暂定。', upKind: { fomc: 'FOMC 利率决议', cpi: '美国 CPI 公布', upgrade: '以太坊主网升级' }, dday: n => n === 0 ? '今天' : `D-${n}`,
             title: '新闻影响', mb: n => `相关新闻 ${n} 条`, mbTip: n => `近 30 日有 ${n} 条新闻影响此指标，点击查看。`, mbHead: '近 30 日', mbClear: '清除', mxTitle: '每周影响矩阵', mxHint: '近 4 周各类别新闻影响。点击格子只看对应新闻。', mxN: n => `${n}条`, lgScore: '净影响分（利好 − 利空）', lgCount: '新闻条数', lgHi: '含重大新闻', lgBear: '利空', lgBull: '利好', mxClear: '清除', sub: '本周新闻如何影响 ETH 价格', net7: '近 7 日净影响', bull: '利好', bear: '利空', mixed: '中性',
             top: '最大事件', all: '全部', none: '该区间暂无事件。', loading: '正在加载新闻…', err: '暂时无法加载新闻数据。',
@@ -54,6 +57,7 @@
             cats: { macro: '宏观·利率', flows: '资金流向', regulation: '监管·税收', protocol: '以太坊升级', security: '安全事件', competitors: '竞争公链', ecosystem: 'L2·DeFi·RWA', market: '市场结构' }
         },
         ja: {
+            scTitle: '判定の成績表', scHint: '出来事から7日後のETH価格が判定どおり（好材料=上昇、悪材料=下落）に動いた割合。中立判定は除外、50%はコイン投げ並み。', scAll: '全体', scHold: '判定保留', scOf: (k, n) => `${n}件中 ${k}件`, scPend: n => `直近${n}件は7日未経過のため採点待ち。`, scMin: 'サンプル10件未満は判定保留。',
             up: '今後の予定', upNone: '今後60日以内に予定されたFOMC・CPI・メインネットアップグレードはありません。', upSep: '経済見通しあり', upTent: 'FRBの日程は前回会合で確定するまで暫定です。', upKind: { fomc: 'FOMC 金利決定', cpi: '米CPI発表', upgrade: 'イーサリアム メインネット アップグレード' }, dday: n => n === 0 ? '今日' : `D-${n}`,
             title: 'ニュース影響', mb: n => `関連ニュース ${n}件`, mbTip: n => `直近30日でこの指標を動かしたニュース ${n}件。タップで表示。`, mbHead: '直近30日', mbClear: '解除', mxTitle: '週別インパクト表', mxHint: '直近4週・カテゴリ別のニュース影響。セルをタップで該当ニュースだけ表示。', mxN: n => `${n}件`, lgScore: '純影響スコア（好材料 − 悪材料）', lgCount: 'ニュース件数', lgHi: '大きなニュースを含む', lgBear: '悪材料', lgBull: '好材料', mxClear: '解除', sub: '今週のニュースが ETH 価格に与える影響', net7: '直近7日の純影響', bull: '好材料', bear: '悪材料', mixed: '中立',
             top: '最大の出来事', all: 'すべて', none: 'この期間のイベントはまだありません。', loading: 'ニュースを読み込み中…', err: '現在ニュースデータを取得できません。',
@@ -206,6 +210,35 @@
         return `<div class="ni-mx-head"><span class="ni-mx-title">${esc(L.mxTitle)}</span><span class="ni-mx-hint">${esc(L.mxHint)}</span>${pill}</div><div class="ni-mx-grid"><div class="ni-mx-corner"></div>${head}${rows}</div><div class="ni-mx-legend"><span class="ni-lg-key"><span class="ni-lg-cell"><b>+4</b><small>${esc(L.mxN(2))}</small></span><span class="ni-lg-txt"><span><b>+4</b> ${esc(L.lgScore)}</span><span><small>${esc(L.mxN(2))}</small> ${esc(L.lgCount)}</span></span></span><span class="ni-lg-row"><span class="ni-lg-dot"></span>${esc(L.lgHi)}</span><span class="ni-lg-row">${esc(L.lgBear)}<span class="ni-lg-scale"></span>${esc(L.lgBull)}</span></div>`;
     }
 
+    // Call scorecard: did ETH move the called way 7 days after each event? Neutral calls are excluded.
+    // Same price lookup as the card reactions (reaction()), so the score and the cards never disagree.
+    const SC_DAYS = 7, SC_MIN = 10;
+    function scoreData() {
+        const per = {}; CATS.forEach(c => per[c] = { n: 0, k: 0 });
+        let n = 0, k = 0, pend = 0;
+        S.events.forEach(e => {
+            if (!e.direction || !per[e.category]) return;
+            const r = reaction(e, SC_DAYS);
+            if (r == null) { pend++; return; }
+            const hit = Math.sign(r) === Math.sign(e.direction);
+            per[e.category].n++; n++; if (hit) { per[e.category].k++; k++; }
+        });
+        return { per, n, k, pend };
+    }
+    function scoreHtml() {
+        const L = tr(), d = scoreData();
+        const pct = (k, n) => Math.round(k / n * 1000) / 10;
+        const cellHtml = (name, dot, k, n, cls) => {
+            if (n < SC_MIN) return `<div class="ni-sc-cell hold${cls}"><span class="ni-sc-name">${dot}<span>${esc(name)}</span></span><span class="ni-sc-bar" aria-hidden="true"><u></u></span><small><b class="ni-sc-pct">${esc(L.scHold)}</b> · ${esc(L.scOf(k, n))}</small></div>`;
+            const v = pct(k, n), tone = v >= 55 ? 'up' : v <= 45 ? 'down' : 'flat';
+            return `<div class="ni-sc-cell ${tone}${cls}" data-n="${n}" data-k="${k}"><span class="ni-sc-name">${dot}<span>${esc(name)}</span></span><b class="ni-sc-pct">${v.toFixed(1)}%</b><span class="ni-sc-bar" aria-hidden="true"><i style="width:${v}%"></i><u></u></span><small>${esc(L.scOf(k, n))}</small></div>`;
+        };
+        const cells = CATS.map(c => cellHtml(L.cats[c], `<i class="ni-sc-dot" style="background:${CAT_COLOR[c]}"></i>`, d.per[c].k, d.per[c].n, '" data-cat="' + c)).join('');
+        const all = cellHtml(L.scAll, '', d.k, d.n, ' all');
+        const foot = [d.pend ? L.scPend(d.pend) : '', L.scMin].filter(Boolean).map(esc).join(' ');
+        return `<div class="ni-mx-head"><span class="ni-mx-title">${esc(L.scTitle)}</span><span class="ni-mx-hint">${esc(L.scHint)}</span></div><div class="ni-sc-grid">${all}${cells}</div><p class="ni-sc-foot">${foot}</p>`;
+    }
+
     function icon(dir, imp) {
         const s = [0, 10, 12, 14][imp] || 12;
         const c = dir > 0 ? UP : dir < 0 ? DOWN : FLAT;
@@ -351,6 +384,9 @@
         let mx = el.querySelector('.ni-matrix');
         if (!mx) { mx = document.createElement('div'); mx.className = 'ni-matrix'; el.appendChild(mx); }
         mx.innerHTML = matrixHtml();
+        let sc = el.querySelector('.ni-score');
+        if (!sc) { sc = document.createElement('div'); sc.className = 'ni-score'; el.appendChild(sc); }
+        sc.innerHTML = scoreHtml();
         computeBuckets();
         const evs = visible();
         const shown = S.sel == null ? evs : evs.filter(e => bucketOf(tOf(e)) === S.sel);
@@ -618,6 +654,6 @@
     }
 
     function start() { bind(); render(); load(); }
-    window.ETHvalNewsImpact = { state: S, METRIC_CARDS, reload: load, render, visible, points: () => S.pts };
+    window.ETHvalNewsImpact = { state: S, METRIC_CARDS, reload: load, render, visible, points: () => S.pts, scoreData };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

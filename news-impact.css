@@ -226,3 +226,30 @@
   .ni-up-i { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 6px; padding: 3px 0; }
   .ni-up-w { font-size: 11px; }
 }
+
+/* Call scorecard (7-day direction hit rate per category). 2026-10-13 */
+.ni-score { margin-top: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm, 4px); background: var(--bg-card); padding: 14px; }
+.ni-sc-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.ni-sc-cell { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "n p" "b b" "s s"; grid-template-rows: 1fr auto auto; align-items: start; gap: 5px 8px; padding: 9px 10px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--bg-card); min-width: 0; }
+.ni-sc-cell.all { grid-column: 1 / -1; background: var(--bg-subtle); }
+.ni-sc-cell.all .ni-sc-pct { font-size: 18px; }
+.ni-sc-name { grid-area: n; display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.35; font-weight: 600; color: var(--text); min-width: 0; overflow-wrap: break-word; }
+.ni-sc-name > span { min-width: 0; }
+.ni-sc-dot { flex: none; width: 8px; height: 8px; margin-top: 4px; border-radius: 2px; }
+.ni-sc-pct { grid-area: p; font-size: 15px; line-height: 1.2; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }
+.ni-sc-cell.up .ni-sc-pct { color: var(--up); } .ni-sc-cell.down .ni-sc-pct { color: var(--down); }
+.ni-sc-cell.hold small .ni-sc-pct { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+.ni-sc-bar { grid-area: b; position: relative; display: block; height: 5px; border-radius: 3px; background: var(--bg-subtle); }
+.ni-sc-cell.all .ni-sc-bar { background: var(--bg-card); }
+.ni-sc-cell.hold .ni-sc-bar { background: repeating-linear-gradient(90deg, var(--bg-subtle) 0 6px, transparent 6px 9px); }
+.ni-sc-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--text-muted); }
+.ni-sc-cell.up .ni-sc-bar i { background: var(--up); } .ni-sc-cell.down .ni-sc-bar i { background: var(--down); }
+.ni-sc-bar u { position: absolute; z-index: 1; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--text); opacity: .55; }
+.ni-sc-cell small { grid-area: s; font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.ni-score .ni-mx-hint, .ni-sc-foot { word-break: keep-all; }
+.ni-sc-foot { margin: 10px 0 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+@media (max-width: 640px) {
+  .ni-score { padding: 12px 8px; }
+  .ni-sc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .ni-sc-cell { padding: 7px 8px; gap: 4px 6px; }
+}
