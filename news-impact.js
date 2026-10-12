@@ -27,7 +27,7 @@
             after: 'ETH after', sources: 'Sources', events: ' events', price: 'ETH price', panel: '01.0 — News Impact on Price',
             hint: '▲ bullish above the price · ▼ bearish below · bigger = stronger · number = events grouped there. Tap a marker to see its cards.',
             imp: { 3: 'High only', 2: 'Medium+', 1: 'All' }, showAll: 'Show all', selN: n => `${n} events`,
-            scoreNote: 'Weighted: high 3 · medium 2 · low 1, bullish minus bearish, last 7 days.', model: 'AI-tagged',
+            scoreNote: 'Points: high 3 · medium 2 · low 1. Score = bullish − bearish.', last7: 'Last 7 days', drivers: 'What moved it', vBull: 'Good news outweighs bad this week', vBear: 'Bad news outweighs good this week', vMix: 'Good and bad news are balanced', pts: 'pts', noWeek: 'No major ETH news in the last 7 days.', model: 'AI-tagged',
             cats: { macro: 'Macro & Rates', flows: 'Fund Flows', regulation: 'Regulation & Tax', protocol: 'Ethereum Upgrades', security: 'Security', competitors: 'Competing Chains', ecosystem: 'L2 · DeFi · RWA', market: 'Market Structure' }
         },
         ko: {
@@ -37,7 +37,7 @@
             after: '이후 ETH', sources: '출처', events: '건', price: 'ETH 가격', panel: '01.0 — 뉴스와 가격',
             hint: '가격 위 ▲는 호재, 아래 ▼는 악재예요. 클수록 영향이 크고, 숫자는 묶인 사건 수예요. 표시를 누르면 해당 카드만 보여요.',
             imp: { 3: '상만', 2: '중 이상', 1: '전체' }, showAll: '전체 보기', selN: n => `${n}건`,
-            scoreNote: '최근 7일, 상 3·중 2·하 1점으로 호재에서 악재를 뺀 값이에요.', model: 'AI 분류',
+            scoreNote: '점수: 상 3 · 중 2 · 하 1점. 순영향 = 호재 − 악재.', last7: '최근 7일', drivers: '무엇이 움직였나', vBull: '이번 주는 호재가 더 커요', vBear: '이번 주는 악재가 더 커요', vMix: '호재와 악재가 비슷해요', pts: '점', noWeek: '최근 7일 동안 큰 ETH 뉴스가 없어요.', model: 'AI 분류',
             cats: { macro: '거시·금리', flows: '자금 흐름', regulation: '제도·규제·과세', protocol: '이더리움 개선', security: '사고·보안', competitors: '경쟁 체인', ecosystem: 'L2·DeFi·RWA', market: '시장 구조·심리' }
         },
         zh: {
@@ -47,7 +47,7 @@
             after: '之后 ETH', sources: '来源', events: '条', price: 'ETH 价格', panel: '01.0 — 新闻与价格',
             hint: '价格上方 ▲ 为利好，下方 ▼ 为利空；越大影响越强，数字为合并的事件数。点击标记只看对应卡片。',
             imp: { 3: '仅高', 2: '中及以上', 1: '全部' }, showAll: '查看全部', selN: n => `${n} 条`,
-            scoreNote: '近 7 日，高 3 · 中 2 · 低 1，利好减利空。', model: 'AI 标注',
+            scoreNote: '分值：高 3 · 中 2 · 低 1。净影响 = 利好 − 利空。', last7: '近 7 日', drivers: '主要推动因素', vBull: '本周利好大于利空', vBear: '本周利空大于利好', vMix: '利好与利空大致相当', pts: '分', noWeek: '近 7 日没有重大 ETH 新闻。', model: 'AI 标注',
             cats: { macro: '宏观·利率', flows: '资金流向', regulation: '监管·税收', protocol: '以太坊升级', security: '安全事件', competitors: '竞争公链', ecosystem: 'L2·DeFi·RWA', market: '市场结构' }
         },
         ja: {
@@ -57,7 +57,7 @@
             after: 'その後のETH', sources: '出典', events: '件', price: 'ETH 価格', panel: '01.0 — ニュースと価格',
             hint: '価格の上 ▲ は好材料、下 ▼ は悪材料。大きいほど影響が強く、数字はまとめた件数。マーカーをタップで該当カードだけ表示。',
             imp: { 3: '大のみ', 2: '中以上', 1: 'すべて' }, showAll: 'すべて表示', selN: n => `${n}件`,
-            scoreNote: '直近7日、大3・中2・小1で好材料から悪材料を引いた値。', model: 'AI 分類',
+            scoreNote: '点数：大3・中2・小1。純影響 = 好材料 − 悪材料。', last7: '直近7日', drivers: '動かした要因', vBull: '今週は好材料が上回っています', vBear: '今週は悪材料が上回っています', vMix: '好材料と悪材料が拮抗しています', pts: '点', noWeek: '直近7日に大きなETHニュースはありません。', model: 'AI 分類',
             cats: { macro: 'マクロ・金利', flows: '資金フロー', regulation: '規制・税制', protocol: 'イーサリアム改善', security: 'セキュリティ', competitors: '競合チェーン', ecosystem: 'L2・DeFi・RWA', market: '市場構造' }
         }
     };
@@ -124,15 +124,16 @@
         const cut = Date.now() - days * dayMs;
         let s = 0;
         const per = {};
-        CATS.forEach(c => per[c] = { up: 0, down: 0, n: 0, s: 0 });
+        CATS.forEach(c => per[c] = { up: 0, down: 0, n: 0, s: 0, bu: 0, be: 0 });
+        let bu = 0, be = 0;
         S.events.forEach(e => {
             if (tOf(e) < cut) return;
             const w = e.direction * e.impact;
             s += w;
             const p = per[e.category]; if (!p) return;
-            p.n++; p.s += w; if (e.direction > 0) p.up++; else if (e.direction < 0) p.down++;
+            p.n++; p.s += w; if (e.direction > 0) { p.up++; p.bu += e.impact; bu += e.impact; } else if (e.direction < 0) { p.down++; p.be += e.impact; be += e.impact; }
         });
-        return { s: Math.max(-10, Math.min(10, s)), raw: s, per };
+        return { s: Math.max(-10, Math.min(10, s)), raw: s, per, bu, be };
     }
 
     function rangeCut() { return Date.now() - S.range * dayMs; }
@@ -203,18 +204,38 @@
         const pct = (n.s + 10) / 20 * 100;
         const week = S.events.filter(e => Date.now() - tOf(e) <= 7 * dayMs);
         const top = week.slice().sort((a, b) => b.impact - a.impact || Math.abs(b.direction) - Math.abs(a.direction) || b.date.localeCompare(a.date))[0];
+        const verdict = n.raw > 0 ? L.vBull : n.raw < 0 ? L.vBear : L.vMix;
+        const tot = n.bu + n.be;
+        const bw = tot ? Math.round(n.bu / tot * 100) : 50;
+        // Categories that had news this week, biggest net mover first.
+        const rows = CATS.filter(c => n.per[c].n).sort((a, b) => Math.abs(n.per[b].s) - Math.abs(n.per[a].s) || n.per[b].n - n.per[a].n);
+        const mx = Math.max(1, ...rows.map(c => Math.max(n.per[c].bu, n.per[c].be)));
+        const rowHtml = rows.map(c => {
+            const p = n.per[c], t = p.s > 0 ? 'up' : p.s < 0 ? 'down' : 'flat';
+            return `<button type="button" class="ni-drv${S.cat === c ? ' on' : ''}" data-cat="${c}">
+                <span class="ni-drv-name"><i style="background:${CAT_COLOR[c]}"></i>${esc(L.cats[c])}</span>
+                <span class="ni-drv-bar" aria-hidden="true"><span class="be" style="width:${p.be / mx * 50}%"></span><span class="bu" style="width:${p.bu / mx * 50}%"></span></span>
+                <span class="ni-drv-n ${t}">${p.s > 0 ? '+' : ''}${p.s}</span>
+            </button>`;
+        }).join('');
+        const td = top ? top.date.slice(5).replace('-', '.') : '';
         el.innerHTML = `
-            <div class="ni-strip-head">
-                <div class="ni-strip-title"><strong>${esc(L.title)}</strong><span>${esc(L.sub)}</span></div>
-                <div class="ni-gauge" title="${esc(L.scoreNote)}">
-                    <span class="ni-gauge-label">${esc(L.net7)}</span>
-                    <span class="ni-gauge-val ${tone}">${n.raw > 0 ? '+' : ''}${n.raw} <small>${esc(word)}</small></span>
-                    <span class="ni-gauge-bar"><span class="ni-gauge-mid"></span><span class="ni-gauge-dot ${tone}" style="left:${pct}%"></span></span>
-                    <span class="ni-gauge-count">${week.length}${esc(L.events)}</span>
-                </div>
+            <div class="ni-v-head"><strong>${esc(L.title)}</strong><span>${esc(L.last7)} · ${week.length}${esc(L.events)}</span></div>
+            ${week.length ? `
+            <div class="ni-v-main" title="${esc(L.scoreNote)}">
+                <span class="ni-v-score ${tone}">${n.raw > 0 ? '+' : ''}${n.raw}</span>
+                <span class="ni-v-text"><b class="${tone}">${esc(word)}</b><span>${esc(verdict)}</span></span>
             </div>
-            <div class="ni-chips" role="group">${chipsHtml(n.per)}</div>
-            ${top ? `<button type="button" class="ni-top" data-open="${esc(top.id)}"><span class="ni-top-k">${esc(L.top)}${dirBadge(top)}</span><span class="ni-top-t">${esc(loc(top.title))}</span><span class="ni-top-m">${esc(loc(top.mechanism))}</span></button>` : ''}`;
+            <div class="ni-tug">
+                <div class="ni-tug-bar" aria-hidden="true"><span class="bu" style="width:${bw}%"></span><span class="be" style="width:${100 - bw}%"></span></div>
+                <div class="ni-tug-k"><span class="up">▲ ${esc(L.bull)} ${n.bu}${esc(L.pts)}</span><span class="down">${esc(L.bear)} ${n.be}${esc(L.pts)} ▼</span></div>
+            </div>
+            <div class="ni-drvs">
+                <div class="ni-sec-k">${esc(L.drivers)}</div>
+                ${rowHtml}
+            </div>
+            ${top ? `<button type="button" class="ni-top" data-open="${esc(top.id)}"><span class="ni-top-k">${esc(L.top)} · ${esc(td)}${dirBadge(top)}</span><span class="ni-top-t">${esc(loc(top.title))}</span><span class="ni-top-m">${esc(loc(top.mechanism))}</span></button>` : ''}
+            <div class="ni-v-note">${esc(L.scoreNote)}</div>` : `<div class="ni-strip-msg">${esc(L.noWeek)}</div>`}`;
     }
 
     function dirBadge(e) {
@@ -448,7 +469,7 @@
 
     function bind() {
         document.addEventListener('click', (e) => {
-            const chip = e.target.closest('#news-impact-strip .ni-chip, #news-impact-panel .ni-chip');
+            const chip = e.target.closest('#news-impact-strip .ni-drv, #news-impact-panel .ni-chip');
             if (chip) { S.cat = chip.dataset.cat; S.openId = null; S.sel = null; S.hl = null; render(); if (chip.closest('#news-impact-strip')) scrollPanel(); return; }
             const rg = e.target.closest('#news-impact-panel .ni-range button');
             if (rg) { S.range = +rg.dataset.range; S.sel = null; S.hl = null; render(); return; }

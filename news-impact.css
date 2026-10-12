@@ -23,6 +23,39 @@
 .summary-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 #news-impact-strip:hover { border-color: var(--text-muted); }
 .ni-strip-msg { color: var(--text-muted); font-size: var(--text-sm); }
+/* v2 strip: verdict → bull/bear tug bar → category drivers → biggest event */
+.ni-v-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.ni-v-head strong { font-family: var(--font-heading); font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--text); }
+.ni-v-head span { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+.ni-v-main { display: flex; align-items: center; gap: 14px; cursor: help; }
+.ni-v-score { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 34px; line-height: 1; font-weight: var(--weight-bold); letter-spacing: -1px; min-width: 2ch; }
+.ni-v-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ni-v-text b { font-size: var(--text-sm); font-weight: var(--weight-semibold); align-self: flex-start; padding: 2px 9px; border-radius: var(--radius-full); }
+.ni-v-text b.up { background: var(--up-bg); } .ni-v-text b.down { background: var(--down-bg); } .ni-v-text b.flat { background: var(--bg-subtle); color: var(--text-muted); }
+.ni-v-text span { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.35; }
+.ni-v-score.up, .ni-v-text b.up, .ni-tug-k .up, .ni-drv-n.up { color: var(--up); }
+.ni-v-score.down, .ni-v-text b.down, .ni-tug-k .down, .ni-drv-n.down { color: var(--down); }
+.ni-v-score.flat, .ni-drv-n.flat { color: var(--text-muted); }
+.ni-tug { display: flex; flex-direction: column; gap: 5px; }
+.ni-tug-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; background: var(--bg-subtle); }
+.ni-tug-bar .bu { background: var(--up); } .ni-tug-bar .be { background: var(--down); }
+.ni-tug-k { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.ni-sec-k { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+.ni-drvs { display: flex; flex-direction: column; gap: 2px; padding-top: 10px; border-top: 1px solid var(--border-light); }
+.ni-drv { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) 3ch; align-items: center; gap: 10px; padding: 6px 6px; margin: 0 -6px; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.ni-drv:hover, .ni-drv.on { background: var(--bg-subtle); }
+.ni-drv-name { display: flex; align-items: center; gap: 7px; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ni-drv-name i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.ni-drv-bar { position: relative; display: flex; justify-content: center; height: 8px; }
+.ni-drv-bar::before { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--border); }
+.ni-drv-bar span { display: block; height: 100%; }
+.ni-drv-bar .be { margin-left: auto; background: var(--down); border-radius: 3px 0 0 3px; }
+.ni-drv-bar .bu { margin-right: auto; background: var(--up); border-radius: 0 3px 3px 0; }
+.ni-drv-bar { justify-content: flex-start; }
+.ni-drv-bar .be, .ni-drv-bar .bu { position: absolute; top: 0; bottom: 0; margin: 0; }
+.ni-drv-bar .be { right: 50%; } .ni-drv-bar .bu { left: 50%; }
+.ni-drv-n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: right; }
+.ni-v-note { font-size: 11px; color: var(--text-muted); }
 .ni-strip-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .ni-strip-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .ni-strip-title strong { font-family: var(--font-heading); font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--text); }

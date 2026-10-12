@@ -24,7 +24,7 @@ const out = process.argv[3] || '/tmp/ni';
       const docOverflow = document.documentElement.scrollWidth - window.innerWidth;
       // overlap check: children of card-top / strip head
       const overlaps = [];
-      document.querySelectorAll('#news-impact-strip .ni-strip-head > *, .ni-card-top > *').forEach((a, i, arr) => {
+      document.querySelectorAll('#news-impact-strip .ni-v-main > *, #news-impact-strip .ni-drv > *, .ni-card-top > *').forEach((a, i, arr) => {
         const ra = a.getBoundingClientRect();
         for (const bb of [a.nextElementSibling].filter(Boolean)) { const rb = bb.getBoundingClientRect(); if (ra.right > rb.left + 1 && ra.bottom > rb.top + 1 && rb.right > ra.left + 1 && rb.bottom > ra.top + 1) overlaps.push(a.className + '|' + bb.className); }
       });
