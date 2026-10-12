@@ -76,7 +76,7 @@
         fear_greed: ['feargreed'], funding_rate: ['funding'], open_interest: ['openInterest'], exchange_reserve: ['reserve'],
         staking: ['staking', 'stakingApr'], burn: ['daily-burn'], supply: ['supply', 'net-supply'], fees: ['fees'], tvl: ['tvl'],
         stablecoins: ['stablecoin', 'stables'], l2_activity: ['l2'], dominance: ['dominance'], btc: ['ethbtc'], volatility: ['volatility'],
-        active_addresses: ['l1ActiveAddr']
+        active_addresses: ['l1ActiveAddr'], rates: ['us10y']
     };
     const MB_DAYS = 30;
 
