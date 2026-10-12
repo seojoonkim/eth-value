@@ -21,6 +21,7 @@
     const UP = '#10b981', DOWN = '#ef4444', FLAT = '#94a3b8';
     const T = {
         en: {
+            up: 'Upcoming', upNone: 'No scheduled FOMC, CPI or mainnet upgrade in the next 60 days.', upSep: 'with projections', upTent: 'Fed dates are tentative until confirmed at the prior meeting.', upKind: { fomc: 'FOMC rate decision', cpi: 'US CPI release', upgrade: 'Ethereum mainnet upgrade' }, dday: n => n === 0 ? 'Today' : `D-${n}`,
             title: 'News Impact', mb: n => `${n} news`, mbTip: n => `${n} news in the last 30 days point to this metric. Tap to see them.`, mbHead: 'Last 30 days', mbClear: 'Clear', mxTitle: 'Impact by week', mxHint: 'Net score per category, last 4 weeks. Tap a cell to see its cards.', mxN: n => `${n} news`, lgScore: 'Net score (bullish − bearish)', lgCount: 'News count', lgHi: 'Includes high-impact news', lgBear: 'Bearish', lgBull: 'Bullish', mxClear: 'Clear', sub: 'How this week\'s news moves ETH', net7: '7D net impact', bull: 'Bullish', bear: 'Bearish', mixed: 'Mixed',
             top: 'Biggest event', all: 'All', none: 'No events in this range yet.', loading: 'Loading news…', err: 'News data unavailable right now.',
             impact: { 3: 'High', 2: 'Medium', 1: 'Low' }, horizon: { immediate: 'Immediate', short: 'Short-term', structural: 'Structural' },
@@ -31,6 +32,7 @@
             cats: { macro: 'Macro & Rates', flows: 'Fund Flows', regulation: 'Regulation & Tax', protocol: 'Ethereum Upgrades', security: 'Security', competitors: 'Competing Chains', ecosystem: 'L2 · DeFi · RWA', market: 'Market Structure' }
         },
         ko: {
+            up: '예정 일정', upNone: '앞으로 60일 안에 잡힌 FOMC·CPI·메인넷 업그레이드가 없어요.', upSep: '경제전망 포함', upTent: '연준 일정은 직전 회의에서 확정되기 전까지 잠정이에요.', upKind: { fomc: 'FOMC 금리 결정', cpi: '미국 CPI 발표', upgrade: '이더리움 메인넷 업그레이드' }, dday: n => n === 0 ? '오늘' : `D-${n}`,
             title: '뉴스 영향', mb: n => `관련 뉴스 ${n}건`, mbTip: n => `최근 30일 이 지표를 움직인 뉴스 ${n}건. 누르면 뉴스를 보여줘요.`, mbHead: '최근 30일', mbClear: '해제', mxTitle: '주별 영향 지도', mxHint: '최근 4주 카테고리별 뉴스 영향이에요. 칸을 누르면 해당 뉴스만 보여요.', mxN: n => `${n}건`, lgScore: '순영향 점수 (호재 − 악재)', lgCount: '뉴스 건수', lgHi: '큰 뉴스 포함', lgBear: '악재', lgBull: '호재', mxClear: '해제', sub: '이번 주 뉴스가 ETH 가격에 주는 영향', net7: '최근 7일 순영향', bull: '호재', bear: '악재', mixed: '혼재',
             top: '가장 큰 사건', all: '전체', none: '이 기간에는 아직 사건이 없어요.', loading: '뉴스 불러오는 중…', err: '지금은 뉴스 데이터를 불러올 수 없어요.',
             impact: { 3: '상', 2: '중', 1: '하' }, horizon: { immediate: '즉시', short: '단기', structural: '구조적' },
@@ -41,6 +43,7 @@
             cats: { macro: '거시·금리', flows: '자금 흐름', regulation: '제도·규제·과세', protocol: '이더리움 개선', security: '사고·보안', competitors: '경쟁 체인', ecosystem: 'L2·DeFi·RWA', market: '시장 구조·심리' }
         },
         zh: {
+            up: '即将到来', upNone: '未来 60 日内没有已排定的 FOMC、CPI 或主网升级。', upSep: '含经济预测', upTent: '美联储日程在上次会议确认前均为暂定。', upKind: { fomc: 'FOMC 利率决议', cpi: '美国 CPI 公布', upgrade: '以太坊主网升级' }, dday: n => n === 0 ? '今天' : `D-${n}`,
             title: '新闻影响', mb: n => `相关新闻 ${n} 条`, mbTip: n => `近 30 日有 ${n} 条新闻影响此指标，点击查看。`, mbHead: '近 30 日', mbClear: '清除', mxTitle: '每周影响矩阵', mxHint: '近 4 周各类别新闻影响。点击格子只看对应新闻。', mxN: n => `${n}条`, lgScore: '净影响分（利好 − 利空）', lgCount: '新闻条数', lgHi: '含重大新闻', lgBear: '利空', lgBull: '利好', mxClear: '清除', sub: '本周新闻如何影响 ETH 价格', net7: '近 7 日净影响', bull: '利好', bear: '利空', mixed: '中性',
             top: '最大事件', all: '全部', none: '该区间暂无事件。', loading: '正在加载新闻…', err: '暂时无法加载新闻数据。',
             impact: { 3: '高', 2: '中', 1: '低' }, horizon: { immediate: '即时', short: '短期', structural: '结构性' },
@@ -51,6 +54,7 @@
             cats: { macro: '宏观·利率', flows: '资金流向', regulation: '监管·税收', protocol: '以太坊升级', security: '安全事件', competitors: '竞争公链', ecosystem: 'L2·DeFi·RWA', market: '市场结构' }
         },
         ja: {
+            up: '今後の予定', upNone: '今後60日以内に予定されたFOMC・CPI・メインネットアップグレードはありません。', upSep: '経済見通しあり', upTent: 'FRBの日程は前回会合で確定するまで暫定です。', upKind: { fomc: 'FOMC 金利決定', cpi: '米CPI発表', upgrade: 'イーサリアム メインネット アップグレード' }, dday: n => n === 0 ? '今日' : `D-${n}`,
             title: 'ニュース影響', mb: n => `関連ニュース ${n}件`, mbTip: n => `直近30日でこの指標を動かしたニュース ${n}件。タップで表示。`, mbHead: '直近30日', mbClear: '解除', mxTitle: '週別インパクト表', mxHint: '直近4週・カテゴリ別のニュース影響。セルをタップで該当ニュースだけ表示。', mxN: n => `${n}件`, lgScore: '純影響スコア（好材料 − 悪材料）', lgCount: 'ニュース件数', lgHi: '大きなニュースを含む', lgBear: '悪材料', lgBull: '好材料', mxClear: '解除', sub: '今週のニュースが ETH 価格に与える影響', net7: '直近7日の純影響', bull: '好材料', bear: '悪材料', mixed: '中立',
             top: '最大の出来事', all: 'すべて', none: 'この期間のイベントはまだありません。', loading: 'ニュースを読み込み中…', err: '現在ニュースデータを取得できません。',
             impact: { 3: '大', 2: '中', 1: '小' }, horizon: { immediate: '即時', short: '短期', structural: '構造的' },
@@ -77,7 +81,7 @@
     const MB_DAYS = 30;
 
     // minImp: impact filter (1 all, 2 medium+, 3 high only). sel: selected bucket key. hl: highlighted bucket key.
-    const S = { events: [], prices: [], cat: 'all', range: 90, minImp: 2, sel: null, hl: null, bd: 1, origin: 0, pts: [], chart: null, openId: null, week: null, metric: null, status: 'loading' };
+    const S = { events: [], cal: [], prices: [], cat: 'all', range: 90, minImp: 2, sel: null, hl: null, bd: 1, origin: 0, pts: [], chart: null, openId: null, week: null, metric: null, status: 'loading' };
 
     const lang = () => { const l = (typeof currentLang !== 'undefined' && currentLang) || document.documentElement.lang || 'en'; return T[l] ? l : 'en'; };
     const tr = () => T[lang()];
@@ -103,6 +107,8 @@
                 rest(`historical_eth_price?select=date,close&date=gte.${since}&order=date.asc&limit=1000`)
             ]);
             S.events = ev || [];
+            // Scheduled events are optional: a missing table/row must not hide the news itself.
+            S.cal = await rest(`calendar_events?select=id,kind,name,date,date_start,starts_at,sep,source,source_url&date=gte.${isoDay(Date.now() - dayMs)}&order=date.asc&limit=12`).catch(() => []);
             S.prices = (px || []).map(p => ({ t: new Date(p.date + 'T00:00:00Z').getTime(), v: +p.close })).filter(p => p.v > 0);
             S.status = 'ok';
         } catch (e) {
@@ -232,6 +238,31 @@
         box.insertAdjacentElement('afterend', el);
     }
 
+    // Upcoming line: next FOMC / CPI / mainnet upgrade from first-party schedules (calendar_events), 60-day window.
+    function upcomingHtml() {
+        const L = tr();
+        // D-day counts calendar days in the reader's own timezone: an exact-time release (CPI, upgrade) uses its
+        // local date; a date-only US event (FOMC) uses its stated date.
+        const now = Date.now();
+        const localDay = (t) => { const d = new Date(t); return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()); };
+        const today = localDay(now);
+        const dayOf = (c) => c.starts_at ? localDay(Date.parse(c.starts_at)) : Date.parse(c.date + 'T00:00:00Z');
+        const rows = (S.cal || []).filter(c => {
+            const end = c.starts_at ? Date.parse(c.starts_at) : Date.parse(c.date + 'T23:59:59Z') + 5 * 3600000;
+            return end >= now && dayOf(c) - today <= 60 * dayMs;
+        }).slice(0, 3);
+        const items = rows.map(c => {
+            const d = Math.max(0, Math.round((dayOf(c) - today) / dayMs));
+            const day = isoDay(dayOf(c));
+            const when = c.date_start && c.date_start !== c.date ? `${mmdd(c.date_start)}–${mmdd(c.date)}` : mmdd(c.starts_at ? day : c.date);
+            const time = c.starts_at ? ' ' + new Date(c.starts_at).toLocaleTimeString(lang() === 'en' ? 'en-US' : lang(), { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short' }) : '';
+            const nm = c.kind === 'upgrade' ? `${L.upKind.upgrade} · ${c.name}` : L.upKind[c.kind] || c.name;
+            const tip = `${nm} — ${c.source}${c.kind === 'fomc' ? ' · ' + L.upTent : ''}`;
+            return `<a class="ni-up-i k-${esc(c.kind)}" href="${esc(c.source_url)}" target="_blank" rel="noopener noreferrer" title="${esc(tip)}"><span class="ni-up-d${d <= 3 ? ' soon' : ''}">${esc(L.dday(d))}</span><span class="ni-up-n">${esc(nm)}${c.sep ? `<small>${esc(L.upSep)}</small>` : ''}</span><span class="ni-up-w">${esc(when + time)}</span></a>`;
+        }).join('');
+        return `<div class="ni-up"><div class="ni-sec-k">${esc(L.up)}</div>${items || `<div class="ni-up-none">${esc(L.upNone)}</div>`}</div>`;
+    }
+
     function renderStrip() {
         placeStrip();
         const el = document.getElementById('news-impact-strip');
@@ -275,7 +306,8 @@
                 ${rowHtml}
             </div>
             ${top ? `<button type="button" class="ni-top" data-open="${esc(top.id)}"><span class="ni-top-k">${esc(L.top)} · ${esc(td)}${dirBadge(top)}</span><span class="ni-top-t">${esc(loc(top.title))}</span><span class="ni-top-m">${esc(loc(top.mechanism))}</span></button>` : ''}
-            <div class="ni-v-note">${esc(L.scoreNote)}</div>` : `<div class="ni-strip-msg">${esc(L.noWeek)}</div>`}`;
+            <div class="ni-v-note">${esc(L.scoreNote)}</div>` : `<div class="ni-strip-msg">${esc(L.noWeek)}</div>`}
+            ${upcomingHtml()}`;
     }
 
     function dirBadge(e) {

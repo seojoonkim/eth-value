@@ -41,3 +41,9 @@ jobs:
           else
             node scripts/news-collector.js
           fi
+      - name: Collect scheduled events (FOMC / CPI / mainnet upgrades, first-party only)
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/calendar-collector.js
