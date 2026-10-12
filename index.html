@@ -15565,6 +15565,26 @@ body.dark .floating-action-badge, body.dark .floating-action-badge.rate-mode { b
                     </div>
                 </div>
 
+                <div class="metric-card" data-metric="dxy">
+                    <div class="metric-header">
+                        <div class="metric-info">
+                            <h4 data-i18n="metric.dxy">Dollar Index (Broad)</h4>
+                            <div class="metric-value-large" id="dxy-value">--</div>
+                        </div>
+                        <div class="metric-tabs" data-chart="dxy">
+                            <button class="metric-tab active" data-period="90">90D</button>
+                            <button class="metric-tab" data-period="365">1Y</button>
+                            <button class="metric-tab" data-period="1095">3Y</button>
+                        </div>
+                    </div>
+                    <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dxy-chart"></canvas></div>
+                    <div class="metric-footer">
+                        <span title="FRED DTWEXBGS (Fed H.10 Nominal Broad Dollar Index, Jan 2006=100) — not ICE DXY">FRED <span id="dxy-asof"></span></span>
+                        <span class="change" id="dxy-change">--</span>
+                        <div class="metric-desc" data-i18n="desc.dxy">Fed's trade-weighted dollar vs 26 currencies (not ICE DXY). A stronger dollar usually weighs on ETH.</div>
+                    </div>
+                </div>
+
                 <div class="metric-card" data-metric="nvt">
                     <div class="metric-header">
                         <div class="metric-info">
@@ -20708,6 +20728,8 @@ body.dark .floating-action-badge, body.dark .floating-action-badge.rate-mode { b
                 'metric.volatility': "Volatility",
                 'metric.us10y': "US 10Y Yield",
                 'desc.us10y': "US 10-year Treasury yield. Rising yields tighten liquidity and weigh on risk assets like ETH.",
+                'metric.dxy': "Dollar Index (Broad)",
+                'desc.dxy': "Fed's trade-weighted dollar vs 26 currencies (not ICE DXY). A stronger dollar usually weighs on ETH.",
                 'metric.nvt': "NVT Ratio",
                 'metric.stakingYield': "Staking Yield (APR)",
                 'metric.stakedEth': "Staked ETH",
@@ -21198,6 +21220,8 @@ body.dark .floating-action-badge, body.dark .floating-action-badge.rate-mode { b
                 'metric.volatility': "변동성",
                 'metric.us10y': "미 10년물 금리",
                 'desc.us10y': "미국 10년 만기 국채 금리. 금리가 오르면 유동성이 줄어 ETH 같은 위험자산에 부담.",
+                'metric.dxy': "달러지수(광의)",
+                'desc.dxy': "연준이 26개 통화 대비로 산출하는 교역가중 달러지수(ICE DXY와 다름). 달러가 강해지면 보통 ETH에 부담.",
                 'metric.nvt': "NVT 비율",
                 'metric.stakingYield': "스테이킹 수익률",
                 'metric.stakedEth': "스테이킹 ETH",
@@ -21681,6 +21705,8 @@ body.dark .floating-action-badge, body.dark .floating-action-badge.rate-mode { b
                 'metric.volatility': "波动率",
                 'metric.us10y': "美国10年期国债收益率",
                 'desc.us10y': "美国10年期国债收益率。收益率上升会收紧流动性，压制ETH等风险资产。",
+                'metric.dxy': "美元指数（广义）",
+                'desc.dxy': "美联储编制的对26种货币贸易加权美元指数（非ICE DXY）。美元走强通常压制ETH。",
                 'metric.nvt': "NVT比率",
                 'metric.stakingYield': "质押收益率",
                 'metric.stakedEth': "质押ETH",
@@ -22168,6 +22194,8 @@ body.dark .floating-action-badge, body.dark .floating-action-badge.rate-mode { b
                 'metric.volatility': "ボラティリティ",
                 'metric.us10y': "米10年債利回り",
                 'desc.us10y': "米国10年国債利回り。利回り上昇は流動性を引き締め、ETHなどリスク資産の重しに。",
+                'metric.dxy': "ドル指数（広義）",
+                'desc.dxy': "FRBが26通貨に対して算出する貿易加重ドル指数（ICE DXYとは別）。ドル高は通常ETHの重しに。",
                 'metric.nvt': "NVT比率",
                 'metric.stakingYield': "ステーキング利回り",
                 'metric.stakedEth': "ステーキングETH",
@@ -36557,5 +36585,6 @@ Check out ETHval 👇`;
     </script>
     <script src="news-impact.js?v=20261013j" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
+    <script src="dxy.js?v=20261013a" defer></script>
 </body>
 </html>

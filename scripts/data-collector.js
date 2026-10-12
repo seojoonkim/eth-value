@@ -2077,6 +2077,32 @@ async function collect_us10y() {
 }
 
 // ============================================================
+// Broad U.S. Dollar Index (FRED DTWEXBGS, public CSV — no key). Not ICE DXY.
+// ============================================================
+// Business-day series, published weekly; "." skipped, never filled. Last 3 years only.
+async function collect_dxy() {
+    let text;
+    try {
+        const res = await fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTWEXBGS', { signal: AbortSignal.timeout(30000) });
+        if (!res.ok) return result.fail(`FRED HTTP ${res.status}`);
+        text = await res.text();
+    } catch (e) { return result.fail('FRED unreachable: ' + e.message); }
+    const lines = text.trim().split('\n');
+    if (!/^observation_date,DTWEXBGS/.test(lines[0] || '')) return result.fail('FRED CSV header changed');
+    const cut = new Date(Date.now() - 1095 * 864e5).toISOString().slice(0, 10);
+    const records = [];
+    for (const line of lines.slice(1)) {
+        const [date, v] = line.split(',');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < cut) continue;
+        const x = parseFloat(v);
+        if (!Number.isFinite(x) || x < 50 || x > 250) continue;
+        records.push({ date, index_value: x, source: 'fred' });
+    }
+    if (records.length < 100) return result.fail(`FRED DTWEXBGS: only ${records.length} rows`);
+    return await upsertBatch('historical_dxy', records);
+}
+
+// ============================================================
 // 10. DEX Volume (DefiLlama)
 // ============================================================
 async function collect_dex_volume() {
@@ -3342,10 +3368,11 @@ async function main() {
         collect_gas_burn(),
         collect_l2_stablecoin_supply(),
         collect_l2_stablecoin_volume(),
-        collect_us10y()
+        collect_us10y(),
+        collect_dxy()
     ]);
     
-    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'gas_burn', 'l2_stablecoin_supply', 'l2_stablecoin_volume', 'us10y'];
+    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'gas_burn', 'l2_stablecoin_supply', 'l2_stablecoin_volume', 'us10y', 'dxy'];
     phase3Results.forEach((res, i) => {
         results[phase3Names[i]] = wrapResult(res);
         const r = results[phase3Names[i]];

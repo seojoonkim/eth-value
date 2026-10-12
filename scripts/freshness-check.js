@@ -11,6 +11,7 @@ const EXPECT_SOURCE = {
     historical_l2_addresses: 'growthepie',
     historical_open_interest: 'cryptoquant',
     historical_us10y: 'fred',
+    historical_dxy: 'fred',
 };
 
 const TABLES = {
@@ -26,6 +27,7 @@ const TABLES = {
     historical_l2_addresses: 4,
     historical_staking_apr: 4,
     historical_fear_greed: 3,
+    historical_dxy: 14,           // FRED H.10 broad index is published weekly (Mon, data to prior Fri) + holidays
     historical_us10y: 6,          // business days only; FRED posts D-1 (weekend + US holiday ≤ 4d)
     historical_l2_stablecoin_daily: 4,
     historical_l2_stablecoin_volume: 4,
