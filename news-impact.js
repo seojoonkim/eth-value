@@ -85,7 +85,7 @@
     const MB_DAYS = 30;
 
     // minImp: impact filter (1 all, 2 medium+, 3 high only). sel: selected bucket key. hl: highlighted bucket key.
-    const S = { events: [], cal: [], prices: [], cat: 'all', range: 90, minImp: 2, sel: null, hl: null, bd: 1, origin: 0, pts: [], chart: null, openId: null, week: null, metric: null, status: 'loading' };
+    const S = { events: [], cal: [], prices: [], cat: 'all', range: 30, minImp: 2, sel: null, hl: null, bd: 1, origin: 0, pts: [], chart: null, openId: null, week: null, metric: null, status: 'loading' };
 
     const lang = () => { const l = (typeof currentLang !== 'undefined' && currentLang) || document.documentElement.lang || 'en'; return T[l] ? l : 'en'; };
     const tr = () => T[lang()];
@@ -640,7 +640,7 @@
             const chip = e.target.closest('#news-impact-strip .ni-drv, #news-impact-panel .ni-chip');
             const mb = e.target.closest('.ni-mbadge');
             if (mb) { S.metric = mb.dataset.nkey; S.week = null; S.cat = 'all'; S.range = MB_DAYS; S.sel = null; S.hl = null; S.openId = null; render(); scrollPanel(); return; }
-            if (e.target.closest('#news-impact-panel .ni-metric-clear')) { S.metric = null; S.range = 90; S.sel = null; S.hl = null; render(); return; }
+            if (e.target.closest('#news-impact-panel .ni-metric-clear')) { S.metric = null; S.range = 30; S.sel = null; S.hl = null; render(); return; }
             const mc = e.target.closest('#news-impact-panel .ni-mx-cell:not(.empty)');
             if (mc || chip || e.target.closest('#news-impact-panel .ni-range button, #news-impact-panel .ni-imp button, #news-impact-strip .ni-top, #news-impact-panel .ni-wk-pill')) S.metric = null;
             if (mc) {

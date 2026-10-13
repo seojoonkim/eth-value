@@ -2,10 +2,9 @@ name: ETHval Data Collection
 
 on:
   schedule:
-    # 매일 UTC 04:30 (KST 13:30) - Dune 쿼리 완료 후 30분 뒤
-    - cron: '30 4 * * *'
-    # 매일 UTC 12:00 (KST 21:00) - 오후 업데이트
-    - cron: '0 12 * * *'
+    # 정확히 12시간 간격: UTC 04:30 / 16:30 (KST 13:30 / 01:30)
+    # 04:30은 Dune 쿼리 완료 후 30분 뒤
+    - cron: '30 4,16 * * *'
   workflow_dispatch:
     # 수동 실행 가능
 

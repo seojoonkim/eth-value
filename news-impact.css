@@ -316,15 +316,15 @@
 body .section .section-title::before { content: none; }
 body .section[id]:not(#valuation):not(#section-valuation) { border-top: 1px solid var(--border); padding-top: 32px; margin-top: 16px; }
 body .section .section-header { margin-top: 0; padding-top: 0; }
-body .section .section-title { flex-direction: column; align-items: flex-start; gap: 0; font-size: 40px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); line-height: 1.15; }
+body .section .section-title { flex-direction: column; align-items: flex-start; gap: 0; font-size: 44px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); line-height: 1.15; }
 body .section .section-title > :first-child::before {
-  content: "0" counter(section-counter) " / 05"; display: block;
+  content: "0" counter(section-counter) " / 06"; display: block;
   font-size: 13px; font-weight: 600; letter-spacing: 0.12em; line-height: 1;
   color: var(--primary); margin-bottom: 12px; font-family: var(--font-mono);
 }
 @media (max-width: 768px) {
   body .section[id]:not(#valuation):not(#section-valuation) { padding-top: 24px; margin-top: 8px; }
-  body .section .section-title { font-size: 32px; }
+  body .section .section-title { font-size: 36px; }
 }
 
 /* subsection titles: number as a small mono tag, title in body text colour */
@@ -348,3 +348,144 @@ body .metrics-subgroup-title .sg-num { font-family: var(--font-mono); font-size:
 /* Simon 2026-10-13: nav taps must land each section fully below the sticky header.
    --hdr-h is the measured .header-wrapper height (set by JS, follows resizes / wrapping). */
 body .section[id] { scroll-margin-top: calc(var(--hdr-h, 96px) + 12px); }
+
+/* Simon 2026-10-14: mobile usability — contact line wraps (no hidden sideways scroll),
+   inline X share link gets a 32px tap area without moving the text. */
+@media (max-width: 768px) {
+  #valuation .summary-cta { flex-wrap: wrap; white-space: normal; row-gap: 6px; overflow-x: visible; }
+  #valuation .summary-cta .contact-link { padding: 4px 0; }
+  .summary-text a[href*="twitter.com/intent/tweet"] { display: inline-block; min-width: 32px; min-height: 32px; margin: -8px -10px; padding: 8px 10px; text-align: center; box-sizing: border-box; }
+}
+
+/* Simon 2026-10-14: emphasis — box titles and key numbers one scale step up. */
+.metric-card h4 { font-size: 14px; font-weight: 650; }
+.ni-card-title { font-size: 14px; }
+.method-name { font-size: 16px; }
+.sim-section-title, .ni-mx-title { font-size: 14px; }
+.simulator-box-title { font-size: 18px; }
+.metrics-subgroup-title { font-size: 28px; }
+@media (min-width: 769px) { .metric-value-large { font-size: 24px; } }
+@media (max-width: 768px) { .metrics-subgroup-title { font-size: 24px; } }
+
+/* Simon 2026-10-14: calmer, more premium palette + very light gradient tricks.
+   Softer contrast extremes (no pure white on near-black), warmer neutrals, a faint
+   top-down sheen on cards, a soft violet glow at the top of the page, and section
+   hairlines that fade out at both ends. Text colours keep WCAG AA (contrast check). */
+body {
+  --bg: #f5f5f7; --bg-card: #ffffff; --bg-card-alt: #f9f9fb; --bg-subtle: #f1f1f5;
+  --border: #e0e1e8; --border-light: #ecedf2;
+  --text: #17181d; --text-body: #2e3038;
+  --card-sheen: linear-gradient(180deg, rgba(103, 71, 230, 0.025) 0%, rgba(255, 255, 255, 0) 120px);
+  --page-glow: radial-gradient(1200px 520px at 50% -160px, rgba(103, 71, 230, 0.07), rgba(103, 71, 230, 0) 70%);
+}
+body.dark {
+  --bg: #0f1116; --bg-card: #161920; --bg-card-alt: #1a1d25; --bg-subtle: #1c1f27;
+  --border: #262a33; --border-light: #1f222a;
+  --text: #e9e9ee; --text-body: #cfd1d8;
+  --card-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0) 140px);
+  --page-glow: radial-gradient(1200px 560px at 50% -180px, rgba(165, 148, 249, 0.10), rgba(165, 148, 249, 0) 70%);
+}
+body { background-color: var(--bg); background-image: var(--page-glow); background-repeat: no-repeat; }
+.metric-card, .method-card, .valuation-model, .price-card, .summary-valuation-box, .community-stats-box,
+.ni-chart-box, .ni-score, .conclusion-panel, .historical-main-chart, .simulator-box,
+.category-card, .model-stats-table-wrapper, .user-leaderboard-wrapper {
+  background-image: var(--card-sheen);
+}
+body.dark .metric-card, body.dark .method-card, body.dark .valuation-model, body.dark .price-card,
+body.dark .summary-valuation-box, body.dark .community-stats-box, body.dark .ni-chart-box,
+body.dark .conclusion-panel, body.dark .simulator-box, body.dark .category-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+body .section[id]:not(#valuation):not(#section-valuation) {
+  border-top-color: transparent;
+  border-image: linear-gradient(90deg, transparent, var(--border) 12%, var(--border) 88%, transparent) 1;
+}
+
+/* community tabs: side-scroll row on phones — fade the right edge so it reads as scrollable */
+@media (max-width: 768px) {
+  .community-tabs { scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent); mask-image: linear-gradient(90deg, #000 86%, transparent); padding-right: 24px; }
+  .community-tabs::-webkit-scrollbar { display: none; }
+}
+
+/* ===== Simon 2026-10-14: extras (ELI5, lines switch, update stamp, share, research 06, refined color) ===== */
+.ev-eli5-btn{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:6px;border-radius:50%;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);font-family:inherit;font-style:normal;font-weight:700;font-size:12px;line-height:1;cursor:pointer;
+  vertical-align:middle;flex:0 0 auto;position:relative}
+.ev-eli5-btn::after{content:"";position:absolute;inset:-12px}
+.ev-eli5-btn:hover,.ev-eli5-btn:focus-visible{color:var(--primary);border-color:var(--primary)}
+.model-row-1{display:flex;align-items:center}
+.ev-eli5-hint{font-size:13px;color:var(--text-muted);margin:-4px 0 12px}
+.ev-eli5-pop{position:absolute;z-index:1200;background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;box-shadow:0 12px 32px rgba(15,18,30,.16);font-size:14px;line-height:1.55;
+  word-break:keep-all;overflow-wrap:anywhere}
+.ev-eli5-cat{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--primary);text-transform:uppercase;margin-bottom:6px}
+.ev-eli5-lead{font-weight:700;margin-bottom:6px}
+.ev-eli5-body{color:var(--text-secondary)}
+.ev-eli5-how{font-size:12px;color:var(--text-muted);margin-top:10px}
+.ev-eli5-formula{display:block;margin-top:4px;padding:6px 8px;border-radius:6px;background:var(--bg-subtle);font-size:12px;white-space:normal}
+.ev-eli5-all{display:inline-block;margin-top:10px;font-size:13px;font-weight:600;color:var(--primary);text-decoration:none}
+#ev-model-families{scroll-margin-top:120px}
+
+.ev-lines-toggle{display:inline-flex;align-items:center;gap:8px;margin-left:auto;padding:6px 12px;min-height:32px;border-radius:999px;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer}
+.ev-switch{width:28px;height:16px;border-radius:999px;background:var(--primary);position:relative;transition:background .2s}
+.ev-switch::after{content:"";position:absolute;top:2px;left:14px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .2s}
+.ev-lines-toggle[aria-checked="false"] .ev-switch{background:var(--bg-secondary)}
+.ev-lines-toggle[aria-checked="false"] .ev-switch::after{left:2px}
+.legend-row-primary{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px}
+.ev-lines-off .legend-row-models{opacity:.45}
+
+.ev-updated{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--text-muted)}
+.ev-updated[hidden]{display:none}
+.ev-dot{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px var(--up-bg)}
+
+.ev-share-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;margin-top:14px;border-radius:10px;
+  border:0;cursor:pointer;font-size:16px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg,#6747e6 0%,#5161e8 100%);box-shadow:0 6px 18px rgba(103,71,230,.25)}
+.ev-share-btn:hover{filter:brightness(1.06)}
+body.dark .ev-share-btn{background:linear-gradient(135deg,#7a5cf0 0%,#5a6ff0 100%);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.share-modal-actions{flex-wrap:wrap}
+.share-modal-btn[hidden]{display:none}
+.ev-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:2000;padding:10px 16px;border-radius:999px;
+  background:#15171c;color:#fff;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+
+.ev-research-lead{margin:8px 0 0;font-size:16px;color:var(--text-secondary);line-height:1.6;word-break:keep-all}
+.ev-research-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:20px}
+.ev-research-card{display:flex;flex-direction:column;gap:8px;padding:18px;border-radius:12px;border:1px solid var(--border);
+  background:var(--bg-card);background-image:linear-gradient(180deg,rgba(103,71,230,.035),transparent 60%);
+  color:inherit;text-decoration:none;transition:border-color .2s,transform .2s;word-break:keep-all;overflow-wrap:anywhere}
+.ev-research-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.ev-research-meta{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--primary);letter-spacing:.02em}
+.ev-research-meta span:last-child{color:var(--text-muted);font-weight:600}
+.ev-research-title{font-size:16px;font-weight:700;line-height:1.4;color:var(--text)}
+.ev-research-desc{font-size:14px;line-height:1.55;color:var(--text-secondary);flex:1}
+.ev-research-go{font-size:13px;font-weight:600;color:var(--primary)}
+@media (max-width:1000px){.ev-research-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.ev-research-grid{grid-template-columns:1fr;gap:12px}.ev-lines-toggle{margin-left:0}}
+
+/* refined color: soft top glow + barely-there card sheen + gradient headline number */
+body{background-image:radial-gradient(1100px 520px at 50% -180px,rgba(103,71,230,.07),transparent 70%);background-repeat:no-repeat}
+body.dark{background-image:radial-gradient(1100px 520px at 50% -180px,rgba(165,148,249,.10),transparent 70%)}
+.conclusion-panel{background-image:linear-gradient(180deg,rgba(103,71,230,.05),transparent 55%)}
+body.dark .conclusion-panel{background-image:linear-gradient(180deg,rgba(165,148,249,.07),transparent 55%)}
+.metric-card{background-image:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0) 90px)}
+body.dark .metric-card{background-image:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 90px)}
+.conclusion-price{background:linear-gradient(120deg,#5634d6 0%,#3f55d6 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+body.dark .conclusion-price{background:linear-gradient(120deg,#c3b6ff 0%,#9db9ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* 06 research on phones: compact list rows instead of tall cards (page-height budget) */
+@media (max-width:640px){
+  .ev-research-grid{gap:8px;margin-top:14px}
+  .ev-research-card{padding:12px 14px;gap:4px}
+  .ev-research-title{font-size:16px}
+  .ev-research-desc{font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .ev-research-go{display:none}
+}
+
+/* ⓘ tap target: 44x44 box on touch screens, visual circle stays small (border/background on ::before) */
+@media (hover:none),(max-width:768px){
+  .ev-eli5-btn{width:44px;height:44px;margin:-12px -12px -12px -6px;border:0;background:transparent}
+  .ev-eli5-btn::before{content:"";position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;
+    border:1px solid var(--border);background:var(--bg-card);z-index:-1}
+  .ev-eli5-btn::after{inset:0}
+}
