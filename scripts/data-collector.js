@@ -2370,7 +2370,7 @@ async function collect_eth_dominance() {
 }
 
 // ============================================================
-// 16-2. Open Interest (CryptoQuant direct API; Binance archive fallback)
+// 16-2. Open Interest (CryptoQuant direct API only; on failure keep history, no other-source rows)
 // ============================================================
 async function collect_open_interest() {
     // Primary: CryptoQuant all-exchange OI (the card's original definition). It looked "stopped 2026-04-04"
@@ -2386,23 +2386,16 @@ async function collect_open_interest() {
         }
         throw new Error(`only ${records.length} rows`);
     } catch (e) {
-        console.log(`  ⚠️ open_interest: CryptoQuant failed (${e.message}) → fallback Binance archive`);
+        console.log(`  ⚠️ open_interest: CryptoQuant failed (${e.message}) → keeping existing CryptoQuant history (no fallback write)`);
+        // Single-source rule (2026-10-13): the old fallback appended Binance-only OI (≈ a fraction of
+        // CryptoQuant's all-exchange OI) onto the CryptoQuant series, so one chart mixed two definitions
+        // until the next successful run deleted them (freshness showed MIXED). Now an outage only leaves the
+        // series older; freshness-check flags STALE after 3 days, which is the honest signal.
+        const { data: last } = await supabase.from('historical_open_interest')
+            .select('date,source').order('date', { ascending: false }).limit(1);
+        if (last?.[0]?.source === 'cryptoquant') return result.warn(0, `CryptoQuant failed (${e.message}); kept history to ${last[0].date}`);
+        return result.fail(`CryptoQuant failed (${e.message}) and no CryptoQuant history to keep`);
     }
-    // Fallback: Binance ETH futures OI (USDT-M ETHUSDT + COIN-M ETHUSD_PERP) from the public archive.
-    const { data: last } = await supabase.from('historical_open_interest')
-        .select('date').eq('source', 'binance').order('date', { ascending: false }).limit(1);
-    const start = last?.[0]?.date
-        ? new Date(Date.parse(last[0].date) - 3 * 864e5).toISOString().slice(0, 10)   // re-check last 3 days
-        : new Date(Date.now() - 1095 * 864e5).toISOString().slice(0, 10);
-    const end = new Date().toISOString().slice(0, 10);
-    const { records, failed } = await extraSources.binanceOIRange(start, end, { log: console.log });
-    if (failed.length) console.log(`  ⚠️ binance OI failed days: ${failed.slice(0, 3).join('; ')}${failed.length > 3 ? ` (+${failed.length - 3})` : ''}`);
-    if (!records.length) return result.fail('binance OI archive returned no days');
-    // Fallback only appends recent Binance days; it never deletes the CryptoQuant history.
-    const saved = await upsertBatch('historical_open_interest', records);
-    const lastRow = records[records.length - 1];
-    console.log(`  ✓ Binance OI ${records.length} days → ${lastRow.date} $${(lastRow.open_interest / 1e9).toFixed(2)}B`);
-    return result.warn(saved, `fallback binance (CryptoQuant failed)${failed.length ? `, ${failed.length} days failed` : ''}`);
 }
 
 // ============================================================
