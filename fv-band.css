@@ -1,0 +1,21 @@
+/* ETHval — 01.3 Fair value band chart (fv-band.js) */
+.fvb { display: flex; flex-direction: column; gap: 10px; }
+.fvb-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.fvb-tabs { display: flex; gap: 4px; }
+.fvb-sub { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+.fvb-now { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--text-secondary); }
+.fvb-chip { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.fvb-chip b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.fvb-chip.under b { color: var(--green); }
+.fvb-chip.over b { color: var(--red); }
+.fvb-area { position: relative; height: 320px; }
+.fvb-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.fvb-leg { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.fvb-leg.cur { color: var(--text); font-weight: 600; }
+.fvb-sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex: none; }
+.fvb-note { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+@media (max-width: 600px) {
+  .fvb-area { height: 230px; }
+  .fvb-now { gap: 6px 12px; }
+  .fvb-legend { gap: 4px 10px; }
+}
