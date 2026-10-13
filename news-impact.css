@@ -316,15 +316,15 @@
 body .section .section-title::before { content: none; }
 body .section[id]:not(#valuation):not(#section-valuation) { border-top: 1px solid var(--border); padding-top: 32px; margin-top: 16px; }
 body .section .section-header { margin-top: 0; padding-top: 0; }
-body .section .section-title { flex-direction: column; align-items: flex-start; gap: 0; font-size: 28px; color: var(--text); line-height: 1.25; }
+body .section .section-title { flex-direction: column; align-items: flex-start; gap: 0; font-size: 40px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); line-height: 1.15; }
 body .section .section-title > :first-child::before {
   content: "0" counter(section-counter) " / 05"; display: block;
-  font-size: 12px; font-weight: 600; letter-spacing: 0.12em; line-height: 1;
-  color: var(--primary); margin-bottom: 10px; font-family: var(--font-mono);
+  font-size: 13px; font-weight: 600; letter-spacing: 0.12em; line-height: 1;
+  color: var(--primary); margin-bottom: 12px; font-family: var(--font-mono);
 }
 @media (max-width: 768px) {
   body .section[id]:not(#valuation):not(#section-valuation) { padding-top: 24px; margin-top: 8px; }
-  body .section .section-title { font-size: 24px; }
+  body .section .section-title { font-size: 32px; }
 }
 
 /* subsection titles: number as a small mono tag, title in body text colour */
@@ -344,3 +344,7 @@ body .metrics-subgroup-title .sg-num { font-family: var(--font-mono); font-size:
   #valuation .community-stats-items { grid-template-columns: repeat(2, max-content); column-gap: 16px; }
   #valuation .community-stat { min-width: 0; white-space: nowrap; }
 }
+
+/* Simon 2026-10-13: nav taps must land each section fully below the sticky header.
+   --hdr-h is the measured .header-wrapper height (set by JS, follows resizes / wrapping). */
+body .section[id] { scroll-margin-top: calc(var(--hdr-h, 96px) + 12px); }

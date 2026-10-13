@@ -43,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <link rel="stylesheet" href="news-impact.css?v=20261013y">
+    <link rel="stylesheet" href="news-impact.css?v=20261013za">
     <link rel="stylesheet" href="valuation-dist.css?v=20261013b">
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
@@ -31692,6 +31692,15 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 const headerWrapper = document.querySelector('.header-wrapper');
                 return headerWrapper ? headerWrapper.offsetHeight : 65;
             }
+            // keep CSS scroll-margin in sync with the real header height (it changes with width/lang)
+            (function syncHeaderVar() {
+                const hw = document.querySelector('.header-wrapper');
+                if (!hw) return;
+                const set = () => document.documentElement.style.setProperty('--hdr-h', hw.offsetHeight + 'px');
+                set();
+                if (window.ResizeObserver) new ResizeObserver(set).observe(hw);
+                window.addEventListener('resize', set);
+            })();
 
             // Scroll to section with consistent offset
             function scrollToSection(sectionId, updateNav = true) {
@@ -31699,7 +31708,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 if (!section) return;
 
                 const headerHeight = getHeaderHeight();
-                const targetY = section.offsetTop - headerHeight - 15; // 15px extra padding
+                const targetY = section.getBoundingClientRect().top + window.scrollY - headerHeight - 12; // match CSS scroll-margin
                 window.scrollTo({ top: Math.max(0, targetY), behavior: 'instant' });
 
                 if (updateNav) {
@@ -33533,9 +33542,16 @@ Check out ETHval 👇`;
                 return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
             }
             
-            function initSimulator() {
+            var simEventsBound = false;
+            // rebase=true: data arrived later (Supabase history loads after price) -> recompute the
+            // base values from current state but keep the user's slider positions and listeners.
+            // Without this, a fast price fetch froze the simulator on fallback numbers while the
+            // model cards later showed DB values (sim-vs-cards mismatch, 1.4x-10x).
+            function initSimulator(rebaseArg) {
+                // DOMContentLoaded passes an Event object here, so only a literal true means "rebase"
+                var rebase = rebaseArg === true;
                 if (typeof state === 'undefined' || !state.price) {
-                    setTimeout(initSimulator, 500);
+                    if (!rebase) setTimeout(initSimulator, 500);
                     return;
                 }
                 
@@ -33630,15 +33646,17 @@ Check out ETHval 👇`;
                 var stakingLabel = document.getElementById('sim-staking-base-label');
                 if (stakingLabel) stakingLabel.textContent = baseStakingRatio + '%';
                 
-                // Set slider initial values (25 = 1x or base value)
-                document.getElementById('sim-tvl').value = 25;
-                document.getElementById('sim-fees').value = 25;
-                document.getElementById('sim-staking').value = 25;
-                document.getElementById('sim-stables').value = 25;
-                document.getElementById('sim-activeAddresses').value = 25;
+                if (!rebase) {
+                    // Set slider initial values (25 = 1x or base value)
+                    document.getElementById('sim-tvl').value = 25;
+                    document.getElementById('sim-fees').value = 25;
+                    document.getElementById('sim-staking').value = 25;
+                    document.getElementById('sim-stables').value = 25;
+                    document.getElementById('sim-activeAddresses').value = 25;
+                }
                 
                 updateSimulation();
-                setupEvents();
+                if (!simEventsBound) { simEventsBound = true; setupEvents(); }
             }
             
             function setupEvents() {
@@ -33914,8 +33932,10 @@ Check out ETHval 👇`;
                 initSimulator();
             }
             
-            // Expose updateSimulation for external sync
-            window.updateSimulation = updateSimulation;
+            // Expose for external sync. External callers run after new data lands, so they rebase first.
+            window.updateSimulation = function() {
+                if (baseParams && baseParams.tvl !== undefined) initSimulator(true); else updateSimulation();
+            };
         })();
     </script>
 
@@ -36171,7 +36191,7 @@ Check out ETHval 👇`;
                         if (tuckTick) return;
                         tuckTick = true;
                         requestAnimationFrame(() => {
-                            banner.classList.toggle('tucked', window.scrollY > 160);
+                            banner.classList.toggle('tucked', window.scrollY > 8); // only at the very top: body padding reserves its space there, anywhere else it would cover section titles
                             tuckTick = false;
                         });
                     }, { passive: true });
