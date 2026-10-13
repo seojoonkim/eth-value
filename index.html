@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ETHval | Intrinsic Value Dashboard</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23667eea'/><stop offset='50%25' stop-color='%23764ba2'/><stop offset='100%25' stop-color='%23f093fb'/></linearGradient></defs><rect fill='url(%23g)' width='32' height='32' rx='6'/><path d='M16 4L9 16l7 4 7-4L16 4z' fill='rgba(255,255,255,0.9)'/><path d='M9 16l7 4V4L9 16z' fill='rgba(255,255,255,0.6)'/><path d='M6 26l5-4 5 2.5 5-6 5-2.5' stroke='white' stroke-width='1.5' stroke-linecap='round' fill='none'/></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%236d28d9'/><path d='M14 4.5 L21 14 L14 23.5 L7 14 Z' fill='none' stroke='white' stroke-width='1.9' stroke-linejoin='round'/><path d='M8.6 16.2 L19.4 16.2 L14 23.5 Z' fill='white'/></svg>">
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PX7DBZL3ND"></script>
@@ -43,7 +43,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <link rel="stylesheet" href="news-impact.css?v=20261013n">
+    <link rel="stylesheet" href="news-impact.css?v=20261013w">
+    <link rel="stylesheet" href="valuation-dist.css?v=20261013b">
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
         html.no-transition,
@@ -171,8 +172,8 @@
                TYPOGRAPHY SYSTEM (Simplified)
                ======================================== */
             
-            /* Size Scale - 7단계 (단순화) */
-            --text-xs: 11px;     /* 배지, 태그, 메타 정보 */
+            /* Size Scale — 2026-10-13 표준: 12·13·14·16·18·20·24·28·32·48px 만 사용 (최소 12px). 새 크기 추가 금지 → .qa/font_scale_check.cjs */
+            --text-xs: 12px;     /* 배지, 태그, 메타 정보 (최소 크기) */
             --text-sm: 12px;     /* 본문, 피드백 라벨 */
             --text-md: 13px;     /* 강조 라벨 */
             --text-lg: 14px;     /* 카드 제목, 네비게이션 */
@@ -194,9 +195,9 @@
             --weight-bold: 700;
             
             /* Legacy aliases (하위 호환) */
-            --text-2xs: 11px;
+            --text-2xs: var(--text-xs);
             --text-base: var(--text-sm);
-            --text-5xl: 22px;
+            --text-5xl: var(--text-2xl);
             --text-6xl: var(--text-3xl);
             --text-7xl: var(--num-xl);
             --text-8xl: var(--text-4xl);
@@ -3997,7 +3998,7 @@
         /* 카드 박스 폰트 크기 조정 - 작은 화면 */
         @media (max-width: 1200px) {
             .summary-score {
-                font-size: 19px;
+                font-size: 18px;
             }
             .summary-counts {
                 font-size: var(--text-xs);
@@ -4672,7 +4673,7 @@
         .confidence-label {
             font-weight: var(--weight-semibold);
             color: var(--text);
-            font-size: 15px;
+            font-size: 16px;
         }
 
         .confidence-desc {
@@ -8532,7 +8533,7 @@
             }
 
             .section-title {
-                font-size: 30px;
+                font-size: 28px;
             }
 
             /* Price Card */
@@ -8550,7 +8551,7 @@
             }
 
             .price-value {
-                font-size: 26px;
+                font-size: 28px;
             }
 
             .price-change {
@@ -8706,7 +8707,7 @@
             }
 
             .conclusion-price {
-                font-size: 26px;
+                font-size: 28px;
             }
 
             .conclusion-diff {
@@ -9638,11 +9639,11 @@
 
         @media (max-width: 480px) {
             .section-title {
-                font-size: 26px;
+                font-size: 28px;
             }
             
             .metrics-subgroup-title {
-                font-size: 22px;
+                font-size: 20px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -10805,7 +10806,7 @@
         
         .write-form-row label,
         .write-form-field label {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: var(--weight-medium);
             color: var(--text-muted);
             text-transform: uppercase;
@@ -11078,7 +11079,7 @@
             border: none;
             border-radius: var(--radius-xs);
             color: white;
-            font-size: 10px;
+            font-size: 12px;
             cursor: pointer;
         }
         
@@ -11140,7 +11141,7 @@
         .editor-shortcuts {
             display: flex;
             gap: 16px;
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-muted);
         }
         
@@ -11157,7 +11158,7 @@
             border: 1px solid var(--border);
             border-radius: 3px;
             font-family: inherit;
-            font-size: 10px;
+            font-size: 12px;
         }
         
         .write-char-count {
@@ -11519,11 +11520,11 @@
             }
             
             .forum-table-header {
-                font-size: 10px;
+                font-size: 12px;
             }
             
             .forum-post-category {
-                font-size: 10px;
+                font-size: 12px;
             }
             
             .forum-title {
@@ -11541,12 +11542,12 @@
             }
             
             .forum-table-header {
-                font-size: 9px;
+                font-size: 12px;
                 padding: 10px 12px;
             }
             
             .forum-post-category {
-                font-size: 9px;
+                font-size: 12px;
                 padding: 2px 5px;
             }
             
@@ -11555,7 +11556,7 @@
             }
             
             .forum-preview {
-                font-size: 11px;
+                font-size: 12px;
             }
             
             .forum-author-avatar {
@@ -11564,11 +11565,11 @@
             }
             
             .forum-author-link {
-                font-size: 11px;
+                font-size: 12px;
             }
             
             .forum-cell-stat {
-                font-size: 11px;
+                font-size: 12px;
             }
             
             .forum-cell-stat svg {
@@ -11577,7 +11578,7 @@
             }
             
             .forum-cell-date {
-                font-size: 10px;
+                font-size: 12px;
             }
         }
             
@@ -11600,7 +11601,7 @@
             }
             
             .forum-cell-date {
-                font-size: 11px;
+                font-size: 12px;
             }
         }
         
@@ -11718,7 +11719,7 @@
             padding: 3px 8px;
             background: var(--accent-bg);
             color: var(--accent);
-            font-size: 11px;
+            font-size: 12px;
             font-weight: var(--weight-medium);
             border-radius: var(--radius-full);
             text-transform: uppercase;
@@ -11782,7 +11783,7 @@
             }
             
             .forum-cell-category .forum-post-category {
-                font-size: 10px;
+                font-size: 12px;
                 padding: 2px 6px;
             }
             
@@ -11827,7 +11828,7 @@
             .forum-mobile-stats {
                 display: flex;
                 gap: 10px;
-                font-size: 11px;
+                font-size: 12px;
                 color: var(--text-muted);
             }
         }
@@ -11862,7 +11863,7 @@
             padding: 2px 8px;
             background: linear-gradient(135deg, #7048f0, #ec4899);
             color: white;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: var(--weight-semibold);
             border-radius: 10px;
             text-transform: uppercase;
@@ -12537,12 +12538,12 @@
             .community-tab {
                 white-space: nowrap;
                 padding: 6px 8px;
-                font-size: 11px;
+                font-size: 12px;
                 gap: 4px;
             }
             
             .community-tab .tab-count {
-                font-size: 10px;
+                font-size: 12px;
                 padding: 1px 5px;
                 min-width: 16px;
             }
@@ -12619,7 +12620,7 @@
         
         @media (max-width: 768px) {
             .rankings-section-title {
-                font-size: 15px;
+                font-size: 16px;
             }
 
             .rankings-description {
@@ -13211,7 +13212,7 @@
             }
             
             .community-stats-banner .community-stat-value {
-                font-size: 30px;
+                font-size: 28px;
             }
             
             .community-stats-recent {
@@ -14137,7 +14138,7 @@
                 bottom: 12px;
                 left: 12px;
                 padding: 5px 10px;
-                font-size: 11px;
+                font-size: 12px;
             }
         }
         
@@ -14367,6 +14368,35 @@
                 padding: 4px 8px;
             }
         }
+        /* Simon 2026-10-13: menu and body share ONE width container.
+           Header, mobile nav row and page content use the same max-width + side gutter at every width,
+           so the logo starts where section titles start and the right edge of the menu meets the cards. */
+        :root { --page-max: 1400px; --page-gutter: 32px; }
+        @media screen and (max-width: 768px) { :root { --page-gutter: 12px; } }
+        @media screen and (max-width: 400px) { :root { --page-gutter: 8px; } }
+        .header, .container {
+            max-width: var(--page-max) !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding-left: var(--page-gutter) !important;
+            padding-right: var(--page-gutter) !important;
+            box-sizing: border-box;
+        }
+        .nav-bar { padding-left: var(--page-gutter) !important; padding-right: var(--page-gutter) !important; }
+
+        /* Simon 2026-10-13: refined ETHval mark — flat primary tile, line diamond with filled lower facet
+           (no gradient, no glow; matches the flat CTA system). Wordmark: ETH in text colour, "val" in primary. */
+        .logo-icon { background: var(--logo-tile, #6d28d9) !important; box-shadow: none !important; border-radius: 6px !important; }
+        .logo-icon::before { content: none !important; }
+        .logo-icon svg { width: 100% !important; height: 100% !important; fill: none; }
+        .logo-icon .lm-line { fill: none; stroke: var(--logo-ink, #fff); stroke-width: 1.9; stroke-linejoin: round; }
+        .logo-icon .lm-fill { fill: var(--logo-ink, #fff); }
+        body.dark .logo-icon { --logo-tile: #a78bfa; --logo-ink: #1a0033; }
+        .logo-text { letter-spacing: -0.02em; }
+        .logo-text-val { color: var(--logo-tile, #6d28d9); font-weight: 600; }
+        body.dark .logo-text-val { color: #a78bfa; }
+        .logo-text:hover { color: var(--text) !important; }
+        .logo:hover .logo-icon { filter: brightness(1.06); }
     </style>
     <script>
         // Avatars: stored Twitter avatar URLs die when a user changes their picture (pbs.twimg.com 404).
@@ -14421,7 +14451,7 @@
             .live-visitors { bottom: 72px; }
         }
         /* Smallest text was 9px; raise to a readable floor */
-        .forum-table-header, .forum-post-category { font-size: 10px; }
+        .forum-table-header, .forum-post-category { font-size: 12px; }
         /* Number columns line up when values change */
         .model-price, .summary-value, .legend-value, .method-chart-value { font-variant-numeric: tabular-nums; }
         /* Simulator result list: 2 columns overflowed by 12px on phones */
@@ -14460,7 +14490,7 @@
             .metric-card .metric-tabs { position: static; display: flex; width: 100%; margin: 2px 0 4px; }
             .metric-card .metric-tabs .metric-tab, .metric-card .metric-tabs .mini-tab { flex: 1 1 0; min-width: 0; padding: 6px 0; }
             .metric-value-large { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .metric-footer .change, .metric-footer span, .metric-desc { font-size: 11px; }
+            .metric-footer .change, .metric-footer span, .metric-desc { font-size: 12px; }
 
             /* Fixed overlays: keep them out of the reading area */
             .onboarding-banner { padding: 8px 12px; gap: 10px; flex-wrap: nowrap; top: 94px !important; }
@@ -14474,7 +14504,7 @@
 
             /* Small print floor */
             .sim-summary-label, .sim-summary-badge, .sim-reset-btn, .sim-slider-info, .sim-breakdown-chg,
-            .ai-commentary-footer, .legend-item, .version-badge { font-size: 11px; }
+            .ai-commentary-footer, .legend-item, .version-badge { font-size: 12px; }
             .sim-reset-btn { min-height: 32px; padding: 6px 10px; }
             .simulator-reset-all-btn { min-height: 36px; }
             .contact-link, .method-ref-link, .telegram-link { display: inline-flex; align-items: center; min-height: 32px; }
@@ -14482,7 +14512,7 @@
 
             /* Floor for tiny labels */
             .model-formula, .signal-label, .chart-price-label, .chart-price-diff, .legend-value,
-            .model-count-badge, .legend-hint, .model-range-badge, .community-stat-name, .conclusion-verdict { font-size: 11px; }
+            .model-count-badge, .legend-hint, .model-range-badge, .community-stat-name, .conclusion-verdict { font-size: 12px; }
 
             /* Section rhythm */
             .section { scroll-margin-top: 84px; }
@@ -14493,7 +14523,7 @@
             .ai-commentary:not(.mp-open) .commentary-section-body {
                 display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; overflow: hidden;
             }
-            .ai-commentary .commentary-section-body { font-size: 15px; line-height: 1.65; }
+            .ai-commentary .commentary-section-body { font-size: 16px; line-height: 1.65; }
 
             /* Methodology cards: single column so the text column isn't 150px wide */
             .method-content { grid-template-columns: minmax(0, 1fr) !important; gap: 12px; }
@@ -14509,13 +14539,13 @@
                 display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; padding: 8px 0; min-height: 36px;
                 background: none; border: 0; color: var(--primary); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
             }
-            .mp-more::after { content: '▾'; font-size: 11px; transition: transform .2s ease; }
+            .mp-more::after { content: '▾'; font-size: 12px; transition: transform .2s ease; }
             .mp-open > .mp-more::after, .mp-open .mp-more::after { transform: rotate(180deg); }
 
             /* Round 2 (2026-10) ------------------------------------------------ */
             /* Simulator: slider full width, description below; 24px thumb on a 6px track */
             .sim-slider-content { grid-template-columns: minmax(0, 1fr) !important; gap: 6px; }
-            .sim-slider-info { font-size: 12.5px !important; line-height: 1.5; color: var(--text-muted); padding-left: 0 !important; padding-right: 0 !important; }
+            .sim-slider-info { font-size: 12px !important; line-height: 1.5; color: var(--text-muted); padding-left: 0 !important; padding-right: 0 !important; }
             .sim-range { height: 6px; margin: 12px 0; touch-action: pan-y; }
             .sim-range::-webkit-slider-thumb { width: 24px; height: 24px; }
             .sim-range::-moz-range-thumb { width: 24px; height: 24px; }
@@ -14608,7 +14638,7 @@ button, input, select, textarea { font-family: inherit; }
 
 /* Titles: one tracking value; box titles share one style */
 .metrics-subgroup-title { letter-spacing: -0.02em; }
-.simulator-box-title { font-size: 15px; font-weight: var(--weight-bold); text-transform: none; letter-spacing: -0.01em; }
+.simulator-box-title { font-size: 16px; font-weight: var(--weight-bold); text-transform: none; letter-spacing: -0.01em; }
 .appendix-title { font-weight: var(--weight-bold); letter-spacing: -0.02em; }
 .category-card-header { border-bottom-width: 1px; }
 
@@ -14640,7 +14670,7 @@ body, body.dark { --green: var(--up); --green-bg: var(--up-bg); --positive: var(
 body.dark .floating-action-badge { color: #fff !important; }
 
 /* Korean: wrap between words, never inside a word ("커뮤|니티"); long tokens (URLs, numbers) may still break */
-html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wrap: anywhere; line-break: strict; }
+html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wrap: break-word; line-break: strict; }
 </style>
 </head>
 <body>
@@ -14684,17 +14714,14 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
     <div class="header-wrapper">
         <header class="header">
             <div class="logo" style="text-decoration: none; cursor: pointer;" onclick="updateUrlWithLang(currentLang, 'valuation'); window.scrollTo({top: 0, behavior: 'instant'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelectorAll('.nav-item[data-i18n=\'nav.valuation\']').forEach(n => n.classList.add('active'));">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 이더리움 다이아몬드 -->
-                        <path d="M12 1.5L6 12l6 3.5 6-3.5L12 1.5z" fill="rgba(255,255,255,0.9)"/>
-                        <path d="M6 12l6 3.5V1.5L6 12z" fill="rgba(255,255,255,0.6)"/>
-                        <!-- 상승 차트 라인 -->
-                        <path d="M4 20l4-3 4 2 4-5 4-2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                        <circle cx="20" cy="12" r="1.5" fill="white"/>
+                <div class="logo-icon" aria-hidden="true">
+                    <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+                        <!-- ETHval mark: Ether diamond outline, lower facet filled = value filling up to fair value -->
+                        <path class="lm-line" d="M14 4.5 L21 14 L14 23.5 L7 14 Z"/>
+                        <path class="lm-fill" d="M8.6 16.2 L19.4 16.2 L14 23.5 Z"/>
                     </svg>
                 </div>
-                <span class="logo-text">ETHval</span>
+                <span class="logo-text">ETH<span class="logo-text-val">val</span></span>
                 <span class="version-badge">v1.0.0</span>
             </div>
             <nav class="nav-bar-inline">
@@ -32903,7 +32930,7 @@ Check out ETHval 👇`;
                                     
                                     const textColor = isDark ? '#e6edf3' : '#24292e';
                                     const borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                                    let html = '<div style="color:' + textColor + ';font-size:11px;font-weight:600;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid ' + borderColor + ';">' + dateStr + '</div>';
+                                    let html = '<div style="color:' + textColor + ';font-size:12px;font-weight:600;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid ' + borderColor + ';">' + dateStr + '</div>';
                                     
                                     sortedPoints.forEach(point => {
                                         const color = point.dataset.borderColor || '#888';
@@ -32915,14 +32942,14 @@ Check out ETHval 👇`;
                                         const fontWeight = isMain ? '600' : '400';
                                         if (label === 'Composite') label = 'Composite Fair Value';
                                         
-                                        html += '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;">';
+                                        html += '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px;">';
                                         if (isMarketPrice) {
                                             html += '<span style="display:inline-block;width:12px;height:' + lineHeight + ';border-radius:1px;background:repeating-linear-gradient(90deg,' + color + ' 0px,' + color + ' 3px,transparent 3px,transparent 5px);flex-shrink:0;"></span>';
                                         } else {
                                             html += '<span style="display:inline-block;width:12px;height:' + lineHeight + ';border-radius:1px;background:' + color + ';flex-shrink:0;"></span>';
                                         }
                                         html += '<span style="flex:1;color:' + color + ';font-weight:' + fontWeight + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + label + '</span>';
-                                        html += '<span style="color:' + textColor + ';font-family:\'JetBrains Mono\',monospace;font-size:9px;font-weight:' + fontWeight + ';">' + value + '</span>';
+                                        html += '<span style="color:' + textColor + ';font-variant-numeric:tabular-nums;font-size:12px;font-weight:' + fontWeight + ';">' + value + '</span>';
                                         html += '</div>';
                                     });
                                     
@@ -36642,8 +36669,34 @@ Check out ETHval 👇`;
         new MutationObserver(relabel).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     })();
     </script>
-    <script src="news-impact.js?v=20261013n" defer></script>
+    <script src="news-impact.js?v=20261013p" defer></script>
+    <script src="valuation-dist.js?v=20261013b" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
     <script src="dxy.js?v=20261013a" defer></script>
+
+<script>
+/* Simon 2026-10-13: subsection titles "02.1 — Title" -> small mono number + calm title (matches the section kicker). */
+(function () {
+  var RE = /^\s*(\d{2}\.\d)\s*[—–-]\s*([\s\S]*)$/;
+  function esc(t) { return t.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+  function deco(el) {
+    if (el.querySelector('.sg-num')) return;
+    var m = (el.textContent || '').match(RE); if (!m) return;
+    el.innerHTML = '<span class="sg-num">' + m[1] + '</span><span class="sg-txt">' + esc(m[2]) + '</span>';
+  }
+  function run() { document.querySelectorAll('.metrics-subgroup-title').forEach(deco); }
+  function start() {
+    run();
+    new MutationObserver(function (ms) {
+      for (var i = 0; i < ms.length; i++) {
+        var t = ms[i].target; var e = t.nodeType === 1 ? t : t.parentElement;
+        var h = e && e.closest && e.closest('.metrics-subgroup-title');
+        if (h) deco(h); else if (ms[i].addedNodes.length) { run(); }
+      }
+    }).observe(document.body, { childList: true, characterData: true, subtree: true });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>
 </body>
 </html>

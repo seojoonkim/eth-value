@@ -1,0 +1,27 @@
+/* ETHval — 01 Valuation: model spread strip (valuation-dist.js) */
+.vd { margin-top: 0; padding-top: 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+.vd-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.vd-head .summary-label { margin: 0; }
+.vd-count { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.vd-strip { position: relative; height: 74px; margin: 0 8px; }
+.vd-track { position: absolute; left: 0; right: 0; top: 35px; height: 4px; border-radius: 2px; background: var(--border); }
+.vd-dot { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; border: 2px solid var(--bg-card); box-sizing: content-box; }
+.vd-dot.under { background: var(--green); }
+.vd-dot.fair { background: var(--text-muted); }
+.vd-dot.over { background: var(--red); }
+.vd-mark { position: absolute; top: -15px; width: 2px; height: 34px; margin-left: -1px; border-radius: 1px; }
+.vd-mark-cur { background: var(--text); }
+.vd-mark-avg { background: var(--primary); }
+.vd-tag { position: absolute; transform: translateX(-50%); white-space: nowrap; font-size: 12px; line-height: 1; font-variant-numeric: tabular-nums; }
+.vd-tag-avg { top: 0; color: var(--primary); font-weight: 600; }
+.vd-tag-cur { top: 62px; color: var(--text-secondary); }
+.vd-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 2px; }
+.vd-seg { flex: 1 1 0; min-width: 4px; }
+.vd-seg.under, .vd-leg.under .vd-sw { background: var(--green); }
+.vd-seg.fair, .vd-leg.fair .vd-sw { background: var(--text-muted); }
+.vd-seg.over, .vd-leg.over .vd-sw { background: var(--red); }
+.vd-legend { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+.vd-leg { display: inline-flex; align-items: center; gap: 6px; }
+.vd-sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.vd-leg-n { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.vd-note { font-size: 12px; color: var(--text-muted); }
