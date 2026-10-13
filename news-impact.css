@@ -253,3 +253,23 @@
   .ni-sc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .ni-sc-cell { padding: 7px 8px; gap: 4px 6px; }
 }
+
+/* Simon 2026-10-13: desktop Valuation summary = price box | News Impact | description, 1/3 each.
+   .summary-left becomes layout-transparent so its two boxes join the parent grid as columns 1 and 2. */
+@media (min-width: 1001px) {
+  #valuation .summary-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start; }
+  #valuation .summary-layout > .summary-left { display: contents; }
+  #valuation .summary-layout .summary-valuation-box { max-width: none; }
+  /* community stats: 4 stats as a 2x2 grid so they fit a 1/3 column */
+  #valuation .community-stats-box { gap: 12px; padding: 14px 16px; }
+  #valuation .community-stats-label { width: 64px; margin-right: 0; }
+  #valuation .community-stats-content { min-width: 0; }
+  #valuation .community-stats-top-row { align-items: flex-start; gap: 8px; }
+  #valuation .community-stats-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; flex: 1; min-width: 0; }
+  #valuation .community-stat-divider { display: none; }
+  #valuation .community-stat { white-space: nowrap; min-width: 0; }
+  #valuation .community-stat-value { font-size: 22px; }
+  #valuation .community-recent-participants { flex-wrap: wrap; min-width: 0; }
+  /* contact line wraps instead of hiding behind a horizontal scroll */
+  #valuation .summary-cta { flex-wrap: wrap; white-space: normal; row-gap: 4px; overflow-x: visible; }
+}
