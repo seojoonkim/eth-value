@@ -20499,6 +20499,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'share.modalTitle': 'Share Your Analysis',
                 'share.postToX': 'Post to 𝕏',
                 'share.download': 'Download Image',
+                'share.cardLabel': 'Composite Fair Value · {n} / 12 models',
                 'section.priceTitle': 'Price & Market',
                 'section.onchainTitle': 'On-Chain Metrics & Trends',
                 'section.valuationTitle': 'Valuation & Simulator',
@@ -20994,6 +20995,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'share.modalTitle': '분석 결과 공유하기',
                 'share.postToX': '𝕏에 포스트',
                 'share.download': '이미지 다운로드',
+                'share.cardLabel': '종합 적정 가치 · 모델 {n} / 12',
                 'section.priceTitle': '시세 & 시장',
                 'section.onchainTitle': '온체인 지표 & 트렌드',
                 'section.valuationTitle': '밸류에이션 & 시뮬레이터',
@@ -21482,6 +21484,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'share.modalTitle': '分享您的分析',
                 'share.postToX': '发布到 𝕏',
                 'share.download': '下载图片',
+                'share.cardLabel': '综合公允价值 · {n} / 12 个模型',
                 'section.priceTitle': '价格与市场',
                 'section.onchainTitle': '链上指标与趋势',
                 'section.valuationTitle': '估值 & 模拟器',
@@ -21974,6 +21977,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'share.modalTitle': '分析結果をシェア',
                 'share.postToX': '𝕏に投稿',
                 'share.download': '画像をダウンロード',
+                'share.cardLabel': '総合適正価格 · {n} / 12 モデル',
                 'section.priceTitle': '価格・マーケット',
                 'section.onchainTitle': 'オンチェーン指標・トレンド',
                 'section.valuationTitle': 'バリュエーション & シミュレーター',
@@ -32130,44 +32134,39 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
         function updateShareCard() {
             const fairValue = document.getElementById('composite-price').textContent;
             const currentPrice = document.getElementById('summary-current').textContent;
-            const diff = document.getElementById('composite-diff').textContent;
-            const verdict = document.getElementById('verdict').textContent;
-            const buyCount = document.getElementById('buy-count').textContent;
-            const holdCount = document.getElementById('hold-count').textContent;
-            const sellCount = document.getElementById('sell-count').textContent;
-            const modelCount = document.getElementById('conclusion-model-count').textContent;
-            
+            const diffSrc = document.getElementById('composite-diff');
+            const verdictSrc = document.getElementById('verdict');
+            const modelCount = document.getElementById('conclusion-model-count').textContent.trim();
+
             const priceEl = document.getElementById('share-fair-value');
             const diffEl = document.getElementById('share-diff');
             const verdictEl = document.getElementById('share-verdict');
-            
+
+            // 카드 문구는 선택 언어로 (값·판정은 화면에 이미 계산·번역된 것을 그대로 복사)
+            document.getElementById('share-card-label').textContent =
+                t('share.cardLabel', 'Composite Fair Value · {n} / 12 models').replace('{n}', modelCount || '--');
             priceEl.textContent = fairValue;
-            document.getElementById('share-current-price').textContent = 'Current: ' + currentPrice;
-            diffEl.textContent = diff;
-            verdictEl.textContent = verdict;
-            document.getElementById('share-buy-count').textContent = buyCount;
-            document.getElementById('share-hold-count').textContent = holdCount;
-            document.getElementById('share-sell-count').textContent = sellCount;
-            document.getElementById('share-model-count').textContent = modelCount + ' / 12';
-            
-            // Update verdict class and diff color
-            verdictEl.className = 'share-card-verdict';
-            diffEl.className = 'share-card-diff-text';
-            
-            if (verdict.includes('Bullish') || verdict.includes('강세') || verdict.includes('看涨') || verdict.includes('強気') || verdict.includes('UNDERVALUED')) {
-                verdictEl.classList.add('bullish');
-            } else if (verdict.includes('Bearish') || verdict.includes('약세') || verdict.includes('看跌') || verdict.includes('弱気') || verdict.includes('OVERVALUED')) {
-                verdictEl.classList.add('bearish');
-                diffEl.classList.add('down');
-            } else {
-                verdictEl.classList.add('neutral');
-            }
-            
-            // Update date
-            const now = new Date();
-            document.getElementById('share-date').textContent = now.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
+            document.getElementById('share-current-price').textContent =
+                t('summary.currentPrice', 'Current Price') + ': ' + currentPrice;
+            diffEl.textContent = diffSrc.textContent;
+            verdictEl.textContent = verdictSrc.textContent;
+            document.getElementById('share-buy-count').textContent = document.getElementById('buy-count').textContent;
+            document.getElementById('share-hold-count').textContent = document.getElementById('hold-count').textContent;
+            document.getElementById('share-sell-count').textContent = document.getElementById('sell-count').textContent;
+            document.getElementById('share-buy-label').textContent = t('signal.buy', 'Buy');
+            document.getElementById('share-hold-label').textContent = t('signal.hold', 'Hold');
+            document.getElementById('share-sell-label').textContent = t('signal.sell', 'Sell');
+
+            // 색은 화면 판정 class 그대로 (예전엔 영어 문구로만 판별해 한/일/중에서 '저평가'가 중립색으로 나옴)
+            const tone = ['bullish', 'bearish', 'neutral'].find(c => verdictSrc.classList.contains(c)) || 'neutral';
+            verdictEl.className = 'share-card-verdict ' + tone;
+            diffEl.className = 'share-card-diff-text' + (diffSrc.classList.contains('down') ? ' down' : '');
+
+            // 날짜·시각도 선택 언어 표기
+            const shareLocale = { ko: 'ko-KR', zh: 'zh-CN', ja: 'ja-JP', en: 'en-US' }[currentLang] || 'en-US';
+            document.getElementById('share-date').textContent = new Date().toLocaleString(shareLocale, {
+                year: 'numeric',
+                month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
@@ -36666,7 +36665,7 @@ Check out ETHval 👇`;
             <div class="share-card-date" id="share-date">--</div>
         </div>
         <div class="share-card-main">
-            <div class="share-card-label">Composite Fair Value · <span id="share-model-count">12</span> models</div>
+            <div class="share-card-label" id="share-card-label">Composite Fair Value · 12 / 12 models</div>
             <div class="share-card-price" id="share-fair-value">$--</div>
             <div class="share-card-current" id="share-current-price">Current: $--</div>
             <div class="share-card-diff-text" id="share-diff">+--% vs Current</div>
@@ -36675,15 +36674,15 @@ Check out ETHval 👇`;
         <div class="share-card-stats">
             <div class="share-card-stat">
                 <div class="share-card-stat-value buy" id="share-buy-count">-</div>
-                <div class="share-card-stat-label">Buy</div>
+                <div class="share-card-stat-label" id="share-buy-label">Buy</div>
             </div>
             <div class="share-card-stat">
                 <div class="share-card-stat-value hold" id="share-hold-count">-</div>
-                <div class="share-card-stat-label">Hold</div>
+                <div class="share-card-stat-label" id="share-hold-label">Hold</div>
             </div>
             <div class="share-card-stat">
                 <div class="share-card-stat-value sell" id="share-sell-count">-</div>
-                <div class="share-card-stat-label">Sell</div>
+                <div class="share-card-stat-label" id="share-sell-label">Sell</div>
             </div>
         </div>
         <div class="share-card-footer">
