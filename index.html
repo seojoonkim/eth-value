@@ -24721,6 +24721,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 }
 
                 state.price = price;
+                state.livePrice = price; // 실시간 현재가: Supabase 어제 종가가 이 값을 덮어쓰지 않게 따로 보관
                 if (change24h !== null && isFinite(change24h)) state.change24h = change24h;
                 if (volume24h) state.volume24h = volume24h;
                 if (ethBtc) state.ethBtcRatio = ethBtc;
@@ -30619,7 +30620,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 
                 if (hasEnoughPriceData) {
                     state.priceHistory = state.supabasePriceHistory;
-                    state.price = state.priceHistory[state.priceHistory.length - 1].value;
+                    // 2026-10-14: 실시간 현재가가 이미 있으면 유지(예전엔 어제 종가로 덮어써 화면 현재가 $2,497.1 vs 적정가 계산 $2,507.64로 갈림)
+                    state.price = state.livePrice > 0 ? state.livePrice : state.priceHistory[state.priceHistory.length - 1].value;
                     priceSource = 'supabase';
                     log(`   Price: Using Supabase (${state.supabasePriceHistory.length} points)`);
                     
@@ -30634,7 +30636,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     // Supabase 데이터가 있지만 부족 - Binance에서 보충 필요
                     log(`   Price: Supabase insufficient (${state.supabasePriceHistory.length} points), will fetch from Binance`);
                     state.priceHistory = state.supabasePriceHistory;
-                    state.price = state.priceHistory[state.priceHistory.length - 1].value;
+                    // 2026-10-14: 실시간 현재가가 이미 있으면 유지(예전엔 어제 종가로 덮어써 화면 현재가 $2,497.1 vs 적정가 계산 $2,507.64로 갈림)
+                    state.price = state.livePrice > 0 ? state.livePrice : state.priceHistory[state.priceHistory.length - 1].value;
                     priceSource = 'api';
                     
                     // ★ Supabase 가격 데이터에서 볼륨 추출 (부족해도 일단 사용)
@@ -32016,18 +32019,16 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             let currentActiveSection = 'valuation';
             
             const updateActiveNav = (sectionId) => {
-                if (currentActiveSection === sectionId) return;
+                if (sectionId === 'overview') sectionId = 'valuation'; // 맨 위(히어로)는 01 밸류에이션 탭
+                // 클릭 핸들러가 탭을 직접 바꾸므로 기억값이 아니라 실제 강조 상태로 비교
+                const already = [...document.querySelectorAll('.nav-bar .nav-item.active, .nav-bar-inline .nav-item.active')];
+                if (currentActiveSection === sectionId && already.length && already.every(n => n.getAttribute('href') === '#' + sectionId)) return;
                 currentActiveSection = sectionId;
                 
-                document.querySelectorAll('.nav-bar .nav-item').forEach(nav => {
-                    const href = nav.getAttribute('href');
-                    if (sectionId === 'valuation') {
-                        nav.className = href === 'javascript:void(0)' ? 'nav-item active' : 'nav-item';
-                    } else if (href === '#' + sectionId) {
-                        nav.className = 'nav-item active';
-                    } else {
-                        nav.className = 'nav-item';
-                    }
+                // 데스크톱 상단 탭(.nav-bar-inline)과 모바일 탭(.nav-bar)을 함께 갱신
+                // (예전엔 .nav-bar만 바꿔 1280에서 스크롤해도 「밸류에이션」이 계속 강조됨)
+                document.querySelectorAll('.nav-bar .nav-item, .nav-bar-inline .nav-item').forEach(nav => {
+                    nav.classList.toggle('active', nav.getAttribute('href') === '#' + sectionId);
                 });
             };
             
