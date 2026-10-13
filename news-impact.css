@@ -231,8 +231,9 @@
 .ni-score { margin-top: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm, 4px); background: var(--bg-card); padding: 14px; }
 .ni-sc-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .ni-sc-cell { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "n p" "b b" "s s"; grid-template-rows: 1fr auto auto; align-items: start; gap: 5px 8px; padding: 9px 10px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--bg-card); min-width: 0; }
-.ni-sc-cell.all { grid-column: 1 / -1; background: var(--bg-subtle); }
-.ni-sc-cell.all .ni-sc-pct { font-size: 18px; }
+.ni-sc-top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+.ni-sc-cell.sum { background: var(--bg-subtle); }
+.ni-sc-cell.sum .ni-sc-pct { font-size: 18px; }
 .ni-sc-name { grid-area: n; display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.35; font-weight: 600; color: var(--text); min-width: 0; overflow-wrap: break-word; }
 .ni-sc-name > span { min-width: 0; }
 .ni-sc-dot { flex: none; width: 8px; height: 8px; margin-top: 4px; border-radius: 2px; }
@@ -240,7 +241,7 @@
 .ni-sc-cell.up .ni-sc-pct { color: var(--up); } .ni-sc-cell.down .ni-sc-pct { color: var(--down); }
 .ni-sc-cell.hold small .ni-sc-pct { font-size: 11px; font-weight: 700; color: var(--text-muted); }
 .ni-sc-bar { grid-area: b; position: relative; display: block; height: 5px; border-radius: 3px; background: var(--bg-subtle); }
-.ni-sc-cell.all .ni-sc-bar { background: var(--bg-card); }
+.ni-sc-cell.sum .ni-sc-bar { background: var(--bg-card); }
 .ni-sc-cell.hold .ni-sc-bar { background: repeating-linear-gradient(90deg, var(--bg-subtle) 0 6px, transparent 6px 9px); }
 .ni-sc-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--text-muted); }
 .ni-sc-cell.up .ni-sc-bar i { background: var(--up); } .ni-sc-cell.down .ni-sc-bar i { background: var(--down); }
@@ -251,6 +252,8 @@
 @media (max-width: 640px) {
   .ni-score { padding: 12px 8px; }
   .ni-sc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .ni-sc-top { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
+  .ni-sc-top .ni-sc-cell.all { grid-column: 1 / -1; }
   .ni-sc-cell { padding: 7px 8px; gap: 4px 6px; }
 }
 
