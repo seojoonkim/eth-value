@@ -75,30 +75,68 @@ function parseCpi(ics) {
     return out;
 }
 
-// Upgrades: only "<Name> Mainnet Announcement" posts, which state the mainnet activation time.
+// Upgrades: EF "<Name> Mainnet Announcement" posts state the mainnet activation time. Wording varies by post:
+//   Fusaka  "scheduled to activate on the Ethereum mainnet at slot 13,164,544 (December 3, 2025, 21:49:11 UTC)"
+//   Pectra  "activate on the Ethereum mainnet on May 07, 2025 at epoch 364032 (10:05:11 UTC)"
+//   Dencun  "activate on the Ethereum mainnet at epoch 269568 , occurring on March 13, 2024 at 13:55 UTC"
+//   Shapella "will activate on the Ethereum network at epoch 194048 , scheduled for 22:27:35 UTC on April 12, 2023"
+//   Glamsterdam-style schedule table row "Mainnet <epoch> <slot> 2026-10-06 13:53:36 <unix>" (TBD rows = not scheduled)
+// The schedule table also appears in "<Name> Testnet Announcement" posts, so a Mainnet row there that is no
+// longer TBD is picked up too. Only explicit first-party dates; anything ambiguous returns null (no guess).
+const MON = '(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)';
+function parseMainnetActivation(text) {
+    const t = text.replace(/\s+/g, ' ');
+    const iso = (d, tm) => { const x = new Date(`${d} ${tm.length === 5 ? tm + ':00' : tm} UTC`); return isNaN(x) ? null : x; };
+    // 1) schedule table row: "Mainnet 411,392 13,164,544 2026-12-03 21:49:11 1796333351"
+    const row = t.match(/\bMainnet\s+[\d,]+\s+[\d,]+\s+(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}(?::\d{2})?)\b/);
+    if (row) { const x = new Date(`${row[1]}T${row[2].length === 5 ? row[2] + ':00' : row[2]}Z`); if (!isNaN(x)) return x; }
+    // 2) prose: look only at the ~240 chars after "activate on the Ethereum mainnet/network" (the post date sits
+    //    before it, e.g. "Posted ... on April 23, 2025 ... activate on the Ethereum mainnet on May 07, 2025").
+    //    Month may be abbreviated with a dot ("Apr. 12, 2023"); a testnet name inside the window = not mainnet.
+    for (const m of t.matchAll(/activat\w* on (?:the )?(?:Ethereum )?(?:mainnet|network)\b/gi)) {
+        if (/^activat\w* on (?:the )?network/i.test(m[0])) continue;
+        const win = t.slice(m.index + m[0].length, m.index + m[0].length + 240);
+        const date = win.match(new RegExp(MON + '\\.?\\s+(\\d{1,2}),\\s*(\\d{4})', 'i'));
+        const time = win.match(/(\d{2}:\d{2}(?::\d{2})?)\s*UTC/);
+        if (!date || !time) continue;
+        const upto = win.slice(0, Math.max(date.index, time.index));
+        if (/\b(Sepolia|Holesky|Hole\u0161ky|Hoodi|Goerli|testnet)\b/i.test(upto)) continue;
+        const mo = MONTHS.findIndex(x => x.startsWith(date[1].toLowerCase()));
+        if (mo < 0) continue;
+        const x = iso(`${MONTHS[mo]} ${date[2]}, ${date[3]}`, time[1]);
+        if (x) return x;
+    }
+    return null;
+}
+function upgradeTitle(title) {
+    let m = title.match(/^(\w+) Mainnet Announcement$/i) || title.match(/^Mainnet (\w+) Announcement$/i);
+    if (m) return { name: m[1], kind: 'mainnet' };
+    m = title.match(/^(\w+) Testnets? Announcement$/i);
+    return m ? { name: m[1], kind: 'testnet' } : null;
+}
 async function collectUpgrades() {
     const feed = await get(EF_FEED);
     const items = [...feed.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(m => m[1]);
-    const out = [];
+    const out = new Map();
     for (const it of items) {
         // Unwrap CDATA before stripping tags — "<![CDATA[...]]>" itself looks like a tag.
         const title = strip(((it.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '').replace(/<!\[CDATA\[|\]\]>/g, ''));
-        const m = title.match(/^(\w+) Mainnet Announcement$/i);
-        if (!m) continue;
+        const u = upgradeTitle(title);
+        if (!u) continue;
         // Old announcements describe past activations — skip them instead of fetching every post.
         const pub = Date.parse(((it.match(/<pubDate>([\s\S]*?)<\/pubDate>/) || [])[1] || '').trim());
         if (pub && Date.now() - pub > 400 * 86400000) continue;
         const url = ((it.match(/<link>([\s\S]*?)<\/link>/) || [])[1] || '').trim();
         if (!url) continue;
-        const text = strip(await get(url));
-        const a = text.match(/activate on the Ethereum mainnet[^.]*?\(?(?:on\s+)?([A-Z][a-z]+ \d{1,2}, \d{4})(?:,| at)\s*(\d{2}:\d{2}:\d{2}) UTC/);
-        if (!a) { console.log(`  ⚠️ upgrade ${m[1]}: no mainnet activation time in post`); continue; }
-        const dt = new Date(`${a[1]} ${a[2]} UTC`);
-        if (isNaN(dt)) continue;
+        const dt = parseMainnetActivation(strip(await get(url)));
+        if (!dt) { console.log(`  ${u.kind === 'mainnet' ? '⚠️' : 'ℹ️'} upgrade ${u.name} (${u.kind} post): no mainnet activation time${u.kind === 'testnet' ? ' yet (TBD)' : ' in post'}`); continue; }
+        const key = u.name.toLowerCase();
+        // A mainnet announcement wins over a testnet post's schedule table for the same upgrade.
+        if (out.has(key) && out.get(key)._kind === 'mainnet' && u.kind !== 'mainnet') continue;
         const date = dt.toISOString().slice(0, 10);
-        out.push({ id: `upgrade:${date}:${m[1].toLowerCase()}`, kind: 'upgrade', name: m[1], date, date_start: null, starts_at: dt.toISOString(), sep: false, source: 'Ethereum Foundation Blog', source_url: url });
+        out.set(key, { _kind: u.kind, id: `upgrade:${date}:${key}`, kind: 'upgrade', name: u.name, date, date_start: null, starts_at: dt.toISOString(), sep: false, source: 'Ethereum Foundation Blog', source_url: url });
     }
-    return out;
+    return [...out.values()].map(({ _kind, ...r }) => r);
 }
 
 async function sb(path, opts = {}) {
@@ -135,4 +173,4 @@ async function main() {
 }
 
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = { parseFomc, parseCpi, etToUtc };
+module.exports = { parseFomc, parseCpi, etToUtc, parseMainnetActivation, upgradeTitle };
