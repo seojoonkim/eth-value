@@ -80,6 +80,26 @@
     return out;
   }
 
+  // Indices of the first charted day of every `step`-th calendar month (step = 1/2/3/6/12, smallest that fits
+  // maxTicks), counted back from the latest month so the newest month always has a label. A month only gets a
+  // tick if its first charted day is within its first 7 days, so a partial first month is not labelled as if
+  // it started on the 1st.
+  function monthTicks(labels, maxTicks) {
+    var starts = [], seen = {};
+    labels.forEach(function (s, i) {
+      var k = s.slice(0, 7);
+      if (seen[k]) return; seen[k] = 1;
+      if (+s.slice(8, 10) <= 7) starts.push({ i: i, m: +s.slice(0, 4) * 12 + (+s.slice(5, 7) - 1) });
+    });
+    if (!starts.length) return [];
+    var lastM = starts[starts.length - 1].m, steps = [1, 2, 3, 6, 12], pick = [];
+    for (var k = 0; k < steps.length; k++) {
+      pick = starts.filter(function (t) { return (lastM - t.m) % steps[k] === 0; });
+      if (pick.length <= maxTicks) break;
+    }
+    return pick.map(function (t) { return t.i; });
+  }
+
   var chart = null, period = 365, lastKey = '';
   function build() {
     var anchor = document.querySelector('#section-valuation .historical-main-chart');
@@ -198,7 +218,11 @@
         }
       },
       scales: {
-        x: { type: 'category', grid: { display: false }, ticks: { color: tick, maxTicksLimit: narrow ? 4 : 7, maxRotation: 0, autoSkip: true, font: { size: 12 },
+        // month ticks at an even step (1/2/3/6/12 months) aligned to calendar months, placed on the first
+        // charted day of each month — Chart.js autoSkip picked every n-th index, which mixed 1- and 2-month gaps
+        x: { type: 'category', grid: { display: false },
+             afterBuildTicks: function (ax) { ax.ticks = monthTicks(labels, narrow ? 5 : 13).map(function (i) { return { value: i }; }); },
+             ticks: { color: tick, maxRotation: 0, autoSkip: false, font: { size: 12 },
              callback: function (v) { var s = labels[v] || ''; return s.slice(2, 7).replace('-', '.'); } } },
         y: { type: 'logarithmic', min: lo * 0.95, max: hi * 1.05, grid: { color: grid },
              ticks: { color: tick, font: { size: 12 }, maxTicksLimit: 6,
@@ -224,5 +248,5 @@
     if (hv) new MutationObserver(schedule).observe(hv, { childList: true, characterData: true, subtree: true });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
-  window.ethvalFvBand = { render: function () { lastKey = ''; render(); }, EDGES: EDGES, series: series };
+  window.ethvalFvBand = { render: function () { lastKey = ''; render(); }, EDGES: EDGES, series: series, monthTicks: monthTicks };
 })();
