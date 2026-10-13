@@ -289,7 +289,12 @@
   /* rows of one group stay tight; leftover height is shared equally between the groups (price / range / spread) */
   #valuation .summary-valuation-box { justify-content: flex-start; }
   /* the three headline rows absorb the extra height evenly, each centred with a hairline divider */
-  #valuation .summary-valuation-box > .summary-valuation-row { flex: 1 1 auto; align-items: center; min-height: 56px; border-bottom: 1px solid var(--border); }
+  /* price rows grow a little (64-96px); whatever is left after their cap is split evenly into the two
+     group breaks (before Model range, before Model spread) so no single row balloons. */
+  #valuation .summary-valuation-box > .summary-valuation-row { flex: 1 1 auto; align-items: center; min-height: 64px; max-height: 96px; border-bottom: 1px solid var(--border); }
+  #valuation .summary-valuation-box > .summary-model-range-section,
+  #valuation .summary-valuation-box > .vd { margin-top: auto; }
+  #valuation .summary-valuation-box > .summary-model-range-section { padding-top: 16px; }
   #valuation .summary-valuation-box > .summary-valuation-row:nth-child(3) { border-bottom: 0; }
   #valuation .summary-valuation-box > .summary-model-range-section { margin-top: 8px; }
   #valuation .summary-valuation-box > .vd { margin-top: 16px; }
