@@ -1,0 +1,30 @@
+/* ETHval — Model track record (backtest) panel (fv-backtest.js) */
+.fbt { display: flex; flex-direction: column; gap: 10px; }
+.fbt-sub { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+.fbt-wrap { width: 100%; }
+.fbt-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.fbt-table th, .fbt-table td { padding: 8px 6px; border-bottom: 1px solid var(--border); text-align: right; vertical-align: middle; }
+.fbt-table thead th { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.fbt-table th:first-child { text-align: left; width: 34%; }
+.fbt-table tbody th { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.fbt-table tbody th span { white-space: nowrap; }
+.fbt-table th .fbt-span { display: block; font-size: 12px; font-weight: 400; color: var(--text-muted); white-space: nowrap; margin-top: 1px; }
+.fbt-table td b { display: block; font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.fbt-table td b.pos { color: var(--green); }
+.fbt-table td b.neg { color: var(--red); }
+.fbt-table td.fbt-hold b { color: var(--text-muted); font-weight: 500; font-size: 12px; }
+.fbt-table td small { display: block; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.fbt-table tr.fbt-cur { background: rgba(98, 126, 234, 0.10); }
+.fbt-table tr.fbt-all th, .fbt-table tr.fbt-all td { border-top: 2px solid var(--border); border-bottom: none; }
+.fbt-now { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 4px; font-style: normal; font-size: 12px; font-weight: 600;
+  background: var(--accent, #627eea); color: #fff; vertical-align: 1px; }
+.fbt-note { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+.fbt-warn { font-size: 12px; line-height: 1.45; color: var(--text-secondary); padding: 8px 10px; border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.08); border-radius: 4px; }
+@media (max-width: 600px) {
+  .fbt-table th, .fbt-table td { padding: 7px 3px; }
+  .fbt-table th:first-child { width: 31%; }
+  .fbt-table tbody th { font-size: 12px; }
+  .fbt-table tbody th span { white-space: normal; }
+  .fbt-now { display: table; margin: 3px 0 0; }
+  .fbt-table td b { font-size: 13px; }
+}
