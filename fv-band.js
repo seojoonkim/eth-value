@@ -3,6 +3,8 @@
  *   ×0.5 / ×0.75 / ×1.0 / ×1.25 / ×1.5 / ×2.0  (= −50 / −25 / 0 / +25 / +50 / +100 %)
  * Data: only the fair-value history the page already computed (state.historicalFairValues, 12 models)
  * and state.priceHistory. Composite per day = simple average of the models that have a value that day.
+ * Bands/dashed line are drawn on the trailing 7-day median of that composite (display only); the current
+ * zone, gap and chips use the raw composite of the day.
  * Days without a model value or price are left out (no carry-forward, no fill, no estimate).
  */
 (function () {
@@ -15,29 +17,29 @@
   var ZONE_COLORS = ['#15803d', '#22c55e', '#86efac', '#fcd34d', '#fb923c', '#ef4444', '#b91c1c'];
 
   var T = {
-    en: { title: 'FAIR VALUE BANDS', sub: 'Market price against bands set at fixed % of the composite fair value',
+    en: { med: '7D median', title: 'FAIR VALUE BANDS', sub: 'Market price against bands set at fixed % of the composite fair value',
           now: 'Now', price: 'Price', fv: 'Fair value', zone: 'Zone', vs: 'vs fair value',
           under: 'below fair value', over: 'above fair value',
           below: 'below −50%', above: 'above +100%',
-          note: function (n, a, b) { return 'Band edges = composite fair value × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0 (−50 / −25 / 0 / +25 / +50 / +100%). Composite = simple average of the 12 models on each day. ' + n + ' days, ' + a + ' – ' + b + '. Days without data are left blank, never filled.'; },
+          note: function (n, a, b) { return 'Band edges = composite fair value × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0 (−50 / −25 / 0 / +25 / +50 / +100%). Composite = simple average of the 12 models on each day. Bands and the dashed line show the 7-day median of the composite (trailing) so one-day input jumps do not saw the bands; the current price, fair value, gap and zone above use that day\'s raw composite. ' + n + ' days, ' + a + ' – ' + b + '. Days without data are left blank, never filled.'; },
           empty: 'Not enough fair value history to draw bands.' },
-    ko: { title: '적정가 밴드', sub: '합성 적정가의 고정 % 위치에 그린 색 띠 위의 시장가',
+    ko: { med: '7일 중앙값', title: '적정가 밴드', sub: '합성 적정가의 고정 % 위치에 그린 색 띠 위의 시장가',
           now: '현재', price: '시장가', fv: '적정가', zone: '구간', vs: '적정가 대비',
           under: '적정가 아래', over: '적정가 위',
           below: '−50% 아래', above: '+100% 위',
-          note: function (n, a, b) { return '밴드 경계 = 합성 적정가 × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0 (−50 / −25 / 0 / +25 / +50 / +100%). 합성 적정가 = 그날 12개 모델 값의 단순 평균. ' + a + ' – ' + b + ', ' + n + '일. 데이터가 없는 날은 비워 두고 채우지 않아.'; },
+          note: function (n, a, b) { return '밴드 경계 = 합성 적정가 × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0 (−50 / −25 / 0 / +25 / +50 / +100%). 합성 적정가 = 그날 12개 모델 값의 단순 평균. 띠와 점선은 합성 적정가의 7일 중앙값(직전 7일)이라 하루짜리 입력 튐에 톱니처럼 흔들리지 않아. 위의 시장가·적정가·괴리율·구간은 그날 원값이야. ' + a + ' – ' + b + ', ' + n + '일. 데이터가 없는 날은 비워 두고 채우지 않아.'; },
           empty: '밴드를 그릴 적정가 이력이 부족해.' },
-    zh: { title: '公允价值区间带', sub: '市场价格与按综合公允价值固定百分比划分的色带',
+    zh: { med: '7日中位数', title: '公允价值区间带', sub: '市场价格与按综合公允价值固定百分比划分的色带',
           now: '当前', price: '市价', fv: '公允价值', zone: '区间', vs: '相对公允价值',
           under: '低于公允价值', over: '高于公允价值',
           below: '低于 −50%', above: '高于 +100%',
-          note: function (n, a, b) { return '区间边界 = 综合公允价值 × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0（−50 / −25 / 0 / +25 / +50 / +100%）。综合公允价值 = 当日 12 个模型的简单平均。' + a + ' – ' + b + '，共 ' + n + ' 天。无数据的日期留空，不做填补。'; },
+          note: function (n, a, b) { return '区间边界 = 综合公允价值 × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0（−50 / −25 / 0 / +25 / +50 / +100%）。综合公允价值 = 当日 12 个模型的简单平均。色带和虚线为综合公允价值的 7 日中位数（过去 7 天），避免单日输入跳动造成锯齿；上方的市价、公允价值、偏离率和区间使用当日原值。' + a + ' – ' + b + '，共 ' + n + ' 天。无数据的日期留空，不做填补。'; },
           empty: '公允价值历史不足，无法绘制区间带。' },
-    ja: { title: '適正価値バンド', sub: '合成適正価値の固定％に引いた色帯と市場価格',
+    ja: { med: '7日中央値', title: '適正価値バンド', sub: '合成適正価値の固定％に引いた色帯と市場価格',
           now: '現在', price: '市場価格', fv: '適正価値', zone: 'ゾーン', vs: '適正価値比',
           under: '適正価値より下', over: '適正価値より上',
           below: '−50% 未満', above: '+100% 超',
-          note: function (n, a, b) { return 'バンド境界 = 合成適正価値 × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0（−50 / −25 / 0 / +25 / +50 / +100%）。合成適正価値 = その日の 12 モデルの単純平均。' + a + ' – ' + b + '、' + n + '日分。データのない日は空白のままで、補完しない。'; },
+          note: function (n, a, b) { return 'バンド境界 = 合成適正価値 × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0（−50 / −25 / 0 / +25 / +50 / +100%）。合成適正価値 = その日の 12 モデルの単純平均。帯と点線は合成適正価値の 7 日中央値（直近 7 日）で、1 日だけの入力の跳ねでギザギザにならない。上の市場価格・適正価値・乖離率・ゾーンはその日の原値。' + a + ' – ' + b + '、' + n + '日分。データのない日は空白のままで、補完しない。'; },
           empty: 'バンドを描くための適正価値履歴が不足している。' }
   };
   function lang() {
@@ -57,6 +59,8 @@
   function money(v) { return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
   function ymd(d) { return new Date(d).toISOString().slice(0, 10); }
   function dayKey(d) { return ymd(d); }
+  function median(a) { var x = a.slice().sort(function (p, q) { return p - q; }), n = x.length;
+    return n % 2 ? x[(n - 1) / 2] : (x[n / 2 - 1] + x[n / 2]) / 2; }
 
   // Build the daily series from data already on the page. Returns null if nothing usable.
   function series(days) {
@@ -76,6 +80,13 @@
       maps.forEach(function (mp) { var v = mp.get(k); if (v) { s += v; n++; } });
       if (!n) return;                                   // no fair value that day → leave it out
       out.push({ date: k, price: p.value, fv: s / n, n: n });
+    });
+    // band = trailing 7-calendar-day median of the daily composite (days present only, nothing filled).
+    // Display only: zone / gap / chips keep the raw composite of the day.
+    out.forEach(function (d, i) {
+      var t0 = +new Date(d.date) - 6 * 864e5, w = [];
+      for (var j = i; j >= 0 && +new Date(out[j].date) >= t0; j--) w.push(out[j].fv);
+      d.band = median(w); d.bandN = w.length;
     });
     return out;
   }
@@ -168,6 +179,7 @@
     box.setAttribute('data-dev', dev.toFixed(2));
     box.setAttribute('data-points', String(data.length));
     box.setAttribute('data-fv', last.fv.toFixed(2));
+    box.setAttribute('data-band', last.band.toFixed(2));
 
     legEl.innerHTML = '';
     for (var i = ZONE_COLORS.length - 1; i >= 0; i--) {
@@ -184,7 +196,7 @@
     // lowest edge fills down to the axis floor (zone 0), each next edge fills to the previous one
     EDGES.forEach(function (e, i) {
       sets.push({
-        label: pct(e), data: data.map(function (d) { return d.fv * (1 + e / 100); }),
+        label: pct(e), data: data.map(function (d) { return d.band * (1 + e / 100); }),
         borderColor: e === 0 ? (dark ? 'rgba(230,237,243,0.75)' : 'rgba(36,41,46,0.7)') : (dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.15)'),
         borderWidth: e === 0 ? 1.5 : 1, borderDash: e === 0 ? [4, 3] : [],
         backgroundColor: ZONE_COLORS[i] + alpha, fill: i === 0 ? 'start' : '-1',
@@ -198,7 +210,7 @@
       borderColor: dark ? '#ffffff' : '#111827', borderWidth: 2, fill: false, pointRadius: 0, pointHoverRadius: 3, tension: 0.2, order: 0 });
 
     var lo = Infinity, hi = 0;
-    data.forEach(function (d) { lo = Math.min(lo, d.price, d.fv * 0.5); hi = Math.max(hi, d.price, d.fv * 2); });
+    data.forEach(function (d) { lo = Math.min(lo, d.price, d.band * 0.5); hi = Math.max(hi, d.price, d.band * 2); });
     var grid = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', tick = dark ? '#8b949e' : '#57606a';
     var narrow = window.innerWidth < 600;
     var opts = {
@@ -212,7 +224,7 @@
             label: function (it) {
               var d = data[it.dataIndex];
               if (it.datasetIndex === sets.length - 1) return t.price + ' ' + money(d.price) + ' (' + ((d.price / d.fv - 1) * 100 >= 0 ? '+' : '') + ((d.price / d.fv - 1) * 100).toFixed(1) + '%)';
-              return t.fv + ' ' + money(d.fv) + ' · ' + d.n + '/12';
+              return t.fv + ' ' + money(d.fv) + ' · ' + t.med + ' ' + money(d.band) + ' · ' + d.n + '/12';
             }
           }
         }
@@ -248,5 +260,5 @@
     if (hv) new MutationObserver(schedule).observe(hv, { childList: true, characterData: true, subtree: true });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
-  window.ethvalFvBand = { render: function () { lastKey = ''; render(); }, EDGES: EDGES, series: series, monthTicks: monthTicks };
+  window.ethvalFvBand = { render: function () { lastKey = ''; render(); }, EDGES: EDGES, series: series, monthTicks: monthTicks, median: median };
 })();
