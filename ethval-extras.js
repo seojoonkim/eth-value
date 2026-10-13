@@ -302,7 +302,7 @@
     s('.ev-embed-title', { en: 'Embed on a site or blog', ko: '기사·블로그에 넣기', zh: '嵌入网站或博客', ja: 'サイト・ブログに埋め込む' });
     s('[data-ev="embed"]', { en: 'Copy embed code', ko: '임베드 코드 복사', zh: '复制嵌入代码', ja: '埋め込みコードをコピー' });
     s('.ev-embed-desc', { en: 'A live card with the price, composite fair value, gap and update time. Paste the code into your HTML.',
-      ko: '현재가·합성 적정가·괴리율·업데이트 시각이 실시간으로 보이는 카드야. 코드를 HTML에 붙여 넣으면 돼.',
+      ko: '현재가·합성 적정가·괴리율·업데이트 시각이 실시간으로 보이는 카드입니다. 코드를 HTML에 붙여 넣으면 됩니다.',
       zh: '实时显示现价、综合公允价值、偏离率与更新时间的卡片。把代码粘贴到 HTML 中即可。',
       ja: '現在価格・合成適正価格・乖離率・更新時刻をリアルタイムで表示するカード。コードを HTML に貼り付けるだけ。' });
     var ec = modal.querySelector('.ev-embed-code'); if (ec) ec.textContent = embedCode();
