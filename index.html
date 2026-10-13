@@ -14582,7 +14582,66 @@ body.dark .floating-action-badge, body.dark .floating-action-badge.rate-mode { b
 .sim-range::-moz-range-thumb { width: 22px; height: 22px; background: #fff; border: 2px solid var(--primary);
   box-shadow: 0 1px 4px rgba(0,0,0,.25); animation: none; }
 .sim-range:focus-visible { outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent); outline-offset: 6px; }
-    </style>
+    /* 2026-10-13 design consistency pass */
+/* Shape system: cards & boxes = 6px (--radius-sm), inner controls = 4px, chips/status pills = full round,
+   action buttons = 6px. Font: controls inherit the page font (browser default was Arial). */
+button, input, select, textarea { font-family: inherit; }
+
+.sim-slider-item, .sim-breakdown-grid, .community-stats-box, .rankings-loading-container,
+.forum-skeleton { border-radius: var(--radius-sm); }
+.ni-sc-cell, .ni-mx-cell, .model-item, .model-formula { border-radius: 4px; }
+
+/* Segmented controls: one look (news range, chart ranges, mini tabs) */
+.ni-seg button, .historical-tab, .mini-tab, .chart-card-header .mini-tab { border-radius: 4px; font-size: 12px; font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; }
+.ni-seg button { min-height: 26px; padding: 4px 10px; }
+
+/* Action buttons: flat primary, 6px, no glow/pulse (login CTA was a pulsing gradient pill) */
+.summary-btn.login-btn, body.dark .summary-btn.login-btn,
+.progress-login-btn, body.dark .progress-login-btn,
+.progress-login-btn-compact, body.dark .progress-login-btn-compact {
+  background: var(--primary) !important; border: 1px solid transparent !important;
+  border-radius: var(--radius-sm) !important; box-shadow: none !important; animation: none !important;
+}
+.summary-btn.login-btn:hover, body.dark .summary-btn.login-btn:hover,
+.progress-login-btn:hover, body.dark .progress-login-btn:hover { filter: brightness(1.08); background: var(--primary) !important; }
+.celebration-btn, .onboarding-cta { border-radius: var(--radius-sm); }
+
+/* Titles: one tracking value; box titles share one style */
+.metrics-subgroup-title { letter-spacing: -0.02em; }
+.simulator-box-title { font-size: 15px; font-weight: var(--weight-bold); text-transform: none; letter-spacing: -0.01em; }
+.appendix-title { font-weight: var(--weight-bold); letter-spacing: -0.02em; }
+.category-card-header { border-bottom-width: 1px; }
+
+/* Appendix model list: neutral names, colour stays on the left bar only (matches simulator list) */
+.model-item .model-item-name, .model-item[data-model] .model-item-name { color: var(--text) !important; }
+
+/* Community stats box: same card surface as everything else (was a purple gradient tint) */
+.community-stats-box, body.dark .community-stats-box { background: var(--bg-card); border-color: var(--border); }
+.community-stats-box:hover, body.dark .community-stats-box:hover { background: var(--bg-card); border-color: var(--primary); box-shadow: none; }
+
+/* Simulator header: lock notice = quiet notice (no glow), Reset All = same surface as other secondary buttons */
+.simulator-lock-indicator, body.dark .simulator-lock-indicator { background: var(--primary) !important; box-shadow: none !important; animation: none !important; border-radius: var(--radius-sm) !important; }
+.simulator-reset-all-btn { background: var(--bg-card); border-radius: var(--radius-sm); }
+
+/* Dark mode: light-violet primary needs dark ink on filled buttons (white was 2.6:1) */
+body.dark .summary-btn.login-btn, body.dark .progress-login-btn, body.dark .simulator-lock-indicator,
+body.dark .onboarding-cta { color: #15121f !important; }
+body.dark .simulator-lock-indicator svg, body.dark .summary-btn.login-btn svg { color: #15121f !important; }
+
+/* Colour aliases were resolved on :root, so dark-mode tokens (declared on body.dark) never reached them
+   (e.g. --red-bg stayed light pink in dark mode). Re-resolve them on body so they follow the theme. */
+body, body.dark { --green: var(--up); --green-bg: var(--up-bg); --positive: var(--up); --positive-bg: var(--up-bg); --red: var(--down); --red-bg: var(--down-bg); --negative: var(--down); --negative-bg: var(--down-bg); --yellow: var(--warn); --yellow-bg: var(--warn-bg); --neutral: var(--warn); --neutral-bg: var(--warn-bg); --accent: var(--primary); --accent-bg: var(--primary-light); --purple: var(--primary); }
+
+/* Floating badge & unlock tooltip: same flat treatment as the other CTAs (no pulse/glow, no gradient) */
+.floating-action-badge, .floating-action-badge.rate-mode, body.dark .floating-action-badge, body.dark .floating-action-badge.rate-mode {
+  animation: none !important; box-shadow: 0 6px 18px -10px rgba(0,0,0,.45) !important; }
+.simulator-unlock-tooltip, body.dark .simulator-unlock-tooltip { background: #5f4bd0 !important; box-shadow: 0 6px 18px -10px rgba(0,0,0,.45) !important; border-radius: var(--radius-sm) !important; }
+.simulator-unlock-tooltip.visible, body.dark .simulator-unlock-tooltip.visible { animation: none !important; }
+body.dark .floating-action-badge { color: #fff !important; }
+
+/* Korean: wrap between words, never inside a word ("커뮤|니티"); long tokens (URLs, numbers) may still break */
+html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wrap: anywhere; line-break: strict; }
+</style>
 </head>
 <body>
     <a id="top"></a>
