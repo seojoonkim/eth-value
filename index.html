@@ -10256,6 +10256,13 @@
             color: var(--text-muted);
         }
         
+.sim-summary-badge .sim-badge-note {
+            font-family: var(--font-sans, inherit);
+            font-weight: var(--weight-medium, 500);
+            opacity: 0.85;
+            white-space: nowrap;
+        }
+
         .sim-summary-badge.positive {
             background: var(--positive-bg);
             color: var(--positive);
@@ -20441,6 +20448,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'simulator.marketPrice': 'Market Price',
                 'simulator.currentFairValue': 'Current Fair Value',
                 'simulator.simulatedFairValue': 'Simulated Fair Value',
+                'simulator.upside': 'Upside',
+                'simulator.downside': 'Downside',
                 'simulator.scenarioVariables': 'Scenario Variables <span class=\"sim-hint\">(drag to adjust)</span>',
                 'simulator.simulatedValues': 'Simulated Values',
                 'section.historicalTitle': 'Historical Fair Value Analysis',
@@ -20934,6 +20943,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'simulator.marketPrice': '시장 가격',
                 'simulator.currentFairValue': '현재 적정가치',
                 'simulator.simulatedFairValue': '시뮬레이션 적정가치',
+                'simulator.upside': '상승 여력',
+                'simulator.downside': '하락 여력',
                 'simulator.scenarioVariables': '시나리오 변수 <span class=\"sim-hint\">(드래그하여 조정)</span>',
                 'simulator.simulatedValues': '시뮬레이션 결과',
                 'section.historicalTitle': '시계열 적정가치 분석',
@@ -21421,6 +21432,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'simulator.marketPrice': '市场价格',
                 'simulator.currentFairValue': '当前公允价值',
                 'simulator.simulatedFairValue': '模拟公允价值',
+                'simulator.upside': '上涨空间',
+                'simulator.downside': '下跌空间',
                 'simulator.scenarioVariables': '情景变量 <span class=\"sim-hint\">(拖动调整)</span>',
                 'simulator.simulatedValues': '模拟结果',
                 'section.historicalTitle': '历史公允价值分析',
@@ -21911,6 +21924,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'simulator.marketPrice': '市場価格',
                 'simulator.currentFairValue': '現在の適正価値',
                 'simulator.simulatedFairValue': 'シミュレーション適正価値',
+                'simulator.upside': '上昇余地',
+                'simulator.downside': '下落余地',
                 'simulator.scenarioVariables': 'シナリオ変数 <span class=\"sim-hint\">(ドラッグして調整)</span>',
                 'simulator.simulatedValues': 'シミュレーション結果',
                 'section.historicalTitle': '履歴的適正価格分析',
@@ -33424,17 +33439,20 @@ Check out ETHval 👇`;
             ];
             
             // Model calculations with full names and matching colors (same as historical chart legend)
-            var cardModel = function(id, p) { var r = calculateSingleModel(id, { price: p.price, supply: p.supply, tvl: p.tvl, stakedEth: p.stakedEth, l2Tvl: p.l2Tvl, fees: p.fees, stables: p.stablecoins, stakingApr: p.stakingApr, dailySettlement: p.dailySettlement, l1TotalVolume: p.l1TotalVolume, l2TotalVolume: p.l2TotalVolume, ethInDefi: p.price > 0 ? p.tvl / p.price : 0 }); return r ? r.value : NaN; };
+            // Every model goes through the same calculateSingleModel() the valuation cards use, so the
+            // simulator's "current fair value" at reset is exactly the headline composite (2026-10-14 fix:
+            // the simulator used to carry its own inline formulas + its own inputs → $4,349.9 vs $4,338.4).
+            var cardModel = function(id, p) { var r = calculateSingleModel(id, { price: p.price, supply: p.supply, tvl: p.tvl, stakedEth: p.stakedEth, l2Tvl: p.l2Tvl, fees: p.fees, stables: p.stablecoins, stakingApr: p.stakingApr, dailySettlement: p.dailySettlement, l1TotalVolume: p.l1TotalVolume, l2TotalVolume: p.l2TotalVolume, ethInDefi: p.ethInDefi > 0 ? p.ethInDefi : (p.price > 0 ? p.tvl / p.price : 0) }); return r ? r.value : NaN; };
             const MODELS = {
                 tvlMultiple: {
                     name: 'TVL Multiple',
                     color: '#ef4444',
-                    calc: function(p) { return (p.tvl * 7) / p.supply; }
+                    calc: function(p) { return cardModel('tvlMultiple', p); }
                 },
                 stakingScarcity: {
                     name: 'Staking Scarcity',
                     color: '#f97316',
-                    calc: function(p) { return p.price * Math.pow(p.supply / (p.supply - p.stakedEth), 0.5); }
+                    calc: function(p) { return cardModel('stakingScarcity', p); }
                 },
                 metcalfe: {
                     name: "Metcalfe's Law",
@@ -33444,12 +33462,12 @@ Check out ETHval 👇`;
                 dcf: {
                     name: 'Staking DCF',
                     color: '#84cc16',
-                    calc: function(p) { return Math.min(p.price * (1 + p.stakingApr / 100) / 0.06, p.price * 3); }
+                    calc: function(p) { return cardModel('dcf', p); }
                 },
                 l2Ecosystem: {
                     name: 'L2 Ecosystem',
                     color: '#22c55e',
-                    calc: function(p) { return ((p.tvl + p.l2Tvl * 2) * 6) / p.supply; }
+                    calc: function(p) { return cardModel('l2Ecosystem', p); }
                 },
                 ps: {
                     name: 'P/S Ratio (25x)',
@@ -33464,31 +33482,23 @@ Check out ETHval 👇`;
                 commitmentPremium: {
                     name: 'Liquidity Premium',
                     color: '#0ea5e9',
-                    calc: function(p) {
-                        var defiEth = p.tvl / p.price;
-                        var l2Eth = p.l2Tvl / p.price;
-                        var lostEth = p.supply * 0.03;
-                        var liquidFloat = p.supply - p.stakedEth - defiEth - l2Eth - lostEth;
-                        return liquidFloat > 0 ? p.price * Math.sqrt(p.supply / liquidFloat) : p.price;
-                    }
+                    calc: function(p) { return cardModel('commitmentPremium', p); }
                 },
                 appCapital: {
                     name: 'App Capital',
                     color: '#7c5cf5',
-                    calc: function(p) { return (p.stablecoins / 0.28) / p.supply; }
+                    calc: function(p) { return cardModel('appCapital', p); }
                 },
                 validatorEcon: {
                     name: 'Validator Economics',
                     color: '#9580fa',
-                    calc: function(p) { return p.price * (6 / p.stakingApr); }
+                    calc: function(p) { return cardModel('validatorEcon', p); }
                 },
                 ethMonetary: {
                     name: 'ETH Monetary (MV=PQ)',
                     color: '#a855f7',
-                    calc: function(p) { 
-                        // Pure ETH settlement - not affected by stablecoins or TVL
-                        return ((p.dailySettlement * 365 / 6)) / p.supply; 
-                    }
+                    // Pure ETH settlement - not affected by stablecoins or TVL
+                    calc: function(p) { return cardModel('ethMonetary', p); }
                 },
                 ecosystemSettlement: {
                     name: 'Ecosystem Settlement (MV=PQ)',
@@ -33617,8 +33627,15 @@ Check out ETHval 👇`;
                 }
                 
                 // Calculate staking ratio (rounded to integer)
-                var supply = state.circulatingSupply || 120000000;
-                baseStakingRatio = Math.round((stakedEth / supply) * 100);
+                // Cards' inputs (getCurrentModelData) are the single source for the simulator baseline,
+                // so reset = headline composite. Keep the staking ratio unrounded (display rounds) —
+                // a rounded ratio shifted stakedEth and the staking/liquidity models (2026-10-14).
+                var cardData = getCurrentModelData();
+                var supply = cardData.supply || state.circulatingSupply || 120000000;
+                if (cardData.stakedEth > 0) stakedEth = cardData.stakedEth;
+                if (cardData.tvl > 0) tvlValue = cardData.tvl;
+                if (cardData.stables > 0) stablesValue = cardData.stables;
+                baseStakingRatio = (stakedEth / supply) * 100;
                 
                 // Get L1/L2 Total Volume from state (using history[-2] to skip incomplete day)
                 var getHistoryValue = function(history) {
@@ -33630,20 +33647,20 @@ Check out ETHval 👇`;
                 var l2TotalVolumeValue = state.l2TotalVolume > 0 ? state.l2TotalVolume : getHistoryValue(state.l2TotalVolumeHistory);
 
                 // Store base parameters - all from Supabase (day before latest)
-                var cardData = getCurrentModelData();
                 baseParams = {
                     price: state.price,
                     supply: supply,
                     tvl: tvlValue,
                     fees: (cardData.fees > 0 ? cardData.fees : totalFees),
-                    stakedEth: supply * (baseStakingRatio / 100),
+                    stakedEth: stakedEth,
                     stakingApr: cardData.stakingApr || state.stakingApr || 3.2,
                     stablecoins: stablesValue,
-                    l2Tvl: state.l2Tvl || 12000000000,
-                    dailySettlement: state.dailySettlement || (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0),
+                    l2Tvl: cardData.l2Tvl || state.l2Tvl || 12000000000,
+                    ethInDefi: cardData.ethInDefi || 0,
+                    dailySettlement: cardData.dailySettlement || state.dailySettlement || (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0),
                     activeAddresses: activeAddressesValue,
-                    l1TotalVolume: l1TotalVolumeValue || 368000000000,
-                    l2TotalVolume: l2TotalVolumeValue || 419500000000
+                    l1TotalVolume: cardData.l1TotalVolume || l1TotalVolumeValue || 368000000000,
+                    l2TotalVolume: cardData.l2TotalVolume || l2TotalVolumeValue || 419500000000
                 };
                 
                 // Set market price display
@@ -33653,13 +33670,13 @@ Check out ETHval 👇`;
                 // Set current value displays
                 document.getElementById('sim-tvl-current').textContent = formatVal(baseParams.tvl);
                 document.getElementById('sim-fees-current').textContent = formatVal(baseParams.fees);
-                document.getElementById('sim-staking-current').textContent = baseStakingRatio + '%';
+                document.getElementById('sim-staking-current').textContent = Math.round(baseStakingRatio) + '%';
                 document.getElementById('sim-stables-current').textContent = formatVal(baseParams.stablecoins);
                 document.getElementById('sim-activeAddresses-current').textContent = formatCount(baseParams.activeAddresses);
                 
                 // Update staking base label
                 var stakingLabel = document.getElementById('sim-staking-base-label');
-                if (stakingLabel) stakingLabel.textContent = baseStakingRatio + '%';
+                if (stakingLabel) stakingLabel.textContent = Math.round(baseStakingRatio) + '%';
                 
                 if (!rebase) {
                     // Set slider initial values (25 = 1x or base value)
@@ -33781,6 +33798,7 @@ Check out ETHval 👇`;
                         supply: baseParams.supply,
                         tvl: baseParams.tvl * effectiveTvlMult,
                         l2Tvl: baseParams.l2Tvl * effectiveTvlMult,
+                        ethInDefi: (baseParams.ethInDefi || 0) * effectiveTvlMult,
                         fees: baseParams.fees * effectiveFeesMult,
                         dailySettlement: baseParams.dailySettlement * activeAddressesEffectSettlement, // ETH settlement affected by active addresses
                         stakedEth: baseParams.supply * stakingPct,
@@ -33914,14 +33932,21 @@ Check out ETHval 👇`;
                 
                 // Current Fair Value vs Market Price badge
                 var currentChgEl = document.getElementById('sim-current-change');
+                // Badge = (fair value − market) ÷ market. Label it as upside/downside so it is not read as the
+                // fair-value band's "vs fair value" figure, which runs the other way (calculation unchanged).
+                function setGapBadge(el, pct) {
+                    var key = pct < 0 ? 'simulator.downside' : 'simulator.upside';
+                    var tr = (typeof translations !== 'undefined' && translations[currentLang]) || {};
+                    el.innerHTML = '<span class="sim-badge-pct">' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%</span> <span class="sim-badge-note" data-i18n="' + key + '">' + (tr[key] || (pct < 0 ? 'Downside' : 'Upside')) + '</span>';
+                }
                 if (currentChgEl) {
-                    currentChgEl.textContent = (currentVsMarket >= 0 ? '+' : '') + currentVsMarket.toFixed(1) + '%';
+                    setGapBadge(currentChgEl, currentVsMarket);
                     currentChgEl.className = 'sim-summary-badge' + (currentVsMarket > 0.5 ? ' positive' : currentVsMarket < -0.5 ? ' negative' : '');
                 }
                 
                 // Simulated Fair Value vs Market Price badge
                 var chgEl = document.getElementById('sim-change');
-                chgEl.textContent = (simVsMarket >= 0 ? '+' : '') + simVsMarket.toFixed(1) + '%';
+                setGapBadge(chgEl, simVsMarket);
                 chgEl.className = 'sim-summary-badge' + (simVsMarket > 0.5 ? ' positive' : simVsMarket < -0.5 ? ' negative' : '');
                 
                 // Update breakdown
