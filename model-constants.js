@@ -13,6 +13,11 @@
   'use strict';
 
   // Dated changes to MODEL_CONSTANTS. Add a new entry (newest last) whenever a constant changes.
+  // Rule (enforced by .qa/constants_history_check.cjs in qa_all.sh, and --strict in .qa/push.sh):
+  //   1. change MODEL_CONSTANTS in index.html AND add an entry here in the same commit:
+  //      { date: 'YYYY-MM-DD', commit: 'pending', values: { all 14 new values }, why: { en, ko, zh, ja } }
+  //   2. after committing, replace 'pending' with that commit's short sha in a follow-up commit, then push.
+  //   One entry per commit that changed a value; date = that commit's date.
   var CHANGELOG = [
     { date: '2025-12-28', commit: '7455368',
       values: { TVL_MULTIPLE: 7, L2_WEIGHT: 2, L2_MULTIPLE: 6, PS_RATIO: 25, DISCOUNT_RATE: 0.09, GROWTH_RATE: 0.03,
@@ -138,7 +143,8 @@
     }).join('');
     var bad = mismatches();
     var log = CHANGELOG.slice().reverse().map(function (e) {
-      return '<li><div class="mc-log-h"><b>' + e.date + '</b><a href="https://github.com/seojoonkim/eth-value/commit/' + e.commit + '" target="_blank" rel="noopener">' + L.commit + ' ' + e.commit + '</a></div>' +
+      var c = /^[0-9a-f]{7,40}$/.test(e.commit) ? '<a href="https://github.com/seojoonkim/eth-value/commit/' + e.commit + '" target="_blank" rel="noopener">' + L.commit + ' ' + e.commit + '</a>' : '';
+      return '<li><div class="mc-log-h"><b>' + e.date + '</b>' + c + '</div>' +
         '<div class="mc-log-v">' + Object.keys(e.values).map(function (k) { return '<span><code>' + k + '</code> ' + e.values[k] + '</span>'; }).join('') + '</div>' +
         '<p>' + esc(tr(e.why)) + '</p></li>';
     }).join('');
