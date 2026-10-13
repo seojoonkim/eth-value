@@ -231,6 +231,12 @@
   }
   var HASH = { ko: 'kr', zh: 'zh', ja: 'ja' };
   function shareUrl(src) { return SITE + '?utm_source=' + src + '&utm_medium=share' + (HASH[lang()] ? '#' + HASH[lang()] : ''); }
+  // Embed card (embed.html): lang + current theme, fixed height so the host page never jumps.
+  function embedCode() {
+    var dark = document.body.classList.contains('dark'); // body.dark drives the page CSS
+    return '<iframe src="' + SITE + 'embed.html?lang=' + lang() + '&theme=' + (dark ? 'dark' : 'light') +
+      '" width="100%" height="236" style="border:0;max-width:480px" title="ETHval — ETH fair value" loading="lazy"></iframe>';
+  }
   function toast(msg) {
     var el = document.createElement('div'); el.className = 'ev-toast'; el.textContent = msg;
     document.body.appendChild(el); setTimeout(function () { el.remove(); }, 1800);
@@ -248,7 +254,11 @@
       '<button type="button" class="share-modal-btn download" data-ev="copy"></button>' +
       '<button type="button" class="share-modal-btn download" data-ev="native"></button>' +
       '<button type="button" class="share-modal-btn download" data-ev="dl"></button>' +
-      '</div></div>';
+      '</div>' +
+      '<div class="ev-embed"><div class="ev-embed-head"><span class="ev-embed-title"></span>' +
+      '<button type="button" class="ev-embed-copy" data-ev="embed"></button></div>' +
+      '<p class="ev-embed-desc"></p><code class="ev-embed-code"></code></div>' +
+      '</div>';
     document.body.appendChild(modal);
     modal.addEventListener('click', function (ev) {
       if (ev.target === modal || ev.target.closest('.share-modal-close')) { modal.classList.remove('active'); return; }
@@ -269,6 +279,10 @@
             return navigator.share(data);
           }).catch(function () {});
         } else if (navigator.share) navigator.share(data).catch(function () {});
+      } else if (k === 'embed') {
+        var code = embedCode();
+        (navigator.clipboard ? navigator.clipboard.writeText(code) : Promise.reject()).then(function () {
+          toast(t({ en: 'Embed code copied', ko: '임베드 코드를 복사했어', zh: '已复制嵌入代码', ja: '埋め込みコードをコピーしました' })); }).catch(function () { window.prompt('', code); });
       } else if (k === 'dl' && window.shareImageData) {
         var a = document.createElement('a'); a.href = window.shareImageData; a.download = 'ethval-' + new Date().toISOString().slice(0, 10) + '.png'; a.click();
       }
@@ -285,6 +299,13 @@
     s('[data-ev="native"]', { en: 'Share…', ko: '다른 앱으로', zh: '其他应用', ja: '他のアプリへ' });
     s('[data-ev="dl"]', { en: 'Save image', ko: '이미지 저장', zh: '保存图片', ja: '画像を保存' });
     var nb = modal.querySelector('[data-ev="native"]'); if (nb) nb.hidden = !navigator.share;
+    s('.ev-embed-title', { en: 'Embed on a site or blog', ko: '기사·블로그에 넣기', zh: '嵌入网站或博客', ja: 'サイト・ブログに埋め込む' });
+    s('[data-ev="embed"]', { en: 'Copy embed code', ko: '임베드 코드 복사', zh: '复制嵌入代码', ja: '埋め込みコードをコピー' });
+    s('.ev-embed-desc', { en: 'A live card with the price, composite fair value, gap and update time. Paste the code into your HTML.',
+      ko: '현재가·합성 적정가·괴리율·업데이트 시각이 실시간으로 보이는 카드야. 코드를 HTML에 붙여 넣으면 돼.',
+      zh: '实时显示现价、综合公允价值、偏离率与更新时间的卡片。把代码粘贴到 HTML 中即可。',
+      ja: '現在価格・合成適正価格・乖離率・更新時刻をリアルタイムで表示するカード。コードを HTML に貼り付けるだけ。' });
+    var ec = modal.querySelector('.ev-embed-code'); if (ec) ec.textContent = embedCode();
   }
   function setupShare() {
     var panel = document.querySelector('.conclusion-panel'); if (!panel || shareBtn) return;
@@ -292,6 +313,7 @@
     shareBtn = document.createElement('button');
     shareBtn.type = 'button'; shareBtn.className = 'ev-share-btn';
     shareBtn.addEventListener('click', function () {
+      renderShare(); // embed code follows the theme chosen right now
       if (typeof openShareModal === 'function') openShareModal(); else modal.classList.add('active');
     });
     panel.appendChild(shareBtn);
@@ -361,7 +383,7 @@
   function init() {
     setupEli5(); setupLinesToggle(); setupStamp(); setupShare(); setupResearch(); renderAll();
     new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
-    window.EthvalExtras = { ELI5: ELI5, RESEARCH: RESEARCH, lang: lang };
+    window.EthvalExtras = { ELI5: ELI5, RESEARCH: RESEARCH, lang: lang, lastRun: function () { return lastRun; }, embedCode: embedCode };
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

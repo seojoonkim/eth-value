@@ -12,7 +12,9 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-PX7DBZL3ND');
+      // embed.html loads this page hidden (?embed=1) only to read its numbers: no pageview, no live-visitor count
+      window.__ethvalEmbedSource = /[?&]embed=1(&|$)/.test(location.search);
+      if (!window.__ethvalEmbedSource) gtag('config', 'G-PX7DBZL3ND');
       
       // 브라우저 자동 스크롤 복원 활성화
       if ('scrollRestoration' in history) {
@@ -43,7 +45,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <link rel="stylesheet" href="news-impact.css?v=20261014b">
+    <link rel="stylesheet" href="news-impact.css?v=20261014c">
     <link rel="stylesheet" href="valuation-dist.css?v=20261013b">
     <link rel="stylesheet" href="fv-band.css?v=20261014b">
     <link rel="stylesheet" href="fv-backtest.css?v=20261014a">
@@ -17489,6 +17491,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
         
         // Live visitors tracking with Supabase Realtime Presence
         (function initLiveVisitors() {
+            if (window.__ethvalEmbedSource) return; // hidden source frame of embed.html is not a visitor
             const visitorId = 'visitor_' + Math.random().toString(36).substr(2, 9);
             const channel = supabaseClient.channel('online-users', {
                 config: {
@@ -36731,7 +36734,7 @@ Check out ETHval 👇`;
     })();
     </script>
     <script src="news-impact.js?v=20261014a" defer></script>
-    <script src="ethval-extras.js?v=20261014a" defer></script>
+    <script src="ethval-extras.js?v=20261014b" defer></script>
     <script src="valuation-dist.js?v=20261013b" defer></script>
     <script src="fv-band.js?v=20261014b" defer></script>
     <script src="fv-backtest.js?v=20261014a" defer></script>

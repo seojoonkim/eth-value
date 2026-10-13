@@ -446,8 +446,18 @@ body .section[id]:not(#valuation):not(#section-valuation) {
 body.dark .ev-share-btn{background:linear-gradient(135deg,#7a5cf0 0%,#5a6ff0 100%);box-shadow:0 6px 18px rgba(0,0,0,.35)}
 .share-modal-actions{flex-wrap:wrap}
 .share-modal-btn[hidden]{display:none}
-.ev-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:2000;padding:10px 16px;border-radius:999px;
+.ev-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:10001;padding:10px 16px;border-radius:999px;
   background:#15171c;color:#fff;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+/* embed card (2026-10-14): iframe code in the share modal. z-index above: toast must sit over the modal (10000). */
+.ev-embed{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.ev-embed-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ev-embed-title{font-size:16px;font-weight:700;color:var(--text)}
+.ev-embed-copy{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);
+  color:var(--text);font-size:14px;font-weight:600;cursor:pointer}
+.ev-embed-copy:hover{border-color:var(--primary)}
+.ev-embed-desc{margin:8px 0;font-size:14px;line-height:1.5;color:var(--text-secondary);word-break:keep-all}
+.ev-embed-code{display:block;padding:10px 12px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);
+  font-size:12px;line-height:1.5;color:var(--text-secondary);white-space:pre-wrap;overflow-wrap:anywhere;user-select:all}
 
 .ev-research-lead{margin:8px 0 0;font-size:16px;color:var(--text-secondary);line-height:1.6;word-break:keep-all}
 .ev-research-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:20px}
