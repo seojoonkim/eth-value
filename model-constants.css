@@ -1,0 +1,54 @@
+/* ETHval — Constants & assumptions disclosure (model-constants.js), section 03 */
+.mc-wrap { margin-top: 32px; }
+.mc-box { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); }
+.mc-box > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 16px 18px; min-height: 44px; box-sizing: border-box; }
+.mc-box > summary::-webkit-details-marker { display: none; }
+.mc-box > summary::after { content: '▾'; margin-left: auto; color: var(--text-muted); transition: transform .2s ease; }
+.mc-box[open] > summary::after { transform: rotate(180deg); }
+.mc-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+.mc-sum-meta { font-size: 12px; color: var(--text-muted); }
+.mc-box > :not(summary) { margin-left: 18px; margin-right: 18px; }
+.mc-box > :last-child { margin-bottom: 18px; }
+.mc-lead { font-size: 13px; line-height: 1.55; color: var(--text-secondary); margin-top: 0; margin-bottom: 12px; word-break: keep-all; }
+.mc-warn { font-size: 13px; color: var(--red); margin: 0 0 12px; }
+.mc-h { font-size: 16px; font-weight: 600; color: var(--text); margin: 24px 0 4px; }
+.mc-table, .mc-dl-table { width: calc(100% - 36px); border-collapse: collapse; table-layout: fixed; }
+.mc-table th, .mc-table td, .mc-dl-table th, .mc-dl-table td { border-top: 1px solid var(--border); padding: 10px 8px 10px 0; vertical-align: top; text-align: left; }
+.mc-table thead th, .mc-table thead td { font-size: 12px; font-weight: 600; color: var(--text-muted); border-top: 0; padding-top: 0; }
+.mc-table th { width: 30%; }
+.mc-table tbody th { font-size: 13px; font-weight: 600; color: var(--text); }
+.mc-c { display: grid; grid-template-columns: minmax(0, auto) auto; column-gap: 10px; align-items: baseline; padding: 2px 0; }
+.mc-c + .mc-c { margin-top: 6px; }
+.mc-c code { font-size: 12px; color: var(--text-secondary); overflow-wrap: anywhere; }
+.mc-c b { font-size: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.mc-c span { grid-column: 1 / -1; font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+.mc-inline code { font-family: inherit; }
+.mc-c .mc-expr { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; }
+.mc-none span { font-size: 13px; color: var(--text-muted); }
+.mc-log { list-style: none; padding: 0; margin: 8px 0 0; }
+.mc-log li { border-left: 3px solid var(--primary); padding: 4px 0 4px 12px; }
+.mc-log-h { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font-size: 13px; color: var(--text); }
+.mc-log-h a { font-size: 12px; color: var(--primary); text-decoration: none; }
+.mc-log-v { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.mc-log-v code { font-size: 12px; color: var(--text-muted); }
+.mc-log p { font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin: 6px 0 0; word-break: keep-all; }
+.mc-dl-table th { font-size: 13px; }
+.mc-dl-table th code { font-size: 13px; color: var(--text); overflow-wrap: anywhere; }
+.mc-dl-table th small { display: block; font-size: 12px; font-weight: 400; color: var(--text-muted); margin-top: 2px; }
+.mc-dl-table td { text-align: right; white-space: nowrap; }
+.mc-dl { font: inherit; font-size: 12px; font-weight: 600; min-height: 32px; padding: 6px 12px; margin-left: 6px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--primary); }
+.mc-dl:hover { border-color: var(--primary); }
+.mc-dl:disabled { opacity: .6; cursor: progress; }
+@media (max-width: 600px) {
+  .mc-wrap { margin-top: 24px; }
+  .mc-box > summary { padding: 14px; }
+  .mc-box > :not(summary) { margin-left: 14px; margin-right: 14px; }
+  .mc-table, .mc-dl-table { width: calc(100% - 28px); }
+  .mc-table thead { display: none; }
+  .mc-table tbody tr { display: block; border-top: 1px solid var(--border); padding: 10px 0; }
+  .mc-table tbody th, .mc-table tbody td { display: block; width: auto; border: 0; padding: 0; }
+  .mc-table tbody th { margin-bottom: 6px; }
+  .mc-dl-table td { white-space: normal; }
+  .mc-dl { min-height: 36px; margin: 2px 0 2px 6px; }
+}
