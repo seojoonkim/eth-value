@@ -32028,62 +32028,29 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 });
             };
             
-            // Use IntersectionObserver for efficient scroll detection
-            if ('IntersectionObserver' in window) {
-                const observerOptions = {
-                    root: null,
-                    rootMargin: '-20% 0px -70% 0px', // Trigger when section is in top 20-30% of viewport
-                    threshold: 0
-                };
-                
-                const sectionObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            // Map section id to nav id
-                            const sectionConfig = sections.find(s => s.id === entry.target.id);
-                            const navId = sectionConfig ? sectionConfig.navId : entry.target.id;
-                            updateActiveNav(navId);
-                        }
-                    });
-                }, observerOptions);
-                
-                // Observe all sections
-                sections.forEach(({ id }) => {
+            // 2026-10-14: 활성 탭 = 헤더 아래 보이는 영역의 「가운데 줄」에 걸친 섹션.
+            // 예전 기준(IntersectionObserver rootMargin -20%/-70%)은 섹션 제목이 화면 위 20%선을 넘어야 바뀌어서
+            // 1280×800에서 04 커뮤니티 제목이 y≈330·표가 화면 대부분인데도 「평가」가 강조됐음(390도 같음, 실측 전환 y≈160~208).
+            // 가운데 줄 기준이면 화면을 더 많이 차지한 섹션이 강조됨(섹션이 화면보다 클 때 = 보이는 면적이 큰 쪽).
+            const pickActiveSection = () => {
+                const hdr = document.querySelector('.header-wrapper');
+                const hb = hdr ? Math.max(0, hdr.getBoundingClientRect().bottom) : 0;
+                const line = hb + (window.innerHeight - hb) * 0.5;
+                let current = 'overview';
+                for (const { id, navId } of sections) {
                     const el = document.getElementById(id);
-                    if (el) sectionObserver.observe(el);
-                });
-                
-                // Handle top of page (overview)
-                const topObserver = new IntersectionObserver((entries) => {
-                    if (entries[0].isIntersecting) {
-                        updateActiveNav('overview');
-                    }
-                }, { root: null, rootMargin: '0px', threshold: 0.5 });
-                
-                const heroSection = document.querySelector('.hero-section');
-                if (heroSection) topObserver.observe(heroSection);
-                
-            } else {
-                // Fallback for older browsers - throttled setInterval
-                let lastScrollTop = -1;
-                setInterval(function() {
-                    var scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
-                    if (Math.abs(scrollTop - lastScrollTop) < 10) return; // Skip if barely moved
-                    lastScrollTop = scrollTop;
-                    
-                    var headerHeight = 150;
-                    var current = 'overview';
-                    
-                    for (let i = sections.length - 1; i >= 0; i--) {
-                        const el = document.getElementById(sections[i].id);
-                        if (el && scrollTop >= el.offsetTop - headerHeight) {
-                            current = sections[i].navId;
-                            break;
-                        }
-                    }
-                    updateActiveNav(current);
-                }, isMobile() ? 250 : 100); // Slower on mobile
-            }
+                    if (el && el.getBoundingClientRect().top <= line) current = navId; // 줄 위에서 시작한 마지막 섹션
+                }
+                updateActiveNav(current);
+            };
+            let navRaf = 0;
+            const onNavScroll = () => {
+                if (navRaf) return;
+                navRaf = requestAnimationFrame(() => { navRaf = 0; pickActiveSection(); });
+            };
+            window.addEventListener('scroll', onNavScroll, { passive: true });
+            window.addEventListener('resize', onNavScroll, { passive: true });
+            window.__ethvalPickActiveSection = pickActiveSection; // QA용
         });
 
         // ===== SHARE FUNCTIONALITY =====
