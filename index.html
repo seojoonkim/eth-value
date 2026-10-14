@@ -11843,6 +11843,21 @@
                 gap: 10px;
                 font-size: 12px;
                 color: var(--text-muted);
+                /* stats never shrink or wrap: at 390 "Jan 18, 2026, 11:43 AM" ran 29px past the row and was cut.
+                   Dates are now ISO (2026-01-18, full date+time in the title tooltip); a long author name
+                   ellipsizes instead of pushing the numbers out (measured by .qa/forum_mobile_date_check.cjs) */
+                flex-shrink: 0;
+                white-space: nowrap;
+                margin-left: 8px;
+            }
+            .forum-row .forum-author-info { min-width: 0; flex: 1 1 auto; }
+            .forum-row .forum-author-avatar { flex-shrink: 0; }
+            @media (max-width: 360px) { .forum-mobile-stats { gap: 7px; } } /* 320: 10px gaps left long names only 59px */
+            .forum-row .forum-author-info .forum-author-link {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
         
@@ -34385,7 +34400,7 @@ Check out ETHval 👇`;
                                 <span>♥ ${post.likes_count || 0}</span>
                                 <span>💬 ${post.comments_count || 0}</span>
                                 <span>👁 ${post.views_count || 0}</span>
-                                <span>${timeAgo(post.created_at)}</span>
+                                <span class="forum-mobile-date" title="${forumFullDate(post.created_at)}">${forumShortDate(post.created_at)}</span>
                             </div>
                         </div>
                         <div class="forum-cell forum-cell-stat">
