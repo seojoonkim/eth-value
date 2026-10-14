@@ -40,7 +40,7 @@ jobs:
       - name: Commit if values changed
         id: commit
         run: |
-          git add -A models sitemap.xml robots.txt
+          git add -A models reports sitemap.xml robots.txt
           # compare old vs new with the build time ("YYYY-MM-DD HH:MM") and <lastmod> masked;
           # any value / date / series point / text change still counts
           CHANGED=$(node -e '
@@ -58,7 +58,8 @@ jobs:
           if [ "$CHANGED" = "0" ]; then
             echo "only build timestamp changed — no commit"
             git reset -q
-            git checkout -- models sitemap.xml robots.txt
+            git checkout -- models reports sitemap.xml robots.txt
+            git clean -fdq reports
             echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi

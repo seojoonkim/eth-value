@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月度估值报告 | ETHval</title>
+<meta name="description" content="ETHval 每月 ETH 估值报告——综合公允价值、模型变动因素与公允价值区间带位置。">
+<link rel="canonical" href="https://ethval.com/reports/zh/">
+<link rel="alternate" hreflang="en" href="https://ethval.com/reports/">
+<link rel="alternate" hreflang="ko" href="https://ethval.com/reports/ko/">
+<link rel="alternate" hreflang="zh-Hans" href="https://ethval.com/reports/zh/">
+<link rel="alternate" hreflang="ja" href="https://ethval.com/reports/ja/">
+<link rel="alternate" hreflang="x-default" href="https://ethval.com/reports/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="月度估值报告 | ETHval">
+<meta property="og:description" content="ETHval 每月 ETH 估值报告——综合公允价值、模型变动因素与公允价值区间带位置。">
+<meta property="og:url" content="https://ethval.com/reports/zh/">
+<meta property="og:site_name" content="ETHval">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='8' fill='%237c3aed'/><path d='M14 5.5 L20 14 L14 22.5 L8 14 Z M8 14 L14 17.2 L20 14 M14 17.2 L14 22.5' fill='none' stroke='white' stroke-width='1.8' stroke-linejoin='round'/></svg>">
+<style>:root{--bg:#0b0b12;--card:#14141f;--line:#262636;--tx:#ececf3;--mu:#a3a3b8;--ac:#a78bfa;--pos:#34d399;--neg:#f87171}
+@media (prefers-color-scheme:light){:root{--bg:#f7f7fb;--card:#fff;--line:#e3e3ec;--tx:#16161f;--mu:#55556a;--ac:#6d28d9;--pos:#047857;--neg:#b91c1c}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Hiragino Sans","PingFang SC",sans-serif;word-break:keep-all;overflow-wrap:anywhere}
+a{color:var(--ac)}.w{max-width:880px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin-bottom:20px}
+.brand{font-weight:800;font-size:20px;text-decoration:none;color:var(--tx)}.brand b{color:var(--ac)}
+.langs{display:flex;gap:6px;flex-wrap:wrap}.langs a{font-size:14px;padding:4px 10px;border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--mu)}.langs a[aria-current]{color:var(--tx);border-color:var(--ac)}
+.crumb{font-size:14px;color:var(--mu);margin:0 0 6px}.crumb a{color:var(--mu)}
+h1{font-size:28px;line-height:1.25;margin:0 0 16px}h2{font-size:20px;margin:28px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 14px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.kpi span{display:block;font-size:14px;color:var(--mu)}.kpi b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.pos{color:var(--pos)}.neg{color:var(--neg)}.meta{font-size:14px;color:var(--mu);margin:10px 0 0}
+code,.f{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px}.f{display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+table{width:100%;border-collapse:collapse;font-size:15px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mu);font-weight:600;white-space:nowrap}td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+td.k{white-space:nowrap}td.k code{font-size:13px}td.x code{font-size:13px;overflow-wrap:anywhere}
+.sw{position:relative;padding:0 0 24px 70px}.spark{width:100%;height:200px;display:block}.spark .g{stroke:var(--line);stroke-width:1}.spark path{fill:none;stroke-width:2}.spark .v{stroke:var(--ac)}.spark .p{stroke:var(--mu);stroke-width:1.5;opacity:.7}
+.yl,.xl{position:absolute;font-size:12px;line-height:16px;color:var(--mu);font-variant-numeric:tabular-nums;white-space:nowrap}.yl{left:0;width:64px;text-align:right}.xl{bottom:0;left:70px}.xl.r{left:auto;right:0}
+.btn{display:inline-block;background:var(--ac);color:#fff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:10px;margin-top:6px}
+@media (prefers-color-scheme:light){.btn{color:#fff}}
+ul.ml{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}ul.ml a{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--tx);background:var(--card)}ul.ml small{display:block;color:var(--mu);font-size:14px}
+ul.refs{padding-left:20px}footer{margin-top:32px;font-size:14px;color:var(--mu)}
+@media (max-width:560px){h1{font-size:24px}.kpis{grid-template-columns:1fr}.kpi b{font-size:22px}}
+.kpis.k4{grid-template-columns:repeat(4,minmax(0,1fr))}.zn{display:flex!important;align-items:center;gap:8px;font-size:18px!important}.zn i,.zl i{display:inline-block;width:12px;height:12px;border-radius:3px;flex:0 0 12px}
+th.r,td.r{text-align:right}th small{display:block;font-weight:400;font-size:12px}td small{color:var(--mu);font-size:12px}
+.dt td:first-child a{color:var(--tx)}
+ul.zb{list-style:none;margin:0;padding:0;display:grid;gap:6px}ul.zb li{display:grid;grid-template-columns:150px 1fr 48px;align-items:center;gap:10px;font-size:14px}
+ul.zb li.cur .zl{font-weight:700}.zl{display:flex;align-items:center;gap:8px;color:var(--mu);white-space:nowrap}ul.zb li.cur .zl{color:var(--tx)}
+.zt{height:10px;background:var(--bg);border:1px solid var(--line);border-radius:5px;overflow:hidden}.zf{display:block;height:100%}ul.zb b{text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:14px;color:var(--mu)}
+.pn{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;margin:24px 0 8px;font-size:15px}
+@media (max-width:760px){.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis.k4 .kpi b{font-size:20px}.zn{font-size:16px!important}
+ .dt th:nth-child(2),.dt td:nth-child(2),.dt th:nth-child(3),.dt td:nth-child(3){display:none}table{font-size:14px}th,td{padding:7px 4px}
+ ul.zb li{grid-template-columns:118px 1fr 40px;font-size:13px}.ht th:nth-child(2),.ht td:nth-child(2){display:none}.pn{flex-direction:column}
+ .ht th,.dt th,.ct th{white-space:normal;vertical-align:bottom}.ht td small{display:block}}</style>
+</head>
+<body>
+<div class="w">
+<header><a class="brand" href="../../#zh">ETH<b>val</b></a><nav class="langs" aria-label="Language"><a href="https://ethval.com/reports/" hreflang="en" lang="en">English</a><a href="https://ethval.com/reports/ko/" hreflang="ko" lang="ko">한국어</a><a href="https://ethval.com/reports/zh/" hreflang="zh-Hans" lang="zh" aria-current="page">中文</a><a href="https://ethval.com/reports/ja/" hreflang="ja" lang="ja">日本語</a></nav></header>
+<p class="crumb"><a href="../../#zh">仪表盘</a></p>
+<h1>月度估值报告</h1>
+<p>每月一页：综合公允价值收于何处、由哪些模型推动、市价处于公允价值区间带的哪个位置。依据存储的每日数据自动生成。</p>
+<div class="card"><table class="ht"><thead><tr><th>月份</th><th>基准日</th><th class="r">综合公允价值</th><th class="r">ETH 收盘价</th><th class="r">市价相对公允价值</th></tr></thead><tbody>
+<tr data-month="2026-10"><td><a href="2026-10.html">2026年10月</a> <small>MTD</small></td><td class="n">2026-10-13</td><td class="n r">$4,656</td><td class="n r">$2,498</td><td class="n r">−46.3%</td></tr>
+<tr data-month="2026-09"><td><a href="2026-09.html">2026年9月</a></td><td class="n">2026-09-30</td><td class="n r">$4,209</td><td class="n r">$2,685</td><td class="n r">−36.2%</td></tr>
+<tr data-month="2026-08"><td><a href="2026-08.html">2026年8月</a></td><td class="n">2026-08-31</td><td class="n r">$3,934</td><td class="n r">$2,467</td><td class="n r">−37.3%</td></tr>
+<tr data-month="2026-07"><td><a href="2026-07.html">2026年7月</a></td><td class="n">2026-07-31</td><td class="n r">$3,040</td><td class="n r">$1,861</td><td class="n r">−38.8%</td></tr>
+<tr data-month="2026-06"><td><a href="2026-06.html">2026年6月</a></td><td class="n">2026-06-30</td><td class="n r">$2,913</td><td class="n r">$1,568</td><td class="n r">−46.1%</td></tr>
+<tr data-month="2026-05"><td><a href="2026-05.html">2026年5月</a></td><td class="n">2026-05-31</td><td class="n r">$2,940</td><td class="n r">$2,005</td><td class="n r">−31.8%</td></tr>
+<tr data-month="2026-04"><td><a href="2026-04.html">2026年4月</a></td><td class="n">2026-04-30</td><td class="n r">$3,969</td><td class="n r">$2,259</td><td class="n r">−43.1%</td></tr>
+<tr data-month="2026-03"><td><a href="2026-03.html">2026年3月</a></td><td class="n">2026-03-31</td><td class="n r">$5,446</td><td class="n r">$2,104</td><td class="n r">−61.4%</td></tr>
+<tr data-month="2026-02"><td><a href="2026-02.html">2026年2月</a></td><td class="n">2026-02-28</td><td class="n r">$4,514</td><td class="n r">$1,966</td><td class="n r">−56.5%</td></tr>
+<tr data-month="2026-01"><td><a href="2026-01.html">2026年1月</a></td><td class="n">2026-01-31</td><td class="n r">$4,780</td><td class="n r">$2,447</td><td class="n r">−48.8%</td></tr>
+<tr data-month="2025-12"><td><a href="2025-12.html">2025年12月</a></td><td class="n">2025-12-31</td><td class="n r">$5,049</td><td class="n r">$2,969</td><td class="n r">−41.2%</td></tr>
+<tr data-month="2025-11"><td><a href="2025-11.html">2025年11月</a></td><td class="n">2025-11-30</td><td class="n r">$4,591</td><td class="n r">$2,995</td><td class="n r">−34.8%</td></tr>
+</tbody></table></div>
+<p class="note">综合公允价值 = 当日有存储数值的模型的简单平均（12 个模型，与 01.3 公允价值区间带图规则相同）。区间边界 = 综合值 × 0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 2.0。过去的数值是用当前模型公式与常数对存储的每日数据重新计算的，可能与当日实时页面显示的数值不同。无数据的日期不计入，不做填补。 于 2026-10-14 21:45 UTC 生成。</p>
+<a class="btn" href="../../#zh">打开实时仪表盘 →</a>
+<footer>模型计算结果，不构成投资建议。 · <a href="../../#zh">ethval.com</a> · by Hashed</footer>
+</div>
+</body>
+</html>

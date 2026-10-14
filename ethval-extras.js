@@ -348,6 +348,27 @@
       title: 'Reports on Ethereum from institutions',
       d: { en: 'Curated index of institutional Ethereum reports.', ko: '기관들이 낸 이더리움 리포트 모음', zh: '机构以太坊报告汇总', ja: '機関によるイーサリアムレポート集' } }
   ];
+  // Monthly valuation report (/reports/, built with the model pages by scripts/build-reports.cjs).
+  // reports/index.json names the latest month; no link is shown until it loads (nothing hard-coded).
+  var reportIdx = null;
+  function loadReportIdx() {
+    if (window.__ethvalEmbedSource || !window.fetch) return;
+    fetch('reports/index.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j && /^\d{4}-\d{2}$/.test(j.latest || '')) { reportIdx = j; renderResearch(); } }).catch(function () {});
+  }
+  function reportLink() {
+    if (!reportIdx) return '';
+    var l = lang(), ym = reportIdx.latest, y = +ym.slice(0, 4), m = +ym.slice(5, 7);
+    var MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var name = { en: MON[m - 1] + ' ' + y, ko: y + '년 ' + m + '월', zh: y + '年' + m + '月', ja: y + '年' + m + '月' }[l];
+    var href = (l === 'en' ? 'reports/' : 'reports/' + l + '/') + ym + '.html';
+    var mtd = reportIdx.monthToDate ? t({ en: ' (month to date, through ', ko: ' (이번 달 누적, ', zh: '（本月至今，截至 ', ja: '（月初来、' }) + reportIdx.end +
+      t({ en: ')', ko: '까지)', zh: '）', ja: ' まで）' }) : '';
+    return '<a class="ev-report-link" href="' + href + '">' +
+      '<span class="ev-report-k">' + t({ en: 'Monthly report', ko: '월간 리포트', zh: '月度报告', ja: '月次レポート' }) + '</span>' +
+      '<span class="ev-report-t">' + t({ en: 'ETH valuation report — ', ko: 'ETH 밸류에이션 리포트 — ', zh: 'ETH 估值报告 — ', ja: 'ETH バリュエーションレポート — ' }) + name + mtd + '</span>' +
+      '<span class="ev-report-d">' + t({ en: 'Composite fair value, what moved it, band position', ko: '합성 적정가 · 움직인 모델 · 밴드 위치', zh: '综合公允价值、推动模型、区间位置', ja: '合成適正価値・動かしたモデル・バンド位置' }) + ' →</span></a>';
+  }
   var researchSec = null;
   function setupResearch() {
     if (document.getElementById('research')) return;
@@ -365,6 +386,7 @@
         ko: 'ETH 가치를 어떻게 매길지에 대한 좋은 리서치를 모았어. 모델 뒤에 있는 원문을 직접 읽어봐.',
         zh: '汇集了关于如何为 ETH 估值的优秀研究——直接阅读模型背后的原文。',
         ja: 'ETH の価値をどう測るかについての優れたリサーチ集。モデルの背景にある原文を読んでみて。' }) + '</p></div>' +
+      reportLink() +
       '<div class="ev-research-grid">' + RESEARCH.map(function (r) {
         return '<a class="ev-research-card" href="' + r.url + '" target="_blank" rel="noopener">' +
           '<div class="ev-research-meta"><span>' + r.org + '</span><span>' + r.year + '</span></div>' +
@@ -381,7 +403,7 @@
     closePop(); renderLinesBtn(); renderStamp(); renderShare(); renderResearch();
   }
   function init() {
-    setupEli5(); setupLinesToggle(); setupStamp(); setupShare(); setupResearch(); renderAll();
+    setupEli5(); setupLinesToggle(); setupStamp(); setupShare(); setupResearch(); renderAll(); loadReportIdx();
     new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     window.EthvalExtras = { ELI5: ELI5, RESEARCH: RESEARCH, lang: lang, lastRun: function () { return lastRun; }, embedCode: embedCode };
   }

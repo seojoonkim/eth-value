@@ -14,7 +14,8 @@
  *
  * usage: node scripts/build-model-pages.cjs            (needs the local `playwright` package + a cached
  *        chromium build under ~/Library/Caches/ms-playwright — same setup as the QA scripts)
- * Re-run whenever the models / texts change, or to refresh the dated values; then commit models/ + sitemap.xml.
+ * Re-run whenever the models / texts change, or to refresh the dated values; then commit models/ + reports/ + sitemap.xml.
+ * Also writes the monthly valuation reports (/reports/, scripts/build-reports.cjs) from the same data.
  */
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
 const ROOT = path.resolve(__dirname, '..');
@@ -283,7 +284,7 @@ function hubPage(data, lang, built) {
 `;
 }
 
-function sitemap(builtDay) {
+function sitemap(builtDay, reports) {
   const urls = [{ loc: SITE, alts: null }].concat([null].concat(MODELS).flatMap(id => LANGS.map(l => ({ loc: pageUrl(l, id), alts: id === undefined ? null : id }))));
   const body = urls.map(u => {
     if (u.alts === null && u.loc === SITE) return `  <url><loc>${SITE}</loc><lastmod>${builtDay}</lastmod></url>`;
@@ -291,7 +292,9 @@ function sitemap(builtDay) {
     const alts = LANGS.map(l => `    <xhtml:link rel="alternate" hreflang="${HREFLANG[l]}" href="${pageUrl(l, id)}"/>`).join('\n') +
       `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${pageUrl('en', id)}"/>`;
     return `  <url><loc>${u.loc}</loc><lastmod>${builtDay}</lastmod>\n${alts}\n  </url>`;
-  }).join('\n');
+  }).join('\n') + (reports ? '\n' + reports.urls.flatMap(u => u.locs.map(loc =>
+    `  <url><loc>${loc}</loc><lastmod>${builtDay}</lastmod>\n` + u.alts.map(([h, a]) => `    <xhtml:link rel="alternate" hreflang="${h}" href="${a}"/>`).join('\n') +
+    `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${u.xdefault}"/>\n  </url>`)).join('\n') : '');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${body}\n</urlset>\n`;
 }
 
@@ -311,8 +314,11 @@ function sitemap(builtDay) {
     for (const id of MODELS) fs.writeFileSync(path.join(dir, SLUG[id] + '.html'), modelPage(data, lang, id, built));
     fs.writeFileSync(path.join(dir, 'index.html'), hubPage(data, lang, built));
   }
-  fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap(now.toISOString().slice(0, 10)));
+  // monthly valuation reports (/reports/) from the same extracted data — scripts/build-reports.cjs
+  const reports = require('./build-reports.cjs').build(data, { ROOT, MODELS, SLUG, SITE, HREFLANG, HASH, built, usd, esc, sparkline, CSS });
+  fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap(now.toISOString().slice(0, 10), reports));
   fs.writeFileSync(path.join(ROOT, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE}sitemap.xml\n`);
   const dates = [...new Set(MODELS.map(m => data.models[m].date))];
   console.log(`built ${LANGS.length * (MODELS.length + 1)} pages, values for ${dates.join(', ')}, built ${built} UTC`);
+  console.log(`reports: ${reports.months.length} months (${reports.months[0]} – ${reports.latest}) x ${LANGS.length} langs + hubs`);
 })().catch(e => { console.error(e); process.exit(1); });
