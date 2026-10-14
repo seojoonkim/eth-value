@@ -11527,7 +11527,8 @@
         @media (min-width: 1000px) and (max-width: 1199px) {
             .forum-table-header,
             .forum-row {
-                grid-template-columns: 85px 1fr 100px 45px 60px 45px 60px;
+                /* date col 72px: ISO date "2026-05-23" measures 69px at 12px (60px clipped it) */
+                grid-template-columns: 85px 1fr 100px 45px 60px 45px 72px;
                 gap: 8px;
             }
             
@@ -11548,7 +11549,7 @@
         @media (min-width: 769px) and (max-width: 999px) {
             .forum-table-header,
             .forum-row {
-                grid-template-columns: 75px 1fr 85px 40px 40px 40px 55px;
+                grid-template-columns: 75px 1fr 85px 40px 40px 40px 72px;
                 gap: 6px;
                 padding: 12px;
             }
@@ -14671,6 +14672,10 @@ body, body.dark { --green: var(--up); --green-bg: var(--up-bg); --positive: var(
 .simulator-unlock-tooltip, body.dark .simulator-unlock-tooltip { background: #5f4bd0 !important; box-shadow: 0 6px 18px -10px rgba(0,0,0,.45) !important; border-radius: var(--radius-sm) !important; }
 .simulator-unlock-tooltip.visible, body.dark .simulator-unlock-tooltip.visible { animation: none !important; }
 body.dark .floating-action-badge { color: #fff !important; }
+/* Floating CTA yields while it would sit on a data table (community/leaderboard rows): at 1280 the
+   opaque 320x62 card covered a row's likes/comments/views/date cells. Toggled by JS (yieldBadgeOverTables). */
+.floating-action-badge.over-table { opacity: 0 !important; pointer-events: none !important; transition: none !important; } /* no fade: a half-transparent card over rows is worse than an instant swap */
+.floating-action-badge:not(.hidden) { transition: transform .3s ease, box-shadow .3s ease; } /* reappear without a see-through fade-in */
 
 /* Korean: wrap between words, never inside a word ("커뮤|니티"); long tokens (URLs, numbers) may still break */
 html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wrap: break-word; line-break: strict; }
@@ -18698,6 +18703,21 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             }
             // 7일 이상: 정확한 날짜 + 시간
             return past.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        }
+
+        // Community table date column: the column is 70–100px wide, so 7+ day old posts show an
+        // ISO date (2026-05-23) instead of "May 23, 2026, 11:39 PM" (~130px, was ellipsis-clipped).
+        // The full date+time stays available as the cell's title tooltip.
+        function forumShortDate(date) {
+            const past = new Date(date);
+            if (isNaN(past)) return '';
+            if ((Date.now() - past) / 86400000 < 7) return timeAgo(date);
+            const p = n => String(n).padStart(2, '0');
+            return `${past.getFullYear()}-${p(past.getMonth() + 1)}-${p(past.getDate())}`;
+        }
+        function forumFullDate(date) {
+            const d = new Date(date);
+            return isNaN(d) ? '' : d.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
         }
         
         // 텍스트 언어 감지 (간단한 문자 범위 기반)
@@ -34387,7 +34407,7 @@ Check out ETHval 👇`;
                             </svg>
                             ${post.views_count || 0}
                         </div>
-                        <div class="forum-cell forum-cell-date">${timeAgo(post.created_at)}</div>
+                        <div class="forum-cell forum-cell-date" title="${forumFullDate(post.created_at)}">${forumShortDate(post.created_at)}</div>
                     </div>
                 `;
             }
@@ -36591,6 +36611,32 @@ Check out ETHval 👇`;
             <path d="M6 9l6 6 6-6"/>
         </svg>
     </div>
+    <script>
+        // Hide the floating CTA only while its box overlaps a data table (community list, leaderboard),
+        // so it never covers row numbers; it comes back as soon as the table scrolls out from under it.
+        (function yieldBadgeOverTables() {
+            const badge = document.getElementById('floating-action-badge');
+            if (!badge) return;
+            let queued = false;
+            function check() {
+                queued = false;
+                const b = badge.getBoundingClientRect();
+                const pad = 8;
+                const hit = !badge.classList.contains('hidden') && b.width > 0 &&
+                    [...document.querySelectorAll('.forum-table, .user-leaderboard-wrapper')].some(t => {
+                        const r = t.getBoundingClientRect();
+                        return r.width && r.left < b.right + pad && r.right > b.left - pad && r.top < b.bottom + pad && r.bottom > b.top - pad;
+                    });
+                // only touch the class when the state changes (the observer below watches class changes)
+                if (badge.classList.contains('over-table') !== hit) badge.classList.toggle('over-table', hit);
+            }
+            function queue() { if (!queued) { queued = true; requestAnimationFrame(check); } }
+            addEventListener('scroll', queue, { passive: true });
+            addEventListener('resize', queue);
+            new MutationObserver(queue).observe(badge, { attributes: true, attributeFilter: ['class'], attributeOldValue: false });
+            queue();
+        })();
+    </script>
 
     <!-- Simulator Unlock Tooltip -->
     <div class="simulator-unlock-tooltip" id="simulator-unlock-tooltip">
