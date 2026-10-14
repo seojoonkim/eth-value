@@ -1,0 +1,44 @@
+/* ETHval — Triple Point breakdown (triple-point.js), section 03. Box chrome reuses .mc-box, table reuses .csx-table. */
+.tpx-outer { margin-top: 16px; }
+.tpx-meta { font-variant-numeric: tabular-nums; }
+.tpx-wf { display: flex; flex-direction: column; gap: 14px; margin: 4px 0 8px; }
+.tpx-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.tpx-label { min-width: 0; }
+.tpx-label b { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
+.tpx-label small { display: block; font-size: 12px; line-height: 1.4; color: var(--text-muted); word-break: keep-all; }
+.tpx-val { text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.tpx-val b { display: block; font-size: 16px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.tpx-val small { display: block; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.tpx-track { position: relative; height: 16px; margin-top: 6px; border-radius: 4px; background: rgba(127, 127, 127, 0.10); }
+.tpx-bar { position: absolute; top: 0; bottom: 0; display: flex; border-radius: 4px; overflow: hidden; }
+.tpx-seg { display: block; height: 100%; box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.55); }
+.tpx-seg:last-child { box-shadow: none; }
+.tpx-capital .tpx-seg { background: #627eea; }
+.tpx-capital .tpx-seg:nth-child(even) { background: #8199f0; }
+.tpx-commodity .tpx-seg { background: #f59e0b; }
+.tpx-commodity .tpx-seg:nth-child(even) { background: #fbbf24; }
+.tpx-sov .tpx-seg { background: #10b981; }
+.tpx-sov .tpx-seg:nth-child(even) { background: #34d399; }
+.tpx-total .tpx-bar { background: var(--text-secondary); opacity: 0.85; }
+.tpx-total { padding-top: 12px; border-top: 1px dashed var(--border); }
+.tpx-price { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px solid var(--red); }
+.tpx-price span { position: absolute; top: 100%; margin-top: 3px; font-size: 12px; color: var(--red); white-space: nowrap; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+.tpx-total { padding-bottom: 18px; }
+.tpx-chips { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 12px; color: var(--text-muted); }
+.tpx-chip b { font-weight: 600; color: var(--text-secondary); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.tpx-table th:first-child { width: 30%; }
+.tpx-table th:nth-child(2), .tpx-table td.tpx-why { text-align: left; }
+.tpx-table td.tpx-why { font-size: 12px; line-height: 1.45; color: var(--text-secondary); word-break: normal; overflow-wrap: anywhere; }
+html[lang="ko"] .tpx-table td.tpx-why { word-break: keep-all; } /* Korean wraps at spaces; ja/zh have none, so they wrap per character */
+.tpx-table th:last-child { width: 20%; }
+.tpx-table tr.tpx-grp th { font-size: 12px; font-weight: 700; padding-top: 14px; text-align: left; width: auto; }
+.tpx-table tr.tpx-grp.tpx-capital th { color: #627eea; }
+.tpx-table tr.tpx-grp.tpx-commodity th { color: #d97706; }
+.tpx-table tr.tpx-grp.tpx-sov th { color: #059669; }
+.tpx-src a { color: var(--text-muted); text-decoration: underline; }
+@media (max-width: 600px) {
+  .tpx-head { gap: 8px; }
+  .tpx-val small { white-space: normal; max-width: 130px; line-height: 1.3; }
+  .tpx-table th:first-child { width: 32%; }
+  .tpx-table th:last-child { width: 22%; }
+}

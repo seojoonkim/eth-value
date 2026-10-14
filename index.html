@@ -51,6 +51,7 @@
     <link rel="stylesheet" href="fv-backtest.css?v=20261014a">
     <link rel="stylesheet" href="model-constants.css?v=20261014a">
     <link rel="stylesheet" href="composite-sens.css?v=20261014a">
+    <link rel="stylesheet" href="triple-point.css?v=20261014a">
     <link rel="stylesheet" href="sim-presets.css?v=20261014a">
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
@@ -36641,7 +36642,7 @@ Check out ETHval 👇`;
         </svg>
     </div>
     <script>
-        // Hide the floating CTA only while its box overlaps a data table (community list, leaderboard),
+        // Hide the floating CTA only while its box overlaps a data table (community list, leaderboard, 03 disclosure tables),
         // so it never covers row numbers; it comes back as soon as the table scrolls out from under it.
         (function yieldBadgeOverTables() {
             const badge = document.getElementById('floating-action-badge');
@@ -36652,7 +36653,7 @@ Check out ETHval 👇`;
                 const b = badge.getBoundingClientRect();
                 const pad = 8;
                 const hit = !badge.classList.contains('hidden') && b.width > 0 &&
-                    [...document.querySelectorAll('.forum-table, .user-leaderboard-wrapper')].some(t => {
+                    [...document.querySelectorAll('.forum-table, .user-leaderboard-wrapper, .csx-table')].some(t => {
                         const r = t.getBoundingClientRect();
                         return r.width && r.left < b.right + pad && r.right > b.left - pad && r.top < b.bottom + pad && r.bottom > b.top - pad;
                     });
@@ -36773,6 +36774,7 @@ Check out ETHval 👇`;
     <script src="fv-backtest.js?v=20261014a" defer></script>
     <script src="model-constants.js?v=20261014a" defer></script>
     <script src="composite-sens.js?v=20261014a" defer></script>
+    <script src="triple-point.js?v=20261014a" defer></script>
     <script src="sim-presets.js?v=20261014a" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
     <script src="dxy.js?v=20261013a" defer></script>
