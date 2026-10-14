@@ -42,3 +42,5 @@ html[lang="ko"] .tpx-table td.tpx-why { word-break: keep-all; } /* Korean wraps 
   .tpx-table th:first-child { width: 32%; }
   .tpx-table th:last-child { width: 22%; }
 }
+/* ja/zh have no spaces, so keep-all (shared .mc-lead etc.) turns a whole sentence into one unbreakable run that runs out of the box at 390 */
+html[lang="ja"] #triple-point *, html[lang="zh"] #triple-point * { word-break: normal; overflow-wrap: break-word; }
