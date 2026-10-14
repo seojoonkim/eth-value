@@ -16698,7 +16698,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.ps.desc">Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations.</div>
+                            <div class="method-desc" data-i18n="method.ps.desc">Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -16741,7 +16741,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(Burned L1 Fees + Burned Blob Fees) × 365 ÷ APR ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.yield.desc">Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class.</div>
+                            <div class="method-desc" data-i18n="method.yield.desc">Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -16917,7 +16917,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(L1 ETH Vol + L2 ETH Vol) × 365 ÷ ETH Velocity ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.ethMonetary.desc">Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value.</div>
+                            <div class="method-desc" data-i18n="method.ethMonetary.desc">Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -19134,7 +19134,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 },
                 'ps': {
                     formula: '(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply',
-                    desc: t('method.ps.desc', 'Applies traditional Price-to-Sales ratio using protocol fee revenue. A 25x P/S multiple is conservative for high-growth tech assets. Fee data sourced from Token Terminal. This model treats Ethereum like a revenue-generating business.'),
+                    desc: t('method.ps.desc', 'Applies traditional Price-to-Sales ratio using protocol fee revenue. A 25x P/S multiple is conservative for high-growth tech assets. Fee data sourced from Token Terminal. This model treats Ethereum like a revenue-generating business. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.'),
                     reliability: 2,
                     caveat: t('method.ps.note', '25x multiple borrowed from SaaS sector; crypto protocols may warrant different multiples'),
                     sources: [
@@ -19143,7 +19143,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 },
                 'revenueYield': {
                     formula: 'AnnualRevenue ÷ TargetYield',
-                    desc: t('method.yield.desc', 'Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%.'),
+                    desc: t('method.yield.desc', 'Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.'),
                     reliability: 3,
                     caveat: t('method.yield.note', 'Assumes stable yield environment; actual staking yields are volatile in practice'),
                     sources: [
@@ -19183,7 +19183,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 },
                 'ethMonetary': {
                     formula: '(L1 ETH Vol + L2 ETH Vol) × 365 ÷ ETH Velocity ÷ Supply',
-                    desc: t('method.ethMonetary.desc', "Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value."),
+                    desc: t('method.ethMonetary.desc', "Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data."),
                     reliability: 2,
                     caveat: t('method.ethMonetary.note', 'Velocity = 6: Empirically derived from ETH transfer data, benchmarked to USD M1 (~5.5x)'),
                     sources: [
@@ -20748,9 +20748,9 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.l2.note': '2x L2 weight multiplier is proprietary without empirical basis',
                 'method.l2.desc': 'Captures value from Ethereum\'s Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum\'s value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.',
                 'method.ps.note': '25x multiple borrowed from SaaS sector; crypto protocols may warrant different multiples',
-                'method.ps.desc': 'Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Fees here are burned fees only (L1 base fee + blob fee, as on ultrasound.money), not gross fees incl. tips/MEV (DefiLlama-style totals are higher). Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations.',
+                'method.ps.desc': 'Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Fees here are burned fees only (L1 base fee + blob fee, as on ultrasound.money), not gross fees incl. tips/MEV (DefiLlama-style totals are higher). Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.',
                 'method.yield.note': 'Assumes stable yield environment; actual staking yields are volatile in practice',
-                'method.yield.desc': 'Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class.',
+                'method.yield.desc': 'Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.',
                 'method.commitment.note': '1.5x premium multiplier for committed ETH is arbitrary without empirical basis',
                 'method.appCapital.note': 'Stablecoins estimated at 28% of total App Capital based on historical ratio',
                 'method.appCapital.desc': 'App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. Since direct App Capital data is unavailable, we estimate it using the 28% stablecoin ratio (Stablecoins/AppCapital) which has been stable since 2021. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (DeFi only), App Capital captures Ethereum\'s full settlement layer role.',
@@ -20758,7 +20758,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.settlement.note': 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly',
                 'method.settlement.desc': 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.',
                 'method.ethMonetary.note': 'Velocity 6x is USD M1 benchmark; ETH transfer data empirically derived',
-                'method.ethMonetary.desc': 'Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH\'s direct monetary function from Ethereum\'s broader settlement activity. Velocity = 6 reflects ETH\'s store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value.',
+                'method.ethMonetary.desc': 'Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH\'s direct monetary function from Ethereum\'s broader settlement activity. Velocity = 6 reflects ETH\'s store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data.',
                 'method.sink.note': 'Sink estimates vary; liquid staking (stETH) partially offsets staking sink as it remains tradeable',
                 'method.sink.desc': 'Inspired by Miller (1977): when tradeable supply is constrained, optimists set prices, creating a premium. Greenwood (Harvard) empirically confirmed float reduction correlates with price increases in equity markets. Our assumption: if market cap stays constant while effective float (excluding staked, DeFi-locked, and lost ETH) decreases, per-unit price rises proportionally.',
                 'category.tradfi': 'TradFi',
@@ -21236,7 +21236,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.staking.note': '이 대시보드를 위해 개발된 독자적 모델. 동료 검토나 학술적 검증 부재',
                 'method.staking.desc': '스테이킹으로 인해 유통 공급량이 감소할 때 희소성 프리미엄을 적용합니다. 더 많은 ETH가 검증자에 잠기면(현재 ~28%) 유동 공급이 줄어들어 이론적으로 가격 상승 압력이 발생합니다. 제곱근 함수는 희소성 효과를 포착하면서 극단적인 밸류에이션을 완화합니다.',
                 'method.ethMonetary.note': 'Velocity 6배는 USD M1 벤치마크; ETH 전송 데이터에서 실증적으로 도출',
-                'method.ethMonetary.desc': 'ETH를 화폐로 측정하는 모델 (MV=PQ 교환방정식). L1/L2의 네이티브 ETH 전송만 집계하며, 스테이블코인, DeFi 토큰 등 다른 자산은 제외. 이는 이더리움의 광범위한 정산 활동에서 ETH의 직접적인 화폐 기능을 분리. Velocity = 6은 ETH의 가치저장 특성을 반영: 28% 스테이킹 잠금, ETF 이후 기관 축적, 장기 보유 행태. 이는 USD M1 velocity(~5.5x) 및 암호화폐 velocity 4-6x를 보여주는 학술 연구와 일치. 낮은 velocity는 더 높은 적정가치를 의미.',
+                'method.ethMonetary.desc': 'ETH를 화폐로 측정하는 모델 (MV=PQ 교환방정식). L1/L2의 네이티브 ETH 전송만 집계하며, 스테이블코인, DeFi 토큰 등 다른 자산은 제외. 이는 이더리움의 광범위한 정산 활동에서 ETH의 직접적인 화폐 기능을 분리. Velocity = 6은 ETH의 가치저장 특성을 반영: 28% 스테이킹 잠금, ETF 이후 기관 축적, 장기 보유 행태. 이는 USD M1 velocity(~5.5x) 및 암호화폐 velocity 4-6x를 보여주는 학술 연구와 일치. 낮은 velocity는 더 높은 적정가치를 의미. 네이티브 ETH 전송량은 주말에 줄어듭니다(최근 6개월 주말 중앙값이 평일의 약 40%, 온체인 블록 표본과 일치). 그래서 일별 선이 토·일마다 내려가며, 수집 누락이 아니라 실제 활동 감소입니다.',
                 'method.ecosystemSettlement.note': 'Velocity (150): 스테이블코인 회전율(~80/년) × 2배 DeFi 배수, BlockSci 4배 자기순환 조정으로 검증',
                 'method.ecosystemSettlement.desc': '이더리움을 정산 인프라로 측정하는 모델 (MV=PQ 교환방정식). 네이티브 ETH뿐 아니라 스테이블코인, DeFi 토큰, NFT 등 생태계 전체 토큰 활동을 집계. 이는 글로벌 정산 레이어로서 이더리움의 총 경제 처리량을 포착. Velocity = 150은 스테이블코인 회전율(~80x/년, McKinsey)을 기준으로, 고빈도 DeFi 스왑 상향 조정 및 봇/MEV 제거(70-93%, Visa 연구) 하향 조정. ETH Monetary보다 높은 velocity는 빠르게 움직이는 토큰 경제를 반영.',
                 'method.metcalfe.note': 'DAU-가치 계수가 크게 변동; 1.5 지수가 모든 상황에 적합하지 않을 수 있음',
@@ -21246,9 +21246,9 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.l2.note': '2배 L2 가중치 배수는 실증적 근거 없는 독자적 설정',
                 'method.l2.desc': '이더리움의 레이어 2 스케일링 생태계(Arbitrum, Optimism, Base, zkSync 등)의 가치를 포착합니다. L2 TVL에 2배 가중치를 부여하는 이유는 L2 활동이 이더리움 메인넷에서 정산되어 블록스페이스를 소비하고 EIP-1559를 통해 ETH를 소각하기 때문입니다.',
                 'method.ps.note': 'SaaS 업계에서 차용한 25배 배수; 크립토 프로토콜은 다른 배수가 적합할 수 있음',
-                'method.ps.desc': '시가총액을 연간 거래 수수료 매출과 비교하는 P/S(주가매출비율)입니다. 여기서 수수료는 소각된 수수료(L1 기본 수수료 + 블롭 수수료, ultrasound.money 기준)만 뜻하며, 팁·MEV를 포함한 전체 수수료(DefiLlama 등)보다 작습니다. 전통 기업과 달리 이더리움 같은 L1 프로토콜은 프로토콜 레벨에서 "순이익"이 없습니다 — 모든 수수료가 검증자에게 흘러갑니다. 따라서 Token Terminal이 사용하는 것처럼 P/E가 아닌 P/S가 업계 표준입니다. 25배 배수는 성장 기술주 밸류에이션을 반영합니다.',
+                'method.ps.desc': '시가총액을 연간 거래 수수료 매출과 비교하는 P/S(주가매출비율)입니다. 여기서 수수료는 소각된 수수료(L1 기본 수수료 + 블롭 수수료, ultrasound.money 기준)만 뜻하며, 팁·MEV를 포함한 전체 수수료(DefiLlama 등)보다 작습니다. 전통 기업과 달리 이더리움 같은 L1 프로토콜은 프로토콜 레벨에서 "순이익"이 없습니다 — 모든 수수료가 검증자에게 흘러갑니다. 따라서 Token Terminal이 사용하는 것처럼 P/E가 아닌 P/S가 업계 표준입니다. 25배 배수는 성장 기술주 밸류에이션을 반영합니다. 소각 수수료는 주말에 줄어듭니다(최근 6개월 주말 중앙값이 평일의 약 절반, 온체인 기본 수수료 소각과 일치). 그래서 일별 선이 토·일마다 내려가며, 수집 누락이 아니라 실제 활동 감소입니다.',
                 'method.yield.note': '안정적 수익률 환경 가정; 실제 스테이킹 수익률은 변동성이 큼',
-                'method.yield.desc': '실시간 스테이킹 APR에서 적정 가치를 역산하여 ETH를 수익 창출 채권처럼 취급합니다. 이더리움이 연간 X의 수수료를 생성하고 현재 스테이킹 수익률이 Y%라면, 내재 시가총액은 X ÷ Y%입니다. 고정 목표 수익률 대신 Lido stETH의 실시간 APR을 사용합니다. 이 접근법은 크립토를 대체 자산 클래스로 평가하는 TradFi 분석가들이 선호합니다.',
+                'method.yield.desc': '실시간 스테이킹 APR에서 적정 가치를 역산하여 ETH를 수익 창출 채권처럼 취급합니다. 이더리움이 연간 X의 수수료를 생성하고 현재 스테이킹 수익률이 Y%라면, 내재 시가총액은 X ÷ Y%입니다. 고정 목표 수익률 대신 Lido stETH의 실시간 APR을 사용합니다. 이 접근법은 크립토를 대체 자산 클래스로 평가하는 TradFi 분석가들이 선호합니다. 소각 수수료는 주말에 줄어듭니다(최근 6개월 주말 중앙값이 평일의 약 절반, 온체인 기본 수수료 소각과 일치). 그래서 일별 선이 토·일마다 내려가며, 수집 누락이 아니라 실제 활동 감소입니다.',
                 'method.commitment.note': '커밋된 ETH에 대한 1.5배 프리미엄 배수는 실증적 근거 없이 임의 설정됨',
                 'method.appCapital.note': '스테이블코인을 총 App Capital의 28%로 추정 (과거 비율 기반)',
                 'method.appCapital.desc': 'App Capital은 온체인 총 자산을 나타냅니다: 스테이블코인, ERC-20 토큰, NFT, RWA, 브릿지된 자산. 직접적인 App Capital 데이터가 없어, 2021년 이후 안정적인 28% 스테이블코인 비율(스테이블코인/App Capital)을 사용해 추정합니다. App Capital은 시가총액의 하한선 역할을 합니다—네트워크 보안(MC)은 모든 결제된 자산의 가치를 뒷받침해야 합니다. TVL(DeFi 전용)과 달리, App Capital은 이더리움의 전체 결제 레이어 역할을 포착합니다.',
@@ -21714,7 +21714,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.staking.note': '为本仪表板开发的专有模型，缺乏同行评审或学术验证',
                 'method.staking.desc': '当流通供应量因质押而减少时，应用稀缺性溢价。随着更多ETH被锁定在验证者中（目前约28%），流动供应减少，理论上会增加价格上涨压力。平方根函数在捕捉稀缺效应的同时抑制极端估值。',
                 'method.ethMonetary.note': 'Velocity 6倍基于USD M1基准；从ETH转账数据实证推导',
-                'method.ethMonetary.desc': '将ETH作为货币来衡量（MV=PQ交换方程）。仅统计L1/L2上的原生ETH转账，排除稳定币、DeFi代币等其他资产。这将ETH的直接货币功能从以太坊更广泛的结算活动中分离出来。Velocity = 6反映ETH的价值储存特性：28%质押锁定、ETF后机构积累、长期持有行为。这与USD M1 velocity（~5.5x）及显示加密货币velocity为4-6x的学术研究一致。较低的velocity意味着更高的公允价值。',
+                'method.ethMonetary.desc': '将ETH作为货币来衡量（MV=PQ交换方程）。仅统计L1/L2上的原生ETH转账，排除稳定币、DeFi代币等其他资产。这将ETH的直接货币功能从以太坊更广泛的结算活动中分离出来。Velocity = 6反映ETH的价值储存特性：28%质押锁定、ETF后机构积累、长期持有行为。这与USD M1 velocity（~5.5x）及显示加密货币velocity为4-6x的学术研究一致。较低的velocity意味着更高的公允价值。原生ETH转账量在周末下降（近6个月周末中位数约为工作日的40%，与链上区块抽样一致），因此日线每逢周六、周日回落。这是真实活动变化，并非数据缺失。',
                 'method.ecosystemSettlement.note': 'Velocity (150): 稳定币周转率(~80/年) × 2倍DeFi乘数，经BlockSci 4倍自循环调整验证',
                 'method.ecosystemSettlement.desc': '将以太坊作为结算基础设施来衡量（MV=PQ交换方程）。统计整个生态系统的所有代币活动：稳定币、DeFi代币、NFT等，不仅是原生ETH。这捕捉了以太坊作为全球结算层的总经济吞吐量。Velocity = 150基于稳定币周转率（~80x/年，McKinsey），根据高频DeFi交换上调，并根据机器人/MEV移除（70-93%，Visa研究）下调。比ETH Monetary更高的velocity反映了快速流动的代币经济。',
                 'method.metcalfe.note': 'DAU与价值的系数变化显著；1.5指数可能不适用于所有情况',
@@ -21724,9 +21724,9 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.l2.note': '2倍L2权重乘数是专有设定，缺乏实证基础',
                 'method.l2.desc': '捕捉以太坊Layer 2扩展生态系统（Arbitrum, Optimism, Base, zkSync等）的价值。L2 TVL加权2倍，因为L2活动在以太坊主网上结算，消耗区块空间并通过EIP-1559销毁ETH。',
                 'method.ps.note': '25倍乘数借用自SaaS行业；加密协议可能需要不同的乘数',
-                'method.ps.desc': 'P/S（市销率）将市值与年度交易费用收入进行比较。此处费用仅指被销毁的费用（L1基础费 + Blob费，按ultrasound.money口径），不含小费与MEV的总费用（如DefiLlama）更高。与传统公司不同，以太坊等L1协议在协议层面没有"净利润"——所有费用都流向验证者。因此，如Token Terminal所使用的，P/S（而非P/E）是行业标准。25倍乘数反映成长型科技股估值。',
+                'method.ps.desc': 'P/S（市销率）将市值与年度交易费用收入进行比较。此处费用仅指被销毁的费用（L1基础费 + Blob费，按ultrasound.money口径），不含小费与MEV的总费用（如DefiLlama）更高。与传统公司不同，以太坊等L1协议在协议层面没有"净利润"——所有费用都流向验证者。因此，如Token Terminal所使用的，P/S（而非P/E）是行业标准。25倍乘数反映成长型科技股估值。销毁费用在周末下降（近6个月周末中位数约为工作日的一半，与链上基础费销毁一致），因此日线每逢周六、周日回落。这是真实活动变化，并非数据缺失。',
                 'method.yield.note': '假设稳定收益环境；实际质押收益波动较大',
-                'method.yield.desc': '从实时质押APR反向推导公允价值，将ETH视为收益型债券。如果以太坊产生X年费，当前质押收益率为Y%，则隐含市值为X÷Y%。使用Lido stETH实时APR而非固定目标收益率。这种方法受到将加密货币评估为另类资产类别的TradFi分析师青睐。',
+                'method.yield.desc': '从实时质押APR反向推导公允价值，将ETH视为收益型债券。如果以太坊产生X年费，当前质押收益率为Y%，则隐含市值为X÷Y%。使用Lido stETH实时APR而非固定目标收益率。这种方法受到将加密货币评估为另类资产类别的TradFi分析师青睐。销毁费用在周末下降（近6个月周末中位数约为工作日的一半，与链上基础费销毁一致），因此日线每逢周六、周日回落。这是真实活动变化，并非数据缺失。',
                 'method.commitment.note': '锁定ETH的1.5倍溢价乘数是任意设定，缺乏实证依据',
                 'method.appCapital.note': '基于历史比率估算稳定币占总App Capital的28%',
                 'method.validator.note': '目标6%收益率是主观的；因投资者风险偏好而异',
@@ -22207,7 +22207,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.staking.note': 'このダッシュボード用に開発された独自モデル。先哲や学術的検証なし',
                 'method.staking.desc': 'ステーキングにより流通供給量が減少した場合に希少性プレミアムを適用します。より多くのETHがバリデーターにロックされると（現在約28%）、流動性供給が縮小し、理論的に価格上昇圧力が高まります。平方根関数は希少性効果を捉えながら極端なバリュエーションを抑制します。',
                 'method.ethMonetary.note': 'Velocity 6倍はUSD M1ベンチマーク；ETH送金データから実証的に導出',
-                'method.ethMonetary.desc': 'ETHを通貨として測定するモデル（MV=PQ交換方程式）。L1/L2のネイティブETH送金のみを集計し、ステーブルコイン、DeFiトークンなど他の資産は除外。これによりイーサリアムの広範な決済活動からETHの直接的な通貨機能を分離。Velocity = 6はETHの価値貯蔵特性を反映：28%ステーキングロック、ETF後の機関蓄積、長期保有行動。これはUSD M1 velocity（~5.5x）および暗号通貨velocityが4-6xであることを示す学術研究と一致。低いvelocityはより高い適正価値を意味。',
+                'method.ethMonetary.desc': 'ETHを通貨として測定するモデル（MV=PQ交換方程式）。L1/L2のネイティブETH送金のみを集計し、ステーブルコイン、DeFiトークンなど他の資産は除外。これによりイーサリアムの広範な決済活動からETHの直接的な通貨機能を分離。Velocity = 6はETHの価値貯蔵特性を反映：28%ステーキングロック、ETF後の機関蓄積、長期保有行動。これはUSD M1 velocity（~5.5x）および暗号通貨velocityが4-6xであることを示す学術研究と一致。低いvelocityはより高い適正価値を意味。ネイティブETH送金量は週末に減ります（直近6か月の週末中央値は平日の約40%、オンチェーンのブロック抽出と一致）。そのため日次の線は毎週土・日に下がりますが、データ欠落ではなく実際の活動減少です。',
                 'method.ecosystemSettlement.note': 'Velocity (150): ステーブルコイン回転率(~80/年) × 2倍DeFi乗数、BlockSci 4倍自己循環調整で検証',
                 'method.ecosystemSettlement.desc': 'イーサリアムを決済インフラとして測定するモデル（MV=PQ交換方程式）。ネイティブETHだけでなく、ステーブルコイン、DeFiトークン、NFTなどエコシステム全体のトークン活動を集計。これによりグローバル決済レイヤーとしてのイーサリアムの総経済スループットを捕捉。Velocity = 150はステーブルコイン回転率（~80x/年、McKinsey）を基準に、高頻度DeFiスワップで上方調整、ボット/MEV除去（70-93%、Visa研究）で下方調整。ETH Monetaryより高いvelocityは高速で動くトークン経済を反映。',
                 'method.metcalfe.note': 'DAUと価値の係数は大きく変動；1.5指数が全ての状況に適合するとは限らない',
@@ -22217,9 +22217,9 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.l2.note': '2倍のL2重み付け乗数は実証的根拠のない独自設定',
                 'method.l2.desc': 'イーサリアムのレイヤー2スケーリングエコシステム（Arbitrum、Optimism、Base、zkSyncなど）からの価値を捉えます。L2 TVLに2倍の重み付けをするのは、L2の活動がイーサリアムメインネットで決済され、ブロックスペースを消費し、EIP-1559を通じてETHを焼却するためです。',
                 'method.ps.note': '25倍はSaaS業界から借用；クリプトプロトコルには異なる倍率が適切な場合あり',
-                'method.ps.desc': 'P/S（株価売上高比率）は時価総額を年間取引手数料収益と比較します。ここでの手数料はバーンされた手数料（L1基本手数料 + Blob手数料、ultrasound.money基準）のみで、チップ・MEVを含む総手数料（DefiLlama等）より小さくなります。従来の企業とは異なり、イーサリアムのようなL1プロトコルにはプロトコルレベルでの「純利益」がありません — すべての手数料はバリデーターに流れます。そのため、Token Terminalが使用しているように、P/E（ではなく）P/Sが業界標準です。25倍の乗数は成長テック株のバリュエーションを反映しています。',
+                'method.ps.desc': 'P/S（株価売上高比率）は時価総額を年間取引手数料収益と比較します。ここでの手数料はバーンされた手数料（L1基本手数料 + Blob手数料、ultrasound.money基準）のみで、チップ・MEVを含む総手数料（DefiLlama等）より小さくなります。従来の企業とは異なり、イーサリアムのようなL1プロトコルにはプロトコルレベルでの「純利益」がありません — すべての手数料はバリデーターに流れます。そのため、Token Terminalが使用しているように、P/E（ではなく）P/Sが業界標準です。25倍の乗数は成長テック株のバリュエーションを反映しています。バーン手数料は週末に減ります（直近6か月の週末中央値は平日の約半分、オンチェーンの基本手数料バーンと一致）。そのため日次の線は毎週土・日に下がりますが、データ欠落ではなく実際の活動減少です。',
                 'method.yield.note': '安定した利回り環境を仮定；実際のステーキング利回りは変動が大きい',
-                'method.yield.desc': 'ライブステーキングAPRから適正価値を逆算し、ETHをイールドを生む債券のように扱います。イーサリアムが年間Xの手数料を生み出し、現在のステーキングイールドがY%の場合、暗黙の時価総額はX÷Y%です。固定目標イールドの代わりにLido stETHのリアルタイムAPRを使用します。このアプローチは、クリプト資産をオルタナティブ資産クラスとして評価するTradFiアナリストに支持されています。',
+                'method.yield.desc': 'ライブステーキングAPRから適正価値を逆算し、ETHをイールドを生む債券のように扱います。イーサリアムが年間Xの手数料を生み出し、現在のステーキングイールドがY%の場合、暗黙の時価総額はX÷Y%です。固定目標イールドの代わりにLido stETHのリアルタイムAPRを使用します。このアプローチは、クリプト資産をオルタナティブ資産クラスとして評価するTradFiアナリストに支持されています。バーン手数料は週末に減ります（直近6か月の週末中央値は平日の約半分、オンチェーンの基本手数料バーンと一致）。そのため日次の線は毎週土・日に下がりますが、データ欠落ではなく実際の活動減少です。',
                 'method.commitment.note': 'コミットETHへの1.5倍プレミアム乗数は実証的根拠なく任意に設定',
                 'method.appCapital.note': 'ステーブルコインを過去の比率に基づき総App Capitalの28%と推定',
                 'method.validator.note': '目標6%利回りは主観的；投資家のリスク選好により大きく異なる',
