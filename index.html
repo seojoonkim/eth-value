@@ -11554,7 +11554,7 @@
             .forum-table-header,
             .forum-row {
                 /* 40px stat cols: COMMENTS overlapped VIEWS by 27px, ja コメント wrapped; header drops letter-spacing here */
-                grid-template-columns: 98px 1fr 85px 50px 80px 54px 76px; /* category badges up to 97px (ja フィードバック, en QUESTIONS 88px) were clipped in a 75px col */
+                grid-template-columns: 98px 1fr 110px 50px 80px 54px 76px; /* category badges up to 97px (ja フィードバック, en QUESTIONS 88px) were clipped in a 75px col; author 85→110px: names showed 6 chars ('Simon …', '0xTim.…'), now 'Simon Kim'/'0xTim.eth' fit, title col stays ≥160px at 769 */
                 gap: 6px;
                 padding: 12px;
             }
@@ -11600,30 +11600,8 @@
                 font-size: 12px;
             }
         }
-            
-            .forum-author-avatar {
-                width: 24px;
-                height: 24px;
-            }
-            
-            .forum-author-link {
-                font-size: 12px;
-            }
-            
-            .forum-cell-stat {
-                font-size: 12px;
-            }
-            
-            .forum-cell-stat svg {
-                width: 12px;
-                height: 12px;
-            }
-            
-            .forum-cell-date {
-                font-size: 12px;
-            }
-        }
         
+        /* (removed a stray copy of the 769–999 rules whose extra '}' swallowed .forum-row:last-child) */
         .forum-row:last-child {
             border-bottom: none;
         }
