@@ -11761,22 +11761,31 @@
                 display: none;
             }
             
+            /* 첫 줄: 제목 (좌, 최대 2줄 + 말줄임) + 카테고리 (우, 제목 첫 줄 높이에 고정)
+               2026-10-14 live 390: inline title + float badge let a long title run 33px past the row with no
+               ellipsis and pushed the badge to the line above. Grid keeps every badge in the same right column
+               (measured by .qa/forum_mobile_title_check.cjs) */
             .forum-row {
-                display: block;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                column-gap: 8px;
+                row-gap: 10px;
+                align-items: start;
                 padding: 14px 12px;
             }
             
-            /* 첫 줄: 제목 (좌) + 카테고리 (우) */
-            .forum-row > .forum-cell-category,
             .forum-row > .forum-cell-title {
-                display: inline;
-                vertical-align: middle;
+                grid-column: 1;
+                grid-row: 1;
+                display: block;
+                min-width: 0;
+                white-space: normal;
             }
             
-            .forum-cell-category {
-                float: right;
-                margin-left: 8px;
-                margin-right: 0;
+            .forum-row > .forum-cell-category {
+                grid-column: 2;
+                grid-row: 1;
+                margin: 0;
             }
             
             .forum-cell-category .forum-post-category {
@@ -11787,6 +11796,13 @@
             .forum-cell-title .forum-title {
                 font-size: 14px;
                 line-height: 1.4;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                overflow-wrap: anywhere;
             }
             
             .forum-cell-title .forum-preview {
@@ -11794,12 +11810,12 @@
             }
             
             /* 둘째 줄: 작성자 (좌) + 통계 (우) */
-            .forum-cell-author {
+            .forum-row > .forum-cell-author {
+                grid-column: 1 / -1;
+                grid-row: 2;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-top: 10px;
-                clear: both;
             }
             
             .forum-author-info {
