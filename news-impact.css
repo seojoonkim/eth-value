@@ -521,3 +521,26 @@ body.dark .conclusion-price{background:linear-gradient(120deg,#c3b6ff 0%,#9db9ff
    `html body` raises specificity. Check: .qa/subtitle_size_check.cjs (measures computed size). */
 html body .metrics-subgroup-title { font-size: 28px; }
 @media (max-width: 768px) { html body .metrics-subgroup-title { font-size: 24px; } }
+
+/* Simon 2026-10-14 "모바일에서 Ratings에 카드 제목들이 너무 작아": model card titles were 12px on phones
+   (smaller than the 14px formula and 16px body; an inline <style> rule beat news-impact.css's 16px). Phone 18px, desktop 16px.
+   Check: .qa/rating_title_check.cjs */
+html body #ratings .method-name { font-size: 16px; font-weight: 650; line-height: 1.3; }
+@media (max-width: 768px) { html body #ratings .method-name { font-size: 18px; } }
+
+/* Simon 2026-10-14 "폰트 크기 전수검사" (.qa/font_audit.cjs): titles that rendered smaller than their own card body.
+   01.2 model cards 12px(phone)/14px → 16px; leaderboard names 12 → 14px; news-driver names 12 → 13px;
+   creator line 12/13 → 14/13px. */
+html body .model-name { font-size: 16px; line-height: 1.3; }
+html body .lb-name { font-size: 14px; }
+html body .ni-drv-name { font-size: 13px; }
+html body .contact-name { font-size: 14px; }
+html body .contact-title { font-size: 13px; }
+
+/* Phone 01.2 model cards: price + bar + "+17.3% UNDERVALUED" needed 183px in a 161px row → label was clipped
+   (card overflow:hidden). On phones the % + label drop to their own line under the price. Check: .qa/model_badge_check.cjs */
+@media (max-width: 600px) {
+  html body .valuation-model .model-row-2 { grid-template-columns: auto 1fr; row-gap: 2px; column-gap: 8px; }
+  html body .valuation-model .model-row-2 .model-diff { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 6px; text-align: left; white-space: nowrap; }
+  html body .valuation-model .model-row-2 .model-diff small { display: inline; }
+}
