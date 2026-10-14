@@ -1,17 +1,18 @@
 # .github/workflows/collect-historical-data.yml
 # ETHval Historical Data Collection
-# 매일 UTC 04:30에 자동 실행 (Dune 스케줄 03:30-04:00 완료 후)
-# KST 13:30
+# 수동 실행 전용 (정기 수집은 collect-data.yml)
 
 name: Collect Historical Data
 
 on:
-  # 매일 자동 실행 (Dune queries complete at 04:00 UTC)
-  schedule:
-    - cron: '30 4 * * *'
-  
-  # 수동 실행 가능
+  # 2026-10-15: 자동 실행 제거 — collect-data.yml(30 4,16 * * *)과 같은 data-collector.js를
+  # 같은 시각에 동시에 돌려 Dune 대기가 겹치고 collect-data가 30분 제한에 걸려 취소됨
+  # (run 38543858211). 정기 수집은 collect-data.yml 하나만 담당. 수동 실행만 남김.
   workflow_dispatch:
+
+concurrency:
+  group: ethval-data-collector
+  cancel-in-progress: false
 
 env:
   NODE_VERSION: '22'

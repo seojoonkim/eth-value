@@ -12,10 +12,18 @@ permissions:
   contents: read
   actions: write
 
+# 2026-10-15: never run two collectors at once (queue the second, don't cancel the first).
+concurrency:
+  group: ethval-data-collector
+  cancel-in-progress: false
+
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 30 → 45 (2026-10-15, measured): run 38543858211 finished collecting at 1807 s and was
+    # cancelled by the 30-min limit right after; it ran alongside the old duplicate 04:30
+    # schedule in collect-historical-data.yml. Normal solo runs take 1010–1105 s.
+    timeout-minutes: 45
 
     steps:
       - name: Checkout repository
