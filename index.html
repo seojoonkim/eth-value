@@ -50,6 +50,7 @@
     <link rel="stylesheet" href="fv-band.css?v=20261014b">
     <link rel="stylesheet" href="fv-backtest.css?v=20261014a">
     <link rel="stylesheet" href="model-constants.css?v=20261014a">
+    <link rel="stylesheet" href="composite-sens.css?v=20261014a">
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
         html.no-transition,
@@ -29825,9 +29826,10 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             
             const avgPrice = count > 0 ? sum / count : 0;
             state.compositeFairValue = avgPrice; // Store for chart display
-            const medianPrice = prices.length > 0 
-                ? prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] 
-                : 0;
+            // True median: even count -> mean of the two middle values (was the upper-middle value only).
+            const sortedPrices = prices.slice().sort((a, b) => a - b), midN = sortedPrices.length;
+            const medianPrice = midN === 0 ? 0
+                : (midN % 2 ? sortedPrices[(midN - 1) / 2] : (sortedPrices[midN / 2 - 1] + sortedPrices[midN / 2]) / 2);
             
             const avgDiff = state.price > 0 ? ((avgPrice - state.price) / state.price) * 100 : 0;
 
@@ -36758,6 +36760,7 @@ Check out ETHval 👇`;
     <script src="fv-band.js?v=20261014b" defer></script>
     <script src="fv-backtest.js?v=20261014a" defer></script>
     <script src="model-constants.js?v=20261014a" defer></script>
+    <script src="composite-sens.js?v=20261014a" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
     <script src="dxy.js?v=20261013a" defer></script>
 
