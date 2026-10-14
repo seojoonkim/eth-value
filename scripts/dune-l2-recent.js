@@ -2,11 +2,11 @@
 // "too many stages" because it rescans every chain from 2022 on each run.
 // Same method/filters as the original, limited to the last N days, so the series stays continuous.
 const CHAINS = [
-    // [display name, dune chain/table prefix, native price source]
+    // [display name, dune chain/table prefix, native price source, optional last indexed day]
     ['Arbitrum', 'arbitrum', 'eth'],
     ['Base', 'base', 'eth'],
     ['Optimism', 'optimism', 'eth'],
-    ['Blast', 'blast', 'eth'],
+    ['Blast', 'blast', 'eth', '2025-09-26'], // Dune stopped indexing Blast after this day (site copy says so too)
     ['zkSync Era', 'zksync', 'eth'],
     ['Scroll', 'scroll', 'eth'],
     ['Linea', 'linea', 'eth'],
@@ -64,6 +64,10 @@ async function runDuneSQL(apiKey, sql, { log = console.log, maxWaitMs = 600000 }
         const s = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/status`, { headers: H }).then(x => x.json()).catch(() => ({}));
         if (s.state === 'QUERY_STATE_COMPLETED') break;
         if (/FAILED|CANCELLED|EXPIRED/.test(s.state || '')) throw new Error(`dune ${s.state}: ${JSON.stringify(s.error || '').slice(0, 200)}`);
+        if (Date.now() - t0 >= maxWaitMs) {
+            fetch(`https://api.dune.com/api/v1/execution/${executionId}/cancel`, { method: 'POST', headers: H }).catch(() => {});
+            throw new Error(`dune timeout after ${Math.round(maxWaitMs / 1000)}s`);
+        }
     }
     const res = await fetch(`https://api.dune.com/api/v1/execution/${executionId}/results?limit=5000`, { headers: H }).then(x => x.json());
     if (!res.result) throw new Error(`dune results missing: ${JSON.stringify(res.error || res).slice(0, 200)}`);
@@ -71,13 +75,18 @@ async function runDuneSQL(apiKey, sql, { log = console.log, maxWaitMs = 600000 }
 }
 
 // Collect [fromDate, toDate) for all chains in chunks of `chunkDays`. Failures are per chunk, not all-or-nothing.
-async function collectL2Range(apiKey, fromDate, toDate, { chunkDays = 31, log = console.log } = {}) {
+async function collectL2Range(apiKey, fromDate, toDate, { chunkDays = 31, log = console.log, maxWaitMs = 240000, runner = null } = {}) {
+    const runDuneSQL_ = runner || runDuneSQL;
     const rows = [], failures = [];
     for (const chain of CHAINS) {
-        for (let a = Date.parse(fromDate); a < Date.parse(toDate); a += chunkDays * 864e5) {
+        // A chain Dune no longer indexes returns nothing but still burns up to maxWaitMs per chunk.
+        // 2026-10-14: Blast waited 600s for 0 rows and pushed the whole job past its 30-minute limit.
+        const end = chain[3] ? Math.min(Date.parse(toDate), Date.parse(chain[3]) + 864e5) : Date.parse(toDate);
+        if (end <= Date.parse(fromDate)) { log(`  ↪ L2 ${chain[0]}: skipped (not indexed after ${chain[3]})`); continue; }
+        for (let a = Date.parse(fromDate); a < end; a += chunkDays * 864e5) {
             const f = new Date(a).toISOString().slice(0, 10);
-            const t = new Date(Math.min(a + chunkDays * 864e5, Date.parse(toDate))).toISOString().slice(0, 10);
-            try { rows.push(...await runDuneSQL(apiKey, l2ChainSQL(chain, f, t), { log: () => {} })); }
+            const t = new Date(Math.min(a + chunkDays * 864e5, end)).toISOString().slice(0, 10);
+            try { rows.push(...await runDuneSQL_(apiKey, l2ChainSQL(chain, f, t), { log: () => {}, maxWaitMs })); }
             catch (e) { failures.push(`${chain[0]} ${f}: ${e.message.slice(0, 80)}`); }
         }
         log(`  ↪ L2 ${chain[0]}: rows so far ${rows.length}`);

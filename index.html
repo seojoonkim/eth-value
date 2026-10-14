@@ -45,7 +45,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <link rel="stylesheet" href="news-impact.css?v=20261014g">
+    <link rel="stylesheet" href="news-impact.css?v=20261014h">
     <link rel="stylesheet" href="valuation-dist.css?v=20261013b">
     <link rel="stylesheet" href="fv-band.css?v=20261014b">
     <link rel="stylesheet" href="fv-backtest.css?v=20261014a">
@@ -23441,12 +23441,12 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 const langSuffix = currentLang !== 'en' ? `_${currentLang}` : '';
                 
                 // 오늘 또는 최근 해설 가져오기
-                const res = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=*&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
+                const res = await (window.__ethvalCommentaryReq = window.__ethvalCommentaryReq || fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=date,section_key,commentary,commentary_ko,commentary_zh,commentary_ja,scores&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
                     headers: {
                         'apikey': SUPABASE_CONFIG.anonKey,
                         'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
                     }
-                });
+                }).then(r => r.ok ? r : Promise.reject(r))).then(r => r.clone()).catch(r => { window.__ethvalCommentaryReq = null; return r instanceof Response ? r : { ok: false, status: String(r) }; });
                 
                 if (!res.ok) {
                     log('📝 Commentary fetch failed:', res.status);
