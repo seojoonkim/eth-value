@@ -1259,7 +1259,7 @@
         
         .forum-skeleton-header {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            grid-template-columns: 100px 1fr 120px 60px 88px 60px 100px;
             gap: 12px;
             padding: 12px 16px;
             background: var(--bg-subtle);
@@ -1275,7 +1275,7 @@
         
         .forum-skeleton-row {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            grid-template-columns: 100px 1fr 120px 60px 88px 60px 100px;
             gap: 12px;
             padding: 16px;
             border-bottom: 1px solid var(--border-light);
@@ -11366,7 +11366,7 @@
         
         .forum-skeleton-header {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            grid-template-columns: 100px 1fr 120px 60px 88px 60px 100px;
             gap: 12px;
             padding: 12px 16px;
             background: var(--bg-subtle);
@@ -11382,7 +11382,7 @@
         
         .forum-skeleton-row {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            grid-template-columns: 100px 1fr 120px 60px 88px 60px 100px;
             gap: 12px;
             padding: 16px;
             border-bottom: 1px solid var(--border-light);
@@ -11491,7 +11491,10 @@
         
         .forum-table-header {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 60px 80px 60px 100px;
+            /* header, rows and skeletons share one template (header date col was 100px vs rows 80px, so 1fr differed).
+               Stat cols sized from measured 12px uppercase labels: COMMENTS 73px, VIEWS 42px; each label end to next
+               label start >= 12px (.qa/forum_header_check.cjs, en/ko/ja/zh, 769-1440px). */
+            grid-template-columns: 100px 1fr 120px 60px 88px 60px 100px;
             gap: 12px;
             padding: 12px 16px;
             background: var(--bg-subtle);
@@ -11505,7 +11508,7 @@
         
         .forum-row {
             display: grid;
-            grid-template-columns: 100px 1fr 120px 60px 80px 60px 80px;
+            grid-template-columns: 100px 1fr 120px 60px 88px 60px 100px;
             gap: 12px;
             padding: 16px;
             border-bottom: 1px solid var(--border-light);
@@ -11518,7 +11521,8 @@
         @media (min-width: 1200px) and (max-width: 1400px) {
             .forum-table-header,
             .forum-row {
-                grid-template-columns: 90px 1fr 110px 50px 70px 50px 70px;
+                /* COMMENTS 73px sat 7px from VIEWS in a 70px col (2026-10-14 1280 capture) */
+                grid-template-columns: 98px 1fr 110px 56px 86px 56px 76px; /* ja フィードバック badge 97px */
                 gap: 10px;
             }
         }
@@ -11528,7 +11532,7 @@
             .forum-table-header,
             .forum-row {
                 /* date col 72px: ISO date "2026-05-23" measures 69px at 12px (60px clipped it) */
-                grid-template-columns: 85px 1fr 100px 45px 60px 45px 72px;
+                grid-template-columns: 98px 1fr 100px 52px 84px 56px 76px; /* COMMENTS overlapped VIEWS by 5px in a 60px col */
                 gap: 8px;
             }
             
@@ -11549,7 +11553,8 @@
         @media (min-width: 769px) and (max-width: 999px) {
             .forum-table-header,
             .forum-row {
-                grid-template-columns: 75px 1fr 85px 40px 40px 40px 72px;
+                /* 40px stat cols: COMMENTS overlapped VIEWS by 27px, ja コメント wrapped; header drops letter-spacing here */
+                grid-template-columns: 98px 1fr 85px 50px 80px 54px 76px; /* category badges up to 97px (ja フィードバック, en QUESTIONS 88px) were clipped in a 75px col */
                 gap: 6px;
                 padding: 12px;
             }
@@ -11557,6 +11562,7 @@
             .forum-table-header {
                 font-size: 12px;
                 padding: 10px 12px;
+                letter-spacing: 0;
             }
             
             .forum-post-category {
