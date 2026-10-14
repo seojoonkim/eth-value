@@ -13,6 +13,8 @@
   'use strict';
   var BP = 1200;           // desktop web view breakpoint
   var W = 236;             // sidebar width (px)
+  var HEAD_H = 60;         // rail logo row height (the top bar is hidden on wide screens)
+  var footEl = null, hrHome = null;
   var mq = window.matchMedia('(min-width: ' + BP + 'px)');
   var root, headEl, listEl, inputEl, emptyEl, items = [], built = false, spyRaf = 0;
   var openState = {};      // level-2 key -> expanded (kept across rebuilds)
@@ -31,7 +33,13 @@
     '@media (min-width:' + BP + 'px){',
     ' body.has-sb{padding-left:' + W + 'px}',
     ' body.has-sb .nav-bar-inline{display:none!important}',
-    ' body.has-sb .header-wrapper{left:' + W + 'px!important;right:0;width:auto!important;box-sizing:border-box}',  /* header bar starts right of the rail so the rail logo is not covered */
+    /* Wide screens: the rail already carries logo + menu, so the full-width top bar is dropped; theme + language
+       controls move to the rail footer (the same DOM node is moved, handlers stay). --hdr-h follows to 0. */
+    ' body.has-sb .header-wrapper{display:none!important}',
+    ' html body.has-sb .onboarding-banner{left:' + W + 'px!important;top:0!important}',
+    ' html body.has-sb{padding-top:20px}',
+    ' html body.has-sb.banner-visible{padding-top:calc(var(--bn-h, 70px) + 20px)}',
+    ' body.has-sb .section[id]{scroll-margin-top:24px}',
     ' body.has-sb .recent-participants-avatars{min-width:0}',
     ' body.has-sb .summary-opportunity-wrapper{flex-wrap:wrap;justify-content:flex-end;row-gap:6px;overflow:visible}',  /* narrower body: "Undervalued" badge must not clip */
     ' body.has-sb .recent-participants-avatars img:not(:first-child){margin-left:-15px}',  /* body is ' + W + 'px narrower: 10 avatars + more must fit the community box */
@@ -43,12 +51,15 @@
     ' .sb{position:fixed;left:0;top:0;bottom:0;width:' + W + 'px;z-index:9000;display:flex;flex-direction:column;',
     '  background:#eceef2;border-right:1px solid #d5d9e0;box-sizing:border-box}',
     ' body.dark .sb{background:#050608;border-right-color:#22262d}',
-    ' body.has-sb .header-wrapper .header>.logo{visibility:hidden}',   /* the logo moves to the top of the rail */
     '}',
     '@media (max-width:' + (BP - 1) + 'px){ .sb{display:none!important} }',
     '.sb-head{flex:0 0 auto;display:flex;align-items:center;padding:0 16px;box-sizing:border-box;border-bottom:1px solid #d5d9e0}',
     'body.dark .sb-head{border-bottom-color:#22262d}',
     '.sb-head .logo{margin:0}',
+    '.sb-foot{flex:0 0 auto;padding:10px 12px;border-top:1px solid #d5d9e0}',
+    'body.dark .sb-foot{border-top-color:#22262d}',
+    '.sb-foot .header-right{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%}',
+    '.sb-foot .theme-toggle{width:32px;height:32px}',
     '.sb-search{padding:12px 12px 8px;flex:0 0 auto}',
     '.sb-search input{width:100%;box-sizing:border-box;height:32px;padding:0 10px 0 30px;border-radius:8px;',
     ' border:1px solid var(--border,rgba(127,127,127,.25));background:var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2714%27 height=%2714%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23888%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Ccircle cx=%2711%27 cy=%2711%27 r=%277%27/%3E%3Cpath d=%27m20 20-4-4%27/%3E%3C/svg%3E") no-repeat 10px 50%;',
@@ -298,8 +309,14 @@
 
   function place() {
     if (!root) return;
-    if (headEl) headEl.style.height = headerH() + 'px';   /* logo row lines up with the header bar */
+    if (headEl) headEl.style.height = HEAD_H + 'px';
     document.body.classList.toggle('has-sb', mq.matches);
+    var hr = document.querySelector('.header-right');
+    if (hr && footEl) {
+      if (mq.matches && hr.parentNode !== footEl) { hrHome = hrHome || { p: hr.parentNode, n: hr.nextSibling }; footEl.appendChild(hr); }
+      else if (!mq.matches && hrHome && hr.parentNode === footEl) hrHome.p.insertBefore(hr, hrHome.n);
+    }
+    window.dispatchEvent(new Event('ethval-header-change'));
   }
 
   function applyLabels() {
@@ -331,7 +348,8 @@
       cl.addEventListener('keydown', function (e) { if (e.key === 'Enter') lg.click(); });
       headEl.appendChild(cl);
     }
-    root.appendChild(headEl); root.appendChild(sw); root.appendChild(emptyEl); root.appendChild(listEl);
+    footEl = document.createElement('div'); footEl.className = 'sb-foot';
+    root.appendChild(headEl); root.appendChild(sw); root.appendChild(emptyEl); root.appendChild(listEl); root.appendChild(footEl);
     document.body.appendChild(root);
     inputEl.addEventListener('input', function () { filter(inputEl.value); });
     inputEl.addEventListener('keydown', function (e) {
