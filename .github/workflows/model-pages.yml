@@ -1,0 +1,80 @@
+name: ETHval Model Pages
+
+# /models/*.html + sitemap.xml are built from the site's own stored daily data
+# (scripts/build-model-pages.cjs opens this checkout in headless Chromium and reads
+# state.historicalFairValues). Rebuild after every successful data collection so the
+# "last complete day" value moves with the data instead of staying at the first build.
+# Commit only when something other than the build timestamp changed.
+on:
+  workflow_run:
+    workflows: ['ETHval Data Collection']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: model-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install playwright (build tool only, not saved to package.json)
+        run: |
+          npm install --no-save --no-package-lock playwright@1.64.0
+          npx playwright install --with-deps chromium
+      - name: Build model pages
+        run: node scripts/build-model-pages.cjs
+      - name: Commit if values changed
+        id: commit
+        run: |
+          git add -A models sitemap.xml robots.txt
+          # compare old vs new with the build time ("YYYY-MM-DD HH:MM") and <lastmod> masked;
+          # any value / date / series point / text change still counts
+          CHANGED=$(node -e '
+            const { execSync } = require("child_process"), fs = require("fs");
+            const norm = s => s.replace(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g, "T").replace(/<lastmod>[^<]*<\/lastmod>/g, "");
+            const files = execSync("git diff --cached --name-only").toString().split("\n").filter(Boolean);
+            let n = 0;
+            for (const f of files) {
+              let old = ""; try { old = execSync("git show HEAD:" + f, { maxBuffer: 1 << 26 }).toString(); } catch (e) {}
+              const cur = fs.existsSync(f) ? fs.readFileSync(f, "utf8") : "";
+              if (norm(old) !== norm(cur)) n++;
+            }
+            console.log(n);')
+          echo "files with real changes: $CHANGED"
+          if [ "$CHANGED" = "0" ]; then
+            echo "only build timestamp changed — no commit"
+            git reset -q
+            git checkout -- models sitemap.xml robots.txt
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --cached --stat | tail -3
+          git config user.name "ethval-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          D=$(grep -o 'data-date="[0-9-]*"' models/metcalfe.html | head -1 | cut -d'"' -f2)
+          git commit -q -m "Model pages: refresh values to last complete day $D (auto after data collection)"
+          for i in 1 2 3; do
+            git pull -q --rebase origin main && git push -q origin HEAD:main && break
+            sleep 5
+          done
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+      - name: Request Pages build
+        # pushes made with GITHUB_TOKEN may not start the legacy Pages build on their own
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || true
