@@ -499,3 +499,12 @@ body.dark .conclusion-price{background:linear-gradient(120deg,#c3b6ff 0%,#9db9ff
     border:1px solid var(--border);background:var(--bg-card);z-index:-1}
   .ev-eli5-btn::after{inset:0}
 }
+
+/* Simon 2026-10-14 "너무 메뉴바 밑에 붙어있어": on phones the 2-row menu is 94px but body padding was a fixed 82px,
+   so "01 / 06" sat 2px under the menu (1px with the welcome banner on 360px). Offset now follows the real menu
+   height (--hdr-h) and banner height (--bn-h), both kept in sync by ethval-extras.js. Check: .qa/menu_gap_check.cjs */
+@media (max-width: 768px) {
+  html body { padding-top: calc(var(--hdr-h, 94px) + 24px); }
+  html body.banner-visible { padding-top: calc(var(--hdr-h, 94px) + var(--bn-h, 70px) + 24px); }
+  html body .onboarding-banner { top: var(--hdr-h, 94px) !important; }
+}

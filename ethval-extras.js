@@ -387,3 +387,18 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+
+// keep --bn-h in sync with the onboarding banner height (body offset under the menu, see news-impact.css)
+(function syncBannerVar() {
+  const set = () => {
+    const bn = document.querySelector('.onboarding-banner');
+    if (bn) document.documentElement.style.setProperty('--bn-h', bn.offsetHeight + 'px');
+  };
+  const start = () => {
+    set();
+    const bn = document.querySelector('.onboarding-banner');
+    if (bn && window.ResizeObserver) new ResizeObserver(set).observe(bn);
+    window.addEventListener('resize', set);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
