@@ -515,3 +515,9 @@ body.dark .conclusion-price{background:linear-gradient(120deg,#c3b6ff 0%,#9db9ff
   html body .recent-participants-avatars img { width: 28px; height: 28px; margin-left: -6px; }
   html body .recent-participants-avatars img:first-child { margin-left: 0; }
 }
+
+/* Simon 2026-10-14 "중간 섹션 타이틀 폰트 조금만 더 크게": 01.1-style subgroup titles desktop 24→28px, phone 20→24px.
+   The older plain `.metrics-subgroup-title` rule above lost to later inline <style> blocks in index.html, so it never applied.
+   `html body` raises specificity. Check: .qa/subtitle_size_check.cjs (measures computed size). */
+html body .metrics-subgroup-title { font-size: 28px; }
+@media (max-width: 768px) { html body .metrics-subgroup-title { font-size: 24px; } }
