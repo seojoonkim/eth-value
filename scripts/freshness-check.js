@@ -12,6 +12,8 @@ const EXPECT_SOURCE = {
     historical_open_interest: 'cryptoquant',
     historical_us10y: 'fred',
     historical_dxy: 'fred',
+    historical_chain_fees: 'defillama',
+    historical_chain_mcap: 'coingecko',
 };
 
 const TABLES = {
@@ -28,6 +30,8 @@ const TABLES = {
     historical_staking_apr: 4,
     historical_fear_greed: 3,
     historical_dxy: 14,           // FRED H.10 broad index is published weekly (Mon, data to prior Fri) + holidays
+    historical_chain_fees: 4,     // DefiLlama, complete UTC days only (D-1)
+    historical_chain_mcap: 4,     // CoinGecko 00:00 UTC snapshots
     historical_us10y: 6,          // business days only; FRED posts D-1 (weekend + US holiday ≤ 4d)
     historical_l2_stablecoin_daily: 4,
     historical_l2_stablecoin_volume: 4,
@@ -37,6 +41,8 @@ const TABLES = {
 // Multi-chain tables: every listed chain must be current, not just the newest row.
 // Blast is excluded: its Dune data ends 2025-09-26 (kept as history, no longer collected).
 const CHAIN_TABLES = {
+    historical_chain_fees: { col: 'chain', maxAge: 4, chains: ['ethereum', 'solana', 'bitcoin'] },
+    historical_chain_mcap: { col: 'chain', maxAge: 4, chains: ['ethereum', 'solana', 'bitcoin'] },
     historical_l2_stablecoin_volume: { col: 'chain', maxAge: 4, chains: ['arbitrum', 'base', 'optimism', 'polygon', 'zksync', 'linea', 'scroll'] },
     historical_l2_total_volume: { col: 'chain', maxAge: 4, chains: ['Arbitrum', 'Base', 'Optimism', 'zkSync Era', 'Scroll', 'Linea', 'Mantle'] },
 };

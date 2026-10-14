@@ -2103,6 +2103,70 @@ async function collect_dxy() {
 }
 
 // ============================================================
+// Relative value (03 relval.js): ETH / SOL / BTC fees, revenue, market cap. No keys.
+// One source per table, never mixed: historical_chain_fees ← DefiLlama only, historical_chain_mcap ← CoinGecko only.
+// ============================================================
+const RELVAL_CHAINS = [
+    { chain: 'ethereum', llama: 'ethereum', cg: 'ethereum' },
+    { chain: 'solana', llama: 'solana', cg: 'solana' },
+    { chain: 'bitcoin', llama: 'bitcoin', cg: 'bitcoin' },
+];
+
+// DefiLlama /summary/fees/<chain>: dailyFees and dailyRevenue charts, points keyed by UTC day start.
+// Today's (incomplete) UTC day is dropped. A day without a point stays absent (no fill). Last 3 years.
+async function collect_chain_fees() {
+    const today = new Date().toISOString().slice(0, 10);
+    const cut = new Date(Date.now() - 1095 * 864e5).toISOString().slice(0, 10);
+    const rows = [];
+    const notes = [];
+    for (const c of RELVAL_CHAINS) {
+        const byDate = {};
+        for (const [type, col] of [['dailyFees', 'fees_usd'], ['dailyRevenue', 'revenue_usd']]) {
+            const d = await fetchJSON(`https://api.llama.fi/summary/fees/${c.llama}?dataType=${type}`);
+            const chart = d && Array.isArray(d.totalDataChart) ? d.totalDataChart : null;
+            if (!chart) { notes.push(`${c.chain} ${type} missing`); continue; }
+            for (const [ts, v] of chart) {
+                const date = new Date(ts * 1000).toISOString().slice(0, 10);
+                if (date < cut || date >= today) continue;
+                const x = Number(v);
+                if (!Number.isFinite(x) || x < 0) continue;
+                (byDate[date] = byDate[date] || {})[col] = x;
+            }
+            await sleep(300);
+        }
+        for (const [date, v] of Object.entries(byDate)) {
+            rows.push({ date, chain: c.chain, fees_usd: v.fees_usd ?? null, revenue_usd: v.revenue_usd ?? null, source: 'defillama' });
+        }
+    }
+    if (!rows.length) return result.fail('DefiLlama fees: no rows (' + notes.join(', ') + ')');
+    const saved = await upsertBatch('historical_chain_fees', rows, 'date,chain');
+    return notes.length ? result.warn(saved, notes.join(', ')) : result.ok(saved);
+}
+
+// CoinGecko /coins/<id>/market_chart (free, 365 days): keep only the 00:00 UTC daily snapshots
+// (the trailing "now" point is not a daily close and is dropped).
+async function collect_chain_mcap() {
+    const rows = [];
+    const notes = [];
+    for (const c of RELVAL_CHAINS) {
+        const d = c.cg === 'ethereum' ? await getCgEthMarketChart().catch(() => null)
+            : await fetchJSON(`https://api.coingecko.com/api/v3/coins/${c.cg}/market_chart?vs_currency=usd&days=365&interval=daily`);
+        const mc = d && Array.isArray(d.market_caps) ? d.market_caps : null;
+        if (!mc) { notes.push(`${c.chain} missing`); await sleep(2500); continue; }
+        for (const [ms, v] of mc) {
+            if (ms % 864e5 !== 0) continue;
+            const x = Number(v);
+            if (!Number.isFinite(x) || x <= 0) continue;
+            rows.push({ date: new Date(ms).toISOString().slice(0, 10), chain: c.chain, mcap_usd: x, source: 'coingecko' });
+        }
+        await sleep(2500); // free CoinGecko rate limit
+    }
+    if (!rows.length) return result.fail('CoinGecko market caps: no rows (' + notes.join(', ') + ')');
+    const saved = await upsertBatch('historical_chain_mcap', rows, 'date,chain');
+    return notes.length ? result.warn(saved, notes.join(', ')) : result.ok(saved);
+}
+
+// ============================================================
 // 10. DEX Volume (DefiLlama)
 // ============================================================
 async function collect_dex_volume() {
@@ -3362,10 +3426,12 @@ async function main() {
         collect_l2_stablecoin_supply(),
         collect_l2_stablecoin_volume(),
         collect_us10y(),
-        collect_dxy()
+        collect_dxy(),
+        collect_chain_fees(),
+        collect_chain_mcap()
     ]);
     
-    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'gas_burn', 'l2_stablecoin_supply', 'l2_stablecoin_volume', 'us10y', 'dxy'];
+    const phase3Names = ['stablecoins', 'stablecoins_eth', 'fear_greed', 'eth_supply', 'volatility', 'nvt', 'transactions', 'l2_transactions', 'l2_addresses', 'funding_rate', 'exchange_reserve', 'open_interest', 'blob_data', 'active_addresses', 'gas_burn', 'l2_stablecoin_supply', 'l2_stablecoin_volume', 'us10y', 'dxy', 'chain_fees', 'chain_mcap'];
     phase3Results.forEach((res, i) => {
         results[phase3Names[i]] = wrapResult(res);
         const r = results[phase3Names[i]];
