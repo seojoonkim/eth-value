@@ -51,6 +51,7 @@
     <link rel="stylesheet" href="fv-backtest.css?v=20261014a">
     <link rel="stylesheet" href="model-constants.css?v=20261014a">
     <link rel="stylesheet" href="composite-sens.css?v=20261014a">
+    <link rel="stylesheet" href="sim-presets.css?v=20261014a">
     <style>
         /* 초기 로딩 시 transition 비활성화 (flash 방지) */
         html.no-transition,
@@ -15269,6 +15270,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     </div>
                 </div>
                 
+                <div class="sim-presets" id="sim-presets"></div>
                 <div class="simulator-box-content">
                     <!-- Left: Sliders - Compact 2-column layout -->
                     <div class="simulator-sliders">
@@ -33759,6 +33761,11 @@ Check out ETHval 👇`;
                 var stakingPct = sliderToStaking(stakingSlider) / 100;
                 var stablesMult = sliderToMultiplier(stablesSlider);
                 var activeAddressesMult = sliderToMultiplier(activeAddressesSlider);
+                // Report presets (sim-presets.js) set an exact multiplier; the integer slider sits on the
+                // nearest step. Use the exact value only while the slider is still on that step.
+                var ex = window.simPresetExact || {};
+                if (ex.fees && ex.fees.pos === feesSlider) feesMult = ex.fees.mult;
+                if (ex.stables && ex.stables.pos === stablesSlider) stablesMult = ex.stables.mult;
                 
                 // Check if all sliders are at default (reset state = 25)
                 var isReset = Math.abs(tvlSlider - 25) < 0.5 && 
@@ -33981,6 +33988,11 @@ Check out ETHval 👇`;
             window.updateSimulation = function() {
                 if (baseParams && baseParams.tvl !== undefined) initSimulator(true); else updateSimulation();
             };
+            // Read-only view of the simulator baseline for sim-presets.js (copy, so callers cannot mutate it).
+            window.simBaseline = function() {
+                return (baseParams && baseParams.tvl !== undefined) ? JSON.parse(JSON.stringify(baseParams)) : null;
+            };
+            window.simRecalc = function() { updateSimulation(); };
         })();
     </script>
 
@@ -36761,6 +36773,7 @@ Check out ETHval 👇`;
     <script src="fv-backtest.js?v=20261014a" defer></script>
     <script src="model-constants.js?v=20261014a" defer></script>
     <script src="composite-sens.js?v=20261014a" defer></script>
+    <script src="sim-presets.js?v=20261014a" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
     <script src="dxy.js?v=20261013a" defer></script>
 
