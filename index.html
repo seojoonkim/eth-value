@@ -15006,7 +15006,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                             <div class="model-bar-container"><div class="model-bar-bg"></div><div class="model-bar-center"></div><div class="model-bar-fill" style="width:0%"></div><div class="model-bar-marker" style="left:50%"></div></div>
                             <div class="model-diff calculating">--<small></small></div>
                         </div>
-                        <div class="model-row-3"><div class="model-formula">(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply</div><label class="model-toggle"><input type="checkbox" checked data-model="ps"><span class="slider"></span></label></div>
+                        <div class="model-row-3"><div class="model-formula">(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply</div><label class="model-toggle"><input type="checkbox" checked data-model="ps"><span class="slider"></span></label></div>
                     </div>
                     <div class="valuation-model" data-model="revenueYield">
                         <div class="model-row-1"><div class="model-name">Fee Yield</div></div>
@@ -15015,7 +15015,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                             <div class="model-bar-container"><div class="model-bar-bg"></div><div class="model-bar-center"></div><div class="model-bar-fill" style="width:0%"></div><div class="model-bar-marker" style="left:50%"></div></div>
                             <div class="model-diff calculating">--<small></small></div>
                         </div>
-                        <div class="model-row-3"><div class="model-formula">(L1Fees + BlobFees) × 365 ÷ APR ÷ Supply</div><label class="model-toggle"><input type="checkbox" checked data-model="revenueYield"><span class="slider"></span></label></div>
+                        <div class="model-row-3"><div class="model-formula">(Burned L1 Fees + Burned Blob Fees) × 365 ÷ APR ÷ Supply</div><label class="model-toggle"><input type="checkbox" checked data-model="revenueYield"><span class="slider"></span></label></div>
                     </div>
                     <div class="valuation-model" data-model="commitmentPremium">
                         <div class="model-row-1"><div class="model-name">Liquidity Premium</div></div>
@@ -16694,7 +16694,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply</div>
+                            <div class="method-formula">(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply</div>
                             <div class="method-desc" data-i18n="method.ps.desc">Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations.</div>
                         </div>
                         <div class="method-right">
@@ -16737,7 +16737,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">(L1Fees + BlobFees) × 365 ÷ APR ÷ Supply</div>
+                            <div class="method-formula">(Burned L1 Fees + Burned Blob Fees) × 365 ÷ APR ÷ Supply</div>
                             <div class="method-desc" data-i18n="method.yield.desc">Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class.</div>
                         </div>
                         <div class="method-right">
@@ -19121,7 +19121,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     ]
                 },
                 'ps': {
-                    formula: '(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply',
+                    formula: '(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply',
                     desc: t('method.ps.desc', 'Applies traditional Price-to-Sales ratio using protocol fee revenue. A 25x P/S multiple is conservative for high-growth tech assets. Fee data sourced from Token Terminal. This model treats Ethereum like a revenue-generating business.'),
                     reliability: 2,
                     caveat: t('method.ps.note', '25x multiple borrowed from SaaS sector; crypto protocols may warrant different multiples'),
@@ -20736,7 +20736,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.l2.note': '2x L2 weight multiplier is proprietary without empirical basis',
                 'method.l2.desc': 'Captures value from Ethereum\'s Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum\'s value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.',
                 'method.ps.note': '25x multiple borrowed from SaaS sector; crypto protocols may warrant different multiples',
-                'method.ps.desc': 'Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations.',
+                'method.ps.desc': 'Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Fees here are burned fees only (L1 base fee + blob fee, as on ultrasound.money), not gross fees incl. tips/MEV (DefiLlama-style totals are higher). Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations.',
                 'method.yield.note': 'Assumes stable yield environment; actual staking yields are volatile in practice',
                 'method.yield.desc': 'Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class.',
                 'method.commitment.note': '1.5x premium multiplier for committed ETH is arbitrary without empirical basis',
@@ -21234,7 +21234,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.l2.note': '2배 L2 가중치 배수는 실증적 근거 없는 독자적 설정',
                 'method.l2.desc': '이더리움의 레이어 2 스케일링 생태계(Arbitrum, Optimism, Base, zkSync 등)의 가치를 포착합니다. L2 TVL에 2배 가중치를 부여하는 이유는 L2 활동이 이더리움 메인넷에서 정산되어 블록스페이스를 소비하고 EIP-1559를 통해 ETH를 소각하기 때문입니다.',
                 'method.ps.note': 'SaaS 업계에서 차용한 25배 배수; 크립토 프로토콜은 다른 배수가 적합할 수 있음',
-                'method.ps.desc': '시가총액을 연간 거래 수수료 매출과 비교하는 P/S(주가매출비율)입니다. 전통 기업과 달리 이더리움 같은 L1 프로토콜은 프로토콜 레벨에서 "순이익"이 없습니다 — 모든 수수료가 검증자에게 흘러갑니다. 따라서 Token Terminal이 사용하는 것처럼 P/E가 아닌 P/S가 업계 표준입니다. 25배 배수는 성장 기술주 밸류에이션을 반영합니다.',
+                'method.ps.desc': '시가총액을 연간 거래 수수료 매출과 비교하는 P/S(주가매출비율)입니다. 여기서 수수료는 소각된 수수료(L1 기본 수수료 + 블롭 수수료, ultrasound.money 기준)만 뜻하며, 팁·MEV를 포함한 전체 수수료(DefiLlama 등)보다 작습니다. 전통 기업과 달리 이더리움 같은 L1 프로토콜은 프로토콜 레벨에서 "순이익"이 없습니다 — 모든 수수료가 검증자에게 흘러갑니다. 따라서 Token Terminal이 사용하는 것처럼 P/E가 아닌 P/S가 업계 표준입니다. 25배 배수는 성장 기술주 밸류에이션을 반영합니다.',
                 'method.yield.note': '안정적 수익률 환경 가정; 실제 스테이킹 수익률은 변동성이 큼',
                 'method.yield.desc': '실시간 스테이킹 APR에서 적정 가치를 역산하여 ETH를 수익 창출 채권처럼 취급합니다. 이더리움이 연간 X의 수수료를 생성하고 현재 스테이킹 수익률이 Y%라면, 내재 시가총액은 X ÷ Y%입니다. 고정 목표 수익률 대신 Lido stETH의 실시간 APR을 사용합니다. 이 접근법은 크립토를 대체 자산 클래스로 평가하는 TradFi 분석가들이 선호합니다.',
                 'method.commitment.note': '커밋된 ETH에 대한 1.5배 프리미엄 배수는 실증적 근거 없이 임의 설정됨',
@@ -21712,7 +21712,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.l2.note': '2倍L2权重乘数是专有设定，缺乏实证基础',
                 'method.l2.desc': '捕捉以太坊Layer 2扩展生态系统（Arbitrum, Optimism, Base, zkSync等）的价值。L2 TVL加权2倍，因为L2活动在以太坊主网上结算，消耗区块空间并通过EIP-1559销毁ETH。',
                 'method.ps.note': '25倍乘数借用自SaaS行业；加密协议可能需要不同的乘数',
-                'method.ps.desc': 'P/S（市销率）将市值与年度交易费用收入进行比较。与传统公司不同，以太坊等L1协议在协议层面没有"净利润"——所有费用都流向验证者。因此，如Token Terminal所使用的，P/S（而非P/E）是行业标准。25倍乘数反映成长型科技股估值。',
+                'method.ps.desc': 'P/S（市销率）将市值与年度交易费用收入进行比较。此处费用仅指被销毁的费用（L1基础费 + Blob费，按ultrasound.money口径），不含小费与MEV的总费用（如DefiLlama）更高。与传统公司不同，以太坊等L1协议在协议层面没有"净利润"——所有费用都流向验证者。因此，如Token Terminal所使用的，P/S（而非P/E）是行业标准。25倍乘数反映成长型科技股估值。',
                 'method.yield.note': '假设稳定收益环境；实际质押收益波动较大',
                 'method.yield.desc': '从实时质押APR反向推导公允价值，将ETH视为收益型债券。如果以太坊产生X年费，当前质押收益率为Y%，则隐含市值为X÷Y%。使用Lido stETH实时APR而非固定目标收益率。这种方法受到将加密货币评估为另类资产类别的TradFi分析师青睐。',
                 'method.commitment.note': '锁定ETH的1.5倍溢价乘数是任意设定，缺乏实证依据',
@@ -22205,7 +22205,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'method.l2.note': '2倍のL2重み付け乗数は実証的根拠のない独自設定',
                 'method.l2.desc': 'イーサリアムのレイヤー2スケーリングエコシステム（Arbitrum、Optimism、Base、zkSyncなど）からの価値を捉えます。L2 TVLに2倍の重み付けをするのは、L2の活動がイーサリアムメインネットで決済され、ブロックスペースを消費し、EIP-1559を通じてETHを焼却するためです。',
                 'method.ps.note': '25倍はSaaS業界から借用；クリプトプロトコルには異なる倍率が適切な場合あり',
-                'method.ps.desc': 'P/S（株価売上高比率）は時価総額を年間取引手数料収益と比較します。従来の企業とは異なり、イーサリアムのようなL1プロトコルにはプロトコルレベルでの「純利益」がありません — すべての手数料はバリデーターに流れます。そのため、Token Terminalが使用しているように、P/E（ではなく）P/Sが業界標準です。25倍の乗数は成長テック株のバリュエーションを反映しています。',
+                'method.ps.desc': 'P/S（株価売上高比率）は時価総額を年間取引手数料収益と比較します。ここでの手数料はバーンされた手数料（L1基本手数料 + Blob手数料、ultrasound.money基準）のみで、チップ・MEVを含む総手数料（DefiLlama等）より小さくなります。従来の企業とは異なり、イーサリアムのようなL1プロトコルにはプロトコルレベルでの「純利益」がありません — すべての手数料はバリデーターに流れます。そのため、Token Terminalが使用しているように、P/E（ではなく）P/Sが業界標準です。25倍の乗数は成長テック株のバリュエーションを反映しています。',
                 'method.yield.note': '安定した利回り環境を仮定；実際のステーキング利回りは変動が大きい',
                 'method.yield.desc': 'ライブステーキングAPRから適正価値を逆算し、ETHをイールドを生む債券のように扱います。イーサリアムが年間Xの手数料を生み出し、現在のステーキングイールドがY%の場合、暗黙の時価総額はX÷Y%です。固定目標イールドの代わりにLido stETHのリアルタイムAPRを使用します。このアプローチは、クリプト資産をオルタナティブ資産クラスとして評価するTradFiアナリストに支持されています。',
                 'method.commitment.note': 'コミットETHへの1.5倍プレミアム乗数は実証的根拠なく任意に設定',
@@ -29572,8 +29572,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             metcalfe: { name: "Metcalfe's Law", formula: 'Coef × TVL^Exp ÷ Supply', reliability: 2 },
             dcf: { name: 'DCF (Staking)', formula: 'Price × (1+APR) ÷ (Discount - Growth)', reliability: 2 },
             l2Ecosystem: { name: 'L2 Ecosystem', formula: '(TVL + L2×Weight) × Multiple ÷ Supply', reliability: 1 },
-            ps: { name: 'P/S Ratio (25x)', formula: '(L1Fees + BlobFees) × 365 × PSRatio ÷ Supply', reliability: 2 },
-            revenueYield: { name: 'Fee Yield', formula: '(L1Fees + BlobFees) × 365 ÷ APR ÷ Supply', reliability: 3 },
+            ps: { name: 'P/S Ratio (25x)', formula: '(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply', reliability: 2 },
+            revenueYield: { name: 'Fee Yield', formula: '(Burned L1 Fees + Burned Blob Fees) × 365 ÷ APR ÷ Supply', reliability: 3 },
             commitmentPremium: { name: 'Liquidity Premium', formula: 'Price × √(Supply ÷ Liquid Float)', reliability: 1 },
             appCapital: { name: 'App Capital', formula: 'AppCapital ÷ Supply', reliability: 2 },
             validatorEcon: { name: 'Validator Economics', formula: 'Price × (Target ÷ APR)', reliability: 2 },
