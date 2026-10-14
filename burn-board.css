@@ -1,0 +1,33 @@
+/* ETHval — Live burn counter + leaderboard (burn-board.js), section 02.3. Box chrome reuses .mc-box, table reuses .csx-table. */
+.bbx-outer { grid-column: 1 / -1; margin-top: 6px; }
+.bbx-meta { font-variant-numeric: tabular-nums; }
+.bbx-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bbx-kpi { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.bbx-kpi small { display: block; font-size: 12px; color: var(--text-muted); }
+.bbx-kpi b { display: block; font-size: 18px; font-weight: 600; color: #f97316; font-variant-numeric: tabular-nums; white-space: nowrap; margin-top: 2px; }
+.bbx-kpi span { display: block; font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.bbx-asof { margin-top: 6px; font-variant-numeric: tabular-nums; }
+.bbx-hd { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.bbx-hd .mc-h { margin-bottom: 6px; }
+.bbx-tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+.bbx-tab { font: inherit; font-size: 12px; min-height: 32px; min-width: 52px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
+.bbx-tab.active { background: var(--text); color: var(--bg-card); border-color: var(--text); }
+.bbx-table th:first-child { width: 36px; text-align: left; padding-left: 0; }
+.bbx-table thead th:nth-child(2) { text-align: left; }
+.bbx-table th:nth-child(2) { width: auto; }
+.bbx-table th:nth-child(3), .bbx-table th:nth-child(4) { width: 22%; }
+.bbx-table td.bbx-rank { text-align: left; padding-left: 0; color: var(--text-muted); font-size: 13px; }
+.bbx-table tbody th { text-align: left; min-width: 0; }
+.bbx-table tbody th b { display: block; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bbx-table tbody th b a { color: var(--text); text-decoration: none; }
+.bbx-table tbody th b a:hover { text-decoration: underline; }
+.bbx-table tbody th small { display: block; font-size: 12px; font-weight: 400; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bbx-bar { display: block; height: 3px; margin: 4px 0 0 auto; border-radius: 2px; background: #f97316; opacity: 0.7; }
+.bbx-src a { color: var(--text-muted); text-decoration: underline; }
+html[lang="ja"] #burn-board *, html[lang="zh"] #burn-board * { word-break: normal; overflow-wrap: break-word; }
+@media (max-width: 600px) {
+  .bbx-kpis { gap: 6px; }
+  .bbx-kpi { padding: 8px; }
+  .bbx-kpi b { font-size: 15px; }
+  .bbx-table th:first-child { width: 24px; }
+}
