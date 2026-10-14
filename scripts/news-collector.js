@@ -129,19 +129,19 @@ For each event output:
  horizon: immediate|short|structural
  metrics: 1-3 of ${METRICS.join('|')} that this event moves first
  confidence: 0..1 your confidence in the direction call
- title: {en,ko,zh,ja} concise headline (<=70 chars each; Korean in natural plain language)
+ title: {en,ko,zh,ja} concise headline (<=70 chars each; Korean in natural plain language, Hangul only — never Japanese kana or Chinese characters in "ko")
  summary: {en,ko,zh,ja} one sentence of what happened
  mechanism: {en,ko,zh,ja} one short causal chain from event -> metric -> ETH price, using arrows (e.g. "ETF inflow ↑ → exchange reserve ↓ → sell pressure ↓ → price +")
  source_idx: array of indices of the headlines used
 Only include events with real price relevance. Quality over quantity. Return JSON {"events":[...]}.`;
 
-async function llm(user) {
+async function llm(user, system = SYSTEM) {
     if (OPENAI_API_KEY) {
         try {
             const r = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-                body: JSON.stringify({ model: MODEL, max_completion_tokens: 16000, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: user }] }),
+                body: JSON.stringify({ model: MODEL, max_completion_tokens: 16000, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }),
                 signal: AbortSignal.timeout(300000)
             });
             if (!r.ok) throw new Error(`HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
@@ -155,7 +155,7 @@ async function llm(user) {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: HAIKU, max_tokens: 16000, system: SYSTEM, messages: [{ role: 'user', content: user + '\nReturn only the JSON object.' }] }),
+        body: JSON.stringify({ model: HAIKU, max_tokens: 16000, system, messages: [{ role: 'user', content: user + '\nReturn only the JSON object.' }] }),
         signal: AbortSignal.timeout(300000)
     });
     if (!r.ok) throw new Error(`Haiku HTTP ${r.status}`);
@@ -168,11 +168,25 @@ function parseJson(t) {
     return JSON.parse(t.slice(s, e + 1));
 }
 
-function validEvent(ev) {
-    const L = (o) => o && typeof o === 'object' && o.en && o.ko;
-    return ev && /^\d{4}-\d{2}-\d{2}$/.test(ev.date) && CATEGORIES.includes(ev.category)
-        && [-1, 0, 1].includes(+ev.direction) && [1, 2, 3].includes(+ev.impact) && L(ev.title) && L(ev.mechanism);
+// Each language field must actually be written in that script (10-14: Japanese text landed in title.ko, and 清算 inside a Korean chain).
+const KANA = /[\u3040-\u30ff]/;
+const HAN = /[\u4e00-\u9fff]/;
+const HANGUL = /[\uac00-\ud7a3]/;
+function langOk(o) {
+    if (!o || typeof o !== 'object' || !o.en || !o.ko) return false;
+    if (!HANGUL.test(o.ko) || KANA.test(o.ko) || HAN.test(o.ko)) return false;
+    if (KANA.test(o.en) || HAN.test(o.en) || HANGUL.test(o.en)) return false;
+    if (o.zh && (KANA.test(o.zh) || HANGUL.test(o.zh))) return false;
+    if (o.ja && HANGUL.test(o.ja)) return false;
+    return true;
 }
+
+function validEvent(ev) {
+    return ev && /^\d{4}-\d{2}-\d{2}$/.test(ev.date) && CATEGORIES.includes(ev.category)
+        && [-1, 0, 1].includes(+ev.direction) && [1, 2, 3].includes(+ev.impact) && langOk(ev.title) && langOk(ev.mechanism)
+        && (!ev.summary || langOk(ev.summary));
+}
+if (typeof module !== 'undefined') module.exports = { langOk, validEvent };
 
 async function classifyWindow(heads, existing) {
     if (!heads.length) return [];
@@ -223,7 +237,42 @@ async function existingEvents(from, to) {
 const iso = (d) => d.toISOString().slice(0, 10);
 const addDays = (s, n) => iso(new Date(new Date(s).getTime() + n * 86400000));
 
+// --repair-lang: re-translate stored events whose language fields are in the wrong script.
+const REPAIR_SYSTEM = `You fix multilingual fields of crypto news events. For each item you get the English text of each field.
+Return JSON {"items":[{"n":<number>,"title":{"en","ko","zh","ja"},"summary":{...}|null,"mechanism":{...}}]}.
+Rules: keep "en" exactly as given. "ko" must be natural plain Korean in Hangul only (no Japanese kana, no Chinese characters; Latin tickers like ETH/ETF/L1 allowed).
+"zh" Simplified Chinese, "ja" Japanese. Keep arrows (→ ↑ ↓) and the same causal chain in mechanism. title <= 70 chars.`;
+
+async function repairLang() {
+    const since = addDays(iso(new Date()), -400);
+    const rows = await sb(`news_events?select=id,title,summary,mechanism&date=gte.${since}&limit=2000`);
+    const bad = rows.filter(e => !langOk(e.title) || !langOk(e.mechanism) || (e.summary && !langOk(e.summary)));
+    console.log(`🔧 mixed-language events: ${bad.length}/${rows.length}`);
+    let fixed = 0;
+    for (let i = 0; i < bad.length; i += 10) {
+        const chunk = bad.slice(i, i + 10);
+        const user = chunk.map((e, k) => `${k + 1}. title.en: ${e.title?.en}\n   summary.en: ${e.summary?.en || '(none)'}\n   mechanism.en: ${e.mechanism?.en}`).join('\n');
+        let items = [];
+        try { items = parseJson((await llm(user, REPAIR_SYSTEM)).text).items || []; } catch (err) { console.log(`  ⚠️ repair chunk ${i}: ${err.message}`); process.exitCode = 1; continue; }
+        for (const it of items) {
+            const e = chunk[+it.n - 1];
+            if (!e) continue;
+            const patch = { title: { ...it.title, en: e.title.en }, mechanism: { ...it.mechanism, en: e.mechanism.en } };
+            if (e.summary) patch.summary = it.summary ? { ...it.summary, en: e.summary.en } : e.summary;
+            if (!langOk(patch.title) || !langOk(patch.mechanism) || (patch.summary && !langOk(patch.summary))) { console.log(`  ✗ still mixed: ${e.id}`); process.exitCode = 1; continue; }
+            if (DRY) { console.log(`  [dry] ${e.id} ko="${patch.title.ko}"`); fixed++; continue; }
+            await sb(`news_events?id=eq.${encodeURIComponent(e.id)}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(patch) });
+            console.log(`  ✓ ${e.id} ko="${patch.title.ko}"`);
+            fixed++;
+        }
+        const missed = chunk.filter((e, k) => !items.some(it => +it.n === k + 1));
+        if (missed.length) { console.log(`  ⚠️ model skipped ${missed.length}: ${missed.map(e => e.id).join(', ')}`); process.exitCode = 1; }
+    }
+    console.log(`✅ repaired ${fixed}/${bad.length}`);
+}
+
 async function main() {
+    if (args.includes('--repair-lang')) return repairLang();
     const today = iso(new Date());
     const windows = [];
     if (BACKFILL_DAYS > 0) {
@@ -254,4 +303,4 @@ async function main() {
     console.log(`✅ news events written: ${total}`);
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });

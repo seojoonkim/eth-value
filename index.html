@@ -10054,7 +10054,8 @@
             box-shadow: 0 8px 32px rgba(90, 61, 196, 0.5);
         }
         
-        .floating-action-badge.hidden {
+        .floating-action-badge.hidden,
+        .floating-action-badge.fab-yield {
             opacity: 0;
             pointer-events: none;
             transform: translateY(20px);
@@ -15381,15 +15382,15 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     </div>
                     <div class="price-stats">
                         <div class="price-stat">
-                            <span class="price-stat-label">Market Cap</span>
+                            <span class="price-stat-label" data-i18n="price.marketCap">Market Cap</span>
                             <span class="price-stat-value" id="market-cap">$--</span>
                         </div>
                         <div class="price-stat">
-                            <span class="price-stat-label">24h Volume</span>
+                            <span class="price-stat-label" data-i18n="price.volume24h">24h Volume</span>
                             <span class="price-stat-value" id="volume-24h">$--</span>
                         </div>
                         <div class="price-stat">
-                            <span class="price-stat-label">ATH</span>
+                            <span class="price-stat-label" data-i18n="price.ath">ATH</span>
                             <span class="price-stat-ath">
                                 <span class="price-stat-value" id="ath">$--</span>
                                 <span class="price-stat-tag down" id="from-ath">--</span>
@@ -15810,7 +15811,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     <div class="metric-footer">
                         <span>Beaconcha.in</span>
                         <span class="change" id="issuance-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.issuance">New ETH issued to L1 validators. ~930 ETH/day post-merge.</div>
+                        <div class="metric-desc" data-i18n="desc.issuance">New ETH issued to L1 validators per day. It rises as more ETH is staked.</div>
                     </div>
                 </div>
 
@@ -17868,6 +17869,43 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             if (overlay) {
                 overlay.style.display = 'none';
             }
+        })();
+        
+        // Floating login/rate badge yields when it would cover a tappable control or the footer
+        // (Argon audit 10-14: on 390px it sat on top of the Share button's right edge).
+        (function () {
+            let raf = 0;
+            function check() {
+                raf = 0;
+                const fab = document.getElementById('floating-action-badge');
+                if (!fab || fab.classList.contains('hidden')) return;
+                const r = fab.getBoundingClientRect();
+                const pad = 0;
+                const dy = fab.classList.contains('fab-yield') ? 20 : 0; // undo the yield translateY so the test box is stable
+                const box = { l: r.left - pad, r: r.right + pad, t: r.top - dy - pad, b: r.bottom - dy + pad };
+                if (r.width === 0) { fab.classList.remove('fab-yield'); return; }
+                let covered = false;
+                // keep the call-to-action visible on first view (community_badge_check requires it at page top)
+                if (window.scrollY < 120) { fab.classList.remove('fab-yield'); return; }
+                const footer = document.querySelector('footer.footer');
+                if (footer && footer.getBoundingClientRect().top < box.b) covered = true;
+                if (!covered) {
+                    // sample points strictly inside the badge: only yield when a control is really underneath it
+                    const xs = [box.l + 10, (box.l + box.r) / 2, box.r - 10], ys = [box.t + 6, (box.t + box.b) / 2, box.b - 6];
+                    const pts = xs.flatMap(x => ys.map(y => [x, y]));
+                    fab.style.visibility = 'hidden';
+                    for (const [x, y] of pts) {
+                        const el = document.elementFromPoint(Math.max(0, x), Math.max(0, y));
+                        if (el && el.closest('button, a, input, select, [role="button"]') && !fab.contains(el)) { covered = true; break; }
+                    }
+                    fab.style.visibility = '';
+                }
+                fab.classList.toggle('fab-yield', covered);
+            }
+            const queue = () => { if (!raf) raf = requestAnimationFrame(check); };
+            window.addEventListener('scroll', queue, { passive: true });
+            window.addEventListener('resize', queue);
+            window.__fabYieldCheck = check;
         })();
         
         function updateGatedAccess() {
@@ -20533,7 +20571,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'summary.posts': 'posts',
                 'summary.likes': 'likes',
                 'summary.recentParticipants': 'Recent',
-                'share.button': 'Share',
+                'share.button': 'Share', 'price.marketCap': 'Market Cap', 'price.volume24h': '24h Volume', 'price.ath': 'ATH',
                 'share.modalTitle': 'Share Your Analysis',
                 'share.postToX': 'Post to 𝕏',
                 'share.download': 'Download Image',
@@ -20812,7 +20850,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'desc.feargreed': "Market sentiment index (0-100). Extreme fear often = buying opportunity.",
                 'desc.gasUtil': "% of L1 block gas limit used. High utilization = strong network demand.",
                 'desc.burn': "ETH burned via EIP-1559 on L1. Higher burn = more mainnet activity.",
-                'desc.issuance': "New ETH issued to L1 validators. ~930 ETH/day post-merge.",
+                'desc.issuance': "New ETH issued to L1 validators per day. It rises as more ETH is staked.",
                 'desc.netSupply': "L1 burn minus issuance. Negative = deflationary, bullish for ETH value.",
                 'desc.gasPrice': "Average L1 gas price in Gwei. Reflects mainnet transaction costs.",
                 'desc.blobFees': "L2 data posting fees since Dencun upgrade (Mar 2024). Blob fees are burned like gas, contributing to L1 revenue.",
@@ -21029,7 +21067,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'summary.posts': '개 글',
                 'summary.likes': '개 좋아요',
                 'summary.recentParticipants': '최근',
-                'share.button': '공유',
+                'share.button': '공유', 'price.marketCap': '시가총액', 'price.volume24h': '24시간 거래량', 'price.ath': '역대 최고가',
                 'share.modalTitle': '분석 결과 공유하기',
                 'share.postToX': '𝕏에 포스트',
                 'share.download': '이미지 다운로드',
@@ -21306,7 +21344,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'desc.feargreed': "시장 심리 지수 (0-100). 극단적 공포 = 매수 기회.",
                 'desc.gasUtil': "L1 블록 가스 한도 사용률. 높으면 네트워크 수요 강함.",
                 'desc.burn': "L1에서 EIP-1559로 소각된 ETH. 높을수록 네트워크 활동 활발.",
-                'desc.issuance': "L1 검증자에게 발행된 신규 ETH. 머지 후 일 ~930 ETH.",
+                'desc.issuance': "L1 검증자에게 하루 동안 새로 발행된 ETH. 스테이킹된 ETH가 늘수록 함께 늘어나.",
                 'desc.netSupply': "L1 소각 - 발행. 음수 = 디플레이션, ETH 가치 상승 요인.",
                 'desc.gasPrice': "L1 평균 가스 가격 (Gwei). 네트워크 트랜잭션 비용 반영.",
                 'desc.blobFees': "Dencun 업그레이드(2024.3) 이후 L2가 이더리움에 데이터를 올릴 때 내는 수수료. 가스처럼 소각되어 L1 수익에 기여.",
@@ -21518,7 +21556,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'summary.votes': '次评价',
                 'summary.commentsLabel': '条评论',
                 'summary.recentParticipants': '最近',
-                'share.button': '分享',
+                'share.button': '分享', 'price.marketCap': '市值', 'price.volume24h': '24小时成交量', 'price.ath': '历史最高价',
                 'share.modalTitle': '分享您的分析',
                 'share.postToX': '发布到 𝕏',
                 'share.download': '下载图片',
@@ -21794,7 +21832,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'desc.feargreed': "市场情绪指数(0-100)。极度恐惧=买入机会。",
                 'desc.gasUtil': "L1区块Gas使用率。高=主网需求强劲。",
                 'desc.burn': "L1上EIP-1559销毁的ETH。越高=网络活动越多。",
-                'desc.issuance': "发放给L1验证者的新ETH。合并后约930 ETH/天。",
+                'desc.issuance': "每天发放给L1验证者的新ETH，随质押量增加而增加。",
                 'desc.netSupply': "L1销毁-发行。负数=通缩，利好ETH价值。",
                 'desc.gasPrice': "L1平均Gas价格(Gwei)。反映网络交易成本。",
                 'desc.blobFees': "Dencun升级(2024.3)以来L2向以太坊发布数据的费用。blob费用像gas一样被销毁，贡献L1收入。",
@@ -22011,7 +22049,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'summary.votes': '件の評価',
                 'summary.commentsLabel': '件のコメント',
                 'summary.recentParticipants': '最近',
-                'share.button': 'シェア',
+                'share.button': 'シェア', 'price.marketCap': '時価総額', 'price.volume24h': '24時間出来高', 'price.ath': '過去最高値',
                 'share.modalTitle': '分析結果をシェア',
                 'share.postToX': '𝕏に投稿',
                 'share.download': '画像をダウンロード',
@@ -22287,7 +22325,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'desc.feargreed': "市場センチメント指数(0-100)。極度の恐怖＝買い機会。",
                 'desc.gasUtil': "L1ブロックGas使用率。高い＝メインネット需要強。",
                 'desc.burn': "L1でEIP-1559により焼却されたETH。高い＝活動活発。",
-                'desc.issuance': "L1バリデーターへの新規発行ETH。マージ後約930 ETH/日。",
+                'desc.issuance': "L1バリデーターに1日で新規発行されたETH。ステーキング量が増えるほど増える。",
                 'desc.netSupply': "L1焼却-発行。マイナス＝デフレ、ETH価値上昇要因。",
                 'desc.gasPrice': "L1平均ガス価格(Gwei)。ネットワーク取引コストを反映。",
                 'desc.blobFees': "Dencunアップグレード(2024.3)以降、L2がイーサリアムにデータを投稿する際の手数料。ガスのようにバーンされL1収益に貢献。",
@@ -22825,7 +22863,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
         // State
         const state = {
             price: 0, marketCap: 0, volume24h: 0, circulatingSupply: 0,
-            ath: 4878, athChangePercent: 0, // ATH default value
+            ath: 4946.05, athChangePercent: 0, // ATH default (CoinGecko intraday ATH 2025-08-24; refreshed by API / max daily close)
             tvl: 0, stakedEth: 0, l2Tvl: 0, dexVolume: 0, fees: 0, stablecoins: 0,
             priceHistory: [], volumeHistory: [], tvlHistory: [], stakingHistory: [], l2History: [],
             dexHistory: [], feesHistory: [], stablesHistory: [],
@@ -23304,6 +23342,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                             mirror: false,
                             callback: function(value) {
                                 if (yAxisFormat === 'pct') return value.toFixed(0) + '%';
+                                if (yAxisFormat === 'pct2') return value.toFixed(2) + '%';
                                 if (yAxisFormat === 'ratio') return value.toFixed(3);
                                 if (yAxisFormat === 'eth') {
                                     if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
@@ -23443,7 +23482,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 const langSuffix = currentLang !== 'en' ? `_${currentLang}` : '';
                 
                 // 오늘 또는 최근 해설 가져오기
-                const res = await (window.__ethvalCommentaryReq = window.__ethvalCommentaryReq || fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=date,section_key,commentary,commentary_ko,commentary_zh,commentary_ja,scores&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
+                const res = await (window.__ethvalCommentaryReq = window.__ethvalCommentaryReq || fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=date,section_key,commentary,commentary_ko,commentary_zh,commentary_ja,scores,created_at,updated_at&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
                     headers: {
                         'apikey': SUPABASE_CONFIG.anonKey,
                         'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
@@ -23716,26 +23755,28 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                         const localeMap = { ko: 'ko-KR', zh: 'zh-CN', ja: 'ja-JP', en: 'en-US' };
                         const locale = localeMap[currentLang] || 'en-US';
                         
-                        // updated_at 사용 (재생성 시 업데이트됨), 없으면 created_at 사용
-                        const timestamp = commentary.updated_at || commentary.created_at;
+                        // updated_at 사용 (재생성 시 업데이트됨), 없으면 created_at, 그것도 없으면 date 사용
+                        const timestamp = commentary.updated_at || commentary.created_at || commentary.date;
                         const commentDate = new Date(timestamp);
+                        const validDate = !isNaN(commentDate.getTime());
                         
                         // 사용자 로컬 시간대로 표시
-                        const dateStr = commentDate.toLocaleDateString(locale, { 
+                        const dateStr = validDate ? commentDate.toLocaleDateString(locale, { 
                             month: 'numeric', 
                             day: 'numeric'
-                        });
-                        const timeStr = commentDate.toLocaleTimeString(locale, { 
+                        }) : '';
+                        const timeStr = validDate && (commentary.updated_at || commentary.created_at) ? commentDate.toLocaleTimeString(locale, { 
                             hour: '2-digit', 
                             minute: '2-digit', 
                             hour12: false 
-                        });
+                        }) : '';
+                        const stampStr = [dateStr, timeStr].filter(Boolean).join(' ');
                         
                         el.innerHTML = `
                             <div class="ai-commentary-header"></div>
                             <div class="ai-commentary-text">${formattedCommentary}</div>
                             <div class="ai-commentary-footer">
-                                ${i18nText.label} · ${dateStr} ${timeStr} · ${i18nText.by} Claude Haiku
+                                ${i18nText.label}${stampStr ? ' · ' + stampStr : ''} · ${i18nText.by} Claude Haiku
                             </div>
                         `;
                         el.classList.remove('loading');
@@ -25569,6 +25610,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 // ATH 데이터 처리 (null check)
                 if (md.ath && md.ath.usd) {
                     state.ath = md.ath.usd;
+                    state.athFromApi = true;
                     state.athChangePercent = md.ath_change_percentage?.usd || 0;
                     
                     const athEl = document.getElementById('ath');
@@ -29195,6 +29237,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
 
             // yAxisFormat for chart Y-axis
             const yAxisFormat = (key === 'commitmentRatio') ? 'pct' 
+                : (key === 'stakingApr') ? 'pct2'
                 : (key === 'staking' || key === 'ethInDefi') ? 'eth' 
                 : null;
 
@@ -30670,6 +30713,11 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                             .map(d => ({ date: d.date, value: d.volume }));
                         log(`   Volume from Supabase: ${state.volumeHistory.length} points`);
                     }
+                    // 실시간 거래량이 없으면(CoinGecko 차단) 수집된 최근 일 거래량을 표시 — '$--'로 남지 않게
+                    if (!state.volume24h && state.volumeHistory?.length) {
+                        const lastVol = state.volumeHistory[state.volumeHistory.length - 1].value;
+                        if (lastVol > 0) { state.volume24h = lastVol; setEl('volume-24h', fmt.usd(lastVol)); }
+                    }
                 } else if (state.supabasePriceHistory?.length > 0) {
                     // Supabase 데이터가 있지만 부족 - Binance에서 보충 필요
                     log(`   Price: Supabase insufficient (${state.supabasePriceHistory.length} points), will fetch from Binance`);
@@ -30697,9 +30745,14 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     // current-price, summary-current-price는 실시간 API에서 업데이트하므로 여기서 설정하지 않음
                     setEl('market-cap', '$' + (state.marketCap / 1e9).toFixed(0) + 'B');
                     
-                    // ATH 표시 (기본값 또는 CoinGecko 값)
+                    // ATH 표시 (CoinGecko 값 우선. CoinGecko가 막히면 수집된 일별 종가 최고값을 사용 —
+                    // 2026-10-14: 예전엔 하드코딩 4878이 남아 화면마다 ATH가 $4,878 / $4,946.1로 갈렸음)
+                    if (!state.athFromApi && state.supabasePriceHistory?.length) {
+                        const histMax = state.supabasePriceHistory.reduce((m, d) => (d.value > m ? d.value : m), 0);
+                        if (histMax > state.ath) state.ath = histMax; // 일 종가 최고가 장중 ATH보다 낮으므로 더 클 때만 갱신
+                    }
                     if (state.ath > 0) {
-                        setEl('ath', '$' + state.ath.toLocaleString(undefined, {maximumFractionDigits: 0}));
+                        setEl('ath', fmt.price(state.ath));
                         const athChange = ((state.price - state.ath) / state.ath) * 100;
                         const fromAthEl = document.getElementById('from-ath');
                         if (fromAthEl) {
@@ -33975,7 +34028,7 @@ Check out ETHval 👇`;
                     html += '<div class="sim-breakdown-item">' +
                         '<span class="sim-breakdown-name"><span class="sim-breakdown-dot" style="background:' + item.color + '"></span><span>' + item.name + '</span></span>' +
                         '<span><span class="sim-breakdown-val">' + formatPrice(item.sim) + '</span>' +
-                        '<span class="sim-breakdown-chg ' + cc + '">' + (Math.abs(item.chg) < 0.5 ? '0%' : (item.chg > 0 ? '+' : '') + item.chg.toFixed(0) + '%') + '</span></span>' +
+                        '<span class="sim-breakdown-chg ' + cc + '">' + (Math.abs(item.chg) < 0.5 ? '' : '(' + (item.chg > 0 ? '+' : '−') + Math.abs(item.chg).toFixed(0) + '%)') + '</span></span>' +
                         '</div>';
                 }
                 grid.innerHTML = html;
@@ -36769,7 +36822,7 @@ Check out ETHval 👇`;
         new MutationObserver(relabel).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     })();
     </script>
-    <script src="news-impact.js?v=20261014a" defer></script>
+    <script src="news-impact.js?v=20261015a" defer></script>
     <script src="ethval-extras.js?v=20261014d" defer></script>
     <script src="valuation-dist.js?v=20261013b" defer></script>
     <script src="fv-band.js?v=20261014b" defer></script>
