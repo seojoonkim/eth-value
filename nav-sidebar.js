@@ -35,6 +35,11 @@
     ' body.has-sb .recent-participants-avatars{min-width:0}',
     ' body.has-sb .summary-opportunity-wrapper{flex-wrap:wrap;justify-content:flex-end;row-gap:6px;overflow:visible}',  /* narrower body: "Undervalued" badge must not clip */
     ' body.has-sb .recent-participants-avatars img:not(:first-child){margin-left:-15px}',  /* body is ' + W + 'px narrower: 10 avatars + more must fit the community box */
+    /* With the rail the body is ~980px: three summary columns read cramped, so price | news side by side and the
+       intro text spans both columns underneath (text left, community + share/CTA right). */
+    ' body.has-sb #valuation .summary-layout{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}',
+    ' body.has-sb #valuation .summary-description{grid-column:1/-1;display:block;columns:2;column-gap:32px;padding-top:8px}',
+    ' body.has-sb #valuation .summary-description>*{break-inside:avoid;margin-top:0}',
     ' .sb{position:fixed;left:0;top:0;bottom:0;width:' + W + 'px;z-index:9000;display:flex;flex-direction:column;',
     '  background:#eceef2;border-right:1px solid #d5d9e0;box-sizing:border-box}',
     ' body.dark .sb{background:#050608;border-right-color:#22262d}',

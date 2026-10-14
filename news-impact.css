@@ -314,7 +314,7 @@
    #section-valuation is the second half of 01 Valuation, so it gets no rule.
    Selectors carry `body` so they outrank the inline <style> blocks that load after this file. */
 body .section .section-title::before { content: none; }
-body .section[id]:not(#valuation):not(#section-valuation) { border-top: 1px solid var(--border); padding-top: 32px; margin-top: 16px; }
+body .section[id]:not(#valuation):not(#section-valuation) { border-top: 1px solid var(--border); padding-top: 64px; margin-top: 88px; }  /* margin collapses with the previous section's 48px bottom margin → ~88px above the line, 64px below */
 body .section .section-header { margin-top: 0; padding-top: 0; }
 body .section .section-title { flex-direction: column; align-items: flex-start; gap: 0; font-size: 44px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); line-height: 1.15; }
 body .section .section-title > :first-child::before {
