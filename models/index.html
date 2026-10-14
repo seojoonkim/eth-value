@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 ETH valuation models | ETHval</title>
+<meta name="description" content="The 12 models ETHval averages into its composite ETH fair value — value, formula and constants for each.">
+<link rel="canonical" href="https://ethval.com/models/">
+<link rel="alternate" hreflang="en" href="https://ethval.com/models/">
+<link rel="alternate" hreflang="ko" href="https://ethval.com/models/ko/">
+<link rel="alternate" hreflang="zh-Hans" href="https://ethval.com/models/zh/">
+<link rel="alternate" hreflang="ja" href="https://ethval.com/models/ja/">
+<link rel="alternate" hreflang="x-default" href="https://ethval.com/models/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="12 ETH valuation models | ETHval">
+<meta property="og:description" content="The 12 models ETHval averages into its composite ETH fair value — value, formula and constants for each.">
+<meta property="og:url" content="https://ethval.com/models/">
+<meta property="og:site_name" content="ETHval">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='8' fill='%237c3aed'/><path d='M14 5.5 L20 14 L14 22.5 L8 14 Z M8 14 L14 17.2 L20 14 M14 17.2 L14 22.5' fill='none' stroke='white' stroke-width='1.8' stroke-linejoin='round'/></svg>">
+<style>:root{--bg:#0b0b12;--card:#14141f;--line:#262636;--tx:#ececf3;--mu:#a3a3b8;--ac:#a78bfa;--pos:#34d399;--neg:#f87171}
+@media (prefers-color-scheme:light){:root{--bg:#f7f7fb;--card:#fff;--line:#e3e3ec;--tx:#16161f;--mu:#55556a;--ac:#6d28d9;--pos:#047857;--neg:#b91c1c}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Hiragino Sans","PingFang SC",sans-serif;word-break:keep-all;overflow-wrap:anywhere}
+a{color:var(--ac)}.w{max-width:880px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin-bottom:20px}
+.brand{font-weight:800;font-size:20px;text-decoration:none;color:var(--tx)}.brand b{color:var(--ac)}
+.langs{display:flex;gap:6px;flex-wrap:wrap}.langs a{font-size:14px;padding:4px 10px;border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--mu)}.langs a[aria-current]{color:var(--tx);border-color:var(--ac)}
+.crumb{font-size:14px;color:var(--mu);margin:0 0 6px}.crumb a{color:var(--mu)}
+h1{font-size:28px;line-height:1.25;margin:0 0 16px}h2{font-size:20px;margin:28px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 14px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.kpi span{display:block;font-size:14px;color:var(--mu)}.kpi b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.pos{color:var(--pos)}.neg{color:var(--neg)}.meta{font-size:14px;color:var(--mu);margin:10px 0 0}
+code,.f{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px}.f{display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+table{width:100%;border-collapse:collapse;font-size:15px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mu);font-weight:600;white-space:nowrap}td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+td.k{white-space:nowrap}td.k code{font-size:13px}td.x code{font-size:13px;overflow-wrap:anywhere}
+.sw{position:relative;padding:0 0 24px 70px}.spark{width:100%;height:200px;display:block}.spark .g{stroke:var(--line);stroke-width:1}.spark path{fill:none;stroke-width:2}.spark .v{stroke:var(--ac)}.spark .p{stroke:var(--mu);stroke-width:1.5;opacity:.7}
+.yl,.xl{position:absolute;font-size:12px;line-height:16px;color:var(--mu);font-variant-numeric:tabular-nums;white-space:nowrap}.yl{left:0;width:64px;text-align:right}.xl{bottom:0;left:70px}.xl.r{left:auto;right:0}
+.btn{display:inline-block;background:var(--ac);color:#fff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:10px;margin-top:6px}
+@media (prefers-color-scheme:light){.btn{color:#fff}}
+ul.ml{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}ul.ml a{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--tx);background:var(--card)}ul.ml small{display:block;color:var(--mu);font-size:14px}
+ul.refs{padding-left:20px}footer{margin-top:32px;font-size:14px;color:var(--mu)}
+@media (max-width:560px){h1{font-size:24px}.kpis{grid-template-columns:1fr}.kpi b{font-size:22px}}</style>
+</head>
+<body>
+<div class="w">
+<header><a class="brand" href="../">ETH<b>val</b></a><nav class="langs" aria-label="Language"><a href="https://ethval.com/models/" hreflang="en" lang="en" aria-current="page">English</a><a href="https://ethval.com/models/ko/" hreflang="ko" lang="ko">한국어</a><a href="https://ethval.com/models/zh/" hreflang="zh-Hans" lang="zh">中文</a><a href="https://ethval.com/models/ja/" hreflang="ja" lang="ja">日本語</a></nav></header>
+<p class="crumb"><a href="../">Dashboard</a></p>
+<h1>12 ETH valuation models</h1>
+<p>Each page shows one model: its value on the last complete day, the formula, the constants it uses and its one-year history.</p>
+<ul class="ml"><li><a href="tvl-multiple.html" data-model="tvlMultiple">TVL Multiple<small>Fair value $2,882 · 2026-10-13</small></a></li><li><a href="staking-scarcity.html" data-model="stakingScarcity">Staking Scarcity<small>Fair value $2,952 · 2026-10-13</small></a></li><li><a href="metcalfe.html" data-model="metcalfe">Metcalfe's Law<small>Fair value $5,840 · 2026-10-13</small></a></li><li><a href="staking-dcf.html" data-model="dcf">Staking DCF<small>Fair value $7,494 · 2026-10-13</small></a></li><li><a href="l2-ecosystem.html" data-model="l2Ecosystem">L2 Ecosystem<small>Fair value $3,249 · 2026-10-13</small></a></li><li><a href="price-to-sales.html" data-model="ps">P/S Ratio (25x)<small>Fair value $4.55 · 2026-10-13</small></a></li><li><a href="fee-yield.html" data-model="revenueYield">Fee Yield<small>Fair value $8.08 · 2026-10-13</small></a></li><li><a href="liquidity-premium.html" data-model="commitmentPremium">Liquidity Premium<small>Fair value $3,551 · 2026-10-13</small></a></li><li><a href="app-capital.html" data-model="appCapital">App Capital<small>Fair value $4,252 · 2026-10-13</small></a></li><li><a href="validator-economics.html" data-model="validatorEcon">Validator Economics<small>Fair value $6,661 · 2026-10-13</small></a></li><li><a href="eth-monetary.html" data-model="ethMonetary">ETH Monetary (MV=PQ)<small>Fair value $2,477 · 2026-10-13</small></a></li><li><a href="ecosystem-settlement.html" data-model="ecosystemSettlement">Ecosystem Settlement (MV=PQ)<small>Fair value $16,383 · 2026-10-13</small></a></li></ul>
+<p class="meta">Built 2026-10-14 14:10 UTC from the stored daily data. Values are for 2026-10-13; the live value is on the dashboard.</p>
+<a class="btn" href="../#ratings">Open the live chart →</a>
+<footer>Model output, not investment advice. · <a href="../">ethval.com</a> · by Hashed</footer>
+</div>
+</body>
+</html>

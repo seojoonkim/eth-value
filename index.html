@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ETHval | Intrinsic Value Dashboard</title>
+    <meta name="description" content="ETHval: Ethereum intrinsic value dashboard — 12 valuation models averaged into one composite ETH fair value, with on-chain fundamentals and model history.">
+    <link rel="canonical" href="https://ethval.com/">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%238b5cf6'/><stop offset='1' stop-color='%236d28d9'/></linearGradient></defs><rect width='28' height='28' rx='8' fill='url(%23g)'/><path d='M14 5.5 L20 14 L14 22.5 L8 14 Z M8 14 L14 17.2 L20 14 M14 17.2 L14 22.5' fill='none' stroke='white' stroke-width='1.8' stroke-linejoin='round'/></svg>">
 
     <!-- Google Analytics -->
@@ -17492,7 +17494,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-brand">
-                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v1.0.0</span> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: var(--text-sm);">🔧 Admin</a>
+                by <strong>Hashed</strong> · <a href="https://x.com/simonkim_nft" target="_blank" style="color: inherit; text-decoration: none;">@simonkim_nft</a> · <span class="version-badge">v1.0.0</span> · <a id="footer-models-link" href="models/" style="color: inherit;">12 model pages</a> · <a href="admin.html" style="color: var(--text-muted); text-decoration: none; font-size: var(--text-sm);">🔧 Admin</a>
             </div>
             <!-- Live Visitors Counter: in the footer, not a fixed corner pill (2026-10-14: the 84px pill sat over table text in the 32px gutter at 1280) -->
             <div class="live-visitors" id="live-visitors">
@@ -17501,6 +17503,15 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 <span class="live-label">online</span>
             </div>
         </footer>
+        <script>
+            // Footer link to the static per-model pages (/models/, built by scripts/build-model-pages.cjs), in the page language.
+            (function () {
+                var a = document.getElementById('footer-models-link'); if (!a) return;
+                var T = { en: ['models/', '12 model pages'], ko: ['models/ko/', '모델별 페이지 12개'], zh: ['models/zh/', '12 个模型页面'], ja: ['models/ja/', 'モデル別ページ 12 個'] };
+                function set() { var l = (document.documentElement.lang || 'en').slice(0, 2); var v = T[l] || T.en; a.setAttribute('href', v[0]); a.textContent = v[1]; }
+                set(); new MutationObserver(set).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+            })();
+        </script>
     </div>
 
     <script>
