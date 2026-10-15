@@ -189,6 +189,8 @@ CHECKS=(
   "astra_p0b|astra_p0b_check|astra_p0b|$URL"
   # 2026-10-16: method card gap badge ("+401.5% Undervalued") stays inside its card (1280 en: 9 cards ran 31–55px out)
   "method_diff_clip|method_diff_clip_check|method_diff_clip|$URL"
+  # 2026-10-16: mobile tab row never cuts its first tab off the left (centred + overflow hid 'Valuation' at 360-430)
+  "navbar_clip|navbar_clip_check|navbar_clip|$URL"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '

@@ -14462,6 +14462,11 @@
         .nav-bar { padding-left: var(--page-gutter) !important; padding-right: var(--page-gutter) !important; }
         /* 2026-10-16 (F30): 리서치 탭이 더해져 모바일 탭이 6개 — 360에서도 한 줄에 다 보이도록 좁은 화면은 탭 좌우 여백만 줄임 */
         @media screen and (max-width: 400px) { .nav-bar .nav-item { padding-left: 6px !important; padding-right: 6px !important; } }
+        /* 2026-10-16 (Opus 다듬기): 가운데 정렬 + 넘침이면 첫 탭이 왼쪽 밖(스크롤로도 못 닿는 곳)으로 잘림
+           — 390 en에서 「Valuation」이 -18px부터 시작해 'aluation'으로 보였음. 넘칠 땐 왼쪽부터, 남으면 가운데. */
+        .nav-bar { justify-content: flex-start !important; }
+        .nav-bar > .nav-item:first-child { margin-left: auto; }
+        .nav-bar > .nav-item:last-child { margin-right: auto; }
 
         /* Simon 2026-10-13: refined ETHval mark — flat primary tile, line diamond with filled lower facet
            (no gradient, no glow; matches the flat CTA system). Wordmark: ETH in text colour, "val" in primary. */
