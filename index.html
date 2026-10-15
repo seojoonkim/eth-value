@@ -30056,6 +30056,14 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             
             // Note: chart-composite-value is now updated by renderHistoricalMainChart() 
             // and updateChartData() to match the chart's composite line
+
+            // 01.4 simulator "Current Fair Value" must follow every headline recompute. Cards re-render on the
+            // 120s price refresh / Phase-2 data / language switch, but only syncAllModelValuesFromDB() re-based
+            // the simulator, so it kept the previous price's composite (live 2026-10-15: 19/66 samples off by up
+            // to $0.3; 2026-10-14 02:40 off by $11.5 before 40c48f0). Rebase keeps the user's slider positions.
+            if (typeof window.updateSimulation === 'function') {
+                try { window.updateSimulation(); } catch (e) { console.warn('simulator rebase failed', e); }
+            }
         }
 
         // Price chart mini-tabs (in price-card)
