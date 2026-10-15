@@ -25,6 +25,8 @@
       chartH: 'P/Fees over time (each point = 30 days ending that day, log scale)',
       win: function (a, b) { return 'Window ' + a + ' ~ ' + b + ' (30 UTC days); market cap at ' + b + ' close.'; },
       defs: 'Fees and revenue use DefiLlama\u2019s own per-chain definitions. Fees = all transaction fees users pay (ETH also includes blob fees). Revenue = the part that is burned: ETH base + blob fees, SOL base fees. Bitcoin burns nothing, so its revenue is 0 and P/Revenue cannot be computed \u2014 that is a difference in design, not missing data. Annualised = 30-day sum \u00d7 365 \u00f7 30. If the source is missing even one day, every 30-day window that includes it is left out (a gap in the line), not estimated.',
+      gaps: function (list) { return 'Days missing at the source in this period: ' + list + ' \u2014 the line breaks for the 30 days after each.'; },
+      gapItem: function (n, k, last) { return n + ' days (' + k + (k === 1 ? ' stretch' : ' stretches') + ', last ' + last + ')'; },
       src: 'Sources: fees/revenue DefiLlama, market cap CoinGecko (collected twice a day, nothing filled in).',
       wait: 'Loading\u2026', err: 'Data unavailable'
     },
@@ -37,6 +39,8 @@
       chartH: '시간에 따른 P/Fees (각 점 = 그날까지 30일, 로그 눈금)',
       win: function (a, b) { return '기간 ' + a + ' ~ ' + b + ' (UTC 30일), 시가총액은 ' + b + ' 종가 기준.'; },
       defs: '수수료·매출은 DefiLlama가 체인마다 정한 정의를 그대로 써. 수수료 = 사용자가 낸 거래 수수료 전체(ETH는 blob 수수료 포함). 매출 = 그중 소각되는 부분: ETH는 기본 수수료+blob 수수료, SOL은 기본 수수료. 비트코인은 소각이 없어서 매출이 0이고 P/Revenue를 계산할 수 없어 \u2014 데이터가 빠진 게 아니라 설계가 다른 거야. 연환산 = 30일 합 \u00d7 365 \u00f7 30. 출처에 하루라도 빠진 날이 있으면 그날이 들어간 30일 구간은 추정하지 않고 비워 둬(선이 끊김).',
+      gaps: function (list) { return '이 기간 출처에 빠진 날: ' + list + ' \u2014 빠진 날 뒤 30일 동안 선이 끊겨.'; },
+      gapItem: function (n, k, last) { return n + '일(' + k + '구간, 마지막 ' + last + ')'; },
       src: '출처: 수수료·매출 DefiLlama, 시가총액 CoinGecko (하루 2번 수집, 빈 날은 채우지 않음).',
       wait: '불러오는 중\u2026', err: '데이터를 불러오지 못했어'
     },
@@ -49,6 +53,8 @@
       chartH: 'P/Feesの推移（各点＝その日までの30日、対数目盛）',
       win: function (a, b) { return '期間 ' + a + '～' + b + '（UTC 30日）、時価総額は' + b + '終値。'; },
       defs: '手数料・収益はDefiLlamaがチェーンごとに定めた定義をそのまま使用。手数料＝ユーザーが支払う取引手数料の全額（ETHはblob手数料を含む）。収益＝そのうちバーンされる分：ETHは基本手数料＋blob手数料、SOLは基本手数料。ビットコインはバーンがないため収益は0で、P/Revenueは計算できません（データ欠損ではなく設計の違い）。年換算＝30日合計×365÷30。出典に1日でも欠けた日があれば、その日を含む30日区間は推定せず空白にします（線が途切れます）。',
+      gaps: function (list) { return 'この期間に出典で欠けている日：' + list + '。欠けた日から30日間は線が途切れます。'; },
+      gapItem: function (n, k, last) { return n + '日（' + k + '区間、最終 ' + last + '）'; },
       src: '出典：手数料・収益 DefiLlama、時価総額 CoinGecko（1日2回収集、欠けた日は埋めない）。',
       wait: '読み込み中\u2026', err: 'データを取得できません'
     },
@@ -61,6 +67,8 @@
       chartH: 'P/Fees走势（每点＝截至当日的30天，对数刻度）',
       win: function (a, b) { return '区间 ' + a + ' ~ ' + b + '（UTC 30天），市值取' + b + '收盘。'; },
       defs: '手续费与收入沿用DefiLlama对各链的定义。手续费＝用户支付的全部交易费（ETH含blob费）。收入＝其中被销毁的部分：ETH为基础费＋blob费，SOL为基础费。比特币没有销毁，收入为0，无法计算P/Revenue——这是设计差异，不是数据缺失。年化＝30天合计×365÷30。来源缺少任何一天时，包含该日的30天区间不作估算而留空（曲线断开）。',
+      gaps: function (list) { return '此期间来源缺失的日期：' + list + '。缺失日之后30天曲线断开。'; },
+      gapItem: function (n, k, last) { return n + '天（' + k + '段，最后 ' + last + '）'; },
       src: '来源：手续费/收入 DefiLlama，市值 CoinGecko（每天采集两次，缺失日期不填补）。',
       wait: '加载中\u2026', err: '无法获取数据'
     }
@@ -135,6 +143,22 @@
     return out;
   }
 
+  // Days with no fees row between the first loaded day and `end`, per chain (counted, never filled).
+  function gapList(end) {
+    var first = Object.keys(S.fees.ethereum || {}).sort()[0]; if (!first) return [];
+    var out = [];
+    CH.forEach(function (c) {
+      var F = S.fees[c] || {}, n = 0, k = 0, last = null, prev = false;
+      for (var t = Date.parse(first + 'T00:00:00Z'); t <= Date.parse(end + 'T00:00:00Z'); t += DAY) {
+        var d = iso(t), miss = !(F[d] && F[d].f != null);
+        if (miss) { n++; last = d; if (!prev) k++; }
+        prev = miss;
+      }
+      if (n) out.push({ c: c, n: n, k: k, last: last });
+    });
+    return out;
+  }
+
   var root = null, lastKey = '';
   function render(force) {
     if (!root) return;
@@ -182,6 +206,8 @@
     var sp = el('p', 'csx-note rvx-src'); sp.appendChild(document.createTextNode(t.src + ' '));
     CH.forEach(function (c, i) { var a = el('a', null, 'DefiLlama ' + NAME[c]); a.href = LLAMA[c]; a.target = '_blank'; a.rel = 'noopener'; sp.appendChild(a); if (i < CH.length - 1) sp.appendChild(document.createTextNode(' \u00b7 ')); });
     box.appendChild(sp);
+    var gl = gapList(res.end);
+    if (gl.length) box.appendChild(el('p', 'csx-note rvx-gaps', t.gaps(gl.map(function (g) { return NAME[g.c] + ' ' + t.gapItem(g.n, g.k, g.last); }).join(', '))));
     if (box.open) drawChart();
   }
 
