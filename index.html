@@ -37019,6 +37019,31 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
         html body .section { border-color: transparent !important; }
         html body .metric-footer, html body .model-community, html body .method-references { border-color: var(--border-light) !important; }
         html body .section-title, html body .section-header h2 { letter-spacing: -0.02em; }
+        /* 2026-10-15 (Simon): "a little roomier". Section spacing (88+64px) was already generous; the density was
+           inside cards and between them. Desktop gets +4~6px padding and gaps; phones (metric cards are 181px wide,
+           two per row) only get slightly wider gaps so numbers never clip. */
+        @media (min-width: 769px) {
+            html body .ni-list { gap: 12px; }
+            html body .triple-chart-grid { gap: 18px; }
+            html body .valuation-models { gap: 12px; }
+            html body .methodology-grid, html body .category-grid, html body .ev-research-grid { gap: 20px; }
+            html body .simulator-sliders { gap: 14px; }
+            html body .ni-card { padding: 18px 20px; }
+            html body .metric-card { padding: 20px 22px; }
+            html body .valuation-model { padding: 14px 16px; }
+            html body .method-card, html body .category-card { padding: 20px; }
+            html body .ev-research-card { padding: 22px; }
+        }
+        @media (max-width: 768px) {
+            html body .ni-list, html body .valuation-models { gap: 10px; }
+            html body .triple-chart-grid { gap: 14px; }
+        }
+        /* Subtle Apple-like sheen: a faint violet wash at the top of each card fading out by mid-height (same
+           tone the research / news-chart / score cards already used), and one soft glow behind the page top. */
+        html body .ni-card,html body .metric-card,html body .valuation-model,html body .method-card,html body .category-card,html body .simulator-box,html body .price-card,html body .summary-valuation-box,html body .conclusion-panel,html body .community-stats-box,html body .ni-matrix,html body .historical-main-chart,html body .fvb,html body .fbt,html body .sim-presets,html body .mc-box { background-image: linear-gradient(180deg, rgba(103, 71, 230, 0.03) 0%, rgba(103, 71, 230, 0) 55%); }
+        html body.dark .ni-card,html body.dark .metric-card,html body.dark .valuation-model,html body.dark .method-card,html body.dark .category-card,html body.dark .simulator-box,html body.dark .price-card,html body.dark .summary-valuation-box,html body.dark .conclusion-panel,html body.dark .community-stats-box,html body.dark .ni-matrix,html body.dark .historical-main-chart,html body.dark .fvb,html body.dark .fbt,html body.dark .sim-presets,html body.dark .mc-box { background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 55%); }
+        html body { background-image: radial-gradient(1100px 520px at 50% -160px, rgba(103, 71, 230, 0.07), rgba(103, 71, 230, 0) 70%); background-repeat: no-repeat; }
+        html body.dark { background-image: radial-gradient(1100px 520px at 50% -160px, rgba(103, 71, 230, 0.13), rgba(103, 71, 230, 0) 70%); }
     </style>
     <script>
         (function dockFab() {
@@ -37187,7 +37212,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
     <script src="sim-presets.js?v=20261014a" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
     <script src="dxy.js?v=20261013a" defer></script>
-    <script src="nav-sidebar.js?v=20261015h" defer></script>
+    <script src="nav-sidebar.js?v=20261015i" defer></script>
 
 <script>
 /* Simon 2026-10-13: subsection titles "02.1 — Title" -> small mono number + calm title (matches the section kicker). */

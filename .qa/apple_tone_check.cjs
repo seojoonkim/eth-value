@@ -18,10 +18,18 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fail++;
         const e = document.querySelector('.' + c);
         if (!e) { out[c] = null; continue; }
         const cs = getComputedStyle(e);
-        out[c] = { bc: cs.borderTopColor, sh: cs.boxShadow, r: parseFloat(cs.borderTopLeftRadius) };
+        out[c] = { bc: cs.borderTopColor, sh: cs.boxShadow, r: parseFloat(cs.borderTopLeftRadius), img: cs.backgroundImage, pad: parseFloat(cs.paddingTop) };
       }
       const bs = getComputedStyle(document.body);
-      return { out, text: bs.color, bg: bs.backgroundColor, sw: document.documentElement.scrollWidth, dark: document.body.classList.contains('dark') };
+      // Count cards whose visible text pokes past the card edge (a 2px scrollWidth slack on .valuation-model is
+      // pre-existing, hidden by overflow-x and not text, so measure text nodes instead of scrollWidth).
+      const clip = [...document.querySelectorAll('.metric-card, .valuation-model, .ni-card')].filter(card => {
+        const cr = card.getBoundingClientRect(); if (!cr.width) return false;
+        const w = document.createTreeWalker(card, NodeFilter.SHOW_TEXT); let n;
+        while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const rg = document.createRange(); rg.selectNodeContents(n);
+          for (const r of rg.getClientRects()) if (r.width && (r.right > cr.right + 0.5 || r.left < cr.left - 0.5)) return true; }
+        return false; }).length;
+      return { out, clip, bodyImg: bs.backgroundImage, text: bs.color, bg: bs.backgroundColor, sw: document.documentElement.scrollWidth, dark: document.body.classList.contains('dark') };
     }, CARDS);
     const tag = `${w} ${theme}`;
     ok(r.dark === (theme === 'dark'), `${tag} theme applied`);
@@ -29,6 +37,10 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fail++;
       if (!v) { console.log(`skip ${tag} ${c} (not on page)`); continue; }
       ok(/rgba\(0, 0, 0, 0\)|transparent/.test(v.bc) && v.sh === 'none' && v.r === 16, `${tag} ${c} border ${v.bc} shadow ${v.sh === 'none' ? '-' : v.sh} r${v.r}`);
     }
+    for (const [c, v] of Object.entries(r.out)) if (v) ok(/linear-gradient/.test(v.img), `${tag} ${c} has sheen gradient`);
+    if (w >= 769) ok(r.out['metric-card'] && r.out['metric-card'].pad >= 20 && r.out['ni-card'].pad >= 18, `${tag} roomier card padding`);
+    ok(/radial-gradient/.test(r.bodyImg), `${tag} page top glow`);
+    ok(r.clip === 0, `${tag} no card content overflow (${r.clip})`);
     if (theme === 'dark') ok(r.text !== 'rgb(29, 29, 31)', `${tag} dark text stays light (${r.text})`);
     ok(r.sw <= w, `${tag} no horizontal scroll (${r.sw})`);
     await p.screenshot({ path: `/tmp/apple_${w}_${theme}.png` });
