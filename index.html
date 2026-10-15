@@ -24915,6 +24915,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 state.price = price;
                 state.livePrice = price; // 실시간 현재가: Supabase 어제 종가가 이 값을 덮어쓰지 않게 따로 보관
+                refreshSupplyFloat();
                 if (change24h !== null && isFinite(change24h)) state.change24h = change24h;
                 if (volume24h) state.volume24h = volume24h;
                 if (ethBtc) state.ethBtcRatio = ethBtc;
@@ -25721,6 +25722,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 document.getElementById('volume-24h').textContent = fmt.usd(state.volume24h);
                 const circSupplyEl = document.getElementById('circ-supply');
                 if (circSupplyEl) circSupplyEl.textContent = fmt.num(state.circulatingSupply) + ' ETH';
+                refreshSupplyFloat();
                 
                 // ATH 데이터 처리 (null check)
                 if (md.ath && md.ath.usd) {
@@ -25894,6 +25896,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 // ═══════════════════════════════════════════════════════════════════
                 state.price = realtimePrice;
                 state.volume24h = realtimeVolume;
+                refreshSupplyFloat();
                 state.change24h = change24h;
                 
                 // 가격 UI 업데이트
@@ -26240,6 +26243,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 try {
                     const chains = chainsResult.value;
                     state.tvl = chains.find(c => c.name === 'Ethereum')?.tvl || 0;
+                    refreshSupplyFloat();
                     document.getElementById('tvl-value').textContent = fmt.usd(state.tvl);
 
                     const l2Names = [
@@ -26265,6 +26269,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     });
                     state.l2Tvl = l2Total;
                     document.getElementById('l2-value').textContent = fmt.usd(state.l2Tvl);
+                    refreshSupplyFloat();
                     
                     // Start L2 history fetch in background (non-blocking)
                     fetchL2HistoryAsync(chains);
@@ -27577,6 +27582,28 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             ChartManager.updateChangeElement('commitment-ratio-change', state.commitmentRatioHistory, null, { pp: true });
         }
 
+        // 2026-10-15: Effective Float는 가격·TVL·L2 TVL·스테이킹·공급량으로 계산 → 입력이 나중에 바뀌면(실시간 가격이 전일 종가 뒤에 도착 등)
+        // 다시 그린다. 예전엔 처음 그릴 때 값으로 고정돼 같은 빌드에서 49.6% / 50.8%로 로드마다 갈렸다. 입력이 같으면 다시 그리지 않음.
+        let _supplyFloatSig = '', _supplyFloatTimer = null;
+        function supplyFloatInputsSig() {
+            const S = state;
+            // 화면에 보이는 값(소수 1자리) 기준 — 2분마다 오는 가격 갱신으로 숫자가 안 바뀌면 차트를 다시 그리지 않는다(깜빡임 방지)
+            const sup = S.circulatingSupply || 120000000, px = S.price > 0 ? S.price : 0;
+            const fl = px ? Math.max(0, 100 - (S.stakedEth > 0 ? S.stakedEth / sup * 100 : 27) - (S.tvl > 0 ? S.tvl / px / sup * 100 : 18) - ((S.l2Tvl || 0) / px / sup * 100 + 3)) : -1;
+            return [fl.toFixed(1),
+                (S.stakingHistory || []).length, (S.tvlHistory || []).length, (S.l2TvlHistory || []).length, (S.supabasePriceHistory || S.priceHistory || []).length].join('|');
+        }
+        function refreshSupplyFloat() {
+            if (!supplyChart) return; // 아직 한 번도 안 그렸으면 원래 흐름(renderChartsFromData)이 그린다
+            clearTimeout(_supplyFloatTimer);
+            _supplyFloatTimer = setTimeout(() => {
+                if (supplyFloatInputsSig() === _supplyFloatSig) return;
+                const active = document.querySelector('.metric-tabs[data-chart="supply"] .metric-tab.active');
+                const days = active ? parseInt(active.dataset.period) : ChartManager.getDefaultPeriod();
+                try { updateSupplyDistributionChart(days); } catch (e) { console.error('supplyDist refresh', e); }
+            }, 300);
+        }
+
         function updateSupplyDistributionChart(days = null) {
             const ctx = document.getElementById('supply-chart');
             if (!ctx) return;
@@ -27589,6 +27616,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             const price = state.price > 0 ? state.price : 0;
             // 가격 없으면 그리지 않고 보류 — renderChartsFromData가 가격 설정 뒤 다시 부른다(예전 $3,500 임의값)
             if (!price) { log('Supply Distribution: no price yet — deferred'); return; }
+            _supplyFloatSig = supplyFloatInputsSig();
             
             if (staked === 0 && tvl === 0 && state.circulatingSupply === 0) {
                 log('Supply Distribution: no data, using defaults');
