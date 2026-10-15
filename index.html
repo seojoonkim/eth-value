@@ -17919,6 +17919,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 raf = 0;
                 const fab = document.getElementById('floating-action-badge');
                 if (!fab || fab.classList.contains('hidden')) return;
+                if (fab.classList.contains('fab-dock')) { fab.classList.remove('fab-yield'); return; } // docked in header/sidebar: covers nothing
                 const r = fab.getBoundingClientRect();
                 const pad = 0;
                 const dy = fab.classList.contains('fab-yield') ? 20 : 0; // undo the yield translateY so the test box is stable
@@ -17977,7 +17978,17 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             ];
             
             if (!floatingBadge) return;
-            
+            // Docked (header / sidebar) badge shows only this short label; the full title stays the accessible name + tooltip.
+            const setBadgeShort = (short) => {
+                const el = document.getElementById('floating-badge-short');
+                if (el) el.textContent = short;
+                floatingBadge.dataset.mini = short.split(' ')[0];
+                const full = (floatingBadgeTitle.textContent + ' — ' + floatingBadgeSubtitle.textContent).trim();
+                floatingBadge.setAttribute('aria-label', full); floatingBadge.title = full;
+                if (window.__fabFit) requestAnimationFrame(window.__fabFit);
+            };
+            if (!floatingBadge.dataset.kb) { floatingBadge.dataset.kb = '1'; floatingBadge.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); floatingBadge.click(); } }); }
+
             // State: Not logged in
             if (!isLoggedIn) {
                 // Show floating badge - prompt to login
@@ -17987,6 +17998,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 floatingBadgeIcon.innerHTML = '<path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>';
                 floatingBadgeTitle.textContent = gt('gated.loginTitle', 'Log in with 𝕏 to unlock');
                 floatingBadgeSubtitle.textContent = gt('gated.loginSubtitle', 'Rate 2+ valuation models to access all features');
+                setBadgeShort('𝕏 ' + gt('gated.loginShort', 'Log in'));
                 floatingBadgeProgress.style.display = 'none';
                 
                 // Historical 3Y tab - show modal for non-logged in
@@ -18016,6 +18028,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 floatingBadgeIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
                 floatingBadgeTitle.textContent = gt('gated.rateTitle', 'Just {n} more to unlock!').replace('{n}', remaining);
                 floatingBadgeSubtitle.textContent = gt('gated.rateSubtitle', 'Rate to access 3Y data & simulator');
+                setBadgeShort('★ ' + remaining);
                 floatingBadgeProgress.style.display = 'flex';
                 
                 // Update progress dots
@@ -18057,6 +18070,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 floatingBadgeIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
                 floatingBadgeTitle.textContent = gt('gated.rateRemaining', '{n} models left to rate').replace('{n}', remainingModels);
                 floatingBadgeSubtitle.textContent = gt('gated.contributeSubtitle', 'Your ratings help build better valuation data');
+                setBadgeShort('★ ' + remainingModels);
                 floatingBadgeProgress.style.display = 'none';
             } else {
                 // All 12 rated - hide badge
@@ -20594,6 +20608,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'summary.whyBuilt': '📝 The Story',
                 'gated.loginTitle': 'Log in with 𝕏 to unlock',
                 'gated.loginSubtitle': 'Rate 2+ valuation models to access all features',
+                'gated.loginShort': 'Log in',
                 'gated.rateTitle': 'Just {n} more to unlock!',
                 'gated.rateSubtitle': 'Rate to access 3Y data & simulator',
                 'gated.rateRemaining': '{n} models left to rate',
@@ -21091,6 +21106,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'summary.whyBuilt': '📝 개발 배경',
                 'gated.loginTitle': '𝕏로 로그인하여 잠금 해제',
                 'gated.loginSubtitle': '2+ 밸류에이션 모델 평가 시 모든 기능 이용 가능',
+                'gated.loginShort': '로그인',
                 'gated.rateTitle': '{n}개만 더 평가하면 해제!',
                 'gated.rateSubtitle': '3Y 데이터 & 시뮬레이터 개방',
                 'gated.rateRemaining': '{n}개 모델 평가 남음',
@@ -21582,6 +21598,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'summary.whyBuilt': '📝 开发背景',
                 'gated.loginTitle': '用 𝕏 登录解锁',
                 'gated.loginSubtitle': '评价2+模型可访问全部功能',
+                'gated.loginShort': '登录',
                 'gated.rateTitle': '还差{n}个即可解锁！',
                 'gated.rateSubtitle': '评价解锁3Y数据和模拟器',
                 'gated.rateRemaining': '还需评价{n}个模型',
@@ -22076,6 +22093,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'summary.whyBuilt': '📝 ストーリー',
                 'gated.loginTitle': '𝕏でログインして解除',
                 'gated.loginSubtitle': '2+モデル評価で全機能にアクセス',
+                'gated.loginShort': 'ログイン',
                 'gated.rateTitle': 'あと{n}個で解除！',
                 'gated.rateSubtitle': '評価で3Yデータ&シミュレーター開放',
                 'gated.rateRemaining': 'あと{n}個モデル評価',
@@ -36868,13 +36886,14 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
     </script>
 
     <!-- Floating Action Badge -->
-    <div class="floating-action-badge" id="floating-action-badge">
+    <div class="floating-action-badge" id="floating-action-badge" role="button" tabindex="0">
         <svg class="floating-badge-icon" id="floating-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         </svg>
         <div class="floating-badge-content">
             <div class="floating-badge-title" id="floating-badge-title">Log in to unlock more</div>
+            <div class="floating-badge-short" id="floating-badge-short" aria-hidden="true">𝕏 Log in</div>
             <div class="floating-badge-subtitle" id="floating-badge-subtitle">Access historical data & simulator</div>
             <div class="floating-badge-progress" id="floating-badge-progress" style="display: none;">
                 <div class="progress-dot" id="progress-dot-1"></div>
@@ -36896,7 +36915,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 queued = false;
                 const b = badge.getBoundingClientRect();
                 const pad = 8;
-                const hit = !badge.classList.contains('hidden') && b.width > 0 &&
+                const hit = !badge.classList.contains('hidden') && !badge.classList.contains('fab-dock') && b.width > 0 &&
                     [...document.querySelectorAll('.forum-table, .user-leaderboard-wrapper, .csx-table')].some(t => {
                         const r = t.getBoundingClientRect();
                         return r.width && r.left < b.right + pad && r.right > b.left - pad && r.top < b.bottom + pad && r.bottom > b.top - pad;
@@ -36909,6 +36928,104 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             addEventListener('resize', queue);
             new MutationObserver(queue).observe(badge, { attributes: true, attributeFilter: ['class'], attributeOldValue: false });
             queue();
+        })();
+    </script>
+
+    <style id="fab-dock-css">
+        /* 2026-10-15: the floating login/rate card sat on top of body text in the first view (1280: UPCOMING
+           "FOMC rate decision 10.27–10.28"; 390: news category "-11") and while scrolling. It is now docked in page
+           chrome instead of floating: wide (sidebar) → top of the sidebar footer; narrower → a compact pill in the
+           header row before the theme toggle. Same colour/flat treatment as before, nothing fixed over content. */
+        .floating-badge-short { display: none; }
+        html body .floating-action-badge.fab-dock {
+            position: static !important; inset: auto !important; transform: none !important; opacity: 1 !important; pointer-events: auto !important;
+            max-width: none !important; width: auto; border-radius: 999px !important; z-index: auto !important;
+            box-shadow: none !important; border: 0 !important; background: #5f4bd0 !important; color: #fff !important;
+            animation: none !important; transition: background .15s ease !important; flex-shrink: 0;
+        }
+        html body .floating-action-badge.fab-dock:hover { transform: none !important; background: #523fc0 !important; box-shadow: none !important; }
+        html body .floating-action-badge.fab-dock:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        html body .floating-action-badge.fab-dock.hidden { display: none !important; }
+        .floating-action-badge.fab-dock .floating-badge-title, .floating-action-badge.fab-dock .floating-badge-subtitle,
+        .floating-action-badge.fab-dock .floating-badge-arrow, .floating-action-badge.fab-dock .floating-badge-progress { display: none !important; }
+        .floating-action-badge.fab-dock .floating-badge-short { display: block; color: #fff; font-weight: 600; white-space: nowrap; line-height: 1; }
+        /* header pill: matches the 28–36px header controls */
+        html body .floating-action-badge.fab-dock-hd { padding: 0 12px !important; height: 30px; display: inline-flex !important; align-items: center; gap: 0 !important; }
+        .floating-action-badge.fab-dock-hd .floating-badge-short { font-size: 13px; }
+        /* sidebar footer: full-width button above theme + language */
+        html body .floating-action-badge.fab-dock-sb { display: flex !important; justify-content: center; align-items: center; padding: 0 12px !important; height: 34px; margin: 0 0 10px; border-radius: var(--radius-sm, 8px) !important; gap: 0 !important; }
+        .floating-action-badge.fab-dock-sb .floating-badge-short { font-size: 13px; }
+        /* 901–1199px (no sidebar, single-row header): when logo + inline menu + login pill + theme + language do not
+           fit in one row (measured: ja 1024 language buttons ended at 1091 > 1024 even before the pill), the header falls
+           back to the ≤900 two-row layout (menu on its own row). Toggled by dockFab() after measuring. */
+        html.hdr-tight .nav-bar-inline { display: none !important; }
+        html.hdr-tight .nav-bar { display: flex !important; }
+        html.hdr-tight body { padding-top: calc(var(--hdr-h, 83px) + 17px) !important; } /* same 17px gap as the one-row header (65 = 48 + 17) */
+        html.hdr-tight .section[id] { scroll-margin-top: calc(var(--hdr-h, 85px) + 15px); }
+        html.hdr-tight .onboarding-banner { top: var(--hdr-h, 95px) !important; }
+        html body .floating-action-badge.fab-dock.fab-none { display: none !important; }
+        /* 769–900px: header is two rows (≈95px) but the welcome banner kept top:52px and sat on the menu row */
+        @media (min-width: 769px) and (max-width: 900px) { .onboarding-banner { top: var(--hdr-h, 95px) !important; }
+            body.banner-visible { padding-top: calc(var(--hdr-h, 95px) + 76px) !important; } } /* 76 = banner 71 + 5 → same ~37px kicker gap as without banner */
+        html.hdr-tight body.banner-visible { padding-top: calc(var(--hdr-h, 95px) + 76px) !important; } /* banner ≈71px + same gap as no-banner */
+        /* phones: when the label pill does not fit next to theme + language (360px: 48px free), it becomes a round 𝕏 button */
+        html body .floating-action-badge.fab-dock-hd.fab-compact { width: 30px; padding: 0 !important; justify-content: center; }
+        .floating-action-badge.fab-dock-hd.fab-compact .floating-badge-short { display: none !important; }
+        .floating-action-badge.fab-dock-hd.fab-compact::after { content: attr(data-mini); color: #fff; font-size: 14px; font-weight: 600; line-height: 1; }
+        @media (max-width: 400px) { html body .floating-action-badge.fab-dock-hd { padding: 0 10px !important; } .floating-action-badge.fab-dock-hd .floating-badge-short { font-size: 12px; } }
+    </style>
+    <script>
+        (function dockFab() {
+            const fab = document.getElementById('floating-action-badge');
+            if (!fab) return;
+            function place() {
+                const sb = document.querySelector('.sb');
+                const foot = sb && getComputedStyle(sb).display !== 'none' ? sb.querySelector('.sb-foot') : null;
+                if (foot) {
+                    if (fab.parentNode !== foot || foot.firstChild !== fab) foot.insertBefore(fab, foot.firstChild);
+                    fab.classList.add('fab-dock', 'fab-dock-sb'); fab.classList.remove('fab-dock-hd');
+                } else {
+                    const hr = document.querySelector('.header-wrapper .header-right');
+                    if (!hr) return;
+                    if (fab.parentNode !== hr || hr.firstChild !== fab) hr.insertBefore(fab, hr.firstChild);
+                    fab.classList.add('fab-dock', 'fab-dock-hd'); fab.classList.remove('fab-dock-sb');
+                }
+                fab.classList.remove('fab-yield', 'over-table');
+                fit();
+            }
+            // single-row header must hold everything; otherwise use the two-row layout (only matters 901–1199px)
+            function fit() {
+                const root = document.documentElement, hd = document.querySelector('.header-wrapper .header');
+                const nav = hd && hd.querySelector('.nav-bar-inline'), hr = hd && hd.querySelector('.header-right');
+                root.classList.remove('hdr-tight'); fab.classList.remove('fab-compact', 'fab-none');
+                if (!hd || !hr || !hd.offsetWidth) return;
+                const H = hd.getBoundingClientRect(), pr = parseFloat(getComputedStyle(hd).paddingRight) || 0;
+                if (!nav || getComputedStyle(nav).display === 'none') {
+                    // two-row header (≤900): only the control group must fit inside the header's content box
+                    const lg = hd.querySelector('.logo');
+                    const over = hr.getBoundingClientRect().right > H.right - pr + 1 || (lg && hr.getBoundingClientRect().left < lg.getBoundingClientRect().right + 6);
+                    if (over && fab.classList.contains('fab-dock-hd')) {
+                        fab.classList.add('fab-compact');
+                        // ≤340px: even the round button pushes the language buttons out of the header → drop it there
+                        // (login stays reachable from the welcome banner and every rating card's "Log in with 𝕏" button)
+                        const b2 = hr.getBoundingClientRect();
+                        if (b2.right > H.right - pr + 1 || (lg && b2.left < lg.getBoundingClientRect().right + 6)) fab.classList.add('fab-none');
+                    }
+                    return;
+                }
+                const last = [...nav.children].pop(), navR = last ? last.getBoundingClientRect().right : nav.getBoundingClientRect().left;
+                const hrB = hr.getBoundingClientRect();
+                const tight = hrB.right > H.right - pr + 1 || navR > hrB.left - 8 || document.documentElement.scrollWidth > innerWidth;
+                root.classList.toggle('hdr-tight', tight);
+            }
+            window.__fabFit = fit;
+            new MutationObserver(() => requestAnimationFrame(fit)).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+            place();
+            addEventListener('resize', place);
+            addEventListener('ethval-header-change', place);
+            addEventListener('DOMContentLoaded', place);
+            addEventListener('load', place);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
         })();
     </script>
 
