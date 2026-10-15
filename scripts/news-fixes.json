@@ -1,0 +1,22 @@
+{
+  "_note": "Reviewed corrections to stored news_events. Applied idempotently by scripts/news-collector.js on every run (service key lives only in GitHub Actions). 2026-10-15 Argon audit items confirmed against source articles.",
+  "patch": [
+    {
+      "id": "2026-10-14-us-ether-etfs-end-outflow-streak-b4e102",
+      "why": "Sources: 'U.S. Spot Ether ETFs End 10-Day Outflow Streak With $24.84 Million Net Inflow'. ko '연속 순유출 마감' read as outflows continuing.",
+      "set": { "title": { "ko": "미국 현물 이더 ETF, 10거래일 연속 순유출 끊고 순유입" } }
+    },
+    {
+      "id": "2026-10-02-eth-spot-etf-outflows-six-session-streak-d28c8a",
+      "why": "Bearish event; en chain ended 'price pressure ↓' while ko said 하방 압력 ↑.",
+      "set": { "mechanism": { "en": "ETF outflows ↑ → spot ETH selling ↑ → downside price pressure ↑" } }
+    }
+  ],
+  "delete": [
+    {
+      "id": "2026-10-12-bitget-reports-unauthorized-crypto-transfers-b37371",
+      "duplicate_of": "2026-09-25-bitget-387m-hack-and-withdrawal-pause-a8b375",
+      "why": "Same Bitget incident (~$387-388M), single TokenPost re-report 17 days later; scored twice (-2 extra in 30-day sums). Full row backed up in .qa/news_fix_backup_2026-10-15.json."
+    }
+  ]
+}

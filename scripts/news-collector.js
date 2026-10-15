@@ -11,6 +11,7 @@
  *   add --dry-run to print JSON instead of writing
  */
 const crypto = require('crypto');
+const { mechanismConflicts, duplicateOf } = require('./news-quality.cjs');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -131,7 +132,9 @@ For each event output:
  confidence: 0..1 your confidence in the direction call
  title: {en,ko,zh,ja} concise headline (<=70 chars each; Korean in natural plain language, Hangul only — never Japanese kana or Chinese characters in "ko")
  summary: {en,ko,zh,ja} one sentence of what happened
- mechanism: {en,ko,zh,ja} one short causal chain from event -> metric -> ETH price, using arrows (e.g. "ETF inflow ↑ → exchange reserve ↓ → sell pressure ↓ → price +")
+ mechanism: {en,ko,zh,ja} one short causal chain from event -> metric -> ETH price, using arrows (e.g. "ETF inflow ↑ → exchange reserve ↓ → sell pressure ↓ → price +"). The last step must agree with direction (bearish → "downside pressure ↑" or "price -", never "pressure ↓"), and every language keeps the same arrows.
+ Reversal wording: "end/snap/break a streak", "halt", "reverse" mean the old trend STOPPED — translate as stopped (e.g. ko "연속 순유출 끊고 순유입"), never as a word that can read as still continuing (ko "마감").
+ Do not output an event that re-reports an already recorded incident (same company/protocol and about the same amount), even weeks later.
  source_idx: array of indices of the headlines used
 Only include events with real price relevance. Quality over quantity. Return JSON {"events":[...]}.`;
 
@@ -197,6 +200,8 @@ async function classifyWindow(heads, existing) {
     const res = [];
     for (const ev of out) {
         if (!validEvent(ev)) { console.log(`  skip invalid: ${JSON.stringify(ev).slice(0, 120)}`); continue; }
+        const conflict = mechanismConflicts(ev);
+        if (conflict.length) { console.log(`  skip chain/direction mismatch (${conflict.join(',')}): ${ev.title.en}`); continue; }
         const srcs = (ev.source_idx || []).map(i => heads[i]).filter(Boolean);
         if (!srcs.length) { console.log(`  skip unsourced: ${ev.title.en}`); continue; }
         const slug = String(ev.id_hint || ev.title.en).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
@@ -230,8 +235,8 @@ async function sb(path, opts = {}) {
 
 async function existingEvents(from, to) {
     if (!SUPABASE_URL || !SUPABASE_KEY) return [];
-    const rows = await sb(`news_events?select=id,date,title&date=gte.${from}&date=lte.${to}&order=date.asc&limit=1000`);
-    return rows.map(r => ({ id: r.id, date: r.date, title: r.title?.en || '' }));
+    const rows = await sb(`news_events?select=id,date,category,title&date=gte.${from}&date=lte.${to}&order=date.asc&limit=1000`);
+    return rows.map(r => ({ id: r.id, date: r.date, category: r.category, title: r.title?.en || '' }));
 }
 
 const iso = (d) => d.toISOString().slice(0, 10);
@@ -271,8 +276,36 @@ async function repairLang() {
     console.log(`✅ repaired ${fixed}/${bad.length}`);
 }
 
+// Reviewed corrections (scripts/news-fixes.json) — idempotent, applied every run so a re-collected row can't revert them.
+async function applyFixes() {
+    if (!SUPABASE_URL || !SUPABASE_KEY) return;
+    const fx = require('./news-fixes.json');
+    for (const p of fx.patch || []) {
+        const [row] = await sb(`news_events?select=id,title,summary,mechanism&id=eq.${encodeURIComponent(p.id)}`) || [];
+        if (!row) continue;
+        const body = {};
+        for (const [k, v] of Object.entries(p.set)) {
+            const merged = { ...(row[k] || {}), ...v };
+            if (JSON.stringify(merged) !== JSON.stringify(row[k])) body[k] = merged;
+        }
+        if (!Object.keys(body).length) continue;
+        if (DRY) { console.log(`  [dry] fix ${p.id}`); continue; }
+        await sb(`news_events?id=eq.${encodeURIComponent(p.id)}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+        console.log(`  🩹 fixed ${p.id} (${Object.keys(body).join(',')})`);
+    }
+    for (const d of fx.delete || []) {
+        const rows = await sb(`news_events?select=id&id=eq.${encodeURIComponent(d.id)}`) || [];
+        if (!rows.length) continue;
+        if (DRY) { console.log(`  [dry] delete ${d.id}`); continue; }
+        await sb(`news_events?id=eq.${encodeURIComponent(d.id)}`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
+        console.log(`  🗑️ removed duplicate ${d.id} (of ${d.duplicate_of})`);
+    }
+}
+
 async function main() {
+    try { await applyFixes(); } catch (e) { console.log(`  ⚠️ fixes: ${e.message}`); process.exitCode = 1; }
     if (args.includes('--repair-lang')) return repairLang();
+    if (args.includes('--fixes-only')) return;
     const today = iso(new Date());
     const windows = [];
     if (BACKFILL_DAYS > 0) {
@@ -287,9 +320,15 @@ async function main() {
         try {
             const heads = await collectHeadlines(from, to, rss);
             console.log(`  headlines: ${heads.length}`);
-            const existing = await existingEvents(addDays(from, -3), to);
+            // 30 days back: a hack re-reported 17 days later was scored twice when this was 3 (10-12 Bitget).
+            const existing = await existingEvents(addDays(from, -30), to);
             const events = await classifyWindow(heads, existing);
-            const fresh = events.filter(e => !existing.some(x => x.id === e.id));
+            const fresh = events.filter(e => {
+                if (existing.some(x => x.id === e.id)) return false;
+                const d = duplicateOf(e, existing);
+                if (d) { console.log(`  skip duplicate of ${d.id}: ${e.title.en}`); return false; }
+                return true;
+            });
             console.log(`  events: ${events.length} (new ${fresh.length})`);
             if (DRY) { dump.push(...fresh); continue; }
             if (fresh.length) await sb('news_events?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(fresh) });
