@@ -72,7 +72,9 @@ if [[ "$URL" == http://127.0.0.1* ]]; then
   #   #section-valuation +170, #ratings +92, #research +25. Card radius 10->6px (design rule) changes no height. ~326px headroom.
   # 2026-10-15: 35800 -> 36200 for Simon's batch (airy signoff block, labelled expand pills). Measured at 390 (en):
   #   HEAD 76b0b93 35807 (already +7 over from the density pass) -> 35894 (+87: #valuation +70 signoff, #ratings +26 pills). ~306px headroom.
-  if [ -n "$doc" ] && [ "$doc" -lt 36200 ]; then log "height: PASS ($doc px < 36200)"; else log "height: FAIL ($doc)"; fail=1; fi
+  # 2026-10-16: 36200 -> 36500 for Astra F31 (390 model legend 3 -> 2 columns so every model name is readable, was "TVL…/Stak…").
+  #   Measured at 390 (en): HEAD 36145 -> 36238 (+93, all in #section-valuation 9174 -> 9266 = 12 legend buttons in 6 rows instead of 4). ~262px headroom.
+  if [ -n "$doc" ] && [ "$doc" -lt 36500 ]; then log "height: PASS ($doc px < 36500)"; else log "height: FAIL ($doc)"; fail=1; fi
 fi
 
 node mobile_audit.cjs "$URL" "$OUT/audit" 390 > "$OUT/audit.txt" 2>&1

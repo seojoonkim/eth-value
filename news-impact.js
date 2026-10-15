@@ -561,7 +561,12 @@
             layout: { padding: { top: 14, bottom: 4 } },
             interaction: { mode: 'nearest', intersect: true },
             scales: {
-                x: { type: 'time', time: { unit: S.range > 120 ? 'month' : 'week' }, grid: { display: false }, ticks: { color: tick, maxTicksLimit: 6, maxRotation: 0 } },
+                // 2026-10-16 (Astra F31): 기본 주 단위 표기("Sep 20, 2026")가 390에서 서로 붙어 읽히지 않았음.
+                // 축은 짧게(en "Sep 20" / ko·zh·ja "9/20"), 연도는 툴팁 제목(bucketLabel)에 남김. 좁은 화면은 눈금 수도 줄임.
+                x: { type: 'time', time: { unit: S.range > 120 ? 'month' : 'week',
+                        displayFormats: lang() === 'en' ? { week: 'MMM d', month: "MMM ''yy" } : { week: 'M/d', month: 'yy/M' } },
+                     grid: { display: false },
+                     ticks: { color: tick, maxTicksLimit: cv.clientWidth < 520 ? 4 : 6, maxRotation: 0, autoSkip: true, autoSkipPadding: 14 } },
                 y: { suggestedMin: lo - off * 2.2, suggestedMax: hi + off * 2.2, grid: { color: grid }, ticks: { color: tick, maxTicksLimit: 5, callback: v => '$' + Math.round(v).toLocaleString() } }
             },
             plugins: {
@@ -570,7 +575,7 @@
                     enabled: !noHover(),
                     filter: i => i.datasetIndex === 1,
                     callbacks: {
-                        title: items => { const r = items[0].raw; return r && r.evs ? `${bucketLabel(r.k)} · ${L.selN(r.n)}` : ''; },
+                        title: items => { const r = items[0].raw; return r && r.evs ? `${new Date(bucketStart(r.k)).getUTCFullYear()}.${bucketLabel(r.k)} · ${L.selN(r.n)}` : ''; }, // 연도는 축 대신 여기서 (F31)
                         label: i => i.raw.evs ? i.raw.evs.slice(0, 4).map(e => `${e.direction > 0 ? '▲' : e.direction < 0 ? '▼' : '◆'} ${loc(e.title)}`) : '',
                         afterBody: items => { const r = items[0].raw; return r && r.n > 4 ? `+${r.n - 4}` : ''; }
                     }

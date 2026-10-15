@@ -9238,6 +9238,14 @@
             }
         }
 
+        /* 2026-10-16 (Astra F31): 390에서 3열이면 모델 이름이 「TVL…」「Stak…」로 잘려 선을 식별할 수 없었음.
+           좁은 화면은 2열 + 이름 줄바꿈 허용(이름 전체가 보이게) */
+        @media (max-width: 480px) {
+            .legend-row-models { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .legend-row-models .legend-btn { align-items: center; }
+            .legend-row-models .legend-name { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.2; overflow-wrap: anywhere; }
+        }
+
         .legend-hint {
             display: flex;
             align-items: center;
@@ -13400,11 +13408,15 @@
                 font-size: var(--text-sm);
             }
             
-            /* Also hide Score column on very small screens */
-            .user-leaderboard-table th:nth-child(6),
-            .user-leaderboard-table td:nth-child(6) {
+            /* 2026-10-16 (Astra F32): 순위 기준인 점수 열은 항상 보이게 하고, 대신 글/댓글 열을 접는다
+               (예전엔 점수 열을 숨겨 「기여도 점수 기준」 안내와 화면이 맞지 않았음) */
+            .user-leaderboard-table th:nth-child(4),
+            .user-leaderboard-table td:nth-child(4) {
                 display: none;
             }
+            /* 렌더되는 실제 클래스는 .lb-handle/.lb-name — 핸들을 접고 이름은 셀 안에서 줄바꿈해 점수 열이 화면 안에 들어오게 */
+            .user-leaderboard-table .lb-handle { display: none; }
+            .user-leaderboard-table .lb-name { overflow-wrap: anywhere; }
             
             .leaderboard-avatar {
                 width: 24px;
@@ -14442,6 +14454,8 @@
             box-sizing: border-box;
         }
         .nav-bar { padding-left: var(--page-gutter) !important; padding-right: var(--page-gutter) !important; }
+        /* 2026-10-16 (F30): 리서치 탭이 더해져 모바일 탭이 6개 — 360에서도 한 줄에 다 보이도록 좁은 화면은 탭 좌우 여백만 줄임 */
+        @media screen and (max-width: 400px) { .nav-bar .nav-item { padding-left: 6px !important; padding-right: 6px !important; } }
 
         /* Simon 2026-10-13: refined ETHval mark — flat primary tile, line diamond with filled lower facet
            (no gradient, no glow; matches the flat CTA system). Wordmark: ETH in text colour, "val" in primary. */
@@ -14868,6 +14882,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 <a class="nav-item" href="#ratings" data-i18n="nav.methodology">Ratings</a>
                 <a class="nav-item" href="#community" data-i18n="nav.community">Community</a>
                 <a class="nav-item" href="#leaders" data-i18n="nav.rankings">Leaderboard</a>
+                <a class="nav-item" href="#research" data-i18n="nav.research">Research</a>
             </nav>
             <div class="header-right">
                 <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
@@ -14901,6 +14916,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             <a class="nav-item" href="#ratings" data-i18n="nav.methodologyShort">Ratings</a>
             <a class="nav-item" href="#community" data-i18n="nav.communityShort">Community</a>
             <a class="nav-item" href="#leaders" data-i18n="nav.rankingsShort">Leaders</a>
+            <!-- 2026-10-16 (Astra F30): 06 리서치 라이브러리에서도 「리더보드」가 켜져 있던 문제 — 리서치 탭을 따로 둔다 -->
+            <a class="nav-item" href="#research" data-i18n="nav.researchShort">Research</a>
         </nav>
     </div>
 
@@ -15281,7 +15298,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                             <span class="model-count-badge" id="legend-model-count">12 / 12</span>
                         </div>
                     </div>
-                    <div class="legend-hint"><span class="legend-hint-icon">👇</span>Click model buttons below to toggle visibility</div>
+                    <div class="legend-hint"><span class="legend-hint-icon">👇</span><span data-i18n="chart.legendHint">Click a model to show or hide its line on the chart</span></div>
                     <div class="legend-row legend-row-models">
                         <div class="legend-btn active" data-model="tvlMultiple">
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#ef4444;"></span>
@@ -20603,6 +20620,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'nav.communityShort': 'Community',
                 'nav.rankings': 'Leaderboard',
                 'nav.rankingsShort': 'Leaders',
+                'nav.research': 'Research',
+                'nav.researchShort': 'Research',
                 'section.metricsTitle': 'Fundamentals',
                 'rankings.title': 'Leaderboard',
                 'rankings.badge': 'LEADERBOARD',
@@ -20780,6 +20799,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'valuation.sub.simulatorFull': '01.4 Scenario Simulator',
                 'chart.historicalTitle': 'COMPOSITE FAIR VALUE OVER TIME',
                 'chart.marketPrice': 'Market Price',
+                'chart.legendHint': 'Click a model to show or hide its line on the chart',
                 'chart.compositeFairValue': 'Composite Fair Value',
                 'chart.autoScale': 'Auto Scale',
                 'chart.movingAvg7d': '7D Moving Avg',
@@ -21107,6 +21127,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'nav.communityShort': '커뮤니티',
                 'nav.rankings': '리더보드',
                 'nav.rankingsShort': '리더보드',
+                'nav.research': '리서치',
+                'nav.researchShort': '리서치',
                 'section.metricsTitle': '기초 지표',
                 'rankings.title': '리더보드',
                 'rankings.badge': '리더보드',
@@ -21284,6 +21306,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'valuation.sub.simulatorFull': '01.4 시나리오 시뮬레이터',
                 'chart.historicalTitle': '종합 적정 가치의 변화',
                 'chart.marketPrice': '시장 가격',
+                'chart.legendHint': '모델을 눌러 차트에 표시하거나 숨길 수 있어',
                 'chart.compositeFairValue': '종합 적정 가치',
                 'chart.autoScale': '자동 스케일',
                 'chart.movingAvg7d': '7일 이동평균',
@@ -21611,6 +21634,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'nav.communityShort': '社区',
                 'nav.rankings': '排行榜',
                 'nav.rankingsShort': '排行榜',
+                'nav.research': '研究',
+                'nav.researchShort': '研究',
                 'section.metricsTitle': '基本面',
                 'rankings.title': '排行榜',
                 'rankings.badge': '排名',
@@ -21779,6 +21804,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'valuation.sub.simulatorFull': '01.4 情景模拟器',
                 'chart.historicalTitle': '综合公允价值的变化',
                 'chart.marketPrice': '市场价格',
+                'chart.legendHint': '点击模型可在图表中显示或隐藏其曲线',
                 'chart.compositeFairValue': '综合公允价值',
                 'chart.autoScale': '自动缩放',
                 'chart.movingAvg7d': '7日移动平均',
@@ -22120,6 +22146,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'nav.communityShort': 'コミュニティ',
                 'nav.rankings': 'リーダーボード',
                 'nav.rankingsShort': 'リーダー',
+                'nav.research': 'リサーチ',
+                'nav.researchShort': 'リサーチ',
                 'section.metricsTitle': 'ファンダメンタルズ',
                 'rankings.title': 'リーダーボード',
                 'rankings.badge': 'リーダーボード',
@@ -22288,6 +22316,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'valuation.sub.simulatorFull': '01.4 シナリオシミュレーター',
                 'chart.historicalTitle': '総合適正価格の変化',
                 'chart.marketPrice': '市場価格',
+                'chart.legendHint': 'モデルを押すとチャートに表示・非表示を切り替えられます',
                 'chart.compositeFairValue': '総合適正価値',
                 'chart.autoScale': 'オートスケール',
                 'chart.movingAvg7d': '7日移動平均',
@@ -32297,7 +32326,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                         'fundamentals': 'nav.metrics',
                         'ratings': 'nav.methodology',
                         'community': 'nav.community',
-                        'leaders': 'nav.rankings'
+                        'leaders': 'nav.rankings',
+                        'research': 'nav.research'
                     };
                     const navKey = navMapping[sectionId];
                     if (navKey) {
@@ -32550,7 +32580,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 { id: 'fundamentals', navId: 'fundamentals' },
                 { id: 'ratings', navId: 'ratings' },
                 { id: 'community', navId: 'community' },
-                { id: 'leaders', navId: 'leaders' }
+                { id: 'leaders', navId: 'leaders' },
+                { id: 'research', navId: 'research' } // 2026-10-16 (Astra F30): 06 리서치(ethval-extras.js가 늦게 붙임)
             ];
             
             let currentActiveSection = 'valuation';
@@ -32567,6 +32598,13 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 document.querySelectorAll('.nav-bar .nav-item, .nav-bar-inline .nav-item').forEach(nav => {
                     nav.classList.toggle('active', nav.getAttribute('href') === '#' + sectionId);
                 });
+                // 모바일 탭 줄은 6개라 가로로 넘칠 수 있음 → 켜진 탭이 탭 줄 안에 보이도록 탭 줄만 가로 이동(페이지는 안 움직임)
+                const bar = document.querySelector('.nav-bar');
+                const on = bar && bar.querySelector('.nav-item.active');
+                if (bar && on && bar.scrollWidth > bar.clientWidth + 1) {
+                    const br = bar.getBoundingClientRect(), r = on.getBoundingClientRect();
+                    if (r.left < br.left + 4 || r.right > br.right - 4) bar.scrollLeft += (r.left + r.width / 2) - (br.left + br.width / 2);
+                }
             };
             
             // 2026-10-14: 활성 탭 = 헤더 아래 보이는 영역의 「가운데 줄」에 걸친 섹션.
