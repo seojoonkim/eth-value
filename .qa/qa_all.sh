@@ -176,6 +176,8 @@ CHECKS=(
   "astra_p0|astra_p0_check|astra_p0|$URL"
   # 2026-10-16: no chart prints the same y-axis tick label twice (net supply 90D showed 0.8%·0.8%·0.8%)
   "ytick_dup|ytick_dup_check|ytick_dup|$URL"
+  # 2026-10-16: no chart prints the same x-axis label twice (net supply 90D showed Aug '26 twice); short ranges use "Aug 14"
+  "xtick_dup|xtick_dup_check|xtick_dup|$URL"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '

@@ -22918,6 +22918,33 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             });
         }
 
+        // 2026-10-16: x-axis month labels repeated on short ranges (Net Supply 90D @1280: "Jul '26 · Aug '26 ·
+        // Aug '26 · Sep '26") because fmt.chartLabel is month-precision. fmt.chartLabel now returns a String
+        // object carrying .t (timestamp). When the visible ticks would be < 32 days apart (span ÷ (maxTicks-1)),
+        // every category x-axis switches its default labels to day precision ("Aug 14"); longer ranges keep
+        // "Aug '26". Labels a chart's own callback rewrote are left alone. Guard: .qa/xtick_dup_check.cjs.
+        (function () {
+            const DAY = 86400000;
+            const prev = Chart.defaults.scales.category.afterTickToLabelConversion;
+            Chart.defaults.scales.category.afterTickToLabelConversion = function (scale) {
+                if (typeof prev === 'function') prev(scale);
+                const raw = scale.getLabels ? scale.getLabels() : [];
+                const ticks = scale.ticks || [];
+                if (ticks.length < 2) return;
+                const tOf = (tk) => { const r = raw[tk.value]; return r && typeof r.t === 'number' ? r.t : null; };
+                const t0 = tOf(ticks[0]), t1 = tOf(ticks[ticks.length - 1]);
+                if (t0 === null || t1 === null) return;
+                const lim = Math.max(2, Math.min(ticks.length, (scale.options.ticks && scale.options.ticks.maxTicksLimit) || 11));
+                if (Math.abs(t1 - t0) / (lim - 1) >= 32 * DAY) return;
+                for (const tk of ticks) {
+                    const r = raw[tk.value], t = tOf(tk);
+                    if (t === null || String(tk.label) !== String(r)) continue;
+                    const d = new Date(t);
+                    tk.label = d.toLocaleDateString('en-US', { month: 'short' }) + ' ' + d.getDate();
+                }
+            };
+        })();
+
         // Chart.js global tooltip settings - allow tooltip to overflow canvas
         Chart.defaults.plugins.tooltip.external = null;
         
@@ -23374,12 +23401,17 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 if (t === t) {
                     const key = date.getFullYear() * 12 + date.getMonth();
                     const hit = __chartLabelCache.get(key);
-                    if (hit !== undefined) return hit;
-                    const month = date.toLocaleDateString('en-US', { month: 'short' });
-                    const year = date.getFullYear().toString().slice(-2);
-                    const s = month + " '" + year;
-                    __chartLabelCache.set(key, s);
-                    return s;
+                    let s = hit;
+                    if (s === undefined) {
+                        const month = date.toLocaleDateString('en-US', { month: 'short' });
+                        const year = date.getFullYear().toString().slice(-2);
+                        s = month + " '" + year;
+                        __chartLabelCache.set(key, s);
+                    }
+                    // String object carrying the timestamp: prints "Aug '26" as before, but lets the
+                    // x-tick de-dup plugin below switch short ranges to day labels ("Aug 14").
+                    const o = new String(s); o.t = t;
+                    return o;
                 }
                 const month = date.toLocaleDateString('en-US', { month: 'short' });
                 const year = date.getFullYear().toString().slice(-2);
