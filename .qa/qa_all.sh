@@ -182,6 +182,9 @@ CHECKS=(
   "price_period|price_period_check|price_period|$URL $OUT/pp"
   # 2026-10-16: no chart draws its x-axis labels rotated (MVRV showed 38–48° tilted dates at 1280/390)
   "xtick_rotation|xtick_rotation_check|xtick_rotation|$URL"
+  # 2026-10-16: Astra P0 F01/F05/F07 — DCF formula states the 3× cap (shown value = 3 × price), analysis says
+  # "as of generation", % from ATH computed from the shown price/ATH (en showed −52.2% where numbers gave −50.3%)
+  "astra_p0b|astra_p0b_check|astra_p0b|$URL"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '

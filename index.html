@@ -2283,6 +2283,13 @@
             color: var(--text-muted);
         }
         
+        .ai-commentary-asof {
+            display: block;
+            margin-top: 4px;
+            font-family: var(--font-ui);
+            opacity: 0.9;
+        }
+
         .ai-commentary-meta {
             font-family: var(--font-mono);
             font-size: var(--text-lg);
@@ -15090,7 +15097,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                             <div class="model-bar-container"><div class="model-bar-bg"></div><div class="model-bar-center"></div><div class="model-bar-fill" style="width:0%"></div><div class="model-bar-marker" style="left:50%"></div></div>
                             <div class="model-diff calculating">--<small></small></div>
                         </div>
-                        <div class="model-row-3"><div class="model-formula">Price × (1+APR) ÷ (Discount - Growth)</div><label class="model-toggle"><input type="checkbox" checked data-model="dcf"><span class="slider"></span></label></div>
+                        <div class="model-row-3"><div class="model-formula">min(Price × (1+APR) ÷ (Discount - Growth), 3 × Price)</div><label class="model-toggle"><input type="checkbox" checked data-model="dcf"><span class="slider"></span></label></div>
                     </div>
                     <div class="valuation-model" data-model="l2Ecosystem">
                         <div class="model-row-1"><div class="model-name">L2 Ecosystem</div></div>
@@ -16708,7 +16715,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     </div>
                     <div class="method-content">
                         <div class="method-left">
-                            <div class="method-formula">Price × (1 + APR) ÷ (Discount - Growth)</div>
+                            <div class="method-formula">min(Price × (1 + APR) ÷ (Discount - Growth), 3 × Price)</div>
                             <div class="method-desc" data-i18n="method.dcf.desc">Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 9% discount rate (4.5% risk-free rate + 4.5% crypto equity risk premium), and 3% perpetual growth rate. The higher risk premium reflects full ETH price exposure including volatility, regulatory, and smart contract risks.</div>
                         </div>
                         <div class="method-right">
@@ -16733,7 +16740,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                                 <div class="method-footer-row">
                                     <div class="method-meta">
                                     </div>
-                                    <div class="method-note" data-i18n="method.dcf.note">Highly sensitive to discount rate and growth rate assumptions</div>
+                                    <div class="method-note" data-i18n="method.dcf.note">Highly sensitive to discount rate and growth rate assumptions. The result is capped at 3× the current price: (1 + APR) ÷ (9% − 3%) is always at least 16.7, so the cap always sets the value (fair value = 3 × price, +200%).</div>
                                 </div>
                             </div>
                         </div>
@@ -19226,7 +19233,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     ]
                 },
                 'dcf': {
-                    formula: 'Price × (1+APR) ÷ (Discount - Growth)',
+                    formula: 'min(Price × (1+APR) ÷ (Discount - Growth), 3 × Price)',
                     desc: t('method.dcf.desc', 'Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 9% discount rate (4.5% risk-free rate + 4.5% crypto equity risk premium), and 3% perpetual growth rate.'),
                     reliability: 2,
                     caveat: t('method.dcf.note', 'Highly sensitive to discount rate and growth rate assumptions'),
@@ -20865,7 +20872,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.ecosystemSettlement.desc': 'Applies MV=PQ to Ethereum entire ecosystem (all tokens, not just ETH). Key difference from ETH Monetary: ETH Monetary measures only native ETH transfers (V=6, ETH as money), while this model captures ALL token activity including stablecoins, DeFi tokens, NFTs (V=150, Ethereum as settlement infrastructure). Velocity = 150 derivation: (1) Stablecoin benchmark: USDC/USDT on-chain turnover ~80x/year (McKinsey); (2) DeFi multiplier: 2x for higher-frequency swaps = ~160; (3) BlockSci validation: raw velocity 785 ÷ 4x self-churn (Pernice et al. 2020) = 196; (4) Bot adjustment: 70-93% bot/MEV volume (Visa), organic range 55-236. Selected 150 as conservative mid-range.',
                 'method.metcalfe.note': 'DAU-to-value coefficient varies significantly; 1.5 exponent may not fit all conditions',
                 'method.metcalfe.desc': 'Network value grows proportionally to the square of active users/nodes. Originally developed for telecommunications, this model has been empirically validated for Bitcoin and Ethereum by academic researchers (Alabi 2017, Peterson 2018). Uses TVL as a proxy for network activity. The 1.5 exponent (between linear and quadratic) accounts for real-world network friction.',
-                'method.dcf.note': 'Highly sensitive to discount rate and growth rate assumptions',
+                'method.dcf.note': 'Highly sensitive to discount rate and growth rate assumptions. The result is capped at 3× the current price: (1 + APR) ÷ (9% − 3%) is always at least 16.7, so the cap always sets the value (fair value = 3 × price, +200%).',
                 'method.dcf.desc': 'Traditional Discounted Cash Flow analysis treating staking rewards as perpetual cash flows. Uses live staking APR from Lido API as the cash flow rate, 9% discount rate (4.5% risk-free rate + 4.5% crypto equity risk premium), and 3% perpetual growth rate. The higher risk premium reflects full ETH price exposure including volatility, regulatory, and smart contract risks.',
                 'method.l2.note': '2x L2 weight multiplier is proprietary without empirical basis',
                 'method.l2.desc': 'Captures value from Ethereum\'s Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum\'s value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.',
@@ -21371,7 +21378,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.ecosystemSettlement.desc': '이더리움을 정산 인프라로 측정하는 모델 (MV=PQ 교환방정식). 네이티브 ETH뿐 아니라 스테이블코인, DeFi 토큰, NFT 등 생태계 전체 토큰 활동을 집계. 이는 글로벌 정산 레이어로서 이더리움의 총 경제 처리량을 포착. Velocity = 150은 스테이블코인 회전율(~80x/년, McKinsey)을 기준으로, 고빈도 DeFi 스왑 상향 조정 및 봇/MEV 제거(70-93%, Visa 연구) 하향 조정. ETH Monetary보다 높은 velocity는 빠르게 움직이는 토큰 경제를 반영.',
                 'method.metcalfe.note': 'DAU-가치 계수가 크게 변동; 1.5 지수가 모든 상황에 적합하지 않을 수 있음',
                 'method.metcalfe.desc': '네트워크 가치는 활성 사용자/노드 수의 제곱에 비례하여 성장합니다. 원래 통신용으로 개발되었으며, 학술 연구자들(Alabi 2017, Peterson 2018)에 의해 비트코인과 이더리움에 대해 실증적으로 검증되었습니다. TVL을 네트워크 활동의 대리 지표로 사용합니다.',
-                'method.dcf.note': '할인율과 성장률 가정에 매우 민감',
+                'method.dcf.note': '할인율과 성장률 가정에 매우 민감합니다. 결과는 현재가의 3배로 상한을 둡니다. (1 + APR) ÷ (9% − 3%)는 항상 16.7 이상이라 상한이 늘 값을 정합니다(적정가 = 현재가 × 3, +200%).',
                 'method.dcf.desc': '스테이킹 보상을 영구 현금흐름으로 취급하는 전통적인 DCF 분석입니다. Lido API의 실시간 스테이킹 APR을 현금흐름률로, 9% 할인율(4.5% 무위험수익률 + 4.5% 크립토 주식 리스크 프리미엄), 3% 영구 성장률을 사용합니다. 높은 리스크 프리미엄은 변동성, 규제, 스마트 컨트랙트 리스크를 포함한 전체 ETH 가격 노출을 반영합니다.',
                 'method.l2.note': '2배 L2 가중치 배수는 실증적 근거 없는 독자적 설정',
                 'method.l2.desc': '이더리움의 레이어 2 스케일링 생태계(Arbitrum, Optimism, Base, zkSync 등)의 가치를 포착합니다. L2 TVL에 2배 가중치를 부여하는 이유는 L2 활동이 이더리움 메인넷에서 정산되어 블록스페이스를 소비하고 EIP-1559를 통해 ETH를 소각하기 때문입니다.',
@@ -21858,7 +21865,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.ecosystemSettlement.desc': '将以太坊作为结算基础设施来衡量（MV=PQ交换方程）。统计整个生态系统的所有代币活动：稳定币、DeFi代币、NFT等，不仅是原生ETH。这捕捉了以太坊作为全球结算层的总经济吞吐量。Velocity = 150基于稳定币周转率（~80x/年，McKinsey），根据高频DeFi交换上调，并根据机器人/MEV移除（70-93%，Visa研究）下调。比ETH Monetary更高的velocity反映了快速流动的代币经济。',
                 'method.metcalfe.note': 'DAU与价值的系数变化显著；1.5指数可能不适用于所有情况',
                 'method.metcalfe.desc': '网络价值与活跃用户/节点数量的平方成正比增长。最初为电信开发，该模型已被学术研究人员（Alabi 2017, Peterson 2018）对比特币和以太坊进行了实证验证。使用TVL作为网络活动的代理指标。',
-                'method.dcf.note': '对贴现率和增长率假设高度敏感',
+                'method.dcf.note': '对贴现率和增长率假设高度敏感。结果上限为当前价格的 3 倍：(1 + APR) ÷ (9% − 3%) 始终不低于 16.7，因此数值始终由上限决定（公允价值 = 价格 × 3，+200%）。',
                 'method.dcf.desc': '将质押奖励视为永续现金流的传统DCF分析。使用Lido API的实时质押APR作为现金流率，9%贴现率（4.5%无风险利率 + 4.5%加密股权风险溢价），3%永续增长率。较高的风险溢价反映了完整的ETH价格敞口，包括波动性、监管和智能合约风险。',
                 'method.l2.note': '2倍L2权重乘数是专有设定，缺乏实证基础',
                 'method.l2.desc': '捕捉以太坊Layer 2扩展生态系统（Arbitrum, Optimism, Base, zkSync等）的价值。L2 TVL加权2倍，因为L2活动在以太坊主网上结算，消耗区块空间并通过EIP-1559销毁ETH。',
@@ -22367,7 +22374,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.ecosystemSettlement.desc': 'イーサリアムを決済インフラとして測定するモデル（MV=PQ交換方程式）。ネイティブETHだけでなく、ステーブルコイン、DeFiトークン、NFTなどエコシステム全体のトークン活動を集計。これによりグローバル決済レイヤーとしてのイーサリアムの総経済スループットを捕捉。Velocity = 150はステーブルコイン回転率（~80x/年、McKinsey）を基準に、高頻度DeFiスワップで上方調整、ボット/MEV除去（70-93%、Visa研究）で下方調整。ETH Monetaryより高いvelocityは高速で動くトークン経済を反映。',
                 'method.metcalfe.note': 'DAUと価値の係数は大きく変動；1.5指数が全ての状況に適合するとは限らない',
                 'method.metcalfe.desc': 'ネットワーク価値はアクティブユーザー/ノード数の二乗に比例して成長します。元々は通信用に開発され、このモデルはビットコインとイーサリアムについて学術研究者（Alabi 2017、Peterson 2018）によって実証的に検証されています。TVLをネットワーク活動の代理指標として使用します。',
-                'method.dcf.note': '割引率と成長率の仮定に非常に敏感',
+                'method.dcf.note': '割引率と成長率の仮定に非常に敏感です。結果は現在価格の 3 倍を上限とします。(1 + APR) ÷ (9% − 3%) は常に 16.7 以上のため、上限が常に値を決めます（適正価値 = 価格 × 3、+200%）。',
                 'method.dcf.desc': 'ステーキング報酬を永続キャッシュフローとして扱う従来のDCF分析。Lido APIのライブステーキングAPRをキャッシュフロー率として、9%割引率（4.5%無リスク利率 + 4.5%クリプト株式リスクプレミアム）、3%永続成長率を使用。高いリスクプレミアムは、ボラティリティ、規制、スマートコントラクトリスクを含む完全なETH価格エクスポージャーを反映します。',
                 'method.l2.note': '2倍のL2重み付け乗数は実証的根拠のない独自設定',
                 'method.l2.desc': 'イーサリアムのレイヤー2スケーリングエコシステム（Arbitrum、Optimism、Base、zkSyncなど）からの価値を捉えます。L2 TVLに2倍の重み付けをするのは、L2の活動がイーサリアムメインネットで決済され、ブロックスペースを消費し、EIP-1559を通じてETHを焼却するためです。',
@@ -23719,6 +23726,18 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             return s;
         }
 
+        // Astra F07 (2026-10-16): '% from ATH' is computed from the SAME price shown in #current-price and the shown ATH.
+        // (It used CoinGecko's ath_change_percentage, which is based on CoinGecko's price, while the headline price is
+        // Binance/realtime → en showed $2,419.2 / ATH $4,946.1 / −52.2% where the two numbers give −51.1%.)
+        function renderAthChange() {
+            const el = document.getElementById('from-ath');
+            if (!el || !(state.ath > 0) || !(state.price > 0)) return;
+            const pct = ((state.price - state.ath) / state.ath) * 100;
+            state.athChangePercent = pct;
+            el.textContent = fmt.pct(pct);
+            el.className = 'price-stat-tag ' + (pct >= 0 ? 'up' : 'down');
+        }
+
         async function loadDailyCommentary() {
             if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
                 log('📝 Commentary: Supabase not configured');
@@ -23729,10 +23748,12 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             
             // 다국어 지원
             const commentaryI18n = {
-                en: { label: 'Daily Analysis', by: 'by', at: 'at' },
-                ko: { label: '일간 분석', by: 'by', at: '' },
-                zh: { label: '每日分析', by: 'by', at: '' },
-                ja: { label: '日次分析', by: 'by', at: '' }
+                // Astra F05 (2026-10-16): the analysis is written once a day from that day's stored data, so its numbers
+                // can differ from the live cards above. Say so in the footer instead of letting "currently" read as live.
+                en: { label: 'Daily Analysis', by: 'by', at: 'at', asof: 'Numbers as of when it was written; live cards above may differ' },
+                ko: { label: '일간 분석', by: 'by', at: '', asof: '수치는 생성 당시 기준이라 위 실시간 카드와 다를 수 있어요' },
+                zh: { label: '每日分析', by: 'by', at: '', asof: '数值以生成时为准，可能与上方实时卡片不同' },
+                ja: { label: '日次分析', by: 'by', at: '', asof: '数値は生成時点のもので、上のリアルタイムカードと異なる場合があります' }
             };
             
             try {
@@ -24046,6 +24067,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                             <div class="ai-commentary-text">${formattedCommentary}</div>
                             <div class="ai-commentary-footer">
                                 ${i18nText.label}${stampStr ? ' · ' + stampStr : ''}${commentary.model_label ? ` · ${i18nText.by} ${String(commentary.model_label).replace(/[<>&"]/g, '')}` : ''}
+                                <span class="ai-commentary-asof">${i18nText.asof}</span>
                             </div>
                         `;
                         el.classList.remove('loading');
@@ -25141,6 +25163,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 // 메인 가격 표시
                 document.getElementById('current-price').textContent = fmt.price(state.price);
+                renderAthChange();
                 if (state.volume24h) document.getElementById('volume-24h').textContent = fmt.usd(state.volume24h);
 
                 // 시뮬레이터 마켓 프라이스도 업데이트
@@ -25920,6 +25943,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 if (!state.price) {
                     state.price = md.current_price.usd;
                     document.getElementById('current-price').textContent = fmt.price(state.price);
+                    renderAthChange();
                     
                     // 시뮬레이터 마켓 프라이스도 업데이트
                     const simMarketPriceEl = document.getElementById('sim-market-price');
@@ -25950,11 +25974,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     const athEl = document.getElementById('ath');
                     if (athEl) athEl.textContent = fmt.price(state.ath);
                     
-                    const fromAthEl = document.getElementById('from-ath');
-                    if (fromAthEl) {
-                        fromAthEl.textContent = fmt.pct(state.athChangePercent);
-                        fromAthEl.className = 'price-stat-tag ' + (state.athChangePercent >= 0 ? 'up' : 'down');
-                    }
+                    renderAthChange();
                 }
 
                 // Binance 히스토리가 없으면 CoinGecko에서 가져오기
@@ -26119,6 +26139,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 // 가격 UI 업데이트
                 const priceEl = document.getElementById('current-price');
                 if (priceEl) priceEl.textContent = fmt.price(realtimePrice);
+                renderAthChange();
                 
                 const summaryPriceEl = document.getElementById('summary-current-price');
                 if (summaryPriceEl) summaryPriceEl.textContent = fmt.price(realtimePrice);
@@ -29989,7 +30010,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             tvlMultiple: { name: 'TVL Multiple', formula: 'TVL × Multiple ÷ Supply', reliability: 1 },
             stakingScarcity: { name: 'Staking Scarcity', formula: 'Price × √(Supply ÷ (Supply - Staked))', reliability: 1 },
             metcalfe: { name: "Metcalfe's Law", formula: 'Coef × TVL^Exp ÷ Supply', reliability: 2 },
-            dcf: { name: 'Staking DCF', formula: 'Price × (1+APR) ÷ (Discount - Growth)', reliability: 2 },
+            dcf: { name: 'Staking DCF', formula: 'min(Price × (1+APR) ÷ (Discount - Growth), 3 × Price)', reliability: 2 },
             l2Ecosystem: { name: 'L2 Ecosystem', formula: '(TVL + L2×Weight) × Multiple ÷ Supply', reliability: 1 },
             ps: { name: 'P/S Ratio (25x)', formula: '(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply', reliability: 2 },
             revenueYield: { name: 'Fee Yield', formula: '(Burned L1 Fees + Burned Blob Fees) × 365 ÷ APR ÷ Supply', reliability: 3 },
@@ -31182,12 +31203,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     }
                     if (state.ath > 0) {
                         setEl('ath', fmt.price(state.ath));
-                        const athChange = ((state.price - state.ath) / state.ath) * 100;
-                        const fromAthEl = document.getElementById('from-ath');
-                        if (fromAthEl) {
-                            fromAthEl.textContent = fmt.pct(athChange);
-                            fromAthEl.className = 'price-stat-tag ' + (athChange >= 0 ? 'up' : 'down');
-                        }
+                        renderAthChange();
                     }
                     
                     // ★ 볼륨 데이터가 없으면 CoinGecko에서 먼저 가져오기
