@@ -335,6 +335,12 @@ async function fetchSectionMetrics(sectionKey) {
 function alignWithCard(tableName, records) {
     if (!records || records.length < 2) return records;
     if (tableName === 'historical_nvt') {
+        // Card (index.html loadSupabase NVT) drops today and yesterday before the 7-day MA:
+        // the newest Dune rows are partial (2026-10-15 run: raw latest made the AI write
+        // "NVT +7.3%" while the card showed -4.8%). Same cutoff here, in UTC dates.
+        const cut = new Date(); cut.setUTCHours(0, 0, 0, 0); cut.setUTCDate(cut.getUTCDate() - 2);
+        const cutStr = cut.toISOString().slice(0, 10);
+        records = records.filter(r => String(r.date).slice(0, 10) <= cutStr);
         return records.map((r, i) => {
             const win = records.slice(i, i + 7).map(x => Number(x.nvt_ratio)).filter(Number.isFinite);
             if (win.length < 7) return null; // partial window would skew the average
@@ -540,51 +546,6 @@ function checkAndRemoveIncomplete(records, valueField) {
                 continue;
             }
             
-            // NVT: the card shows a 7-day moving average (raw daily NVT swings 67↔255 day to day) and its
-            // 90D change is MA(latest) vs MA(first day inside the 90D window). Feeding the AI the raw daily
-            // value vs a raw 3-day average made it write "NVT fell 48.3%" under a card reading -4.8%
-            // (2026-10-15). Build the same MA series here so text and card come from one calculation.
-            if (tableName === 'historical_nvt') {
-                const { data: raw } = await supabase
-                    .from(tableName)
-                    .select('date, nvt_ratio')
-                    .order('date', { ascending: false })
-                    .limit(1100);
-                const asc = (raw || [])
-                    .map(r => ({ date: r.date, v: parseFloat(r.nvt_ratio) }))
-                    .filter(r => isFinite(r.v))
-                    .reverse()
-                    .slice(0, -1); // newest row may be a partial day (same rule as the card)
-                if (asc.length > 100) {
-                    const ma = asc.map((d, i, arr) => {
-                        if (i < 6) return { date: d.date, nvt_ratio: d.v };
-                        const w = arr.slice(i - 6, i + 1);
-                        return { date: d.date, nvt_ratio: w.reduce((s, x) => s + x.v, 0) / 7 };
-                    });
-                    const desc = [...ma].reverse();
-                    const cutoff = new Date(new Date(today).getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                    const start = ma.find(d => d.date >= cutoff);
-                    const sorted = ma.map(d => d.nvt_ratio).sort((a, b) => a - b);
-                    const n = sorted.length, cur = desc[0].nvt_ratio;
-                    metricsData[metricKey] = {
-                        latest: desc[0],
-                        recent3d: desc.slice(0, 3),
-                        recent7d: desc.slice(0, 7),
-                        around90d: start ? [start] : [],
-                        ninetyDaysAgo: start || null,
-                        basis: '7-day moving average (same as the card)',
-                        historicalStats: {
-                            min: sorted[0], max: sorted[n - 1], median: sorted[Math.floor(n / 2)],
-                            p10: sorted[Math.floor(n * 0.1)], p25: sorted[Math.floor(n * 0.25)],
-                            p75: sorted[Math.floor(n * 0.75)], p90: sorted[Math.floor(n * 0.9)],
-                            currentVal: cur, currentPercentile: Math.round(sorted.filter(v => v < cur).length / n * 100),
-                            dataPoints: n
-                        }
-                    };
-                }
-                continue;
-            }
-
             // Special handling for L2 TVL (stored by chain)
             if (tableName === 'historical_l2_tvl') {
                 const { data: recent } = await supabase
@@ -886,7 +847,7 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
             valStr = String(currentVal);
         }
         
-        prompt += `- ${key}: ${valStr}${unit} ${changeStr}${data.basis ? ` [${data.basis}]` : ''}\n`;
+        prompt += `- ${key}: ${valStr}${unit} ${changeStr}\n`;
         
         // 역사적 통계 추가 (AI가 맥락을 이해하도록)
         const stats = data.historicalStats;

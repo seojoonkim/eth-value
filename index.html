@@ -16358,7 +16358,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     <div class="metric-footer">
                         <span>DefiLlama</span>
                         <span class="change" id="dex-change">--</span>
-                        <div class="metric-desc" data-i18n="desc.dex">Weekly DEX trading volume on L1 Ethereum. Key indicator of mainnet DeFi activity.</div>
+                        <div class="metric-desc" data-i18n="desc.dex">Daily DEX trading volume on L1 Ethereum. Key indicator of mainnet DeFi activity.</div>
                     </div>
                 </div>
 
@@ -16901,7 +16901,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">Price × (Target ÷ APR)</div>
-                            <div class="method-desc" data-i18n="method.validator.desc">Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Staking risk premium (~1.5%). The lower premium (vs. 4.5% in DCF) reflects staking's reduced risk profile: predictable validator rewards, no impermanent loss, and protocol-level security. If current APR is below target, ETH is undervalued.</div>
+                            <div class="method-desc" data-i18n="method.validator.desc">Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = risk-free rate assumption (4.5%, model constant; live 10Y is in 02.2) + Staking risk premium (~1.5%). The lower premium (vs. 4.5% in DCF) reflects staking's reduced risk profile: predictable validator rewards, no impermanent loss, and protocol-level security. If current APR is below target, ETH is undervalued.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -19215,7 +19215,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 },
                 'validatorEcon': {
                     formula: 'Price × TargetYield ÷ CurrentAPR',
-                    desc: t('method.validator.desc', 'Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Staking risk premium (~1.5%). If current APR is below target, ETH is undervalued.'),
+                    desc: t('method.validator.desc', 'Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = risk-free rate assumption (4.5%, model constant; live 10Y is in 02.2) + Staking risk premium (~1.5%). If current APR is below target, ETH is undervalued.'),
                     reliability: 2,
                     caveat: t('method.validator.note', 'Target 6% required yield is subjective; varies significantly by investor risk appetite'),
                     sources: [
@@ -20838,7 +20838,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.costBasis.note': 'MVRV 1.88x is the median of 1110 trading days (2022-2025); may vary by market cycle',
                 'method.costBasis.desc': 'Realized Price is calculated from Dune Analytics: volume-weighted average price of all ETH transfers since 2016. MVRV equilibrium (1.88x) is the statistical median of daily MVRV ratios over 3 years (1110 days) - meaning ETH traded above this level exactly 50% of the time and below 50% of the time. Fair Value = Realized Price × 1.88.',
                 'method.validator.note': 'Target 6% required yield is subjective; varies significantly by investor risk appetite',
-                'method.validator.desc': 'Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = US 10Y Treasury (~4.5%) + Staking risk premium (~1.5%). The lower premium (vs. 4.5% in DCF) reflects staking\'s reduced risk profile: predictable validator rewards, no impermanent loss, and protocol-level security. If current APR is below target, ETH is undervalued.',
+                'method.validator.desc': 'Calculates fair value based on the ratio of target staking yield to current APR. Target yield (6%) = risk-free rate assumption (4.5%, model constant; live 10Y is in 02.2) + Staking risk premium (~1.5%). The lower premium (vs. 4.5% in DCF) reflects staking\'s reduced risk profile: predictable validator rewards, no impermanent loss, and protocol-level security. If current APR is below target, ETH is undervalued.',
                 'onchain.ethInDefi': 'ETH in DeFi',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH Price',
                 'onchain.commitmentRatio': 'Commitment Ratio',
@@ -20925,7 +20925,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'desc.staking': "ETH locked in beacon chain staking. Higher = more network security.",
                 'desc.lending': "Assets in L1 DeFi lending protocols (Aave, Compound, etc). Indicates mainnet DeFi capital.",
                 'desc.stables': "Stablecoin value on Ethereum. Shows ETH dominance as settlement layer.",
-                'desc.dex': "Weekly DEX trading volume on L1 Ethereum. Key indicator of mainnet DeFi activity.",
+                'desc.dex': "Daily DEX trading volume on L1 Ethereum. Key indicator of mainnet DeFi activity.",
                 'desc.fees': "Total fees paid to L1 network. Revenue proxy for Ethereum mainnet.",
                 'desc.txEth': "Daily mainnet transactions. Core network usage indicator.",
                 'desc.txTotal': "Daily L2 transactions (Arbitrum, Optimism, Base, etc). L2 ecosystem activity measure.",
@@ -20988,6 +20988,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.blobCount': "Blob Count",
                 'metric.defiRevenue': "DeFi Protocol Revenue",
                 'metric.l1ActiveAddr': "L1 Active Addresses",
+                'metric.openInterest': "Open Interest",
+                'desc.openInterest': "Total open derivative positions across exchanges. Rising OI + price = strong trend confirmation.",
                 'metric.l2ActiveAddr': "L2 Active Addresses",
                 'metric.l1Transactions': "L1 Transactions",
                 'metric.l2Transactions': "L2 Transactions",
@@ -21334,7 +21336,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.costBasis.note': 'MVRV 1.5는 역사적 평균; 실제 균형점은 시장 사이클에 따라 다를 수 있음',
                 'method.costBasis.desc': '실현 가격(유통 중인 모든 ETH의 평균 취득 비용)에 MVRV 균형 비율 1.5를 곱합니다. 실현 가격은 모든 보유자의 총 비용 기준을 나타냅니다. 역사적으로 MVRV 1.5는 시장이 과열(MVRV > 3)되지도 저평가(MVRV < 1)되지도 않은 적정 가치 영역을 나타냅니다. 시장 가격 < 실현 가격일 때 대부분의 보유자가 손실 상태입니다.',
                 'method.validator.note': '목표 6% 수익률은 주관적; 투자자 위험 성향에 따라 크게 다름',
-                'method.validator.desc': '목표 스테이킹 수익률 대비 현재 APR 비율로 적정가치를 계산합니다. 목표 수익률(6%) = 미국 10년물 국채(~4.5%) + 스테이킹 리스크 프리미엄(~1.5%). 낮은 프리미엄(DCF의 4.5% 대비)은 스테이킹의 낮은 리스크를 반영합니다: 예측 가능한 검증자 보상, 비영구적 손실 없음, 프로토콜 수준 보안. 현재 APR이 목표보다 낮으면 ETH가 저평가된 것입니다.',
+                'method.validator.desc': '목표 스테이킹 수익률 대비 현재 APR 비율로 적정가치를 계산합니다. 목표 수익률(6%) = 무위험수익률 가정 4.5%(모델 상수, 실측 10년물은 02.2) + 스테이킹 리스크 프리미엄(~1.5%). 낮은 프리미엄(DCF의 4.5% 대비)은 스테이킹의 낮은 리스크를 반영합니다: 예측 가능한 검증자 보상, 비영구적 손실 없음, 프로토콜 수준 보안. 현재 APR이 목표보다 낮으면 ETH가 저평가된 것입니다.',
                 'onchain.ethInDefi': 'DeFi 내 ETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH 가격',
                 'onchain.commitmentRatio': '커밋먼트 비율',
@@ -21421,7 +21423,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'desc.staking': "비콘 체인 스테이킹 ETH. 높을수록 네트워크 보안 강화.",
                 'desc.lending': "L1 DeFi 대출 프로토콜 (Aave, Compound 등) 자산. DeFi 자본 배치 지표.",
                 'desc.stables': "이더리움 L1 스테이블코인 (USDT, USDC, DAI 등) 총 공급량. ETH의 결제 레이어 지배력.",
-                'desc.dex': "L1 이더리움 주간 DEX 거래량. 메인넷 DeFi 활동 핵심 지표.",
+                'desc.dex': "L1 이더리움 일일 DEX 거래량. 메인넷 DeFi 활동 핵심 지표.",
                 'desc.fees': "L1 네트워크에 지불된 총 수수료. ETH 가치의 수익 지표.",
                 'desc.txEth': "일일 메인넷 트랜잭션. 핵심 네트워크 사용 지표.",
                 'desc.txTotal': "L2 (Arbitrum, Optimism, Base 등) 일일 트랜잭션. 전체 생태계 활동.",
@@ -21485,6 +21487,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.blobCount': "블롭 수",
                 'metric.defiRevenue': "DeFi 프로토콜 수익",
                 'metric.l1ActiveAddr': "L1 활성 주소",
+                'metric.openInterest': "미결제약정",
+                'desc.openInterest': "거래소 전체에 열려 있는 파생상품 포지션 규모. 미결제약정과 가격이 함께 오르면 추세가 강하다는 신호.",
+                'appendix.model.tvl': "DeFi 중심: DeFi 예치금만으로 ETH 가치를 평가. 과거 시가총액/TVL 비율(2020~2023)에서 도출한 7배 배수를 사용.",
                 'metric.l2ActiveAddr': "L2 활성 주소",
                 'metric.l1Transactions': "L1 트랜잭션",
                 'metric.l2Transactions': "L2 트랜잭션",
@@ -21785,7 +21790,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.commitment.note': '锁定ETH的1.5倍溢价乘数是任意设定，缺乏实证依据',
                 'method.appCapital.note': '基于历史比率估算稳定币占总App Capital的28%',
                 'method.validator.note': '目标6%收益率是主观的；因投资者风险偏好而异',
-                'method.validator.desc': '基于目标质押收益率与当前APR的比率计算公允价值。目标收益率(6%) = 美国10年期国债(~4.5%) + 质押风险溢价(~1.5%)。较低的溢价（相比DCF的4.5%）反映了质押较低的风险特征：可预测的验证者奖励、无无常损失、协议级安全性。如果当前APR低于目标，ETH被低估。',
+                'method.validator.desc': '基于目标质押收益率与当前APR的比率计算公允价值。目标收益率(6%) = 无风险利率假设4.5%（模型常数，实际10年期见02.2） + 质押风险溢价(~1.5%)。较低的溢价（相比DCF的4.5%）反映了质押较低的风险特征：可预测的验证者奖励、无无常损失、协议级安全性。如果当前APR低于目标，ETH被低估。',
                 'method.settlement.note': '流通速度6以USD M1为基准；加密货币流通行为可能有显著差异',
                 'method.settlement.desc': '应用交换方程(MV=PQ)，将ETH视为以太坊结算层的货币。每日结算量包括L1转账、L2转账和跨链交易量。Velocity 6反映了ETH的价值储存(SoV)特性：质押将ETH锁定在velocity 0，类似ETF后比特币的机构持有模式，以及USD M1 velocity (~5.5x)基准。更低的velocity = 更高的隐含价值（货币被更长时间持有而非消费）。',
                 'method.sink.note': 'Sink估算值各异；流动质押部分抵消质押Sink',
@@ -21911,7 +21916,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'desc.staking': "信标链质押ETH。越高=网络安全性越强。",
                 'desc.lending': "L1 DeFi借贷协议(Aave, Compound等)资产。表示DeFi资本部署。",
                 'desc.stables': "以太坊L1稳定币(USDT, USDC, DAI等)总供应量。显示ETH结算层主导地位。",
-                'desc.dex': "L1以太坊周DEX交易量。主网DeFi活动关键指标。",
+                'desc.dex': "L1以太坊每日DEX交易量。主网DeFi活动关键指标。",
                 'desc.fees': "L1网络总费用。以太坊价值的收入指标。",
                 'desc.txEth': "每日主网交易。核心网络使用指标。",
                 'desc.txTotal': "L2(Arbitrum, Optimism, Base等)每日交易。全生态活动度量。",
@@ -21975,6 +21980,16 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.blobCount': "Blob数量",
                 'metric.defiRevenue': "DeFi协议收入",
                 'metric.l1ActiveAddr': "L1活跃地址",
+                'metric.openInterest': "未平仓合约",
+                'desc.openInterest': "各交易所未平仓衍生品头寸总量。未平仓合约与价格同步上升 = 趋势强劲的信号。",
+                'summary.posts': "篇帖子",
+                'summary.likes': "个赞",
+                'community.dropImage': "将图片拖到这里",
+                'rankings.statsLabel': "评分 &<br>社区",
+                'rankings.stats.participants': "参与者",
+                'rankings.stats.ratingsUnit': "评分",
+                'rankings.stats.postsUnit': "帖子",
+                'rankings.stats.likesUnit': "点赞",
                 'metric.l2ActiveAddr': "L2活跃地址",
                 'metric.l1Transactions': "L1交易数",
                 'metric.l2Transactions': "L2交易数",
@@ -22280,7 +22295,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.commitment.note': 'コミットETHへの1.5倍プレミアム乗数は実証的根拠なく任意に設定',
                 'method.appCapital.note': 'ステーブルコインを過去の比率に基づき総App Capitalの28%と推定',
                 'method.validator.note': '目標6%利回りは主観的；投資家のリスク選好により大きく異なる',
-                'method.validator.desc': '目標ステーキングイールド対現在APRの比率で適正価値を計算。目標イールド(6%) = アメリカ10年物国債(~4.5%) + ステーキングリスクプレミアム(~1.5%)。低いプレミアム（DCFの4.5%対比）は、ステーキングの低リスク特性を反映：予測可能なバリデーター報酬、インパーマネントロスなし、プロトコルレベルセキュリティ。現在APRが目標より低ければETHは過小評価。',
+                'method.validator.desc': '目標ステーキングイールド対現在APRの比率で適正価値を計算。目標イールド(6%) = リスクフリーレート前提4.5%（モデル定数、実測10年物は02.2） + ステーキングリスクプレミアム(~1.5%)。低いプレミアム（DCFの4.5%対比）は、ステーキングの低リスク特性を反映：予測可能なバリデーター報酬、インパーマネントロスなし、プロトコルレベルセキュリティ。現在APRが目標より低ければETHは過小評価。',
                 'method.settlement.note': 'Velocity 6はUSD M1をベンチマーク；クリプトの流通速度は大きく異なる可能性',
                 'method.settlement.desc': '交換方程式(MV=PQ)を適用し、ETHをイーサリアム決済レイヤーの貨幣として扱います。日次決済量はL1送金、L2送金、ブリッジ取引量を合算します。Velocity 6はETHの価値貯蔵(SoV)特性を反映します：ステーキングはETHをvelocity 0で固定、ETF以降ビットコインと類似の機関保有パターン、USD M1 velocity (~5.5x)ベンチマーク。低いvelocity = 高い内在価値（貨幣が消費されず長く保有される）。',
                 'method.sink.note': 'Sink推定値はさまざま；流動性ステーキングが部分的にステーキングSinkを相殺',
@@ -22406,7 +22421,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'desc.staking': "ビーコンチェーンステーキングETH。高い＝ネットワーク安全性向上。",
                 'desc.lending': "L1 DeFiレンディングプロトコル(Aave, Compound等)資産。DeFi資本配置指標。",
                 'desc.stables': "イーサリアムL1ステーブルコイン(USDT, USDC, DAI等)総供給量。決済レイヤー優位性。",
-                'desc.dex': "L1イーサリアム週間DEX取引量。メインネットDeFi活動の主要指標。",
+                'desc.dex': "L1イーサリアム日次DEX取引量。メインネットDeFi活動の主要指標。",
                 'desc.fees': "L1ネットワーク総手数料。イーサリアム価値の収益指標。",
                 'desc.txEth': "日次メインネット取引。コアネットワーク使用指標。",
                 'desc.txTotal': "L2(Arbitrum, Optimism, Base等)日次取引。全エコシステム活動測定。",
@@ -22469,6 +22484,16 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.blobCount': "Blob数",
                 'metric.defiRevenue': "DeFiプロトコル収益",
                 'metric.l1ActiveAddr': "L1アクティブアドレス",
+                'metric.openInterest': "建玉",
+                'desc.openInterest': "取引所全体の未決済デリバティブポジション総額。建玉と価格が同時に上昇 = 強いトレンドのシグナル。",
+                'summary.posts': "件の投稿",
+                'summary.likes': "件のいいね",
+                'community.dropImage': "ここに画像をドロップ",
+                'rankings.statsLabel': "評価 &<br>コミュニティ",
+                'rankings.stats.participants': "参加者",
+                'rankings.stats.ratingsUnit': "評価",
+                'rankings.stats.postsUnit': "投稿",
+                'rankings.stats.likesUnit': "いいね",
                 'metric.l2ActiveAddr': "L2アクティブアドレス",
                 'metric.l1Transactions': "L1トランザクション",
                 'metric.l2Transactions': "L2トランザクション",
@@ -27878,10 +27903,23 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                                 ticks: {
                                     font: { size: 8 },
                                     color: '#6b7280',
+                                    // 390px: chart is ~150px wide next to the legend → 5 month labels ran together
+                                    // ("Jul '26Aug '26"). Fewer labels + wider skip padding on narrow canvases.
                                     maxTicksLimit: 5,
-                                    autoSkip: true,
+                                    autoSkip: (ctx.clientWidth || 300) >= 200,
                                     autoSkipPadding: 15,
-                                    maxRotation: 0
+                                    maxRotation: 0,
+                                    // Narrow (mobile 2-col card, ~96px canvas): start and end date only, kept inside the edges.
+                                    align: (ctx.clientWidth || 300) < 200 ? 'inner' : 'center',
+                                    callback: function(v, i, ticks) {
+                                        if ((ctx.clientWidth || 300) >= 200) return this.getLabelForValue(v);
+                                        if (i !== 0 && i !== ticks.length - 1) return null;
+                                        // Short form so two labels fit ~50px: month only within one year, else year only.
+                                        const a = String(this.getLabelForValue(ticks[0].value)), z = String(this.getLabelForValue(ticks[ticks.length - 1].value));
+                                        const yr = (x) => (x.match(/'\d{2}|\d{4}/) || [''])[0];
+                                        const lab = String(this.getLabelForValue(v));
+                                        return yr(a) && yr(a) === yr(z) ? lab.replace(/\s*('\d{2}|\d{4})/, '') : (yr(lab) || lab);
+                                    }
                                 }
                             },
                             y: { 
@@ -33885,15 +33923,14 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 // Get Stablecoins from Supabase (day before latest)
                 var stablesValue = getSupabaseValue(state.supabaseStablesEthHistory, 'value') || state.stablecoins || 166000000000;
                 
-                // Get Active Addresses from Supabase (day before latest)
+                // Active Addresses: same value the 02.5 card shows (state.l1ActiveAddresses = latest complete day;
+                // history already drops today/yesterday). The old history[-2] skipped a second day and showed 839K
+                // next to a 766.4K card (2026-10-15).
                 var activeAddressesValue = 400000; // Default
-                if (state.l1ActiveAddrHistory && state.l1ActiveAddrHistory.length >= 2) {
-                    var aaDayBefore = state.l1ActiveAddrHistory[state.l1ActiveAddrHistory.length - 2];
-                    if (aaDayBefore && aaDayBefore.value) {
-                        activeAddressesValue = aaDayBefore.value;
-                    }
-                } else if (state.l1ActiveAddresses) {
+                if (state.l1ActiveAddresses > 0) {
                     activeAddressesValue = state.l1ActiveAddresses;
+                } else if (state.l1ActiveAddrHistory && state.l1ActiveAddrHistory.length > 0) {
+                    activeAddressesValue = state.l1ActiveAddrHistory[state.l1ActiveAddrHistory.length - 1].value || activeAddressesValue;
                 }
                 
                 // Calculate staking ratio (rounded to integer)
