@@ -24307,13 +24307,9 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                         bridgeByDate[dateKey] += parseFloat(d.bridge_volume_eth || 0);
                     });
                     
-                    // Build history (ETH → USD)
-                    const ethPrice = state.price || 3500;
-                    let bridgeHistory = Object.entries(bridgeByDate)
-                        .map(([date, eth]) => ({ date: new Date(date), value: eth * ethPrice, ethValue: eth }))
-                        .sort((a, b) => a.date - b.date);
-                    
-                    state.bridgeVolumeHistory = bridgeHistory;
+                    // Build history (ETH → USD, 날짜별 종가 — ethUsdOn). 종가 없는 날은 빼고, 가격 도착 후 재계산.
+                    state.bridgeEthByDate = bridgeByDate;
+                    let bridgeHistory = rebuildBridgeVolumeUsd();
                     log(`   ✓ Bridge Volume History: ${state.bridgeVolumeHistory.length} records`);
                     
                     // Use getLatestValidValue helper
@@ -24322,10 +24318,6 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                         const validDate = getLatestValidDate(bridgeHistory);
                         log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (${validDate?.toISOString().split('T')[0]})`);
                         
-                        // Keep 7-day avg for calculations
-                        const validHistory = getValidHistory(bridgeHistory);
-                        const recentBridge = validHistory.slice(-7);
-                        state.bridgeDailyVolumeAvg = recentBridge.reduce((sum, d) => sum + d.value, 0) / recentBridge.length;
                     }
                 }
                 
@@ -27155,6 +27147,44 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
         }
 
         // NVT Ratio 계산 및 차트 업데이트
+        // 2026-10-15: ETH→USD 환산 기준 하나로 통일 — 그 날짜 종가(historical_eth_price close),
+        // 종가가 아직 없는 최근 날(오늘)만 현재가. 가격이 하나도 없으면 null을 돌려 계산을 보류한다.
+        // 예전 고정 대체가 3,500달러는 가격 도착 순서에 따라 같은 데이터가 $2.9M/$4.2M로 갈렸다(2026-10-14 실측).
+        function ethUsdOn(date) {
+            const hist = state.supabasePriceHistory?.length ? state.supabasePriceHistory : (state.priceHistory || []);
+            if (state._closeSrc !== hist) {
+                state._closeMap = {}; state._closeLast = '';
+                hist.forEach(x => { if (x?.date && x.value > 0) { const k = x.date.toISOString().slice(0, 10); state._closeMap[k] = x.value; if (k > state._closeLast) state._closeLast = k; } });
+                state._closeSrc = hist;
+            }
+            const dt = date instanceof Date ? date : new Date(date);
+            if (isNaN(dt)) return null;
+            const k = dt.toISOString().slice(0, 10);
+            if (state._closeMap[k] > 0) return state._closeMap[k];
+            // 현재가는 종가가 아직 없는 최근 2일 안의 날에만 (종가 히스토리가 없을 때 과거 날짜에 현재가를 덮지 않게)
+            if ((!state._closeLast || k > state._closeLast) && state.price > 0 && Date.now() - dt.getTime() < 2 * 86400000) return state.price;
+            return null;
+        }
+        // 브릿지 볼륨 ETH → USD (날짜별 종가). 가격이 늦게 오면 가격 도착 후 다시 부른다.
+        function rebuildBridgeVolumeUsd() {
+            const byDate = state.bridgeEthByDate;
+            if (!byDate) return;
+            const hist = Object.entries(byDate)
+                .map(([date, eth]) => { const d = new Date(date); const px = ethUsdOn(d); return px ? { date: d, value: eth * px, ethValue: eth } : null; })
+                .filter(Boolean)
+                .sort((a, b) => a.date - b.date);
+            state.bridgeVolumeHistory = hist;
+            state.bridgeDailyVolume = getLatestValidValue(hist) || 0;
+            const valid = getValidHistory(hist).slice(-7);
+            state.bridgeDailyVolumeAvg = valid.length ? valid.reduce((sum, d) => sum + d.value, 0) / valid.length : 0;
+            return hist;
+        }
+        // 블롭 수수료 카드: 차트 마지막 점과 같은 기준(마지막 날 ETH × 그날 종가). 가격 없으면 '--'.
+        function blobFeesCardText(eth, date) {
+            const px = ethUsdOn(date || new Date());
+            return px && eth >= 0 ? fmt.usd(eth * px) : '--';
+        }
+
         function calculateAndUpdateNVT() {
             try {
                 // Supabase 데이터가 있으면 우선 사용 (Dune API 기반 정확한 데이터)
@@ -27177,8 +27207,9 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 log('   Calculating NVT from CEX volume (fallback)...');
                 
                 const dailyCexVolume = state.volume24h || 25000000000;
-                const price = state.price || 3500;
+                const price = state.price > 0 ? state.price : 0;
                 const mCap = state.marketCap || (price * 120000000);
+                if (!(mCap > 0)) { log('   NVT fallback: no price yet — skipped'); return; } // 가격 없으면 보류(예전 $3,500 임의값)
                 
                 // On-chain volume ≈ 40% of CEX volume (rough estimate)
                 const dailyOnChainVol = dailyCexVolume * 0.40;
@@ -27365,14 +27396,11 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
         function calculateEthInDefiAndCommitment() {
             try {
                 const totalSupply = state.circulatingSupply || 120000000;
-                const price = state.price || 3500;
+                const price = state.price > 0 ? state.price : 0;
                 
-                // ETH in DeFi = TVL / ETH Price
-                if (state.tvl > 0 && price > 0) {
-                    state.ethInDefi = state.tvl / price;
-                } else {
-                    state.ethInDefi = 20000000; // ~$70B TVL / $3500 = 20M ETH default
-                }
+                // ETH in DeFi = TVL / ETH Price — 가격·TVL 없으면 보류(예전 $3,500·20M ETH 임의값)
+                if (!(state.tvl > 0 && price > 0)) return;
+                state.ethInDefi = state.tvl / price;
                 
                 // Commitment Ratio = (Staked + DeFi) / Supply
                 const stakedEth = state.stakedEth || 32000000; // ~32M ETH default
@@ -27451,7 +27479,9 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             const staked = state.stakedEth || 0;
             const tvl = state.tvl || 0;
             const l2Tvl = state.l2Tvl || 0;
-            const price = state.price || 3500;
+            const price = state.price > 0 ? state.price : 0;
+            // 가격 없으면 그리지 않고 보류 — renderChartsFromData가 가격 설정 뒤 다시 부른다(예전 $3,500 임의값)
+            if (!price) { log('Supply Distribution: no price yet — deferred'); return; }
             
             if (staked === 0 && tvl === 0 && state.circulatingSupply === 0) {
                 log('Supply Distribution: no data, using defaults');
@@ -27539,7 +27569,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     const l2Val = filteredL2[l2Idx]?.value || 0;
                     const date = filteredStaking[stakingIdx]?.date || new Date();
                     
-                    const priceAtTime = state.price || 3500;
+                    const priceAtTime = ethUsdOn(filteredTvl[tvlIdx]?.date || date);
+                    if (!priceAtTime) continue; // 그날 종가 없으면 점 생략
                     const ethInDefi = tvlVal / priceAtTime;
                     const ethInL2 = l2Val / priceAtTime;
                     
@@ -27562,7 +27593,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 const lastTvl = filteredTvl[filteredTvl.length - 1];
                 const lastL2 = filteredL2.length > 0 ? filteredL2[filteredL2.length - 1] : null;
                 if (lastStaking && lastTvl && dates[dates.length - 1]?.getTime() !== lastStaking.date?.getTime()) {
-                    const priceAtTime = state.price || 3500;
+                    const priceAtTime = ethUsdOn(lastTvl.date) || ethUsdOn(lastStaking.date);
+                    if (priceAtTime) {
                     const ethInDefi = (lastTvl?.value || 0) / priceAtTime;
                     const ethInL2 = (lastL2?.value || 0) / priceAtTime;
                     const stakePctVal = (lastStaking.value / totalSupply) * 100;
@@ -27576,6 +27608,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     stakingValues.push(stakePctVal);
                     defiValues.push(defiPctVal);
                     othersValues.push(othersPctVal);
+                    }
                 }
                 
                 // ═══════════════════════════════════════════════════════════════════
@@ -27970,7 +28003,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                         state.gasPriceHistory = [];
                         for (let i = 0; i < feesHist.length; i++) {
                             const fee = feesHist[i];
-                            const ethPrice = state.price || 3500;
+                            const ethPrice = ethUsdOn(fee.date);
+                            if (!ethPrice) continue; // 그날 종가 없으면 생략(예전 $3,500)
                             let txCount = 1200000;
                             if (txHist.length > 0) {
                                 let minDiff = Infinity;
@@ -28102,9 +28136,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     log(`   Blob 1d: ${dailyFees.toFixed(2)} ETH, ${fmt.num(dailyCount)} blobs`);
                     
                     // Convert to USD and display
-                    const blobFeesUsd = state.blobFees * (state.price || 3500);
                     const blobEl = document.getElementById('blob-fees-value');
-                    if (blobEl) blobEl.textContent = fmt.usd(blobFeesUsd);
+                    if (blobEl) blobEl.textContent = blobFeesCardText(state.blobFees, lastDay?.date);
                     const blobCountEl = document.getElementById('blob-count-value');
                     if (blobCountEl) blobCountEl.textContent = fmt.num(state.blobCount);
                     
@@ -28264,8 +28297,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 
                 const blobEl = document.getElementById('blob-fees-value');
                 if (blobEl) {
-                    const blobFeesUsd = blobFees * (state.price || 3500);
-                    blobEl.textContent = fmt.usd(blobFeesUsd);
+                    blobEl.textContent = state.price > 0 ? fmt.usd(blobFees * state.price) : '--'; // 최근 블록 기준 → 현재가
                 }
                 
                 // Blob Count UI도 같이 업데이트
@@ -28316,13 +28348,13 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             // Convert each blob fee to USD
             state.blobFeesHistoryUsd = state.blobFeesHistory.map(d => {
                 const dateStr = d.date.toISOString().split('T')[0];
-                const price = priceByDate[dateStr] || state.price || 3500; // fallback to current price
-                return {
+                const price = ethUsdOn(d.date); // 그날 종가, 종가 없는 최근 날만 현재가
+                return price ? {
                     date: d.date,
                     value: d.value * price,
                     ethValue: d.value
-                };
-            });
+                } : null;
+            }).filter(Boolean);
             
             // Update current blob fees in USD
             const lastDay = state.blobFeesHistoryUsd[state.blobFeesHistoryUsd.length - 1];
@@ -28657,9 +28689,9 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 // Fallback: fees 기반 추정 (base fee 비율 ~30-40% 추정)
                 if (dailyBurn < 100) {
                     const dailyFees = state.fees || 12000000; // $12M default
-                    const ethPrice = state.price || 3500;
-                    // 현재 낮은 gas 환경에서 base fee는 total fees의 약 30-40%
-                    dailyBurn = (dailyFees / ethPrice) * 0.35;
+                    const ethPrice = state.price > 0 ? state.price : 0;
+                    // 현재 낮은 gas 환경에서 base fee는 total fees의 약 30-40% (가격 없으면 추정 보류)
+                    if (ethPrice) dailyBurn = (dailyFees / ethPrice) * 0.35;
                     log('   Daily Burn from fees estimate:', fmt.num(dailyBurn), 'ETH');
                 }
                 state.dailyBurn = dailyBurn || 1500; // 최소 fallback
@@ -30727,6 +30759,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     state.priceHistory = state.supabasePriceHistory;
                     // 2026-10-14: 실시간 현재가가 이미 있으면 유지(예전엔 어제 종가로 덮어써 화면 현재가 $2,497.1 vs 적정가 계산 $2,507.64로 갈림)
                     state.price = state.livePrice > 0 ? state.livePrice : state.priceHistory[state.priceHistory.length - 1].value;
+                    rebuildBridgeVolumeUsd(); // 2026-10-15: 가격 확정 후 브릿지 볼륨 날짜별 종가로 재환산
                     priceSource = 'supabase';
                     log(`   Price: Using Supabase (${state.supabasePriceHistory.length} points)`);
                     
@@ -30748,6 +30781,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                     state.priceHistory = state.supabasePriceHistory;
                     // 2026-10-14: 실시간 현재가가 이미 있으면 유지(예전엔 어제 종가로 덮어써 화면 현재가 $2,497.1 vs 적정가 계산 $2,507.64로 갈림)
                     state.price = state.livePrice > 0 ? state.livePrice : state.priceHistory[state.priceHistory.length - 1].value;
+                    rebuildBridgeVolumeUsd(); // 2026-10-15: 가격 확정 후 브릿지 볼륨 날짜별 종가로 재환산
                     priceSource = 'api';
                     
                     // ★ Supabase 가격 데이터에서 볼륨 추출 (부족해도 일단 사용)
@@ -31254,7 +31288,8 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                         }
                     }
                 }
-                setEl('blob-fees-value', fmt.usd(state.blobFees * (state.price || 3500)));
+                state.blobFeesHistoryUsd = []; // 새 ETH 히스토리 기준으로 다시 환산
+                setEl('blob-fees-value', blobFeesCardText(state.blobFees, state.blobFeesHistory?.[state.blobFeesHistory.length - 1]?.date));
                 setEl('blob-count-value', fmt.num(state.blobCount));
                 safeCall(() => updateBlobFeesChart(ChartManager.getDefaultPeriod()), 'blobFees');
                 safeCall(() => updateBlobCountChart(ChartManager.getDefaultPeriod()), 'blobCount');
