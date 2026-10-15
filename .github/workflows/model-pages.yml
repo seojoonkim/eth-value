@@ -73,6 +73,14 @@ jobs:
             sleep 5
           done
           echo "pushed=true" >> "$GITHUB_OUTPUT"
+      - name: Store fair value snapshot (values the page shows now; no backfill)
+        # scripts/fv-snapshot.cjs → public.fair_value_snapshots (sql/fair_value_snapshots.sql).
+        # Runs after the page build so a snapshot failure never blocks the model pages.
+        if: always() && steps.commit.outcome == 'success'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/fv-snapshot.cjs
       - name: Request Pages build
         # pushes made with GITHUB_TOKEN may not start the legacy Pages build on their own
         if: steps.commit.outputs.pushed == 'true'
