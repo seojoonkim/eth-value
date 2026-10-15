@@ -103,16 +103,52 @@
         return r.json();
     }
 
+    // Speed: title/summary/mechanism are {en,ko,zh,ja} objects (~300KB gzip for 400 days). Fetch English + the
+    // page language only, then the missing language once on a language switch. Same rows, same text — loc()
+    // still falls back to English exactly as before.
+    const TXT = ['title', 'summary', 'mechanism'];
+    function initLang() {
+        let l = '';
+        try { l = (typeof parseUrlHash === 'function' && parseUrlHash().lang) || localStorage.getItem('ethval-lang') || ''; } catch (e) {}
+        l = l || (typeof currentLang !== 'undefined' && currentLang) || 'en';
+        return T[l] ? l : 'en';
+    }
+    function evCols(l) {
+        const t = TXT.map(k => `${k}_en:${k}->en`).concat(l !== 'en' ? TXT.map(k => `${k}_l:${k}->${l}`) : []);
+        return 'id,date,category,direction,impact,horizon,metrics,sources,confidence,' + t.join(',');
+    }
+    function unpackLangs(e, l) {
+        TXT.forEach(k => {
+            const o = {};
+            if (e[k + '_en'] != null) o.en = e[k + '_en'];
+            if (l !== 'en' && e[k + '_l'] != null) o[l] = e[k + '_l'];
+            e[k] = Object.keys(o).length ? o : null; delete e[k + '_en']; delete e[k + '_l'];
+        });
+        return e;
+    }
+    let langReq = {};
+    function ensureLang() {
+        const l = lang();
+        if (!S.langs || S.langs.has(l) || langReq[l] || S.status !== 'ok') return;
+        const since = new Date(Date.now() - 400 * dayMs).toISOString().slice(0, 10);
+        langReq[l] = rest(`news_events?select=id,${TXT.map(k => `${k}_l:${k}->${l}`).join(',')}&date=gte.${since}&limit=1000`).then(rows => {
+            const by = new Map((rows || []).map(r => [r.id, r]));
+            S.events.forEach(e => { const r = by.get(e.id); if (!r) return; TXT.forEach(k => { if (r[k + '_l'] != null) e[k] = Object.assign({}, e[k] || {}, { [l]: r[k + '_l'] }); }); });
+            S.langs.add(l); render();
+        }).catch(err => { console.warn('[news-impact] lang', err.message); }).finally(() => { langReq[l] = null; });
+    }
+
     async function load() {
         try {
             const since = new Date(Date.now() - 400 * dayMs).toISOString().slice(0, 10);
             const [ev, px, rx] = await Promise.all([
-                rest(`news_events?select=id,date,category,direction,impact,horizon,metrics,title,summary,mechanism,sources,confidence&date=gte.${since}&order=date.desc,impact.desc&limit=1000`),
+                rest(`news_events?select=${evCols(initLang())}&date=gte.${since}&order=date.desc,impact.desc&limit=1000`),
                 rest(`historical_eth_price?select=date,close&date=gte.${since}&order=date.asc&limit=1000`),
                 // ETH/BTC ratio (single source: Dune) for the market-neutral score; optional — a failure only hides that cell.
                 rest(`historical_eth_btc?select=date,ratio&date=gte.${since}&order=date.asc&limit=1000`).catch(() => [])
             ]);
-            S.events = ev || [];
+            S.events = (ev || []).map(e => unpackLangs(e, initLang()));
+            S.langs = new Set(['en', initLang()]);
             // Scheduled events are optional: a missing table/row must not hide the news itself.
             S.cal = await rest(`calendar_events?select=id,kind,name,date,date_start,starts_at,sep,source,source_url&date=gte.${isoDay(Date.now() - dayMs)}&order=date.asc&limit=12`).catch(() => []);
             S.prices = (px || []).map(p => ({ t: new Date(p.date + 'T00:00:00Z').getTime(), v: +p.close })).filter(p => p.v > 0);
@@ -680,7 +716,7 @@
         }, true);
         let rt = 0;
         window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (S.status === 'ok') renderPanel(); }, 200); });
-        new MutationObserver(() => render()).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+        new MutationObserver(() => { render(); ensureLang(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
         new MutationObserver(() => { if (S.status === 'ok') drawChart(visible()); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     }
     function scrollPanel() {

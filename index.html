@@ -9,7 +9,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%238b5cf6'/><stop offset='1' stop-color='%236d28d9'/></linearGradient></defs><rect width='28' height='28' rx='8' fill='url(%23g)'/><path d='M14 5.5 L20 14 L14 22.5 L8 14 Z M8 14 L14 17.2 L20 14 M14 17.2 L14 22.5' fill='none' stroke='white' stroke-width='1.8' stroke-linejoin='round'/></svg>">
 
     <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PX7DBZL3ND"></script>
+    <!-- Speed: gtag.js (~176KB) used to download in parallel with the page data on first load. It is now added after
+         window load; the dataLayer below queues the same js/config calls, so the pageview is still sent once it arrives. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -17,6 +18,10 @@
       // embed.html loads this page hidden (?embed=1) only to read its numbers: no pageview, no live-visitor count
       window.__ethvalEmbedSource = /[?&]embed=1(&|$)/.test(location.search);
       if (!window.__ethvalEmbedSource) gtag('config', 'G-PX7DBZL3ND');
+      (function () {
+        function addGtag() { var g = document.createElement('script'); g.async = true; g.src = 'https://www.googletagmanager.com/gtag/js?id=G-PX7DBZL3ND'; document.head.appendChild(g); }
+        if (document.readyState === 'complete') addGtag(); else window.addEventListener('load', function () { setTimeout(addGtag, 0); }, { once: true });
+      })();
       
       // 브라우저 자동 스크롤 복원 활성화
       if ('scrollRestoration' in history) {
@@ -20354,13 +20359,20 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
         // 전체 커뮤니티 통계 로드
         async function loadCommunityStats() {
             try {
-                // 모든 댓글 가져오기 (최근순, 아바타 포함)
-                const { data: comments, error } = await supabaseClient
-                    .from('comments')
-                    .select('id, user_id, user_avatar, user_handle, rating, likes, created_at')
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
+                // 모든 댓글 (최근순, 아바타 포함). Speed: the first render already loads every comment once
+                // (loadAllCommentsOnce, select * up to 5000 rows) — reuse it instead of a second full-table request.
+                let comments = null;
+                const batch = await loadAllCommentsOnce();
+                if (batch) {
+                    comments = [].concat(...Object.values(batch)).sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+                } else {
+                    const { data, error } = await supabaseClient
+                        .from('comments')
+                        .select('id, user_id, user_avatar, user_handle, rating, likes, created_at')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+                    comments = data;
+                }
                 
                 // 통계 계산
                 const totalVotes = comments ? comments.filter(c => c.rating && c.rating > 0).length : 0;
@@ -23521,12 +23533,16 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 const langSuffix = currentLang !== 'en' ? `_${currentLang}` : '';
                 
                 // 오늘 또는 최근 해설 가져오기
-                const res = await (window.__ethvalCommentaryReq = window.__ethvalCommentaryReq || fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=date,section_key,commentary,commentary_ko,commentary_zh,commentary_ja,scores,created_at,updated_at&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
+                // Speed: only the English text + the current language's column (was all 4 languages, ~200KB gzip → ~40-90KB).
+                // Cached per language; a language switch fetches that language once.
+                const commentaryCols = 'date,section_key,commentary,' + (langSuffix ? `commentary${langSuffix},` : '') + 'scores,created_at,updated_at';
+                const reqCache = (window.__ethvalCommentaryReqs = window.__ethvalCommentaryReqs || {});
+                const res = await (reqCache[currentLang] = reqCache[currentLang] || fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=${commentaryCols}&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
                     headers: {
                         'apikey': SUPABASE_CONFIG.anonKey,
                         'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
                     }
-                }).then(r => r.ok ? r : Promise.reject(r))).then(r => r.clone()).catch(r => { window.__ethvalCommentaryReq = null; return r instanceof Response ? r : { ok: false, status: String(r) }; });
+                }).then(r => r.ok ? r : Promise.reject(r))).then(r => r.clone()).catch(r => { reqCache[currentLang] = null; return r instanceof Response ? r : { ok: false, status: String(r) }; });
                 
                 if (!res.ok) {
                     log('📝 Commentary fetch failed:', res.status);
@@ -36899,7 +36915,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
         new MutationObserver(relabel).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     })();
     </script>
-    <script src="news-impact.js?v=20261015a" defer></script>
+    <script src="news-impact.js?v=20261015b" defer></script>
     <script src="ethval-extras.js?v=20261014d" defer></script>
     <script src="valuation-dist.js?v=20261013b" defer></script>
     <script src="fv-band.js?v=20261014b" defer></script>
