@@ -13,6 +13,7 @@
   'use strict';
   var BP = 1200;           // desktop web view breakpoint
   var W = 236;             // sidebar width (px)
+  var CW = 1400;           // .container max-width — rail + body are centred together as one group (Facebook-style)
   var HEAD_H = 60;         // rail logo row height (the top bar is hidden on wide screens)
   var footEl = null, hrHome = null;
   var mq = window.matchMedia('(min-width: ' + BP + 'px)');
@@ -31,12 +32,16 @@
 
   var CSS = [
     '@media (min-width:' + BP + 'px){',
-    ' body.has-sb{padding-left:' + W + 'px}',
+    /* 2026-10-15 (Simon, Facebook reference): the rail is not pinned to the screen edge. Rail + body container
+       form one centred group; --sb-off is the empty margin on each side (0 until the screen is wider than
+       rail + container). Top bars (onboarding banner) span only the body container, not the full width. */
+    ' html{--sb-off:max(0px,calc((100vw - ' + (W + CW) + 'px) / 2))}',
+    ' body.has-sb{padding-left:calc(' + W + 'px + var(--sb-off));padding-right:var(--sb-off)}',
     ' body.has-sb .nav-bar-inline{display:none!important}',
     /* Wide screens: the rail already carries logo + menu, so the full-width top bar is dropped; theme + language
        controls move to the rail footer (the same DOM node is moved, handlers stay). --hdr-h follows to 0. */
     ' body.has-sb .header-wrapper{display:none!important}',
-    ' html body.has-sb .onboarding-banner{left:' + W + 'px!important;top:0!important}',
+    ' html body.has-sb .onboarding-banner{left:calc(' + W + 'px + var(--sb-off))!important;right:var(--sb-off)!important;width:auto!important;top:0!important}',
     ' html body.has-sb{padding-top:20px}',
     ' html body.has-sb.banner-visible{padding-top:calc(var(--bn-h, 70px) + 20px)}',
     ' body.has-sb .section[id]{scroll-margin-top:24px}',
@@ -48,10 +53,13 @@
     ' body.has-sb #valuation .summary-layout{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}',
     ' body.has-sb #valuation .summary-description{grid-column:1/-1;display:block;columns:2;column-gap:32px;padding-top:8px}',
     ' body.has-sb #valuation .summary-description>*{break-inside:avoid;margin-top:0}',
-    ' .sb{position:fixed;left:0;top:0;bottom:0;width:' + W + 'px;z-index:9000;display:flex;flex-direction:column;',
+    ' .sb{position:fixed;left:var(--sb-off);top:0;bottom:0;width:' + W + 'px;z-index:9000;display:flex;flex-direction:column;',
     '  background:#eceef2;border-right:1px solid #d5d9e0;box-sizing:border-box}',
     ' body.dark .sb{background:#050608;border-right-color:#22262d}',
     '}',
+    /* Centred (screen wider than rail + container): the rail floats beside the body, so it drops its own panel
+       fill and edge line and sits on the page background like Facebook's left column. */
+    '@media (min-width:' + (W + CW) + 'px){ .sb, body.dark .sb{background:transparent;border-right:0} }',
     '@media (max-width:' + (BP - 1) + 'px){ .sb{display:none!important} }',
     '.sb-head{flex:0 0 auto;display:flex;align-items:center;padding:0 16px;box-sizing:border-box;border-bottom:1px solid #d5d9e0}',
     'body.dark .sb-head{border-bottom-color:#22262d}',
