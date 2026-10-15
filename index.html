@@ -9619,6 +9619,25 @@
                 font-size: var(--text-xs);
                 padding: 4px 8px;
             }
+            /* 2026-10-15: at 390 the 106px cell squeezed the label to 10px and "종합 적정 가치" ran under the
+               "12 / 12" badge (fixed badge 50px + swatch 20px left no room). Mobile: swatch | label on row 1,
+               badge drops under the label; the label may wrap inside its own column */
+            .legend-row-primary .legend-item-fixed {
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr);
+                column-gap: 5px;
+                row-gap: 2px;
+            }
+            .legend-row-primary .legend-item-fixed .legend-name {
+                min-width: 0;
+                white-space: normal;
+                line-height: 1.25;
+            }
+            .legend-row-primary .legend-item-fixed .model-count-badge {
+                grid-column: 2;
+                justify-self: start;
+                margin-left: 0;
+            }
 
             .legend-hint {
                 font-size: var(--text-xs);
@@ -14703,6 +14722,10 @@ body.dark .floating-action-badge { color: #fff !important; }
 
 /* Korean: wrap between words, never inside a word ("커뮤|니티"); long tokens (URLs, numbers) may still break */
 html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wrap: break-word; line-break: strict; }
+/* Japanese/Chinese: no spaces, so keep-all turns a whole sentence into one unbreakable run.
+   2026-10-14 live: ja .ni-sc-foot ran 37px out of its box at 390. Site-wide: normal CJK line breaking
+   for every element (overrides component keep-all rules); links keep their own break-all. */
+html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: normal !important; overflow-wrap: break-word; }
 </style>
 </head>
 <body>
