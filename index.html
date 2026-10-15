@@ -23578,7 +23578,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 // 오늘 또는 최근 해설 가져오기
                 // Speed: only the English text + the current language's column (was all 4 languages, ~200KB gzip → ~40-90KB).
                 // Cached per language; a language switch fetches that language once.
-                const commentaryCols = 'date,section_key,commentary,' + (langSuffix ? `commentary${langSuffix},` : '') + 'scores,created_at,updated_at';
+                const commentaryCols = 'date,section_key,commentary,' + (langSuffix ? `commentary${langSuffix},` : '') + 'scores,created_at,updated_at,model_label:metrics_snapshot->>_model_label';
                 const reqCache = (window.__ethvalCommentaryReqs = window.__ethvalCommentaryReqs || {});
                 const res = await (reqCache[currentLang] = reqCache[currentLang] || fetch(`${SUPABASE_CONFIG.url}/rest/v1/daily_commentary?select=${commentaryCols}&date=gte.${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&order=date.desc`, {
                     headers: {
@@ -23874,7 +23874,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                             <div class="ai-commentary-header"></div>
                             <div class="ai-commentary-text">${formattedCommentary}</div>
                             <div class="ai-commentary-footer">
-                                ${i18nText.label}${stampStr ? ' · ' + stampStr : ''} · ${i18nText.by} Claude Haiku
+                                ${i18nText.label}${stampStr ? ' · ' + stampStr : ''}${commentary.model_label ? ` · ${i18nText.by} ${String(commentary.model_label).replace(/[<>&"]/g, '')}` : ''}
                             </div>
                         `;
                         el.classList.remove('loading');

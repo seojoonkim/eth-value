@@ -18,7 +18,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = process.env.NEWS_MODEL || process.env.COMMENTARY_MODEL || 'gpt-6-luna';
-const HAIKU = 'claude-haiku-4-5-20251001';
+const HAIKU = process.env.HAIKU_MODEL || 'claude-haiku-5-5'; // latest Haiku (2026-10-07); fallback after Luna
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry-run');
@@ -163,7 +163,8 @@ async function llm(user, system = SYSTEM) {
     });
     if (!r.ok) throw new Error(`Haiku HTTP ${r.status}`);
     const j = await r.json();
-    return { text: j.content?.[0]?.text || '', model: HAIKU };
+    // Haiku 5.5 may lead with thinking blocks: read text blocks by type.
+    return { text: (j.content || []).filter(x => x.type === 'text').map(x => x.text).join(''), model: HAIKU };
 }
 
 function parseJson(t) {

@@ -18,10 +18,14 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DUNE_API_KEY = process.env.DUNE_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-// AI commentary model: GPT-6 Luna when OPENAI_API_KEY is set; Claude Haiku 4.5 stays as fallback
-// so a missing/empty OpenAI key or a failed Luna call never leaves the commentary blank.
+// AI commentary model (Simon 10-15): Claude Haiku 5.5 (latest Haiku, released 2026-10-07) first;
+// GPT-6 Luna is the fallback so a bad/missing Anthropic key never leaves the commentary blank.
+// The model that actually wrote each row is saved in metrics_snapshot._model and shown on the page.
 const LUNA_MODEL = process.env.COMMENTARY_MODEL || 'gpt-6-luna';
-const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+const HAIKU_MODEL = process.env.HAIKU_MODEL || 'claude-haiku-5-5';
+const MODEL_LABELS = { 'claude-haiku-5-5': 'Claude Haiku 5.5', 'claude-haiku-4-5-20251001': 'Claude Haiku 4.5', 'gpt-6-luna': 'GPT-6 Luna' };
+const modelLabel = id => MODEL_LABELS[id] || id;
+let lastCommentaryModel = null; // set by callCommentaryLLM, read by generateAllCommentaries
 const HAS_LLM = !!(OPENAI_API_KEY || ANTHROPIC_API_KEY);
 const CRYPTOQUANT_API_KEY = process.env.CRYPTOQUANT_API_KEY;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -924,48 +928,56 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
 }
 
 /**
-/**
- * One LLM call for commentary. GPT-6 Luna first (if OPENAI_API_KEY), Claude Haiku 4.5 as fallback.
- * Returns the raw text (same shape the old Anthropic path returned) or null.
+ * One LLM call for commentary. Claude Haiku 5.5 first (if ANTHROPIC_API_KEY), GPT-6 Luna as fallback.
+ * Returns the raw text or null; records the model that answered in lastCommentaryModel.
  */
-async function callCommentaryLLM(systemPrompt, userPrompt, wantJson) {
-    if (OPENAI_API_KEY) {
-        try {
-            const body = {
-                model: LUNA_MODEL,
-                max_completion_tokens: 3000,
-                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
-            };
-            if (wantJson) body.response_format = { type: 'json_object' };
-            const res = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-                body: JSON.stringify(body)
-            });
-            if (!res.ok) throw new Error(`HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
-            const j = await res.json();
-            const text = j.choices?.[0]?.message?.content || null;
-            if (text) {
-                console.log(`  🤖 ${LUNA_MODEL} (${j.usage?.prompt_tokens || '?'} in / ${j.usage?.completion_tokens || '?'} out)`);
-                return text;
-            }
-            throw new Error('empty completion');
-        } catch (e) {
-            console.error(`  ⚠️ ${LUNA_MODEL} failed: ${e.message}${ANTHROPIC_API_KEY ? ' → falling back to Haiku' : ''}`);
-        }
-    }
-    if (!ANTHROPIC_API_KEY) return null;
+async function callHaiku(systemPrompt, userPrompt) {
+    // Haiku 5.5: adaptive thinking may emit thinking blocks first -> read text blocks by type;
+    // the newer tokenizer counts ~30% more tokens -> roomier max_tokens; no temperature/top_p (400 on 5.5).
     const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: HAIKU_MODEL, max_tokens: 3000, messages: [{ role: 'user', content: userPrompt }], system: systemPrompt })
+        body: JSON.stringify({ model: HAIKU_MODEL, max_tokens: 8000, messages: [{ role: 'user', content: userPrompt }], system: systemPrompt })
     });
-    if (!response.ok) {
-        console.error(`  Claude API error: ${response.status} - ${await response.text()}`);
-        return null;
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status} ${(await response.text()).slice(0, 200)}`);
     const result = await response.json();
-    return result.content?.[0]?.text || null;
+    if (result.stop_reason === 'refusal') throw new Error('refusal');
+    const text = (result.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    if (!text) throw new Error(`empty completion (stop=${result.stop_reason})`);
+    console.log(`  🤖 ${result.model || HAIKU_MODEL} (${result.usage?.input_tokens || '?'} in / ${result.usage?.output_tokens || '?'} out)`);
+    return text;
+}
+
+async function callLuna(systemPrompt, userPrompt, wantJson) {
+    const body = {
+        model: LUNA_MODEL,
+        max_completion_tokens: 3000,
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
+    };
+    if (wantJson) body.response_format = { type: 'json_object' };
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
+    const j = await res.json();
+    const text = j.choices?.[0]?.message?.content || null;
+    if (!text) throw new Error('empty completion');
+    console.log(`  🤖 ${LUNA_MODEL} (${j.usage?.prompt_tokens || '?'} in / ${j.usage?.completion_tokens || '?'} out)`);
+    return text;
+}
+
+async function callCommentaryLLM(systemPrompt, userPrompt, wantJson) {
+    if (ANTHROPIC_API_KEY) {
+        try { const t = await callHaiku(systemPrompt, userPrompt); lastCommentaryModel = HAIKU_MODEL; return t; }
+        catch (e) { console.error(`  ⚠️ ${HAIKU_MODEL} failed: ${e.message}${OPENAI_API_KEY ? ' → falling back to ' + LUNA_MODEL : ''}`); }
+    }
+    if (OPENAI_API_KEY) {
+        try { const t = await callLuna(systemPrompt, userPrompt, wantJson); lastCommentaryModel = LUNA_MODEL; return t; }
+        catch (e) { console.error(`  ⚠️ ${LUNA_MODEL} failed: ${e.message}`); }
+    }
+    return null;
 }
 
 async function generateCommentary(sectionKey, metricsData, lang = 'en', existingScores = null) {
@@ -1252,7 +1264,7 @@ async function generateAllCommentaries() {
     }
     
     console.log('\n' + '='.repeat(60));
-    console.log('🤖 AI DAILY COMMENTARY GENERATION (Claude Haiku)');
+    console.log(`🤖 AI DAILY COMMENTARY GENERATION (${modelLabel(HAIKU_MODEL)} → fallback ${modelLabel(LUNA_MODEL)})`);
     console.log('   Generating 4 languages: EN, KO, ZH, JA');
     console.log('='.repeat(60));
     
@@ -1280,7 +1292,9 @@ async function generateAllCommentaries() {
         let reasoning = null;
         
         // 1. 영어 먼저 생성 (점수 + reasoning 포함)
+        lastCommentaryModel = null;
         const enResult = await generateWithFormat(sectionKey, metricsData, 'en', null);
+        const sectionModel = lastCommentaryModel;
         if (enResult) {
             commentaries.en = enResult.text;
             scores = enResult.scores;
@@ -1310,7 +1324,8 @@ async function generateAllCommentaries() {
         }
         
         // Save to Supabase (with scores and reasoning)
-        const saved = await saveCommentary(sectionKey, commentaries, scores, reasoning, metricsData);
+        const saved = await saveCommentary(sectionKey, commentaries, scores, reasoning,
+            { ...metricsData, _model: sectionModel, _model_label: sectionModel ? modelLabel(sectionModel) : null });
         if (saved) {
             console.log(`  ✅ Saved to Supabase (${Object.keys(commentaries).length} languages)`);
             success++;
