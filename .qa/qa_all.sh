@@ -187,6 +187,8 @@ CHECKS=(
   # 2026-10-16: Astra P0 F01/F05/F07 — DCF formula states the 3× cap (shown value = 3 × price), analysis says
   # "as of generation", % from ATH computed from the shown price/ATH (en showed −52.2% where numbers gave −50.3%)
   "astra_p0b|astra_p0b_check|astra_p0b|$URL"
+  # 2026-10-16: method card gap badge ("+401.5% Undervalued") stays inside its card (1280 en: 9 cards ran 31–55px out)
+  "method_diff_clip|method_diff_clip_check|method_diff_clip|$URL"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '
