@@ -41,19 +41,10 @@ jobs:
         id: commit
         run: |
           git add -A models reports sitemap.xml robots.txt
-          # compare old vs new with the build time ("YYYY-MM-DD HH:MM") and <lastmod> masked;
-          # any value / date / series point / text change still counts
-          CHANGED=$(node -e '
-            const { execSync } = require("child_process"), fs = require("fs");
-            const norm = s => s.replace(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g, "T").replace(/<lastmod>[^<]*<\/lastmod>/g, "");
-            const files = execSync("git diff --cached --name-only").toString().split("\n").filter(Boolean);
-            let n = 0;
-            for (const f of files) {
-              let old = ""; try { old = execSync("git show HEAD:" + f, { maxBuffer: 1 << 26 }).toString(); } catch (e) {}
-              const cur = fs.existsSync(f) ? fs.readFileSync(f, "utf8") : "";
-              if (norm(old) !== norm(cur)) n++;
-            }
-            console.log(n);')
+          # compare old vs new with the build time ("YYYY-MM-DD HH:MM"), <lastmod> and float last-digit
+          # noise (rel. diff <= 1e-9) masked; any value / date / series point / text change still counts.
+          # 2026-10-15 had 5 bot commits for the same 2026-10-14 day, one (d06d96e) only from 1e-14 noise.
+          CHANGED=$(node scripts/model-pages-changed.cjs --verbose)
           echo "files with real changes: $CHANGED"
           if [ "$CHANGED" = "0" ]; then
             echo "only build timestamp changed — no commit"

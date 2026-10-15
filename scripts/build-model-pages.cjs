@@ -115,8 +115,11 @@ async function extract() {
       const H = (state.historicalFairValues[m] || []).filter(x => x.value > 0 && isFinite(x.value) && ymd(x.date) < today);
       const last = H[H.length - 1];
       const D = last ? ymd(last.date) : null;
-      const series = H.slice(-DAYS).map(x => [ymd(x.date), x.value, close.get(ymd(x.date)) || null]);
-      out.models[m] = { date: D, value: last ? last.value : null, close: D ? close.get(D) || null : null, series };
+      // 유효숫자 10자리: 같은 입력이어도 합산 순서 때문에 끝자리(1e-14)만 흔들려 차트 좌표 0.1px이
+      // 뒤집히고 봇 커밋이 생기던 것 방지(2026-10-15 d06d96e 실측). 보이는 값·좌표에는 영향 없음.
+      const r10 = v => Number(v.toPrecision(10));
+      const series = H.slice(-DAYS).map(x => [ymd(x.date), r10(x.value), close.get(ymd(x.date)) || null]);
+      out.models[m] = { date: D, value: last ? r10(last.value) : null, close: D ? close.get(D) || null : null, series };
     });
     return out;
   }, { MODELS, DAYS: HISTORY_DAYS });

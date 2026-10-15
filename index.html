@@ -24220,8 +24220,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             })();
             return deferredL2Promise;
         }
-        function renderDeferredL2Cards() {
+        function renderDeferredL2Cards(only) {
             for (const c of DEFERRED_L2_CARDS) {
+                if (only && c.metric !== only) continue;
                 const h = c.hist();
                 if (!h || h.length === 0) continue;
                 const card = document.querySelector(`.metric-card[data-metric="${c.metric}"]`);
@@ -25031,6 +25032,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 state.price = price;
                 state.livePrice = price; // 실시간 현재가: Supabase 어제 종가가 이 값을 덮어쓰지 않게 따로 보관
+                // 2026-10-16: 브릿지 표가 실시간 가격보다 먼저 오면 오늘 값이 부분 종가로 환산된 채 남았다 → 가격 도착 때 다시 환산
+                if (state.bridgeEthByDate && window.__ethvalDeferredL2 === 'ok') { rebuildBridgeVolumeUsd(); renderDeferredL2Cards('bridgeVolume'); }
                 refreshSupplyFloat();
                 if (change24h !== null && isFinite(change24h)) state.change24h = change24h;
                 if (volume24h) state.volume24h = volume24h;
@@ -27388,6 +27391,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             const dt = date instanceof Date ? date : new Date(date);
             if (isNaN(dt)) return null;
             const k = dt.toISOString().slice(0, 10);
+            // 2026-10-16: 진행 중인 UTC 오늘은 DB의 부분 종가(수집 시점 값)보다 실시간 현재가가 맞다.
+            // 부분 종가 2,366 vs 현재가 2,432(+2.7%)로 브릿지 오늘 값이 화면 가격과 갈렸다(실측).
+            if (k === new Date().toISOString().slice(0, 10) && state.price > 0) return state.price;
             if (state._closeMap[k] > 0) return state._closeMap[k];
             // 현재가는 종가가 아직 없는 최근 2일 안의 날에만 (종가 히스토리가 없을 때 과거 날짜에 현재가를 덮지 않게)
             if ((!state._closeLast || k > state._closeLast) && state.price > 0 && Date.now() - dt.getTime() < 2 * 86400000) return state.price;
