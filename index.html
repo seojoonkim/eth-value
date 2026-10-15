@@ -23937,6 +23937,199 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             }
         }
         
+        // ═══════════════════════════════════════════════════════════════════
+        // 2026-10-15 속도 2차: 차트 전용 L2 표 5개(브릿지·L2 DEX·브릿지 총량·L2 활성 주소·L2 스테이블 볼륨,
+        // gzip ~434KB)는 헤드라인·적정가 계산에 안 들어가서 첫 로드에서 빼고, 해당 카드가 화면에 가까워지면 받는다.
+        // 계산에 들어가는 표(L2 TVL·L2 전체 볼륨=dailySettlement/ecosystemSettlement·L2 tx)는 그대로 첫 로드.
+        // 집계 코드는 예전 fetchFreshSupabaseData 안의 것을 그대로 옮김(숫자 동일).
+        // ═══════════════════════════════════════════════════════════════════
+        const DEFERRED_L2_CARDS = [
+            { metric: 'bridgeVolume', chart: 'bridge-volume-chart', color: '#06b6d4', valueEl: 'bridge-volume-value', changeEl: 'bridge-volume-change', hist: () => state.bridgeVolumeHistory, fmtV: v => fmt.usd(v), stateKey: 'bridgeDailyVolume' },
+            { metric: 'l2DexVolume', chart: 'l2-dex-volume-chart', color: '#f59e0b', valueEl: 'l2-dex-volume-value', changeEl: 'l2-dex-volume-change', hist: () => state.l2DexVolumeHistory, fmtV: v => fmt.usd(v), stateKey: 'l2DexDailyVolume' },
+            { metric: 'bridgeTotalVolume', chart: 'bridge-total-volume-chart', color: '#ec4899', valueEl: 'bridge-total-volume-value', changeEl: 'bridge-total-volume-change', hist: () => state.bridgeTotalVolumeHistory, fmtV: v => fmt.usd(v), stateKey: 'bridgeTotalDailyVolume' },
+            { metric: 'l2StablecoinVol', chart: 'l2-stablecoin-vol-chart', color: '#f59e0b', valueEl: 'l2-stablecoin-vol-value', changeEl: 'l2-stablecoin-vol-change', hist: () => state.l2StablecoinVolumeHistory, fmtV: v => '$' + (v / 1e9).toFixed(2) + 'B', stateKey: 'l2StablecoinVolume' },
+            { metric: 'l2ActiveAddr', chart: 'l2-active-addr-chart', color: '#ec4899', valueEl: 'l2-active-addr-value', changeEl: 'l2-active-addr-change', hist: () => state.l2ActiveAddrHistory, fixedValue: () => fmt.num(state.l2ActiveAddresses) },
+        ];
+        let deferredL2Promise = null;
+        function loadDeferredL2Tables() {
+            if (deferredL2Promise) return deferredL2Promise;
+            deferredL2Promise = (async () => {
+                if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) return false;
+                const baseUrl = SUPABASE_CONFIG.url + '/rest/v1';
+                const headers = { 'apikey': SUPABASE_CONFIG.anonKey, 'Authorization': 'Bearer ' + SUPABASE_CONFIG.anonKey };
+                const limit = 1100;
+                const get = async (url) => {
+                    try { const r = await fetch(url, { headers }); if (!r.ok) { log(`   ❌ deferred ${url.split('/rest/v1/')[1].split('?')[0]}: HTTP ${r.status}`); return []; } const d = await r.json(); return Array.isArray(d) ? d : []; }
+                    catch (e) { log('   ❌ deferred L2 fetch: ' + e.message); return []; }
+                };
+                const t0 = performance.now();
+                const [bridgeVolumeData, l2DexVolumeData, bridgeTotalVolumeData, l2AddrData, l2StablecoinVolData] = await Promise.all([
+                    get(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 15}`),
+                    get(`${baseUrl}/historical_l2_dex_volume?select=date,blockchain,dex_volume_usd&order=date.desc&limit=${limit * 15}`),
+                    get(`${baseUrl}/historical_bridge_total_volume?select=date,destination_chain,bridge_volume_usd&order=date.desc&limit=${limit * 15}`),
+                    get(`${baseUrl}/historical_l2_addresses?select=date,chain,active_addresses&or=(source.is.null,source.neq.estimated)&chain=neq.ethereum&order=date.desc&limit=${limit * 15}`),
+                    get(`${baseUrl}/historical_l2_stablecoin_volume?select=date,chain,total_volume&order=date.desc&limit=${limit * 15}`)
+                ]);
+            // Bridge Volume (aggregate by date) for Settlement Layer (MV=PQ)
+            if (bridgeVolumeData && bridgeVolumeData.length > 0) {
+                const bridgeByDate = {};
+                bridgeVolumeData.forEach(d => {
+                    const dateKey = d.date;
+                    if (!bridgeByDate[dateKey]) bridgeByDate[dateKey] = 0;
+                    bridgeByDate[dateKey] += parseFloat(d.bridge_volume_eth || 0);
+                });
+                
+                // Build history (ETH → USD, 날짜별 종가 — ethUsdOn). 종가 없는 날은 빼고, 가격 도착 후 재계산.
+                state.bridgeEthByDate = bridgeByDate;
+                let bridgeHistory = rebuildBridgeVolumeUsd();
+                log(`   ✓ Bridge Volume History: ${state.bridgeVolumeHistory.length} records`);
+                
+                // Use getLatestValidValue helper
+                state.bridgeDailyVolume = getLatestValidValue(bridgeHistory) || 0;
+                if (state.bridgeDailyVolume > 0) {
+                    const validDate = getLatestValidDate(bridgeHistory);
+                    log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (${validDate?.toISOString().split('T')[0]})`);
+                    
+                }
+            }
+            
+            // L2 DEX Volume (aggregate by date)
+            if (l2DexVolumeData && l2DexVolumeData.length > 0) {
+                const l2DexByDate = {};
+                l2DexVolumeData.forEach(d => {
+                    const dateKey = d.date;
+                    if (!l2DexByDate[dateKey]) l2DexByDate[dateKey] = 0;
+                    l2DexByDate[dateKey] += parseFloat(d.dex_volume_usd || 0);
+                });
+                
+                let l2DexHistory = Object.entries(l2DexByDate)
+                    .map(([date, value]) => ({ date: new Date(date), value }))
+                    .sort((a, b) => a.date - b.date);
+                
+                state.l2DexVolumeHistory = l2DexHistory;
+                log(`   ✓ L2 DEX Volume History: ${state.l2DexVolumeHistory.length} records`);
+                
+                state.l2DexDailyVolume = getLatestValidValue(l2DexHistory) || 0;
+                if (state.l2DexDailyVolume > 0) {
+                    const validDate = getLatestValidDate(l2DexHistory);
+                    log(`   ✓ L2 DEX Daily Volume: $${(state.l2DexDailyVolume / 1e9).toFixed(2)}B (${validDate?.toISOString().split('T')[0]})`);
+                }
+            }
+            
+            // Bridge Total Volume (aggregate by date)
+            if (bridgeTotalVolumeData && bridgeTotalVolumeData.length > 0) {
+                const bridgeTotalByDate = {};
+                bridgeTotalVolumeData.forEach(d => {
+                    const dateKey = d.date;
+                    if (!bridgeTotalByDate[dateKey]) bridgeTotalByDate[dateKey] = 0;
+                    bridgeTotalByDate[dateKey] += parseFloat(d.bridge_volume_usd || 0);
+                });
+                
+                let bridgeTotalHistory = Object.entries(bridgeTotalByDate)
+                    .map(([date, value]) => ({ date: new Date(date), value }))
+                    .sort((a, b) => a.date - b.date);
+                
+                state.bridgeTotalVolumeHistory = bridgeTotalHistory;
+                log(`   ✓ Bridge Total Volume History: ${state.bridgeTotalVolumeHistory.length} records`);
+                
+                state.bridgeTotalDailyVolume = getLatestValidValue(bridgeTotalHistory) || 0;
+                if (state.bridgeTotalDailyVolume > 0) {
+                    const validDate = getLatestValidDate(bridgeTotalHistory);
+                    log(`   ✓ Bridge Total Daily Volume: $${(state.bridgeTotalDailyVolume / 1e6).toFixed(2)}M (${validDate?.toISOString().split('T')[0]})`);
+                }
+            }
+            
+            // L2 Active Addresses (from historical_l2_addresses, aggregate by date)
+            if (l2AddrData && l2AddrData.length > 0) {
+                log(`   ✓ L2 Active Addresses: ${l2AddrData.length} records`);
+                
+                // Aggregate by date across all chains
+                const l2AddrByDate = {};
+                l2AddrData.forEach(d => {
+                    const dateStr = d.date.split('T')[0];
+                    if (!l2AddrByDate[dateStr]) l2AddrByDate[dateStr] = 0;
+                    l2AddrByDate[dateStr] += parseInt(d.active_addresses) || 0;
+                });
+                
+                // Exclude today and yesterday
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const twoDaysAgo = new Date(today);
+                twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                
+                state.l2ActiveAddrHistory = Object.entries(l2AddrByDate)
+                    .map(([date, value]) => ({ date: new Date(date), value }))
+                    .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
+                    .sort((a, b) => a.date - b.date);
+                
+                if (state.l2ActiveAddrHistory.length > 0) {
+                    state.l2ActiveAddresses = state.l2ActiveAddrHistory[state.l2ActiveAddrHistory.length - 1].value;
+                    log(`   ✓ L2 Active Addresses (latest): ${state.l2ActiveAddresses.toLocaleString()}`);
+                }
+            }
+            
+            // L2 Stablecoin Volume (aggregate by date)
+            if (l2StablecoinVolData && l2StablecoinVolData.length > 0) {
+                log(`   ✓ L2 Stablecoin Volume: ${l2StablecoinVolData.length} records`);
+                
+                // Aggregate by date across all chains
+                const volByDate = {};
+                l2StablecoinVolData.forEach(d => {
+                    const dateStr = d.date.split('T')[0];
+                    if (!volByDate[dateStr]) volByDate[dateStr] = 0;
+                    volByDate[dateStr] += parseFloat(d.total_volume) || 0;
+                });
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const twoDaysAgo = new Date(today);
+                twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                
+                state.l2StablecoinVolumeHistory = Object.entries(volByDate)
+                    .map(([date, value]) => ({ date: new Date(date), value }))
+                    .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
+                    .sort((a, b) => a.date - b.date);
+                
+                if (state.l2StablecoinVolumeHistory.length > 0) {
+                    state.l2StablecoinVolume = state.l2StablecoinVolumeHistory[state.l2StablecoinVolumeHistory.length - 1].value;
+                    log(`   ✓ L2 Stablecoin Volume (latest): $${(state.l2StablecoinVolume / 1e9).toFixed(2)}B`);
+                }
+            }
+            
+
+                log(`📦 Deferred L2 tables loaded in ${Math.round(performance.now() - t0)}ms`);
+                renderDeferredL2Cards();
+                window.__ethvalDeferredL2 = 'ok';
+                return true;
+            })();
+            return deferredL2Promise;
+        }
+        function renderDeferredL2Cards() {
+            for (const c of DEFERRED_L2_CARDS) {
+                const h = c.hist();
+                if (!h || h.length === 0) continue;
+                const card = document.querySelector(`.metric-card[data-metric="${c.metric}"]`);
+                const tab = card && card.querySelector('.metric-tab.active');
+                const period = (tab && parseInt(tab.dataset.period)) || ChartManager.getDefaultPeriod();
+                const result = updateMetricChart(c.chart, null, h, c.color, c.metric, period);
+                const el = document.getElementById(c.valueEl);
+                if (c.fixedValue) { if (el) el.textContent = c.fixedValue(); }
+                else if (result && result.lastValue !== null) { if (el) el.textContent = c.fmtV(result.lastValue); state[c.stateKey] = result.lastValue; }
+                ChartManager.updateChangeElement(c.changeEl, h, period);
+            }
+        }
+        // 카드가 화면 1.5화면 거리 안에 들어오면 받기 시작(스크롤 중에 미리 받아 빈 차트가 거의 안 보이게)
+        function setupDeferredL2Loading() {
+            const cards = DEFERRED_L2_CARDS.map(c => document.querySelector(`.metric-card[data-metric="${c.metric}"]`)).filter(Boolean);
+            if (!cards.length || !('IntersectionObserver' in window)) { loadDeferredL2Tables(); return; }
+            const io = new IntersectionObserver((entries) => {
+                if (entries.some(e => e.isIntersecting)) { io.disconnect(); loadDeferredL2Tables(); }
+            }, { rootMargin: '1500px 0px 1500px 0px' });
+            cards.forEach(c => io.observe(c));
+            // 카드 탭을 먼저 눌러도 받도록
+            cards.forEach(c => c.addEventListener('click', () => loadDeferredL2Tables(), { once: true, capture: true }));
+        }
+
         async function loadHistoricalFromSupabase() {
             log('📦 loadHistoricalFromSupabase called');
             log('📦 SUPABASE_CONFIG:', SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey ? 'KEY_EXISTS' : 'NO_KEY');
@@ -24021,16 +24214,16 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     // REMOVED: historical_l2_tx_volume - now using historical_l2_total_volume.native_volume_usd
                     safeFetchSupabase(`${baseUrl}/historical_l1_total_volume?select=date,eth_volume_usd,total_volume_usd&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_l2_total_volume?select=date,chain,native_volume_usd,total_volume_usd&order=date.desc&limit=${limit * 15}`),
-                    safeFetchSupabase(`${baseUrl}/historical_bridge_volume?select=date,chain,bridge_volume_eth&order=date.desc&limit=${limit * 15}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_dex_volume?select=date,blockchain,dex_volume_usd&order=date.desc&limit=${limit * 15}`),
-                    safeFetchSupabase(`${baseUrl}/historical_bridge_total_volume?select=date,destination_chain,bridge_volume_usd&order=date.desc&limit=${limit * 15}`),
+                    [],
+                    [],
+                    [],
                     safeFetchSupabase(`${baseUrl}/historical_whale_tx?select=date,whale_tx_count,whale_volume_eth&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_mvrv?select=date,spot_price,realized_price,mvrv_ratio,mvrv_pct&order=date.desc&limit=3000`),
                     safeFetchSupabase(`${baseUrl}/historical_stablecoin_volume?select=date,daily_volume&order=date.desc&limit=${limit}`),
                     safeFetchSupabase(`${baseUrl}/historical_new_addresses?select=date,new_addresses&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_addresses?select=date,chain,active_addresses&or=(source.is.null,source.neq.estimated)&chain=neq.ethereum&order=date.desc&limit=${limit * 15}`),
+                    [],
                     safeFetchSupabase(`${baseUrl}/historical_l2_stablecoin_daily?select=date,total&order=date.desc&limit=${limit}`),
-                    safeFetchSupabase(`${baseUrl}/historical_l2_stablecoin_volume?select=date,chain,total_volume&order=date.desc&limit=${limit * 15}`)
+                    []  // deferred: loadDeferredL2Tables()
                 ]);
                 
                 // 데이터 저장 (10개 이상일 때만)
@@ -24337,80 +24530,11 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     }
                 }
                 
-                // Bridge Volume (aggregate by date) for Settlement Layer (MV=PQ)
-                if (bridgeVolumeData && bridgeVolumeData.length > 0) {
-                    const bridgeByDate = {};
-                    bridgeVolumeData.forEach(d => {
-                        const dateKey = d.date;
-                        if (!bridgeByDate[dateKey]) bridgeByDate[dateKey] = 0;
-                        bridgeByDate[dateKey] += parseFloat(d.bridge_volume_eth || 0);
-                    });
-                    
-                    // Build history (ETH → USD, 날짜별 종가 — ethUsdOn). 종가 없는 날은 빼고, 가격 도착 후 재계산.
-                    state.bridgeEthByDate = bridgeByDate;
-                    let bridgeHistory = rebuildBridgeVolumeUsd();
-                    log(`   ✓ Bridge Volume History: ${state.bridgeVolumeHistory.length} records`);
-                    
-                    // Use getLatestValidValue helper
-                    state.bridgeDailyVolume = getLatestValidValue(bridgeHistory) || 0;
-                    if (state.bridgeDailyVolume > 0) {
-                        const validDate = getLatestValidDate(bridgeHistory);
-                        log(`   ✓ Bridge Daily Volume: $${(state.bridgeDailyVolume / 1e6).toFixed(2)}M (${validDate?.toISOString().split('T')[0]})`);
-                        
-                    }
-                }
-                
                 // Calculate total dailySettlement (L1 ETH + L2 ETH only)
                 // Bridge volume is already included in L1 ETH transfers, so we exclude it to avoid double counting
                 if (state.l1DailyVolume || state.l2DailyVolume) {
                     state.dailySettlement = (state.l1DailyVolume || 0) + (state.l2DailyVolume || 0);
                     log(`   ✓ Daily Settlement: $${(state.dailySettlement / 1e9).toFixed(2)}B (L1 ETH + L2 ETH, excl. Bridge)`);
-                }
-                
-                // L2 DEX Volume (aggregate by date)
-                if (l2DexVolumeData && l2DexVolumeData.length > 0) {
-                    const l2DexByDate = {};
-                    l2DexVolumeData.forEach(d => {
-                        const dateKey = d.date;
-                        if (!l2DexByDate[dateKey]) l2DexByDate[dateKey] = 0;
-                        l2DexByDate[dateKey] += parseFloat(d.dex_volume_usd || 0);
-                    });
-                    
-                    let l2DexHistory = Object.entries(l2DexByDate)
-                        .map(([date, value]) => ({ date: new Date(date), value }))
-                        .sort((a, b) => a.date - b.date);
-                    
-                    state.l2DexVolumeHistory = l2DexHistory;
-                    log(`   ✓ L2 DEX Volume History: ${state.l2DexVolumeHistory.length} records`);
-                    
-                    state.l2DexDailyVolume = getLatestValidValue(l2DexHistory) || 0;
-                    if (state.l2DexDailyVolume > 0) {
-                        const validDate = getLatestValidDate(l2DexHistory);
-                        log(`   ✓ L2 DEX Daily Volume: $${(state.l2DexDailyVolume / 1e9).toFixed(2)}B (${validDate?.toISOString().split('T')[0]})`);
-                    }
-                }
-                
-                // Bridge Total Volume (aggregate by date)
-                if (bridgeTotalVolumeData && bridgeTotalVolumeData.length > 0) {
-                    const bridgeTotalByDate = {};
-                    bridgeTotalVolumeData.forEach(d => {
-                        const dateKey = d.date;
-                        if (!bridgeTotalByDate[dateKey]) bridgeTotalByDate[dateKey] = 0;
-                        bridgeTotalByDate[dateKey] += parseFloat(d.bridge_volume_usd || 0);
-                    });
-                    
-                    let bridgeTotalHistory = Object.entries(bridgeTotalByDate)
-                        .map(([date, value]) => ({ date: new Date(date), value }))
-                        .sort((a, b) => a.date - b.date);
-                    
-                    state.bridgeTotalVolumeHistory = bridgeTotalHistory;
-                    log(`   ✓ Bridge Total Volume History: ${state.bridgeTotalVolumeHistory.length} records`);
-                    
-                    state.bridgeTotalDailyVolume = getLatestValidValue(bridgeTotalHistory) || 0;
-                    if (state.bridgeTotalDailyVolume > 0) {
-                        const validDate = getLatestValidDate(bridgeTotalHistory);
-                        log(`   ✓ Bridge Total Daily Volume: $${(state.bridgeTotalDailyVolume / 1e6).toFixed(2)}M (${validDate?.toISOString().split('T')[0]})`);
-                    }
                 }
                 
                 // Whale Transactions (1000+ ETH)
@@ -24532,35 +24656,6 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     }
                 }
                 
-                // L2 Active Addresses (from historical_l2_addresses, aggregate by date)
-                if (l2AddrData && l2AddrData.length > 0) {
-                    log(`   ✓ L2 Active Addresses: ${l2AddrData.length} records`);
-                    
-                    // Aggregate by date across all chains
-                    const l2AddrByDate = {};
-                    l2AddrData.forEach(d => {
-                        const dateStr = d.date.split('T')[0];
-                        if (!l2AddrByDate[dateStr]) l2AddrByDate[dateStr] = 0;
-                        l2AddrByDate[dateStr] += parseInt(d.active_addresses) || 0;
-                    });
-                    
-                    // Exclude today and yesterday
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const twoDaysAgo = new Date(today);
-                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-                    
-                    state.l2ActiveAddrHistory = Object.entries(l2AddrByDate)
-                        .map(([date, value]) => ({ date: new Date(date), value }))
-                        .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
-                        .sort((a, b) => a.date - b.date);
-                    
-                    if (state.l2ActiveAddrHistory.length > 0) {
-                        state.l2ActiveAddresses = state.l2ActiveAddrHistory[state.l2ActiveAddrHistory.length - 1].value;
-                        log(`   ✓ L2 Active Addresses (latest): ${state.l2ActiveAddresses.toLocaleString()}`);
-                    }
-                }
-                
                 // L2 Stablecoin Supply (from pre-aggregated daily table)
                 if (l2StablecoinSupplyData && l2StablecoinSupplyData.length > 0) {
                     log(`   ✓ L2 Stablecoin Supply: ${l2StablecoinSupplyData.length} records (from daily table)`);
@@ -24579,34 +24674,6 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     if (state.l2StablecoinSupplyHistory.length > 0) {
                         state.l2StablecoinSupply = state.l2StablecoinSupplyHistory[state.l2StablecoinSupplyHistory.length - 1].value;
                         log(`   ✓ L2 Stablecoin Supply (latest): $${(state.l2StablecoinSupply / 1e9).toFixed(2)}B`);
-                    }
-                }
-                
-                // L2 Stablecoin Volume (aggregate by date)
-                if (l2StablecoinVolData && l2StablecoinVolData.length > 0) {
-                    log(`   ✓ L2 Stablecoin Volume: ${l2StablecoinVolData.length} records`);
-                    
-                    // Aggregate by date across all chains
-                    const volByDate = {};
-                    l2StablecoinVolData.forEach(d => {
-                        const dateStr = d.date.split('T')[0];
-                        if (!volByDate[dateStr]) volByDate[dateStr] = 0;
-                        volByDate[dateStr] += parseFloat(d.total_volume) || 0;
-                    });
-                    
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const twoDaysAgo = new Date(today);
-                    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-                    
-                    state.l2StablecoinVolumeHistory = Object.entries(volByDate)
-                        .map(([date, value]) => ({ date: new Date(date), value }))
-                        .filter(d => d.date.getTime() <= twoDaysAgo.getTime())
-                        .sort((a, b) => a.date - b.date);
-                    
-                    if (state.l2StablecoinVolumeHistory.length > 0) {
-                        state.l2StablecoinVolume = state.l2StablecoinVolumeHistory[state.l2StablecoinVolumeHistory.length - 1].value;
-                        log(`   ✓ L2 Stablecoin Volume (latest): $${(state.l2StablecoinVolume / 1e9).toFixed(2)}B`);
                     }
                 }
                 
@@ -24720,6 +24787,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     renderValuations();
                     log('   → Valuations re-rendered with complete Supabase data');
                 }
+                if (!window.__ethvalDeferredL2Setup) { window.__ethvalDeferredL2Setup = true; setupDeferredL2Loading(); }
                 
                 return true;
             } catch (e) {
