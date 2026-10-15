@@ -6683,9 +6683,15 @@
             gap: 4px;
         }
 
+        /* 2026-10-16: 1280 2열 카드의 차트 칸은 206px라 값+배지(nowrap) 줄이 261px까지 넘쳐 배지가 카드 밖으로 잘렸음
+           → 값 옆에 안 들어가면 배지만 다음 줄로 (gap이 margin 역할, 가드 .qa/method_diff_clip_check.cjs) */
         .method-chart-header > div:first-child {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 4px 8px;
+            min-width: 0;
+            max-width: 100%;
             white-space: nowrap;
         }
 
@@ -6699,7 +6705,7 @@
         .method-chart-diff {
             font-family: var(--font-mono);
             font-size: var(--text-sm);
-            margin-left: 8px;
+            margin-left: 0;
             padding: 2px 6px;
             border-radius: var(--radius-sm);
             font-weight: var(--weight-medium);
