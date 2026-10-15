@@ -37010,6 +37010,15 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
         .floating-action-badge.fab-dock-hd.fab-compact .floating-badge-short { display: none !important; }
         .floating-action-badge.fab-dock-hd.fab-compact::after { content: attr(data-mini); color: #fff; font-size: 14px; font-weight: 600; line-height: 1; }
         @media (max-width: 400px) { html body .floating-action-badge.fab-dock-hd { padding: 0 10px !important; } .floating-action-badge.fab-dock-hd .floating-badge-short { font-size: 12px; } }
+        /* 2026-10-15 (Simon): Apple-site tone. Areas are separated by surface + space, not outlines or shadows.
+           Borders go transparent (box sizes unchanged, so no layout shift); corners are larger and consistent;
+           text uses Apple's near-black / grey. Table rows and in-card hairline dividers stay. */
+        :root { --text: #1d1d1f; --text-body: #1d1d1f; --text-secondary: #424245; --text-muted: #6e6e73; --bg: #f5f5f7; --border-light: #e8e8ed; }
+        html body .ni-card,html body .metric-card,html body .valuation-model,html body .method-card,html body .ev-research-card,html body .mc-box,html body .category-card,html body .summary-valuation-box,html body .community-stats-box,html body .ni-chart-box,html body .ni-matrix,html body .ni-score,html body .conclusion-panel,html body .historical-main-chart,html body .fvb,html body .fbt,html body .simulator-box,html body .sim-presets,html body .price-card,html body .forum-skeleton,html body .rankings-loading-container,html body .ev-report-link,html body .ni-card:hover,html body .metric-card:hover,html body .valuation-model:hover,html body .method-card:hover,html body .ev-research-card:hover,html body .mc-box:hover,html body .category-card:hover,html body .summary-valuation-box:hover,html body .community-stats-box:hover,html body .ni-chart-box:hover,html body .ni-matrix:hover,html body .ni-score:hover,html body .conclusion-panel:hover,html body .historical-main-chart:hover,html body .fvb:hover,html body .fbt:hover,html body .simulator-box:hover,html body .sim-presets:hover,html body .price-card:hover,html body .forum-skeleton:hover,html body .rankings-loading-container:hover,html body .ev-report-link:hover { border-color: transparent !important; box-shadow: none !important; border-radius: 16px; }
+        html body .model-item,html body .ni-sc-cell,html body .sim-slider-item,html body .method-formula,html body .model-formula,html body .ni-top,html body .sim-breakdown-grid,html body .community-summary,html body .method-note,html body .fbt-warn,html body .model-item:hover,html body .ni-sc-cell:hover,html body .sim-slider-item:hover,html body .method-formula:hover,html body .model-formula:hover,html body .ni-top:hover,html body .sim-breakdown-grid:hover,html body .community-summary:hover,html body .method-note:hover,html body .fbt-warn:hover { border-color: transparent !important; box-shadow: none !important; border-radius: 10px; }
+        html body .section { border-color: transparent !important; }
+        html body .metric-footer, html body .model-community, html body .method-references { border-color: var(--border-light) !important; }
+        html body .section-title, html body .section-header h2 { letter-spacing: -0.02em; }
     </style>
     <script>
         (function dockFab() {
@@ -37178,7 +37187,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
     <script src="sim-presets.js?v=20261014a" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
     <script src="dxy.js?v=20261013a" defer></script>
-    <script src="nav-sidebar.js?v=20261015g" defer></script>
+    <script src="nav-sidebar.js?v=20261015h" defer></script>
 
 <script>
 /* Simon 2026-10-13: subsection titles "02.1 — Title" -> small mono number + calm title (matches the section kicker). */
