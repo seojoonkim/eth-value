@@ -172,6 +172,8 @@ CHECKS=(
   "lines_toggle|lines_toggle_check|lines_toggle|$URL 360,390,1280 en,ko,ja,zh $OUT/lines"
   # 2026-10-15: login/rate CTA docked in header/sidebar — never over body text, never overlapping header controls
   "fab_cover|fab_cover_check|fab_cover|$URL $OUT/fab"
+  # 2026-10-16: Astra audit P0 — net supply sign/label, one Staking DCF name, no raw JSON / Chinese chars in analysis
+  "astra_p0|astra_p0_check|astra_p0|$URL"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '

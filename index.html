@@ -15084,7 +15084,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                         <div class="model-row-3"><div class="model-formula">Coef × TVL^Exp ÷ Supply</div><label class="model-toggle"><input type="checkbox" checked data-model="metcalfe"><span class="slider"></span></label></div>
                     </div>
                     <div class="valuation-model" data-model="dcf">
-                        <div class="model-row-1"><div class="model-name">DCF (Staking)</div></div>
+                        <div class="model-row-1"><div class="model-name">Staking DCF</div></div>
                         <div class="model-row-2">
                             <div class="model-price calculating">$--</div>
                             <div class="model-bar-container"><div class="model-bar-bg"></div><div class="model-bar-center"></div><div class="model-bar-fill" style="width:0%"></div><div class="model-bar-marker" style="left:50%"></div></div>
@@ -15293,7 +15293,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                         </div>
                         <div class="legend-btn active" data-model="dcf">
                             <span class="legend-color" style="display:inline-block;width:14px;height:1px;border-radius:1px;background:#84cc16;"></span>
-                            <span class="legend-name" style="color:#84cc16;">DCF (Staking)</span>
+                            <span class="legend-name" style="color:#84cc16;">Staking DCF</span>
                             <span class="legend-value" id="legend-val-dcf">--</span>
                         </div>
                         <div class="legend-btn active" data-model="l2Ecosystem">
@@ -15820,7 +15820,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="nvt-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Calculated</span>
+                        <span data-i18n="label.calculated">Calculated</span>
                         <span class="change" id="nvt-change">--</span>
                         <div class="metric-desc" data-i18n="desc.nvt">Market cap ÷ on-chain volume (7-day avg). Lower = undervalued.</div>
                     </div>
@@ -15931,9 +15931,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="net-supply-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Calculated</span>
+                        <span data-i18n="label.calculated">Calculated</span>
                         <span class="change" id="net-supply-status">--</span>
-                        <div class="metric-desc" data-i18n="desc.netSupply">L1 burn minus issuance. Negative = deflationary, bullish for ETH value.</div>
+                        <div class="metric-desc" data-i18n="desc.netSupply">L1 issuance minus burn, annualized as % of ETH supply. Positive = supply growing, negative = supply shrinking (deflationary).</div>
                     </div>
                 </div>
 
@@ -16335,7 +16335,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="app-capital-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span>Calculated</span>
+                        <span data-i18n="label.calculated">Calculated</span>
                         <span class="change" id="app-capital-change">--</span>
                         <div class="metric-desc" data-i18n="desc.appCapital">Capital deployed in Ethereum apps (DeFi, stables, etc.).</div>
                     </div>
@@ -20808,7 +20808,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'criteria.model.revenueYield': 'Fee Yield',
                 'criteria.model.ecosystemSettlement': 'Ecosystem Settlement (MV=PQ)',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
-                'criteria.model.dcf': 'DCF (Staking)',
+                'criteria.model.dcf': 'Staking DCF',
                 'criteria.model.ps': 'P/S Ratio (25x)',
                 'criteria.model.appCapital': 'App Capital',
                 'criteria.model.tvl': 'TVL Multiple',
@@ -20985,7 +20985,11 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'desc.gasUtil': "% of L1 block gas limit used. High utilization = strong network demand.",
                 'desc.burn': "ETH burned via EIP-1559 on L1. Higher burn = more mainnet activity.",
                 'desc.issuance': "New ETH issued to L1 validators per day. It rises as more ETH is staked.",
-                'desc.netSupply': "L1 burn minus issuance. Negative = deflationary, bullish for ETH value.",
+                'desc.netSupply': "L1 issuance minus burn, annualized as % of ETH supply. Positive = supply growing, negative = supply shrinking (deflationary).",
+                'supply.deflationary': 'Deflationary',
+                'supply.neutral': 'Neutral',
+                'supply.inflationary': 'Inflationary',
+                'label.calculated': 'Calculated',
                 'desc.gasPrice': "Average L1 gas price in Gwei. Reflects mainnet transaction costs.",
                 'desc.blobFees': "L2 data posting fees since Dencun upgrade (Mar 2024). Blob fees are burned like gas, contributing to L1 revenue.",
                 'desc.blobCount': "Data blobs posted by L2s since Dencun (Mar 2024). More blobs = growing L2 adoption.",
@@ -21308,7 +21312,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'criteria.model.revenueYield': 'Fee Yield',
                 'criteria.model.ecosystemSettlement': 'Ecosystem Settlement (MV=PQ)',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
-                'criteria.model.dcf': 'DCF (Staking)',
+                'criteria.model.dcf': 'Staking DCF',
                 'criteria.model.ps': 'P/S Ratio (25x)',
                 'criteria.model.appCapital': 'App Capital',
                 'criteria.model.tvl': 'TVL Multiple',
@@ -21483,7 +21487,11 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'desc.gasUtil': "L1 블록 가스 한도 사용률. 높으면 네트워크 수요 강함.",
                 'desc.burn': "L1에서 EIP-1559로 소각된 ETH. 높을수록 네트워크 활동 활발.",
                 'desc.issuance': "L1 검증자에게 하루 동안 새로 발행된 ETH. 스테이킹된 ETH가 늘수록 함께 늘어나.",
-                'desc.netSupply': "L1 소각 - 발행. 음수 = 디플레이션, ETH 가치 상승 요인.",
+                'desc.netSupply': "L1 발행량에서 소각량을 뺀 순 공급 변화를 ETH 공급량 대비 연율로 환산. 양수 = 공급 증가, 음수 = 공급 감소(디플레이션).",
+                'supply.deflationary': '공급 감소',
+                'supply.neutral': '중립',
+                'supply.inflationary': '공급 증가',
+                'label.calculated': '자체 계산',
                 'desc.gasPrice': "L1 평균 가스 가격 (Gwei). 네트워크 트랜잭션 비용 반영.",
                 'desc.blobFees': "Dencun 업그레이드(2024.3) 이후 L2가 이더리움에 데이터를 올릴 때 내는 수수료. 가스처럼 소각되어 L1 수익에 기여.",
                 'desc.blobCount': "Dencun(2024.3) 이후 L2가 게시한 데이터 블롭. 많을수록 L2 채택 증가.",
@@ -21549,7 +21557,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.stakedEth': "스테이킹 ETH",
                 'metric.ethBurned': "ETH 소각량",
                 'metric.ethIssued': "ETH 발행량",
-                'metric.netSupply': "순 공급량",
+                'metric.netSupply': "순 공급 변화율",
                 'metric.effectiveFloat': "유효 유통량",
                 'metric.gasPrice': "가스 가격",
                 'metric.gasUtil': "가스 사용률",
@@ -21799,7 +21807,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'criteria.model.revenueYield': 'Fee Yield',
                 'criteria.model.ecosystemSettlement': 'Ecosystem Settlement (MV=PQ)',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
-                'criteria.model.dcf': 'DCF (Staking)',
+                'criteria.model.dcf': 'Staking DCF',
                 'criteria.model.ps': 'P/S Ratio (25x)',
                 'criteria.model.appCapital': 'App Capital',
                 'criteria.model.tvl': 'TVL Multiple',
@@ -21976,7 +21984,11 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'desc.gasUtil': "L1区块Gas使用率。高=主网需求强劲。",
                 'desc.burn': "L1上EIP-1559销毁的ETH。越高=网络活动越多。",
                 'desc.issuance': "每天发放给L1验证者的新ETH，随质押量增加而增加。",
-                'desc.netSupply': "L1销毁-发行。负数=通缩，利好ETH价值。",
+                'desc.netSupply': "L1发行量减去销毁量，按ETH供应量年化。正数=供应增加，负数=供应减少（通缩）。",
+                'supply.deflationary': '通缩',
+                'supply.neutral': '中性',
+                'supply.inflationary': '通胀',
+                'label.calculated': '自行计算',
                 'desc.gasPrice': "L1平均Gas价格(Gwei)。反映网络交易成本。",
                 'desc.blobFees': "Dencun升级(2024.3)以来L2向以太坊发布数据的费用。blob费用像gas一样被销毁，贡献L1收入。",
                 'desc.blobCount': "Dencun(2024.3)以来L2发布的数据块。越多=L2采用增长。",
@@ -22304,7 +22316,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'criteria.model.revenueYield': 'Fee Yield',
                 'criteria.model.ecosystemSettlement': 'Ecosystem Settlement (MV=PQ)',
                 'criteria.model.metcalfe': 'Metcalfe\'s Law',
-                'criteria.model.dcf': 'DCF (Staking)',
+                'criteria.model.dcf': 'Staking DCF',
                 'criteria.model.ps': 'P/S Ratio (25x)',
                 'criteria.model.appCapital': 'App Capital',
                 'criteria.model.tvl': 'TVL Multiple',
@@ -22481,7 +22493,11 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'desc.gasUtil': "L1ブロックGas使用率。高い＝メインネット需要強。",
                 'desc.burn': "L1でEIP-1559により焼却されたETH。高い＝活動活発。",
                 'desc.issuance': "L1バリデーターに1日で新規発行されたETH。ステーキング量が増えるほど増える。",
-                'desc.netSupply': "L1焼却-発行。マイナス＝デフレ、ETH価値上昇要因。",
+                'desc.netSupply': "L1発行量から焼却量を引いた純供給変化（ETH供給量比・年率）。プラス＝供給増、マイナス＝供給減（デフレ）。",
+                'supply.deflationary': 'デフレ',
+                'supply.neutral': '中立',
+                'supply.inflationary': 'インフレ',
+                'label.calculated': '独自計算',
                 'desc.gasPrice': "L1平均ガス価格(Gwei)。ネットワーク取引コストを反映。",
                 'desc.blobFees': "Dencunアップグレード(2024.3)以降、L2がイーサリアムにデータを投稿する際の手数料。ガスのようにバーンされL1収益に貢献。",
                 'desc.blobCount': "Dencun(2024.3)以降L2が投稿したデータブロブ。多い＝L2採用増加。",
@@ -22730,6 +22746,10 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 }
             });
             
+            // Status labels set by JS (not data-i18n) re-render in the new language
+            { const ns = document.getElementById('net-supply-status');
+              if (ns && ns.dataset.value && typeof renderNetSupplyStatus === 'function') renderNetSupplyStatus(parseFloat(ns.dataset.value)); }
+
             // 이모지를 단색 SVG 아이콘으로 교체
             replaceEmojisWithSvg();
             
@@ -23626,6 +23646,33 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             'settlement_volume'
         ];
         
+        // Stored analysis can be a whole LLM JSON reply when the collector's parser missed the text key
+        // (2026-10-15 user_activity EN: key was " text" with a leading space). Unwrap the text field; if
+        // that fails, return null so the UI shows a safe message instead of raw JSON. Korean rows: replace
+        // the Chinese words the model slipped in (历史/位置...) with their Korean words.
+        const KO_HAN_FIX = { '历史': '과거', '歷史': '과거', '位置': '위치', '分布': '분포', '百分位': '백분위', '中位数': '중앙값', '趋势': '추세' };
+        function cleanCommentaryText(raw, lang) {
+            let s = String(raw).trim();
+            const looksJson = /^```|^[\[{]/.test(s) || /"(scores|reasoning|\s*text)"\s*:/.test(s.slice(0, 400));
+            if (looksJson) {
+                let out = null;
+                try {
+                    const o = JSON.parse(s.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, ''));
+                    if (o && typeof o === 'object' && !Array.isArray(o)) {
+                        for (const k of Object.keys(o)) {
+                            if (k.trim().toLowerCase() === 'text' && typeof o[k] === 'string' && o[k].trim()) { out = o[k].trim(); break; }
+                        }
+                    }
+                } catch (_) { out = null; }
+                if (!out || /^[\[{]/.test(out)) return null;
+                s = out;
+            }
+            if (lang === 'ko') {
+                for (const [zh, ko] of Object.entries(KO_HAN_FIX)) s = s.split(zh).join(ko);
+            }
+            return s;
+        }
+
         async function loadDailyCommentary() {
             if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
                 log('📝 Commentary: Supabase not configured');
@@ -23694,6 +23741,11 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                         // 텍스트를 구조화된 HTML로 변환
                         const formatCommentary = (text) => {
                             if (!text) return '';
+                            text = cleanCommentaryText(text, currentLang);
+                            if (text === null) {
+                                const na = { en: 'Analysis is temporarily unavailable. Please refer to the metric cards above.', ko: '분석을 일시적으로 표시할 수 없습니다. 위 지표 카드를 확인해 주세요.', zh: '分析暂时无法显示，请参考上方的指标卡片。', ja: '分析を一時的に表示できません。上の指標カードをご確認ください。' };
+                                return `<div class="commentary-section commentary-unavailable" style="grid-column: 1 / -1;"><div class="commentary-section-body"><p>${na[currentLang] || na.en}</p></div></div>`;
+                            }
                             // Simon 2026-10-15: no AI-style dash punctuation (old rows may still contain it)
                             text = String(text).replace(/\s*[—–]{1,2}\s*/g, ', ').replace(/, ([.,;:!?|])/g, '$1');
                             
@@ -29263,10 +29315,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             
             const latest = filtered[filtered.length - 1].value;
             const statusEl = document.getElementById('net-supply-status');
-            if (statusEl) {
-                statusEl.textContent = latest <= 0 ? 'Deflationary' : 'Inflationary';
-                statusEl.className = 'change ' + (latest <= 0 ? 'up' : 'down');
-            }
+            renderNetSupplyStatus(latest);
             
             const dates = filtered.map(d => d.date);
             
@@ -29326,19 +29375,17 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             }
             
             // Net Supply status in footer
+            renderNetSupplyStatus(state.netSupplyChange);
+        }
+
+        // Net supply status label (value = issuance - burn, %/yr). Same thresholds everywhere, translated.
+        function renderNetSupplyStatus(v) {
             const statusEl = document.getElementById('net-supply-status');
-            if (statusEl) {
-                if (state.netSupplyChange <= 0) {
-                    statusEl.textContent = 'Deflationary';
-                    statusEl.className = 'change up';
-                } else if (state.netSupplyChange < 0.5) {
-                    statusEl.textContent = 'Neutral';
-                    statusEl.className = 'change';
-                } else {
-                    statusEl.textContent = 'Inflationary';
-                    statusEl.className = 'change down';
-                }
-            }
+            if (!statusEl || typeof v !== 'number' || !isFinite(v)) return;
+            statusEl.dataset.value = String(v);
+            const k = v <= 0 ? 'deflationary' : (v < 0.5 ? 'neutral' : 'inflationary');
+            statusEl.textContent = t('supply.' + k, k.charAt(0).toUpperCase() + k.slice(1));
+            statusEl.className = 'change' + (k === 'deflationary' ? ' up' : k === 'inflationary' ? ' down' : '');
         }
         
 
@@ -29888,7 +29935,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             tvlMultiple: { name: 'TVL Multiple', formula: 'TVL × Multiple ÷ Supply', reliability: 1 },
             stakingScarcity: { name: 'Staking Scarcity', formula: 'Price × √(Supply ÷ (Supply - Staked))', reliability: 1 },
             metcalfe: { name: "Metcalfe's Law", formula: 'Coef × TVL^Exp ÷ Supply', reliability: 2 },
-            dcf: { name: 'DCF (Staking)', formula: 'Price × (1+APR) ÷ (Discount - Growth)', reliability: 2 },
+            dcf: { name: 'Staking DCF', formula: 'Price × (1+APR) ÷ (Discount - Growth)', reliability: 2 },
             l2Ecosystem: { name: 'L2 Ecosystem', formula: '(TVL + L2×Weight) × Multiple ÷ Supply', reliability: 1 },
             ps: { name: 'P/S Ratio (25x)', formula: '(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply', reliability: 2 },
             revenueYield: { name: 'Fee Yield', formula: '(Burned L1 Fees + Burned Blob Fees) × 365 ÷ APR ÷ Supply', reliability: 3 },
@@ -34389,7 +34436,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
         (function() {
             // Model display names
             const MODEL_NAMES = {
-                dcf: 'DCF (Fee Cash Flow)',
+                dcf: 'Staking DCF',
                 ps: 'Price-to-Sales',
                 revenueYield: 'Fee Yield',
                 validatorEcon: 'Validator Economics',

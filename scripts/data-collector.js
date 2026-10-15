@@ -1180,10 +1180,19 @@ IMPORTANT:
                     }
                 }
 
+                // 2026-10-15: the model once returned the key as " text" (leading space) → parsed.text was
+                // undefined and the whole JSON reply was saved and shown on the site. Match keys loosely,
+                // and never fall back to the raw JSON (null → generateWithFormat retries once).
+                const pick = (o, name) => { for (const k of Object.keys(o || {})) if (k.trim().toLowerCase() === name) return o[k]; };
+                const textVal = pick(parsed, 'text');
+                if (typeof textVal !== 'string' || !textVal.trim() || /^\s*[\[{]/.test(textVal)) {
+                    console.warn('  JSON had no usable "text" field; discarding reply');
+                    return null;
+                }
                 return {
-                    scores: parsed.scores || [50, 50, 50],
-                    reasoning: parsed.reasoning || ['No reasoning provided', 'No reasoning provided', 'No reasoning provided'],
-                    text: parsed.text || content
+                    scores: pick(parsed, 'scores') || [50, 50, 50],
+                    reasoning: pick(parsed, 'reasoning') || ['No reasoning provided', 'No reasoning provided', 'No reasoning provided'],
+                    text: textVal
                 };
             } catch (e) {
                 console.warn('  JSON parse failed, using text fallback');
