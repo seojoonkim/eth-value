@@ -180,6 +180,8 @@ CHECKS=(
   "xtick_dup|xtick_dup_check|xtick_dup|$URL"
   # 2026-10-16: price card change stat follows the selected tab (30D showed "+43.4% 90D") and matches priceHistory N days ago
   "price_period|price_period_check|price_period|$URL $OUT/pp"
+  # 2026-10-16: no chart draws its x-axis labels rotated (MVRV showed 38–48° tilted dates at 1280/390)
+  "xtick_rotation|xtick_rotation_check|xtick_rotation|$URL"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '

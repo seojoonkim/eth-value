@@ -29793,9 +29793,15 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                         x: {
                             display: true,
                             grid: { display: false },
+                            // 2026-10-16: labels were drawn tilted 38–48° (no maxRotation, 6 ticks at size 10).
+                            // Same rule as the other cards: flat labels, ≤5 ticks, autoSkip. Guard: .qa/xtick_rotation_check.cjs
                             ticks: { 
                                 color: colors.tick, 
-                                maxTicksLimit: 6,
+                                maxTicksLimit: 5,
+                                autoSkip: true,
+                                autoSkipPadding: 15,
+                                maxRotation: 0,
+                                minRotation: 0,
                                 font: { size: 10 }
                             }
                         },
