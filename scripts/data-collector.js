@@ -325,7 +325,38 @@ async function fetchSectionMetrics(sectionKey) {
     // ═══════════════════════════════════════════════════════════════════
     // 미취합 데이터 제외: 마지막 데이터 항상 제외 (수집 중일 수 있음)
     // ═══════════════════════════════════════════════════════════════════
-    function checkAndRemoveIncomplete(records, valueField) {
+    /**
+ * Same transforms the page applies before drawing a card (index.html):
+ *  - NVT card = 7-day moving average of daily nvt_ratio (raw daily NVT swings 67→169 in a week).
+ *  - Staking card drops rows that jump >20% from the previous day (filterStakingData), e.g. a
+ *    partial 23.37M row after 33.32M.
+ * records are newest-first. Returns new rows; does not touch the DB.
+ */
+function alignWithCard(tableName, records) {
+    if (!records || records.length < 2) return records;
+    if (tableName === 'historical_nvt') {
+        return records.map((r, i) => {
+            const win = records.slice(i, i + 7).map(x => Number(x.nvt_ratio)).filter(Number.isFinite);
+            if (win.length < 7) return null; // partial window would skew the average
+            return { ...r, nvt_ratio: win.reduce((a, b) => a + b, 0) / win.length };
+        }).filter(Boolean);
+    }
+    if (tableName === 'historical_staking') {
+        const out = [];
+        const asc = [...records].reverse();
+        let prev = null;
+        for (const r of asc) {
+            const v = Number(r.total_staked_eth);
+            if (!(v >= 1e7 && v <= 5e7)) continue;
+            if (prev !== null && Math.abs(v - prev) / prev > 0.2) continue;
+            out.push(r); prev = v;
+        }
+        return out.reverse();
+    }
+    return records;
+}
+
+function checkAndRemoveIncomplete(records, valueField) {
         if (!records || records.length < 3) return records;
         
         // 마지막 데이터 항상 제외
@@ -509,6 +540,51 @@ async function fetchSectionMetrics(sectionKey) {
                 continue;
             }
             
+            // NVT: the card shows a 7-day moving average (raw daily NVT swings 67↔255 day to day) and its
+            // 90D change is MA(latest) vs MA(first day inside the 90D window). Feeding the AI the raw daily
+            // value vs a raw 3-day average made it write "NVT fell 48.3%" under a card reading -4.8%
+            // (2026-10-15). Build the same MA series here so text and card come from one calculation.
+            if (tableName === 'historical_nvt') {
+                const { data: raw } = await supabase
+                    .from(tableName)
+                    .select('date, nvt_ratio')
+                    .order('date', { ascending: false })
+                    .limit(1100);
+                const asc = (raw || [])
+                    .map(r => ({ date: r.date, v: parseFloat(r.nvt_ratio) }))
+                    .filter(r => isFinite(r.v))
+                    .reverse()
+                    .slice(0, -1); // newest row may be a partial day (same rule as the card)
+                if (asc.length > 100) {
+                    const ma = asc.map((d, i, arr) => {
+                        if (i < 6) return { date: d.date, nvt_ratio: d.v };
+                        const w = arr.slice(i - 6, i + 1);
+                        return { date: d.date, nvt_ratio: w.reduce((s, x) => s + x.v, 0) / 7 };
+                    });
+                    const desc = [...ma].reverse();
+                    const cutoff = new Date(new Date(today).getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    const start = ma.find(d => d.date >= cutoff);
+                    const sorted = ma.map(d => d.nvt_ratio).sort((a, b) => a - b);
+                    const n = sorted.length, cur = desc[0].nvt_ratio;
+                    metricsData[metricKey] = {
+                        latest: desc[0],
+                        recent3d: desc.slice(0, 3),
+                        recent7d: desc.slice(0, 7),
+                        around90d: start ? [start] : [],
+                        ninetyDaysAgo: start || null,
+                        basis: '7-day moving average (same as the card)',
+                        historicalStats: {
+                            min: sorted[0], max: sorted[n - 1], median: sorted[Math.floor(n / 2)],
+                            p10: sorted[Math.floor(n * 0.1)], p25: sorted[Math.floor(n * 0.25)],
+                            p75: sorted[Math.floor(n * 0.75)], p90: sorted[Math.floor(n * 0.9)],
+                            currentVal: cur, currentPercentile: Math.round(sorted.filter(v => v < cur).length / n * 100),
+                            dataPoints: n
+                        }
+                    };
+                }
+                continue;
+            }
+
             // Special handling for L2 TVL (stored by chain)
             if (tableName === 'historical_l2_tvl') {
                 const { data: recent } = await supabase
@@ -614,12 +690,15 @@ async function fetchSectionMetrics(sectionKey) {
             }
             
             // Get recent data (35 days for 30d trend analysis)
+            // NVT needs 6 extra days so the 7-day average near day 90 has a full window (alignWithCard).
+            const extraDays = tableName === 'historical_nvt' ? 7 : 0;
+            const recentFrom = new Date(Date.now() - (95 + extraDays) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             const { data: recent } = await supabase
                 .from(tableName)
                 .select('*')
-                .gte('date', ninetyFiveDaysAgo)
+                .gte('date', recentFrom)
                 .order('date', { ascending: false })
-                .limit(95);
+                .limit(95 + extraDays);
             
             // Get 30-day ago data for comparison (backup)
             const { data: older } = await supabase
@@ -641,6 +720,9 @@ async function fetchSectionMetrics(sectionKey) {
                 if (valueField) {
                     cleanedRecent = checkAndRemoveIncomplete(recent, valueField);
                 }
+                // Match the card math so the commentary quotes the same numbers (2026-10-15: card NVT -4.8% 90D
+                // vs commentary "fell 48%" from raw daily NVT; card staking 33.32M vs commentary 34.71M).
+                cleanedRecent = alignWithCard(tableName, cleanedRecent);
                 
                 // 30일 전 ±3일 (27~33일 전) 데이터 찾기
                 const around90d = cleanedRecent.filter(d => {
@@ -804,7 +886,7 @@ function formatMetricsForPrompt(sectionKey, metricsData) {
             valStr = String(currentVal);
         }
         
-        prompt += `- ${key}: ${valStr}${unit} ${changeStr}\n`;
+        prompt += `- ${key}: ${valStr}${unit} ${changeStr}${data.basis ? ` [${data.basis}]` : ''}\n`;
         
         // 역사적 통계 추가 (AI가 맥락을 이해하도록)
         const stats = data.historicalStats;
