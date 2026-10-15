@@ -427,12 +427,17 @@ body .section[id]:not(#valuation):not(#section-valuation) {
 #ev-model-families{scroll-margin-top:120px}
 
 .ev-lines-toggle{display:inline-flex;align-items:center;gap:8px;margin-left:auto;padding:6px 12px;min-height:32px;border-radius:999px;
-  border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer}
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
 .ev-switch{width:28px;height:16px;border-radius:999px;background:var(--primary);position:relative;transition:background .2s}
 .ev-switch::after{content:"";position:absolute;top:2px;left:14px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .2s}
 .ev-lines-toggle[aria-checked="false"] .ev-switch{background:var(--bg-secondary)}
 .ev-lines-toggle[aria-checked="false"] .ev-switch::after{left:2px}
 .legend-row-primary{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px}
+/* 2026-10-15: <=800px the legend row is a 3-col grid (105px cells at 390) and the toggle label (ko 124px, en 149px)
+   broke mid-phrase ("모델 선 / 전체"). Give it its own full-width row, label on one line. */
+@media (max-width:800px){.legend-row-primary .ev-lines-toggle{grid-column:1/-1;justify-self:start;margin-left:0}
+  /* the toggle left column 3 empty: let the composite label use it so "종합 적정 가치"/"総合適正価値" stays on one line */
+  .legend-row-primary .legend-item-fixed:nth-child(2){grid-column:span 2}}
 .ev-lines-off .legend-row-models{opacity:.45}
 
 .ev-updated{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--text-muted)}
