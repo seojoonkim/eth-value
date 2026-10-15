@@ -211,6 +211,10 @@
     if (box.open) drawChart();
   }
 
+  // x-axis month labels ("Nov '25") are ~45px wide at 12px; one label per ~84px keeps ≥20px air
+  // (measured 2026-10-15: 6 labels at 390 → 3-7px gaps, at 360 → -2px overlap). 390 → 4, 360 → 3, 768 → 6 (cap).
+  function xTicks(cv, w) { w = w || (cv && cv.parentNode ? cv.parentNode.clientWidth : 0) || 600; return Math.max(2, Math.min(6, Math.floor(w / 84))); }
+
   function drawChart() {
     var cv = document.getElementById('relval-chart');
     if (!cv || typeof Chart === 'undefined' || S.status !== 'ok') return;
@@ -221,12 +225,14 @@
       type: 'line', data: { datasets: sets },
       options: {
         responsive: true, maintainAspectRatio: false, animation: false, parsing: false,
+        // re-pick the x tick count when the box width changes (rotate / resize)
+        onResize: function (c, size) { var n = xTicks(null, size.width); if (c.options.scales.x.ticks.maxTicksLimit !== n) { c.options.scales.x.ticks.maxTicksLimit = n; c.update('none'); } },
         interaction: { mode: 'index', intersect: false },
         plugins: { legend: { display: false }, tooltip: { callbacks: {
           title: function (c) { return iso(c[0].parsed.x); },
           label: function (c) { return c.dataset.label + ' ' + mult(c.parsed.y); } } } },
         scales: {
-          x: { type: 'time', time: { unit: 'month', displayFormats: { month: "MMM ''yy" } }, grid: { display: false }, ticks: { font: { size: 12 }, color: tc, maxTicksLimit: 6, autoSkip: true, maxRotation: 0 } },
+          x: { type: 'time', time: { unit: 'month', displayFormats: { month: "MMM ''yy" } }, grid: { display: false }, ticks: { font: { size: 12 }, color: tc, maxTicksLimit: xTicks(cv), autoSkip: true, autoSkipPadding: 16, maxRotation: 0 } },
           y: { type: 'logarithmic', position: 'right', afterDataLimits: function (sc) { sc.max *= 1.5; sc.min /= 1.25; }, // headroom so no line rides the box edge grid: { color: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
             ticks: { font: { size: 12 }, color: tc, callback: function (v) { var s = String(v); return /^(1|2|5)0*$/.test(s) ? mult(v) : ''; } } }
         }
