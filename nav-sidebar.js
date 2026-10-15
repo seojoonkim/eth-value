@@ -42,9 +42,9 @@
     /* Wide screens: the rail already carries logo + menu, so the full-width top bar is dropped; theme + language
        controls move to the rail footer (the same DOM node is moved, handlers stay). --hdr-h follows to 0. */
     ' body.has-sb .header-wrapper{display:none!important}',
-    ' html body.has-sb .onboarding-banner{left:calc(' + (W + GAP) + 'px + var(--sb-off))!important;right:var(--sb-off)!important;width:auto!important;top:0!important}',
+    ' html body.has-sb .onboarding-banner{left:calc(' + (W + GAP + 24) + 'px + var(--sb-off))!important;right:calc(24px + var(--sb-off))!important;width:auto!important;top:14px!important}',
     ' html body.has-sb{padding-top:20px}',
-    ' html body.has-sb.banner-visible{padding-top:calc(var(--bn-h, 70px) + 20px)}',
+    ' html body.has-sb.banner-visible{padding-top:calc(var(--bn-h, 70px) + 34px)}',
     ' body.has-sb .section[id]{scroll-margin-top:24px}',
     ' body.has-sb .recent-participants-avatars{min-width:0}',
     ' body.has-sb .summary-opportunity-wrapper{flex-wrap:wrap;justify-content:flex-end;row-gap:6px;overflow:visible}',  /* narrower body: "Undervalued" badge must not clip */

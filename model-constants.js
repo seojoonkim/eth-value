@@ -62,26 +62,26 @@
   ];
 
   var T = {
-    en: { count: function (n) { return n + ' constants'; }, title: 'Constants & assumptions', lead: 'Every fixed number the 12 models use, read live from the code that computes the fair value — so this table cannot drift from the site.',
-          model: 'Model', constant: 'Constant', value: 'Value', inline: 'Fixed in formula', none: 'No constant — inputs only',
+    en: { count: function (n) { return n + ' constants'; }, title: 'Constants & assumptions', lead: 'Every fixed number the 12 models use, read live from the code that computes the fair value, so this table cannot drift from the site.',
+          model: 'Model', constant: 'Constant', value: 'Value', inline: 'Fixed in formula', none: 'No constant, inputs only',
           log: 'Change history', logLead: 'Every change to these constants, with date and reason.', commit: 'commit',
           dl: 'Input data', dlLead: 'The stored daily tables the models read, exactly as stored (no edits, no gap filling). Today\'s card values may use a fresher live API value for the latest day.',
-          table: 'Table', used: 'Used for', rows: 'rows', loading: 'Loading…', fail: 'Download failed — try again', mismatch: 'Constants in code differ from the latest change-history entry.' },
+          table: 'Table', used: 'Used for', rows: 'rows', loading: 'Loading…', fail: 'Download failed. Try again', mismatch: 'Constants in code differ from the latest change-history entry.' },
     ko: { count: function (n) { return '상수 ' + n + '개'; }, title: '상수와 가정', lead: '12개 모델이 쓰는 고정 숫자 전부를 적정가를 계산하는 코드에서 그대로 읽어 보여줘. 그래서 이 표는 사이트 계산과 어긋날 수 없어.',
-          model: '모델', constant: '상수', value: '값', inline: '공식에 고정된 수', none: '상수 없음 — 입력값만 사용',
+          model: '모델', constant: '상수', value: '값', inline: '공식에 고정된 수', none: '상수 없음, 입력값만 사용',
           log: '변경 이력', logLead: '이 상수들이 바뀔 때마다 날짜와 이유를 남겨.', commit: '커밋',
           dl: '입력 데이터', dlLead: '모델이 읽는 일별 저장 테이블을 저장된 그대로 받아(수정·빈칸 채우기 없음). 오늘 카드 값은 최신 하루에 한해 더 새로운 실시간 API 값을 쓸 수 있어.',
-          table: '테이블', used: '쓰이는 곳', rows: '행', loading: '불러오는 중…', fail: '다운로드 실패 — 다시 눌러줘', mismatch: '코드의 상수가 최신 변경 이력과 달라.' },
+          table: '테이블', used: '쓰이는 곳', rows: '행', loading: '불러오는 중…', fail: '다운로드 실패, 다시 눌러줘', mismatch: '코드의 상수가 최신 변경 이력과 달라.' },
     zh: { count: function (n) { return n + ' 个常数'; }, title: '常数与假设', lead: '12 个模型使用的全部固定数字，直接从计算公允价值的代码中读取，因此此表不会与网站计算不一致。',
-          model: '模型', constant: '常数', value: '数值', inline: '公式内固定数', none: '无常数——仅用输入值',
+          model: '模型', constant: '常数', value: '数值', inline: '公式内固定数', none: '无常数，仅用输入值',
           log: '变更记录', logLead: '这些常数每次变更都记录日期与原因。', commit: '提交',
           dl: '输入数据', dlLead: '模型读取的每日存储表，按存储原样提供（不修改、不填补空缺）。今日卡片数值的最新一天可能使用更新的实时 API 值。',
-          table: '表', used: '用于', rows: '行', loading: '加载中…', fail: '下载失败——请重试', mismatch: '代码中的常数与最新变更记录不一致。' },
+          table: '表', used: '用于', rows: '行', loading: '加载中…', fail: '下载失败，请重试', mismatch: '代码中的常数与最新变更记录不一致。' },
     ja: { count: function (n) { return '定数 ' + n + ' 個'; }, title: '定数と前提', lead: '12 モデルが使う固定数値をすべて、適正価値を計算するコードから直接読み取って表示。だからこの表はサイトの計算とずれない。',
-          model: 'モデル', constant: '定数', value: '値', inline: '式に固定された数', none: '定数なし — 入力値のみ',
+          model: 'モデル', constant: '定数', value: '値', inline: '式に固定された数', none: '定数なし、入力値のみ',
           log: '変更履歴', logLead: 'これらの定数が変わるたびに日付と理由を記録。', commit: 'コミット',
           dl: '入力データ', dlLead: 'モデルが読む日次保存テーブルを保存されたまま提供（編集・欠損補完なし）。今日のカード値は最新の 1 日に限り、より新しいリアルタイム API 値を使うことがある。',
-          table: 'テーブル', used: '用途', rows: '行', loading: '読み込み中…', fail: 'ダウンロード失敗 — もう一度押して', mismatch: 'コードの定数が最新の変更履歴と一致しない。' }
+          table: 'テーブル', used: '用途', rows: '行', loading: '読み込み中…', fail: 'ダウンロード失敗、もう一度押して', mismatch: 'コードの定数が最新の変更履歴と一致しない。' }
   };
   var USED = {
     'Price': { ko: '가격', zh: '价格', ja: '価格' }, 'Supply': { ko: '공급량', zh: '供应量', ja: '供給量' },

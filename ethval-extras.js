@@ -144,14 +144,31 @@
   }
 
   // ---------- 2. Chart: all model lines on/off ----------
-  var linesHidden = false;
+  // Phones start with just market price + composite (Astra review 2026-10-15: 14 lines are unreadable at 390px).
+  var linesHidden = window.matchMedia('(max-width: 640px)').matches;
   var BASE = ['Market Price', 'Composite'];
   function applyLines(chart) {
+    var vmax = 0;
     chart.data.datasets.forEach(function (d) {
-      if (BASE.indexOf(d.label) >= 0) return;
+      if (BASE.indexOf(d.label) >= 0) {
+        (d.data || []).forEach(function (v) { var n = (v && typeof v === 'object') ? v.y : v; if (isFinite(n) && n > vmax) vmax = n; });
+        return;
+      }
       if (linesHidden) { if (d._evPrev === undefined) d._evPrev = !!d.hidden; d.hidden = true; }
       else if (d._evPrev !== undefined) { d.hidden = d._evPrev; delete d._evPrev; }
     });
+    // Only market price + composite showing: fit the y axis to them instead of the 12-model max.
+    var y = chart.options && chart.options.scales && chart.options.scales.y; if (!y) return;
+    if (y._evMax === undefined) { y._evMax = null; }
+    // the page re-sets y.max on every re-render: treat any value we did not set as the new original
+    if (y._evMax && y.max !== y._evSet) y._evMax = null;
+    if (linesHidden && vmax > 0) {
+      if (y._evMax === null) y._evMax = { max: y.max, step: y.ticks && y.ticks.stepSize };
+      var step = vmax > 8000 ? 2000 : 1000;
+      y.max = y._evSet = Math.ceil(vmax * 1.12 / step) * step; if (y.ticks) y.ticks.stepSize = step;
+    } else if (!linesHidden && y._evMax) {
+      y.max = y._evMax.max; if (y.ticks) y.ticks.stepSize = y._evMax.step; y._evMax = null;
+    }
   }
   function hookChart() {
     if (typeof Chart === 'undefined' || !Chart.getChart) return null;
@@ -160,6 +177,7 @@
       var orig = c.update.bind(c);
       c.update = function (m) { applyLines(c); return orig(m); };
       c._evHooked = true;
+      if (linesHidden) c.update('none');
     }
     return c;
   }
@@ -176,6 +194,7 @@
       renderLinesBtn();
     });
     row.appendChild(linesBtn);
+    if (linesHidden) { var hc = document.querySelector('.historical-legend-container'); if (hc) hc.classList.add('ev-lines-off'); renderLinesBtn(); }
     var tries = 0, iv = setInterval(function () { if (hookChart() || ++tries > 60) clearInterval(iv); }, 1000);
   }
   function renderLinesBtn() {
@@ -235,7 +254,7 @@
   function embedCode() {
     var dark = document.body.classList.contains('dark'); // body.dark drives the page CSS
     return '<iframe src="' + SITE + 'embed.html?lang=' + lang() + '&theme=' + (dark ? 'dark' : 'light') +
-      '" width="100%" height="236" style="border:0;max-width:480px" title="ETHval — ETH fair value" loading="lazy"></iframe>';
+      '" width="100%" height="236" style="border:0;max-width:480px" title="ETHval: ETH fair value" loading="lazy"></iframe>';
   }
   function toast(msg) {
     var el = document.createElement('div'); el.className = 'ev-toast'; el.textContent = msg;
@@ -342,7 +361,7 @@
       title: 'Ether: The Triple Point Asset',
       d: { en: 'The classic essay: capital asset, consumable asset, store of value.', ko: '자본·소모·가치저장 자산이라는 고전적인 ETH 프레임', zh: '经典文章：资本资产、消耗型资产与价值储存', ja: '古典的論考：資本資産・消費資産・価値保存' } },
     { org: 'ultrasound.money', year: 'Live', url: 'https://ultrasound.money/',
-      title: 'Ultra Sound Money — live supply & burn',
+      title: 'Ultra Sound Money: live supply & burn',
       d: { en: 'Real-time issuance, burn and supply growth.', ko: '발행·소각·공급 증감을 실시간으로 보는 대시보드', zh: '实时发行、销毁与供应变化', ja: '発行・バーン・供給増減をリアルタイムで確認' } },
     { org: 'ethereum.org', year: 'Hub', url: 'https://ethereum.org/reports/',
       title: 'Reports on Ethereum from institutions',
@@ -366,7 +385,7 @@
       t({ en: ')', ko: '까지)', zh: '）', ja: ' まで）' }) : '';
     return '<a class="ev-report-link" href="' + href + '">' +
       '<span class="ev-report-k">' + t({ en: 'Monthly report', ko: '월간 리포트', zh: '月度报告', ja: '月次レポート' }) + '</span>' +
-      '<span class="ev-report-t">' + t({ en: 'ETH valuation report — ', ko: 'ETH 밸류에이션 리포트 — ', zh: 'ETH 估值报告 — ', ja: 'ETH バリュエーションレポート — ' }) + name + mtd + '</span>' +
+      '<span class="ev-report-t">' + t({ en: 'ETH valuation report: ', ko: 'ETH 밸류에이션 리포트: ', zh: 'ETH 估值报告：', ja: 'ETH バリュエーションレポート：' }) + name + mtd + '</span>' +
       '<span class="ev-report-d">' + t({ en: 'Composite fair value, what moved it, band position', ko: '합성 적정가 · 움직인 모델 · 밴드 위치', zh: '综合公允价值、推动模型、区间位置', ja: '合成適正価値・動かしたモデル・バンド位置' }) + ' →</span></a>';
   }
   var researchSec = null;
@@ -382,9 +401,9 @@
     researchSec.innerHTML = '<div class="section-header"><div class="section-title"><span>' +
       t({ en: 'Research Library', ko: '리서치 라이브러리', zh: '研究资料库', ja: 'リサーチライブラリ' }) + '</span></div>' +
       '<p class="ev-research-lead">' + t({
-        en: 'The best published thinking on how to value ETH — read the sources behind the models.',
+        en: 'The best published thinking on how to value ETH. Read the sources behind the models.',
         ko: 'ETH 가치를 어떻게 매길지에 대한 좋은 리서치를 모았어. 모델 뒤에 있는 원문을 직접 읽어봐.',
-        zh: '汇集了关于如何为 ETH 估值的优秀研究——直接阅读模型背后的原文。',
+        zh: '汇集了关于如何为 ETH 估值的优秀研究，直接阅读模型背后的原文。',
         ja: 'ETH の価値をどう測るかについての優れたリサーチ集。モデルの背景にある原文を読んでみて。' }) + '</p></div>' +
       reportLink() +
       '<div class="ev-research-grid">' + RESEARCH.map(function (r) {

@@ -130,6 +130,7 @@ For each event output:
  horizon: immediate|short|structural
  metrics: 1-3 of ${METRICS.join('|')} that this event moves first
  confidence: 0..1 your confidence in the direction call
+ style: never use em dashes (—) or en dashes (–) as punctuation in any text field
  title: {en,ko,zh,ja} concise headline (<=70 chars each; Korean in natural plain language, Hangul only — never Japanese kana or Chinese characters in "ko")
  summary: {en,ko,zh,ja} one sentence of what happened
  mechanism: {en,ko,zh,ja} one short causal chain from event -> metric -> ETH price, using arrows (e.g. "ETF inflow ↑ → exchange reserve ↓ → sell pressure ↓ → price +"). The last step must agree with direction (bearish → "downside pressure ↑" or "price -", never "pressure ↓"), and every language keeps the same arrows.

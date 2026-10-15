@@ -26,7 +26,7 @@
             title: 'News Impact', mb: n => `${n} ${n === 1 ? 'story' : 'stories'}`, mbTip: n => `${n} ${n === 1 ? 'story' : 'stories'} in the last 30 days point to this metric. Tap to see them.`, mbHead: 'Last 30 days', mbClear: 'Clear', mxTitle: 'Impact by week', mxHint: 'Net score per category, last 4 weeks. Tap a cell to see its cards.', mxN: n => `${n} ${n === 1 ? 'story' : 'stories'}`, lgScore: 'Net score (bullish − bearish)', lgCount: 'News count', lgHi: 'Includes high-impact news', lgBear: 'Bearish', lgBull: 'Bullish', mxClear: 'Clear', sub: 'How this week\'s news moves ETH', net7: '7D net impact', bull: 'Bullish', bear: 'Bearish', mixed: 'Mixed',
             top: 'Biggest event', all: 'All', none: 'No events in this range yet.', loading: 'Loading news…', err: 'News data unavailable right now.',
             impact: { 3: 'High', 2: 'Medium', 1: 'Low' }, horizon: { immediate: 'Immediate', short: 'Short-term', structural: 'Structural' },
-            after: 'ETH after', sources: 'Sources', events: ' events', price: 'ETH price', panel: '01.1 — News Impact on Price',
+            after: 'ETH after', sources: 'Sources', events: ' events', price: 'ETH price', panel: '01.1 News Impact on Price',
             hint: '▲ bullish above the price · ▼ bearish below · bigger = stronger · number = events grouped there. Tap a marker to see its cards.',
             imp: { 3: 'High only', 2: 'Medium+', 1: 'All' }, showAll: 'Show all', selN: n => `${n} events`,
             scoreNote: 'Points: high 3 · medium 2 · low 1. Score = bullish − bearish.', last7: 'Last 7 days', drivers: 'What moved it', vBull: 'Good news outweighs bad this week', vBear: 'Bad news outweighs good this week', vMix: 'Good and bad news are balanced', pts: 'pts', noWeek: 'No major ETH news in the last 7 days.', model: 'AI-tagged',
@@ -38,7 +38,7 @@
             title: '뉴스 영향', mb: n => `관련 뉴스 ${n}건`, mbTip: n => `최근 30일 이 지표를 움직인 뉴스 ${n}건. 누르면 뉴스를 보여줘요.`, mbHead: '최근 30일', mbClear: '해제', mxTitle: '주별 영향 지도', mxHint: '최근 4주 카테고리별 뉴스 영향이에요. 칸을 누르면 해당 뉴스만 보여요.', mxN: n => `${n}건`, lgScore: '순영향 점수 (호재 − 악재)', lgCount: '뉴스 건수', lgHi: '큰 뉴스 포함', lgBear: '악재', lgBull: '호재', mxClear: '해제', sub: '이번 주 뉴스가 ETH 가격에 주는 영향', net7: '최근 7일 순영향', bull: '호재', bear: '악재', mixed: '혼재',
             top: '가장 큰 사건', all: '전체', none: '이 기간에는 아직 사건이 없어요.', loading: '뉴스 불러오는 중…', err: '지금은 뉴스 데이터를 불러올 수 없어요.',
             impact: { 3: '상', 2: '중', 1: '하' }, horizon: { immediate: '즉시', short: '단기', structural: '구조적' },
-            after: '이후 ETH', sources: '출처', events: '건', price: 'ETH 가격', panel: '01.1 — 뉴스와 가격',
+            after: '이후 ETH', sources: '출처', events: '건', price: 'ETH 가격', panel: '01.1 뉴스와 가격',
             hint: '가격 위 ▲는 호재, 아래 ▼는 악재예요. 클수록 영향이 크고, 숫자는 묶인 사건 수예요. 표시를 누르면 해당 카드만 보여요.',
             imp: { 3: '상만', 2: '중 이상', 1: '전체' }, showAll: '전체 보기', selN: n => `${n}건`,
             scoreNote: '점수: 상 3 · 중 2 · 하 1점. 순영향 = 호재 − 악재.', last7: '최근 7일', drivers: '무엇이 움직였나', vBull: '이번 주는 호재가 더 커요', vBear: '이번 주는 악재가 더 커요', vMix: '호재와 악재가 비슷해요', pts: '점', noWeek: '최근 7일 동안 큰 ETH 뉴스가 없어요.', model: 'AI 분류',
@@ -50,7 +50,7 @@
             title: '新闻影响', mb: n => `相关新闻 ${n} 条`, mbTip: n => `近 30 日有 ${n} 条新闻影响此指标，点击查看。`, mbHead: '近 30 日', mbClear: '清除', mxTitle: '每周影响矩阵', mxHint: '近 4 周各类别新闻影响。点击格子只看对应新闻。', mxN: n => `${n}条`, lgScore: '净影响分（利好 − 利空）', lgCount: '新闻条数', lgHi: '含重大新闻', lgBear: '利空', lgBull: '利好', mxClear: '清除', sub: '本周新闻如何影响 ETH 价格', net7: '近 7 日净影响', bull: '利好', bear: '利空', mixed: '中性',
             top: '最大事件', all: '全部', none: '该区间暂无事件。', loading: '正在加载新闻…', err: '暂时无法加载新闻数据。',
             impact: { 3: '高', 2: '中', 1: '低' }, horizon: { immediate: '即时', short: '短期', structural: '结构性' },
-            after: '之后 ETH', sources: '来源', events: '条', price: 'ETH 价格', panel: '01.1 — 新闻与价格',
+            after: '之后 ETH', sources: '来源', events: '条', price: 'ETH 价格', panel: '01.1 新闻与价格',
             hint: '价格上方 ▲ 为利好，下方 ▼ 为利空；越大影响越强，数字为合并的事件数。点击标记只看对应卡片。',
             imp: { 3: '仅高', 2: '中及以上', 1: '全部' }, showAll: '查看全部', selN: n => `${n} 条`,
             scoreNote: '分值：高 3 · 中 2 · 低 1。净影响 = 利好 − 利空。', last7: '近 7 日', drivers: '主要推动因素', vBull: '本周利好大于利空', vBear: '本周利空大于利好', vMix: '利好与利空大致相当', pts: '分', noWeek: '近 7 日没有重大 ETH 新闻。', model: 'AI 标注',
@@ -62,7 +62,7 @@
             title: 'ニュース影響', mb: n => `関連ニュース ${n}件`, mbTip: n => `直近30日でこの指標を動かしたニュース ${n}件。タップで表示。`, mbHead: '直近30日', mbClear: '解除', mxTitle: '週別インパクト表', mxHint: '直近4週・カテゴリ別のニュース影響。セルをタップで該当ニュースだけ表示。', mxN: n => `${n}件`, lgScore: '純影響スコア（好材料 − 悪材料）', lgCount: 'ニュース件数', lgHi: '大きなニュースを含む', lgBear: '悪材料', lgBull: '好材料', mxClear: '解除', sub: '今週のニュースが ETH 価格に与える影響', net7: '直近7日の純影響', bull: '好材料', bear: '悪材料', mixed: '中立',
             top: '最大の出来事', all: 'すべて', none: 'この期間のイベントはまだありません。', loading: 'ニュースを読み込み中…', err: '現在ニュースデータを取得できません。',
             impact: { 3: '大', 2: '中', 1: '小' }, horizon: { immediate: '即時', short: '短期', structural: '構造的' },
-            after: 'その後のETH', sources: '出典', events: '件', price: 'ETH 価格', panel: '01.1 — ニュースと価格',
+            after: 'その後のETH', sources: '出典', events: '件', price: 'ETH 価格', panel: '01.1 ニュースと価格',
             hint: '価格の上 ▲ は好材料、下 ▼ は悪材料。大きいほど影響が強く、数字はまとめた件数。マーカーをタップで該当カードだけ表示。',
             imp: { 3: '大のみ', 2: '中以上', 1: 'すべて' }, showAll: 'すべて表示', selN: n => `${n}件`,
             scoreNote: '点数：大3・中2・小1。純影響 = 好材料 − 悪材料。', last7: '直近7日', drivers: '動かした要因', vBull: '今週は好材料が上回っています', vBear: '今週は悪材料が上回っています', vMix: '好材料と悪材料が拮抗しています', pts: '点', noWeek: '直近7日に大きなETHニュースはありません。', model: 'AI 分類',
@@ -89,7 +89,8 @@
 
     const lang = () => { const l = (typeof currentLang !== 'undefined' && currentLang) || document.documentElement.lang || 'en'; return T[l] ? l : 'en'; };
     const tr = () => T[lang()];
-    const loc = (o) => (o && (o[lang()] || o.en)) || '';
+    // Simon 2026-10-15: no AI-style dash punctuation in collected news text.
+    const loc = (o) => String((o && (o[lang()] || o.en)) || '').replace(/\s*[—–]{1,2}\s*/g, ', ').replace(/, ([.,;:!?])/g, '$1');
     const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const dayMs = 86400000;
     const tOf = (e) => new Date(e.date + 'T00:00:00Z').getTime();
@@ -362,7 +363,7 @@
             const when = c.date_start && c.date_start !== c.date ? `${mmdd(c.date_start)}–${mmdd(c.date)}` : mmdd(c.starts_at ? day : c.date);
             const time = c.starts_at ? ' ' + new Date(c.starts_at).toLocaleTimeString(lang() === 'en' ? 'en-US' : lang(), { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short' }) : '';
             const nm = c.kind === 'upgrade' ? `${L.upKind.upgrade} · ${c.name}` : L.upKind[c.kind] || c.name;
-            const tip = `${nm} — ${c.source}${c.kind === 'fomc' ? ' · ' + L.upTent : ''}`;
+            const tip = `${nm} · ${c.source}${c.kind === 'fomc' ? ' · ' + L.upTent : ''}`;
             return `<a class="ni-up-i k-${esc(c.kind)}" href="${esc(c.source_url)}" target="_blank" rel="noopener noreferrer" title="${esc(tip)}"><span class="ni-up-d${d <= 3 ? ' soon' : ''}">${esc(L.dday(d))}</span><span class="ni-up-n">${esc(nm)}${c.sep ? `<small>${esc(L.upSep)}</small>` : ''}</span><span class="ni-up-w">${esc(when + time)}</span></a>`;
         }).join('');
         return `<div class="ni-up"><div class="ni-sec-k">${esc(L.up)}</div>${items || `<div class="ni-up-none">${esc(L.upNone)}</div>`}</div>`;

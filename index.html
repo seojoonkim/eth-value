@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ETHval | Intrinsic Value Dashboard</title>
-    <meta name="description" content="ETHval: Ethereum intrinsic value dashboard — 12 valuation models averaged into one composite ETH fair value, with on-chain fundamentals and model history.">
+    <meta name="description" content="ETHval: Ethereum intrinsic value dashboard. 12 valuation models averaged into one composite ETH fair value, with on-chain fundamentals and model history.">
     <link rel="canonical" href="https://ethval.com/">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%238b5cf6'/><stop offset='1' stop-color='%236d28d9'/></linearGradient></defs><rect width='28' height='28' rx='8' fill='url(%23g)'/><path d='M14 5.5 L20 14 L14 22.5 L8 14 Z M8 14 L14 17.2 L20 14 M14 17.2 L14 22.5' fill='none' stroke='white' stroke-width='1.8' stroke-linejoin='round'/></svg>">
 
@@ -56,7 +56,7 @@
     <link rel="stylesheet" href="valuation-dist.css?v=20261013b">
     <link rel="stylesheet" href="fv-band.css?v=20261014b">
     <link rel="stylesheet" href="fv-backtest.css?v=20261014a">
-    <link rel="stylesheet" href="model-constants.css?v=20261014a">
+    <link rel="stylesheet" href="model-constants.css?v=20261015k">
     <link rel="stylesheet" href="composite-sens.css?v=20261014a">
     <link rel="stylesheet" href="triple-point.css?v=20261014b">
     <link rel="stylesheet" href="relval.css?v=20261014a">
@@ -1764,7 +1764,7 @@
         }
         
         .section-title::before {
-            content: "0" counter(section-counter) " — ";
+            content: "0" counter(section-counter) "  ";
         }
         
         .section-icon {
@@ -14450,7 +14450,24 @@
         body.dark .logo-text-val { color: #a78bfa; }
         .logo-text:hover { color: var(--text) !important; }
         .logo:hover .logo-icon { filter: brightness(1.06); }
-    </style>
+    
+        /* Simon 2026-10-15: share prompt + signature had no breathing room. Own closing block, airy rows, soft dot dividers. */
+        .summary-signoff { margin-top: 16px; padding: 24px 28px; border-radius: 16px; background: rgba(139, 92, 246, 0.05); display: flex; flex-direction: column; gap: 18px; }
+        body.dark .summary-signoff { background: rgba(167, 139, 250, 0.07); }
+        .summary-signoff .summary-text { margin: 0; line-height: 1.8; }
+        .summary-signoff .summary-cta { gap: 10px; row-gap: 10px; flex-wrap: wrap; overflow: visible; white-space: normal; }
+        .summary-signoff .summary-cta img { width: 32px !important; height: 32px !important; margin-right: 2px; }
+        /* 1001-1199px: three narrow columns, the intro column sets the row height; keep the closing block compact so the price card does not open a gap. */
+        @media (min-width: 1001px) and (max-width: 1199px) { .summary-signoff { margin-top: 10px; padding: 16px 18px; gap: 10px; } .summary-signoff .summary-text { line-height: 1.6; } .summary-signoff .summary-cta img { width: 26px !important; height: 26px !important; } }
+        .summary-signoff .contact-title { margin-left: -2px; }
+        .summary-signoff .contact-divider { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: .55; margin: 0 6px; }
+        @media (max-width: 600px) {
+            .summary-signoff { padding: 18px 18px; gap: 14px; }
+            .summary-signoff .summary-cta { gap: 8px; }
+            .summary-signoff .contact-divider { display: none; }
+            .summary-signoff .summary-cta { column-gap: 14px; }
+        }
+</style>
     <script>
         // Avatars: stored Twitter avatar URLs die when a user changes their picture (pbs.twimg.com 404).
         // ethvalAvatar() returns the default avatar for URLs already known dead, so they are not requested again.
@@ -14731,6 +14748,58 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
    2026-10-14 live: ja .ni-sc-foot ran 37px out of its box at 390. Site-wide: normal CJK line breaking
    for every element (overrides component keep-all rules); links keep their own break-all. */
 html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: normal !important; overflow-wrap: break-word; }
+
+        /* Simon 2026-10-15: welcome banner looked cut off (flush to the top edge, square). Floating rounded card with a soft border. */
+        html body .onboarding-banner {
+            border-radius: 16px; border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+            box-shadow: 0 10px 30px -18px rgba(40, 24, 90, 0.45);
+            background: color-mix(in srgb, var(--primary) 8%, var(--bg-card));
+            left: 12px !important; right: 12px !important; width: auto !important;
+            margin-top: 8px; padding: 10px 14px 10px 20px;
+        }
+        body.dark .onboarding-banner { border-color: color-mix(in srgb, var(--primary) 30%, transparent); background: color-mix(in srgb, var(--primary) 12%, var(--bg-card)); box-shadow: 0 12px 34px -16px rgba(0, 0, 0, 0.7); }
+        html body.has-sb .onboarding-banner { top: 14px !important; margin-top: 0; }
+        html body.has-sb.banner-visible { padding-top: calc(var(--bn-h, 70px) + 34px) !important; }
+        .onboarding-banner .onboarding-cta { border-radius: 999px; padding: 8px 18px; }
+        .onboarding-banner .onboarding-close { border-radius: 999px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0; font-size: 20px; line-height: 1; }
+        .onboarding-banner .onboarding-close:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+        @media (max-width: 768px) { html body .onboarding-banner { left: 10px !important; right: 10px !important; border-radius: 14px; padding: 8px 8px 8px 14px; } }
+
+        /* Simon 2026-10-15: expand/collapse arrows were too small to read as controls. One shared affordance:
+           a tinted pill "Show ⌄ / Hide ⌃" on every <details> box, the same pill for "Read more", the whole header row
+           highlights on hover, and the community box arrow sits in a round chip. */
+        .mc-box > summary { align-items: center; border-radius: 12px; transition: background-color .15s ease; }
+        .mc-box > summary:hover { background: color-mix(in srgb, var(--primary) 5%, transparent); }
+        .mc-box > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .mc-box > summary::after {
+            content: "Show"; margin-left: auto; flex: 0 0 auto; align-self: center;
+            display: inline-flex; align-items: center; height: 30px; padding: 0 30px 0 14px; border-radius: 999px;
+            font-size: 13px; font-weight: 600; letter-spacing: 0; color: var(--primary);
+            background: color-mix(in srgb, var(--primary) 11%, transparent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d4fe0' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 11px center / 14px 14px;
+            transform: none !important; transition: background-color .15s ease;
+        }
+        .mc-box > summary:hover::after { background-color: color-mix(in srgb, var(--primary) 18%, transparent); }
+        .mc-box[open] > summary::after { content: "Hide"; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d4fe0' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 15l6-6 6 6'/%3E%3C/svg%3E"); }
+        body.dark .mc-box > summary::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b8a8ff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
+        body.dark .mc-box[open] > summary::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b8a8ff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 15l6-6 6 6'/%3E%3C/svg%3E"); }
+        html[lang="ko"] .mc-box > summary::after { content: "펼치기"; }
+        html[lang="ko"] .mc-box[open] > summary::after { content: "접기"; }
+        html[lang="zh"] .mc-box > summary::after { content: "展开"; }
+        html[lang="zh"] .mc-box[open] > summary::after { content: "收起"; }
+        html[lang="ja"] .mc-box > summary::after { content: "開く"; }
+        html[lang="ja"] .mc-box[open] > summary::after { content: "閉じる"; }
+
+        .mp-more { padding: 0 30px 0 14px !important; min-height: 32px !important; height: 32px; border-radius: 999px !important;
+            background: color-mix(in srgb, var(--primary) 11%, transparent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d4fe0' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 11px center / 14px 14px !important; }
+        .mp-more:hover { background-color: color-mix(in srgb, var(--primary) 18%, transparent) !important; }
+        .mp-more::after { content: none !important; }
+        .mp-open > .mp-more, .mp-open .mp-more { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d4fe0' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 15l6-6 6 6'/%3E%3C/svg%3E") !important; }
+        body.dark .mp-more { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b8a8ff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important; }
+        body.dark .mp-open > .mp-more, body.dark .mp-open .mp-more { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b8a8ff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 15l6-6 6 6'/%3E%3C/svg%3E") !important; }
+
+        .community-stats-arrow { width: 32px !important; height: 32px !important; padding: 8px; box-sizing: border-box; border-radius: 50%;
+            background: color-mix(in srgb, var(--primary) 11%, transparent); stroke-width: 2.6; }
+        .community-stats-box:hover .community-stats-arrow { background: color-mix(in srgb, var(--primary) 18%, transparent); }
 </style>
 </head>
 <body>
@@ -14887,7 +14956,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                         <svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; opacity: 0.6;"><path d="M3 3v18h18v-2H5V3H3zm4 14h2V9H7v8zm4 0h2V6h-2v11zm4 0h2v-5h-2v5zm4 0h2V9h-2v8z"/></svg> <strong>ETHval</strong> derives <strong>Ethereum's intrinsic value</strong> using 12 valuation models across four methodological categories: <strong>Traditional Finance</strong> (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), <strong>On-chain Asset Value</strong> (TVL Multiple, App Capital), <strong>Network Effects</strong> (Metcalfe's Law, ETH Monetary, Ecosystem Settlement, L2 Ecosystem), and <strong>Supply Scarcity</strong> (Staking Scarcity, Liquidity Premium).
                     </p>
                     <p class="summary-text" data-i18n="summary.proofOfRating">
-                        <svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; opacity: 0.6;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg> <strong>Proof of Rating:</strong> <strong>ETHval</strong> is completely free — no subscriptions, no hidden fees. Log in with 𝕏 and rate just 2 models to unlock 3Y historical data & the What-If Simulator. Your ratings help refine the valuation framework — think of it as staking your opinion to earn access. Let's build better data together!
+                        <svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; opacity: 0.6;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg> <strong>Proof of Rating:</strong> <strong>ETHval</strong> is completely free. No subscriptions, no hidden fees. Log in with 𝕏 and rate just 2 models to unlock 3Y historical data & the What-If Simulator. Your ratings help refine the valuation framework. Think of it as staking your opinion to earn access. Let's build better data together!
                     </p>
                     <div class="community-stats-box" onclick="document.getElementById('ratings').scrollIntoView({behavior: 'instant'}); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.querySelector('.nav-item[href=\'#ratings\']').classList.add('active');" style="cursor: pointer;">
                         <span class="community-stats-label">
@@ -14933,8 +15002,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                             </div>
                         </div>
                     </div>
+                    <div class="summary-signoff">
                     <p class="summary-text" data-i18n="summary.sharePrompt">
-                        <svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; opacity: 0.6;"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> <strong>Found this useful?</strong> Share it on <a href="https://twitter.com/intent/tweet?text=ETHval%20-%20Ethereum%20Intrinsic%20Value%20Dashboard%0A%0A12%20valuation%20models%20to%20estimate%20ETH%27s%20fair%20value.%20Check%20it%20out!%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a> and help others discover it — and if you spot a bug or have suggestions, always happy to hear from you!
+                        <svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; opacity: 0.6;"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> <strong>Found this useful?</strong> Share it on <a href="https://twitter.com/intent/tweet?text=ETHval%20-%20Ethereum%20Intrinsic%20Value%20Dashboard%0A%0A12%20valuation%20models%20to%20estimate%20ETH%27s%20fair%20value.%20Check%20it%20out!%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a> and help others discover it. If you spot a bug or have suggestions, I’m always happy to hear from you!
                     </p>
                     
                     <!-- Simon Contact Info -->
@@ -14942,15 +15012,16 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                         <img loading="lazy" decoding="async" src="https://pbs.twimg.com/profile_images/1622898369596391426/ulBhA0lL_400x400.jpg" alt="Simon" style="width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;">
                         <span class="contact-name">Simon Kim</span>
                         <span class="contact-title">CEO, Hashed</span>
-                        <span class="contact-divider">|</span>
+                        <span class="contact-divider" aria-hidden="true"></span>
                         <a href="https://x.com/simonkim_nft" target="_blank" class="contact-link">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                             @simonkim_nft
                         </a>
-                        <span class="contact-divider">|</span>
+                        <span class="contact-divider" aria-hidden="true"></span>
                         <a href="https://x.com/simonkim_nft/status/1995594975556648998" target="_blank" class="contact-link" data-i18n="summary.whyBuilt">
                             📝 The Story
                         </a>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -14962,7 +15033,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             <!-- 01.1 — News Impact on Price -->
             <div id="news-impact-panel">
                 <div class="metrics-subgroup" style="margin-bottom: 10px;">
-                    <span class="metrics-subgroup-title ni-panel-title">01.1 — News Impact on Price</span>
+                    <span class="metrics-subgroup-title ni-panel-title">01.1 News Impact on Price</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
                 <div class="ni-panel-head">
@@ -14978,7 +15049,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
             <!-- 01.2 — Models & Fair Value -->
             <div class="metrics-subgroup" style="margin-bottom: 20px;">
-                <span class="metrics-subgroup-title" data-i18n="valuation.sub.modelsFull">01.2 — Models & Fair Value</span>
+                <span class="metrics-subgroup-title" data-i18n="valuation.sub.modelsFull">01.2 Models & Fair Value</span>
                 <div class="metrics-subgroup-line"></div>
             </div>
 
@@ -15140,7 +15211,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
             <!-- 01.3 — Historical Trends -->
             <div class="metrics-subgroup" style="margin-top: 48px; margin-bottom: 20px;">
-                <span class="metrics-subgroup-title" data-i18n="valuation.sub.historicalFull">01.3 — Historical Trends</span>
+                <span class="metrics-subgroup-title" data-i18n="valuation.sub.historicalFull">01.3 Historical Trends</span>
                 <div class="metrics-subgroup-line"></div>
             </div>
 
@@ -15271,7 +15342,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             
             <!-- 01.4 — Scenario Simulator -->
             <div class="metrics-subgroup" style="margin-top: 48px; margin-bottom: 20px;">
-                <span class="metrics-subgroup-title" data-i18n="valuation.sub.simulatorFull">01.4 — Scenario Simulator</span>
+                <span class="metrics-subgroup-title" data-i18n="valuation.sub.simulatorFull">01.4 Scenario Simulator</span>
                 <div class="metrics-subgroup-line"></div>
             </div>
 
@@ -15454,7 +15525,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             <div class="triple-chart-grid">
                 <!-- Investor Sentiment -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title" data-i18n="metrics.investorSentiment">02.1 — Investor Sentiment</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.investorSentiment">02.1 Investor Sentiment</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
@@ -15607,7 +15678,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 <!-- Market Position -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title" data-i18n="metrics.marketPosition">02.2 — Market Position</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.marketPosition">02.2 Market Position</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
@@ -15729,7 +15800,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     </div>
                     <div class="metric-chart"><div class="chart-loader"><div class="spinner"></div><span class="loading-text">Loading...</span></div><canvas id="dxy-chart"></canvas></div>
                     <div class="metric-footer">
-                        <span title="FRED DTWEXBGS (Fed H.10 Nominal Broad Dollar Index, Jan 2006=100) — not ICE DXY">FRED <span id="dxy-asof"></span></span>
+                        <span title="FRED DTWEXBGS (Fed H.10 Nominal Broad Dollar Index, Jan 2006=100), not ICE DXY">FRED <span id="dxy-asof"></span></span>
                         <span class="change" id="dxy-change">--</span>
                         <div class="metric-desc" data-i18n="desc.dxy">Fed's trade-weighted dollar vs 26 currencies (not ICE DXY). A stronger dollar usually weighs on ETH.</div>
                     </div>
@@ -15762,7 +15833,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 <!-- Supply Dynamics -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title" data-i18n="metrics.supplyDynamics">02.3 — Supply Dynamics</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.supplyDynamics">02.3 Supply Dynamics</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
@@ -15901,7 +15972,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 <!-- Network Demand -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title" data-i18n="metrics.networkDemand">02.4 — Network Demand</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.networkDemand">02.4 Network Demand</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
@@ -16033,7 +16104,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 <!-- User Activity -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title" data-i18n="metrics.userActivity">02.5 — User Activity</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.userActivity">02.5 User Activity</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
@@ -16144,7 +16215,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 <!-- Locked Capital -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title" data-i18n="metrics.lockedCapital">02.6 — Locked Capital</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.lockedCapital">02.6 Locked Capital</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
@@ -16277,7 +16348,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 
                 <!-- Settlement Volume -->
                 <div class="metrics-subgroup">
-                    <span class="metrics-subgroup-title" data-i18n="metrics.settlementVolume">02.7 — Settlement Volume</span>
+                    <span class="metrics-subgroup-title" data-i18n="metrics.settlementVolume">02.7 Settlement Volume</span>
                     <div class="metrics-subgroup-line"></div>
                 </div>
 
@@ -16726,7 +16797,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(Burned L1 Fees + Burned Blob Fees) × 365 × PSRatio ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.ps.desc">Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.</div>
+                            <div class="method-desc" data-i18n="method.ps.desc">Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level. All fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -16857,7 +16928,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">AppCapital ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.appCapital.desc">App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. Since direct App Capital data is unavailable, we estimate it using the 28% stablecoin ratio (Stablecoins/AppCapital) which has been stable since 2021. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (DeFi only), App Capital captures Ethereum's full settlement layer role.</div>
+                            <div class="method-desc" data-i18n="method.appCapital.desc">App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. Since direct App Capital data is unavailable, we estimate it using the 28% stablecoin ratio (Stablecoins/AppCapital) which has been stable since 2021. App Capital serves as a floor for market cap: network security (MC) must back the value of all settled assets. Unlike TVL (DeFi only), App Capital captures Ethereum's full settlement layer role.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -16945,7 +17016,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(L1 ETH Vol + L2 ETH Vol) × 365 ÷ ETH Velocity ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.ethMonetary.desc">Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data.</div>
+                            <div class="method-desc" data-i18n="method.ethMonetary.desc">Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 and excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -16989,7 +17060,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     <div class="method-content">
                         <div class="method-left">
                             <div class="method-formula">(L1 Total Vol + L2 Total Vol) × 365 ÷ Ecosystem Velocity ÷ Supply</div>
-                            <div class="method-desc" data-i18n="method.ecosystemSettlement.desc">Measures Ethereum as settlement infrastructure using MV=PQ. Counts ALL token activity across the ecosystem: stablecoins, DeFi tokens, NFTs — not just native ETH. This captures Ethereum's total economic throughput as a global settlement layer. Velocity = 150 is derived from stablecoin turnover (~80x/year per McKinsey), adjusted upward for high-frequency DeFi swaps and downward for bot/MEV removal (70-93% per Visa research). Higher velocity than ETH Monetary reflects faster-moving token economy.</div>
+                            <div class="method-desc" data-i18n="method.ecosystemSettlement.desc">Measures Ethereum as settlement infrastructure using MV=PQ. Counts ALL token activity across the ecosystem: stablecoins, DeFi tokens and NFTs, not just native ETH. This captures Ethereum's total economic throughput as a global settlement layer. Velocity = 150 is derived from stablecoin turnover (~80x/year per McKinsey), adjusted upward for high-frequency DeFi swaps and downward for bot/MEV removal (70-93% per Visa research). Higher velocity than ETH Monetary reflects faster-moving token economy.</div>
                         </div>
                         <div class="method-right">
                             <div class="method-chart-inline">
@@ -17983,7 +18054,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 const el = document.getElementById('floating-badge-short');
                 if (el) el.textContent = short;
                 floatingBadge.dataset.mini = short.split(' ')[0];
-                const full = (floatingBadgeTitle.textContent + ' — ' + floatingBadgeSubtitle.textContent).trim();
+                const full = (floatingBadgeTitle.textContent + ' · ' + floatingBadgeSubtitle.textContent).trim();
                 floatingBadge.setAttribute('aria-label', full); floatingBadge.title = full;
                 if (window.__fabFit) requestAnimationFrame(window.__fabFit);
             };
@@ -19205,7 +19276,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 },
                 'appCapital': {
                     formula: 'Stablecoins ÷ 0.28 × Ratio ÷ Supply',
-                    desc: t('method.appCapital.desc', 'App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. Since direct App Capital data is unavailable, we estimate it using the 28% stablecoin ratio. App Capital serves as a floor for market cap—network security must back the value of all settled assets.'),
+                    desc: t('method.appCapital.desc', 'App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. Since direct App Capital data is unavailable, we estimate it using the 28% stablecoin ratio. App Capital serves as a floor for market cap: network security must back the value of all settled assets.'),
                     reliability: 2,
                     caveat: t('method.appCapital.note', 'Stablecoins estimated at 28% of total App Capital based on historical ratio'),
                     sources: [
@@ -19225,7 +19296,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 },
                 'ethMonetary': {
                     formula: '(L1 ETH Vol + L2 ETH Vol) × 365 ÷ ETH Velocity ÷ Supply',
-                    desc: t('method.ethMonetary.desc', "Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data."),
+                    desc: t('method.ethMonetary.desc', "Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 and excludes stablecoins, DeFi tokens, and other assets. This isolates ETH's direct monetary function from Ethereum's broader settlement activity. Velocity = 6 reflects ETH's store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data."),
                     reliability: 2,
                     caveat: t('method.ethMonetary.note', 'Velocity = 6: Empirically derived from ETH transfer data, benchmarked to USD M1 (~5.5x)'),
                     sources: [
@@ -19235,7 +19306,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 },
                 'ecosystemSettlement': {
                     formula: '(L1 Total Vol + L2 Total Vol) × 365 ÷ Ecosystem Velocity ÷ Supply',
-                    desc: t('method.ecosystemSettlement.desc', "Measures Ethereum as settlement infrastructure using MV=PQ. Counts ALL token activity across the ecosystem: stablecoins, DeFi tokens, NFTs — not just native ETH. This captures Ethereum's total economic throughput as a global settlement layer. Velocity = 150 is derived from stablecoin turnover (~80x/year per McKinsey), adjusted upward for high-frequency DeFi swaps and downward for bot/MEV removal (70-93% per Visa research). Higher velocity than ETH Monetary reflects faster-moving token economy."),
+                    desc: t('method.ecosystemSettlement.desc', "Measures Ethereum as settlement infrastructure using MV=PQ. Counts ALL token activity across the ecosystem: stablecoins, DeFi tokens and NFTs, not just native ETH. This captures Ethereum's total economic throughput as a global settlement layer. Velocity = 150 is derived from stablecoin turnover (~80x/year per McKinsey), adjusted upward for high-frequency DeFi swaps and downward for bot/MEV removal (70-93% per Visa research). Higher velocity than ETH Monetary reflects faster-moving token economy."),
                     reliability: 2,
                     caveat: t('method.ecosystemSettlement.note', 'Velocity (150): stablecoin turnover (~80/year) × 2x DeFi multiplier, validated by BlockSci 4x self-churn adjustment'),
                     sources: [
@@ -20601,10 +20672,10 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'summary.modelRange': 'Model Range',
                 'summary.toggleHint': 'Toggle individual models on/off below to customize your valuation.',
                 'summary.desc1': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18v-2H5V3H3zm4 14h2V9H7v8zm4 0h2V6h-2v11zm4 0h2v-5h-2v5zm4 0h2V9h-2v8z"/></svg> ETHval derives Ethereum\'s intrinsic value using 12 valuation models across four methodological categories: Traditional Finance (Staking DCF, P/S Ratio, Fee Yield, Validator Economics), On-chain Asset Value (TVL Multiple, App Capital), Network Effects (Metcalfe\'s Law, ETH Monetary, Ecosystem Settlement, L2 Ecosystem), and Supply Scarcity (Staking Scarcity, Liquidity Premium).',
-                'summary.proofOfRating': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/></svg> Proof of Rating: ETHval is completely free — no subscriptions, no hidden fees. Log in with 𝕏 and rate just 2 models to unlock 3Y historical data & the What-If Simulator. Your ratings help refine the valuation framework — think of it as staking your opinion to earn access. Let\'s build better data together!',
-                'summary.feedback': '🐛 Found a bug or have suggestions? Let me know anytime — feedback is always welcome!',
+                'summary.proofOfRating': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/></svg> Proof of Rating: ETHval is completely free. No subscriptions, no hidden fees. Log in with 𝕏 and rate just 2 models to unlock 3Y historical data & the What-If Simulator. Your ratings help refine the valuation framework. Think of it as staking your opinion to earn access. Let\'s build better data together!',
+                'summary.feedback': '🐛 Found a bug or have suggestions? Let me know anytime. Feedback is always welcome!',
                 'summary.community': '💬 Join the Discussion! Rate each model\'s confidence level and share your thoughts. Your feedback helps improve the valuation framework.',
-                'summary.sharePrompt': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> Found this useful? Share it on <a href="https://twitter.com/intent/tweet?text=ETHval%20-%20Ethereum%20Intrinsic%20Value%20Dashboard%0A%0A12%20valuation%20models%20to%20estimate%20ETH%27s%20fair%20value.%20Check%20it%20out!%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a> and help others discover it — and if you spot a bug or have suggestions, always happy to hear from you!',
+                'summary.sharePrompt': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> Found this useful? Share it on <a href="https://twitter.com/intent/tweet?text=ETHval%20-%20Ethereum%20Intrinsic%20Value%20Dashboard%0A%0A12%20valuation%20models%20to%20estimate%20ETH%27s%20fair%20value.%20Check%20it%20out!%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a> and help others discover it. If you spot a bug or have suggestions, I’m always happy to hear from you!',
                 'summary.whyBuilt': '📝 The Story',
                 'gated.loginTitle': 'Log in with 𝕏 to unlock',
                 'gated.loginSubtitle': 'Rate 2+ valuation models to access all features',
@@ -20697,9 +20768,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'valuation.sub.models': 'Models & Fair Value',
                 'valuation.sub.historical': 'Historical Trends',
                 'valuation.sub.simulator': 'Scenario Simulator',
-                'valuation.sub.modelsFull': '01.2 — Models & Fair Value',
-                'valuation.sub.historicalFull': '01.3 — Historical Trends',
-                'valuation.sub.simulatorFull': '01.4 — Scenario Simulator',
+                'valuation.sub.modelsFull': '01.2 Models & Fair Value',
+                'valuation.sub.historicalFull': '01.3 Historical Trends',
+                'valuation.sub.simulatorFull': '01.4 Scenario Simulator',
                 'chart.historicalTitle': 'COMPOSITE FAIR VALUE OVER TIME',
                 'chart.marketPrice': 'Market Price',
                 'chart.compositeFairValue': 'Composite Fair Value',
@@ -20799,17 +20870,17 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.l2.note': '2x L2 weight multiplier is proprietary without empirical basis',
                 'method.l2.desc': 'Captures value from Ethereum\'s Layer 2 scaling ecosystem (Arbitrum, Optimism, Base, zkSync, etc.). L2 TVL is weighted 2x because L2 activity settles on Ethereum mainnet, consuming blockspace and burning ETH via EIP-1559. This model recognizes that Ethereum\'s value extends beyond L1 to its entire rollup-centric roadmap and modular blockchain thesis.',
                 'method.ps.note': '25x multiple borrowed from SaaS sector; crypto protocols may warrant different multiples',
-                'method.ps.desc': 'Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Fees here are burned fees only (L1 base fee + blob fee, as on ultrasound.money), not gross fees incl. tips/MEV (DefiLlama-style totals are higher). Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level — all fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.',
+                'method.ps.desc': 'Price-to-Sales ratio comparing market cap to annual transaction fee revenue. Fees here are burned fees only (L1 base fee + blob fee, as on ultrasound.money), not gross fees incl. tips/MEV (DefiLlama-style totals are higher). Unlike traditional companies, L1 protocols like Ethereum have no "net income" at the protocol level. All fees flow to validators. Therefore, P/S (not P/E) is the industry standard, as used by Token Terminal. The 25x multiple reflects growth tech stock valuations. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.',
                 'method.yield.note': 'Assumes stable yield environment; actual staking yields are volatile in practice',
                 'method.yield.desc': 'Reverse-engineers fair value from live staking APR, treating ETH like a yield-bearing bond. If Ethereum generates X in annual fees and the current staking yield is Y%, the implied market cap is X ÷ Y%. Uses real-time Lido stETH APR instead of a fixed target yield. This approach is favored by TradFi analysts evaluating crypto as an alternative asset class. Burned fees fall on weekends (last 6 months: weekend median about half of weekdays, matching on-chain base-fee burn), so the daily line dips every Sat/Sun. This is real activity, not missing data.',
                 'method.commitment.note': '1.5x premium multiplier for committed ETH is arbitrary without empirical basis',
                 'method.appCapital.note': 'Stablecoins estimated at 28% of total App Capital based on historical ratio',
-                'method.appCapital.desc': 'App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. Since direct App Capital data is unavailable, we estimate it using the 28% stablecoin ratio (Stablecoins/AppCapital) which has been stable since 2021. App Capital serves as a floor for market cap—network security (MC) must back the value of all settled assets. Unlike TVL (DeFi only), App Capital captures Ethereum\'s full settlement layer role.',
+                'method.appCapital.desc': 'App Capital represents total on-chain assets: stablecoins, ERC-20 tokens, NFTs, RWAs, and bridged assets. Since direct App Capital data is unavailable, we estimate it using the 28% stablecoin ratio (Stablecoins/AppCapital) which has been stable since 2021. App Capital serves as a floor for market cap: network security (MC) must back the value of all settled assets. Unlike TVL (DeFi only), App Capital captures Ethereum\'s full settlement layer role.',
                 'method.commitment.desc': 'Applies a price premium based on the percentage of ETH committed to staking and DeFi protocols. Higher commitment ratios indicate stronger long-term holding conviction and reduced liquid supply. The multiplier (1.5x) reflects the value premium of committed vs. liquid assets. Inspired by the concept that L1 tokens should be valued as money (Store of Value) rather than stocks.',
                 'method.settlement.note': 'Velocity 6x benchmarked to USD M1; crypto velocity behavior may differ significantly',
                 'method.settlement.desc': 'Applies the Equation of Exchange (MV=PQ) treating ETH as money for the Ethereum settlement layer. Daily settlement volume combines L1 transfers, L2 transfers, and bridge volume. Velocity of 6 reflects ETH\'s Store-of-Value characteristics: staking locks ETH at velocity 0, institutional holding patterns similar to Bitcoin post-ETF, and benchmark to USD M1 velocity (~5.5x). Lower velocity = higher implied value, as money is held longer rather than spent.',
                 'method.ethMonetary.note': 'Velocity 6x is USD M1 benchmark; ETH transfer data empirically derived',
-                'method.ethMonetary.desc': 'Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 — excludes stablecoins, DeFi tokens, and other assets. This isolates ETH\'s direct monetary function from Ethereum\'s broader settlement activity. Velocity = 6 reflects ETH\'s store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data.',
+                'method.ethMonetary.desc': 'Measures ETH as money using the Equation of Exchange (MV=PQ). Only counts native ETH transfers on L1 and L2 and excludes stablecoins, DeFi tokens, and other assets. This isolates ETH\'s direct monetary function from Ethereum\'s broader settlement activity. Velocity = 6 reflects ETH\'s store-of-value characteristics: 28% locked in staking, institutional accumulation post-ETF, and long-term holder behavior. This is empirically aligned with USD M1 velocity (~5.5x) and academic research showing crypto velocities of 4-6x annually. Lower velocity implies higher fair value. Native ETH transfer volume falls on weekends (last 6 months: weekend median about 40% of weekdays, matching on-chain block sampling), so the daily line dips every Sat/Sun. This is real activity, not missing data.',
                 'method.sink.note': 'Sink estimates vary; liquid staking (stETH) partially offsets staking sink as it remains tradeable',
                 'method.sink.desc': 'Inspired by Miller (1977): when tradeable supply is constrained, optimists set prices, creating a premium. Greenwood (Harvard) empirically confirmed float reduction correlates with price increases in equity markets. Our assumption: if market cap stays constant while effective float (excluding staked, DeFi-locked, and lost ETH) decreases, per-unit price rises proportionally.',
                 'category.tradfi': 'TradFi',
@@ -20999,13 +21070,13 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.l1StablecoinSupply': "L1 Stablecoin Supply",
                 'metric.appCapital': "App Capital",
                 'metric.dexVolume': "L1 DEX Volume",
-                'metrics.investorSentiment': "02.1 — Investor Sentiment",
-                'metrics.marketPosition': "02.2 — Market Position",
-                'metrics.supplyDynamics': "02.3 — Supply Dynamics",
-                'metrics.networkDemand': "02.4 — Network Demand",
-                'metrics.userActivity': "02.5 — User Activity",
-                'metrics.lockedCapital': "02.6 — Locked Capital",
-                'metrics.settlementVolume': "02.7 — Settlement Volume"
+                'metrics.investorSentiment': "02.1 Investor Sentiment",
+                'metrics.marketPosition': "02.2 Market Position",
+                'metrics.supplyDynamics': "02.3 Supply Dynamics",
+                'metrics.networkDemand': "02.4 Network Demand",
+                'metrics.userActivity': "02.5 User Activity",
+                'metrics.lockedCapital': "02.6 Locked Capital",
+                'metrics.settlementVolume': "02.7 Settlement Volume"
             },
             ko: {
                 'status.live': '실시간',
@@ -21101,10 +21172,10 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'summary.modelRange': '모델 범위',
                 'summary.toggleHint': '아래에서 개별 모델을 켜고 끄며 나만의 밸류에이션을 계산해 보세요.',
                 'summary.desc1': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18v-2H5V3H3zm4 14h2V9H7v8zm4 0h2V6h-2v11zm4 0h2v-5h-2v5zm4 0h2V9h-2v8z"/></svg> ETHval은 4가지 방법론 카테고리에 걸쳐 12개 밸류에이션 모델로 이더리움의 내재 가치를 도출합니다: 전통금융(Staking DCF, P/S Ratio, Fee Yield, Validator Economics), 온체인 자산가치(TVL Multiple, App Capital), 네트워크 효과(Metcalfe\'s Law, ETH Monetary, Ecosystem Settlement, L2 Ecosystem), 공급 희소성(Staking Scarcity, Liquidity Premium).',
-                'summary.proofOfRating': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/></svg> Proof of Rating: ETHval은 완전 무료입니다 — 구독료도, 숨겨진 비용도 없습니다. 𝕏로 로그인하고 단 2개 모델만 평가하면 3Y 히스토리 데이터와 What-If 시뮬레이터를 이용할 수 있습니다. 당신의 평가가 밸류에이션 프레임워크를 발전시킵니다 — 의견을 스테이킹해서 접근 권한을 얻는다고 생각해보세요. 함께 더 나은 데이터를 만들어가요!',
-                'summary.feedback': '🐛 버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요 — 피드백은 언제나 환영합니다!',
+                'summary.proofOfRating': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/></svg> Proof of Rating: ETHval은 완전 무료입니다. 구독료도, 숨겨진 비용도 없습니다. 𝕏로 로그인하고 단 2개 모델만 평가하면 3Y 히스토리 데이터와 What-If 시뮬레이터를 이용할 수 있습니다. 당신의 평가가 밸류에이션 프레임워크를 발전시킵니다. 의견을 스테이킹해서 접근 권한을 얻는다고 생각해보세요. 함께 더 나은 데이터를 만들어가요!',
+                'summary.feedback': '🐛 버그를 발견하셨거나 제안이 있으신가요? 언제든지 연락주세요. 피드백은 언제나 환영합니다!',
                 'summary.community': '💬 방법론 & 토론에 참여하세요! 각 모델의 확신도를 평가하고 의견을 공유해주세요. 함께 더 정확한 신뢰도 가중치 시스템을 만들어갑니다.',
-                'summary.sharePrompt': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> 유용하셨나요? <a href="https://twitter.com/intent/tweet?text=ETHval%20-%20%EC%9D%B4%EB%8D%94%EB%A6%AC%EC%9B%80%20%EB%82%B4%EC%9E%AC%EA%B0%80%EC%B9%98%20%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C%0A%0A12%EA%B0%9C%20%EB%B0%B8%EB%A5%98%EC%97%90%EC%9D%B4%EC%85%98%20%EB%AA%A8%EB%8D%B8%EB%A1%9C%20ETH%20%EC%A0%81%EC%A0%95%EA%B0%80%EC%B9%98%EB%A5%BC%20%EC%B6%94%EC%A0%95%ED%95%A9%EB%8B%88%EB%8B%A4.%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a>에 공유해서 더 많은 분들이 알 수 있게 도와주세요 — 버그나 제안이 있다면 언제든 알려주세요!',
+                'summary.sharePrompt': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> 유용하셨나요? <a href="https://twitter.com/intent/tweet?text=ETHval%20-%20%EC%9D%B4%EB%8D%94%EB%A6%AC%EC%9B%80%20%EB%82%B4%EC%9E%AC%EA%B0%80%EC%B9%98%20%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C%0A%0A12%EA%B0%9C%20%EB%B0%B8%EB%A5%98%EC%97%90%EC%9D%B4%EC%85%98%20%EB%AA%A8%EB%8D%B8%EB%A1%9C%20ETH%20%EC%A0%81%EC%A0%95%EA%B0%80%EC%B9%98%EB%A5%BC%20%EC%B6%94%EC%A0%95%ED%95%A9%EB%8B%88%EB%8B%A4.%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a>에 공유해서 더 많은 분들이 알 수 있게 도와주세요. 버그나 제안이 있다면 언제든 알려주세요!',
                 'summary.whyBuilt': '📝 개발 배경',
                 'gated.loginTitle': '𝕏로 로그인하여 잠금 해제',
                 'gated.loginSubtitle': '2+ 밸류에이션 모델 평가 시 모든 기능 이용 가능',
@@ -21197,9 +21268,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'valuation.sub.models': '모델 & 적정가치',
                 'valuation.sub.historical': '히스토리 트렌드',
                 'valuation.sub.simulator': '시나리오 시뮬레이터',
-                'valuation.sub.modelsFull': '01.2 — 모델 & 적정가치',
-                'valuation.sub.historicalFull': '01.3 — 히스토리 트렌드',
-                'valuation.sub.simulatorFull': '01.4 — 시나리오 시뮬레이터',
+                'valuation.sub.modelsFull': '01.2 모델 & 적정가치',
+                'valuation.sub.historicalFull': '01.3 히스토리 트렌드',
+                'valuation.sub.simulatorFull': '01.4 시나리오 시뮬레이터',
                 'chart.historicalTitle': '종합 적정 가치의 변화',
                 'chart.marketPrice': '시장 가격',
                 'chart.compositeFairValue': '종합 적정 가치',
@@ -21301,12 +21372,12 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.l2.note': '2배 L2 가중치 배수는 실증적 근거 없는 독자적 설정',
                 'method.l2.desc': '이더리움의 레이어 2 스케일링 생태계(Arbitrum, Optimism, Base, zkSync 등)의 가치를 포착합니다. L2 TVL에 2배 가중치를 부여하는 이유는 L2 활동이 이더리움 메인넷에서 정산되어 블록스페이스를 소비하고 EIP-1559를 통해 ETH를 소각하기 때문입니다.',
                 'method.ps.note': 'SaaS 업계에서 차용한 25배 배수; 크립토 프로토콜은 다른 배수가 적합할 수 있음',
-                'method.ps.desc': '시가총액을 연간 거래 수수료 매출과 비교하는 P/S(주가매출비율)입니다. 여기서 수수료는 소각된 수수료(L1 기본 수수료 + 블롭 수수료, ultrasound.money 기준)만 뜻하며, 팁·MEV를 포함한 전체 수수료(DefiLlama 등)보다 작습니다. 전통 기업과 달리 이더리움 같은 L1 프로토콜은 프로토콜 레벨에서 "순이익"이 없습니다 — 모든 수수료가 검증자에게 흘러갑니다. 따라서 Token Terminal이 사용하는 것처럼 P/E가 아닌 P/S가 업계 표준입니다. 25배 배수는 성장 기술주 밸류에이션을 반영합니다. 소각 수수료는 주말에 줄어듭니다(최근 6개월 주말 중앙값이 평일의 약 절반, 온체인 기본 수수료 소각과 일치). 그래서 일별 선이 토·일마다 내려가며, 수집 누락이 아니라 실제 활동 감소입니다.',
+                'method.ps.desc': '시가총액을 연간 거래 수수료 매출과 비교하는 P/S(주가매출비율)입니다. 여기서 수수료는 소각된 수수료(L1 기본 수수료 + 블롭 수수료, ultrasound.money 기준)만 뜻하며, 팁·MEV를 포함한 전체 수수료(DefiLlama 등)보다 작습니다. 전통 기업과 달리 이더리움 같은 L1 프로토콜은 프로토콜 레벨에서 "순이익"이 없습니다. 모든 수수료가 검증자에게 흘러갑니다. 따라서 Token Terminal이 사용하는 것처럼 P/E가 아닌 P/S가 업계 표준입니다. 25배 배수는 성장 기술주 밸류에이션을 반영합니다. 소각 수수료는 주말에 줄어듭니다(최근 6개월 주말 중앙값이 평일의 약 절반, 온체인 기본 수수료 소각과 일치). 그래서 일별 선이 토·일마다 내려가며, 수집 누락이 아니라 실제 활동 감소입니다.',
                 'method.yield.note': '안정적 수익률 환경 가정; 실제 스테이킹 수익률은 변동성이 큼',
                 'method.yield.desc': '실시간 스테이킹 APR에서 적정 가치를 역산하여 ETH를 수익 창출 채권처럼 취급합니다. 이더리움이 연간 X의 수수료를 생성하고 현재 스테이킹 수익률이 Y%라면, 내재 시가총액은 X ÷ Y%입니다. 고정 목표 수익률 대신 Lido stETH의 실시간 APR을 사용합니다. 이 접근법은 크립토를 대체 자산 클래스로 평가하는 TradFi 분석가들이 선호합니다. 소각 수수료는 주말에 줄어듭니다(최근 6개월 주말 중앙값이 평일의 약 절반, 온체인 기본 수수료 소각과 일치). 그래서 일별 선이 토·일마다 내려가며, 수집 누락이 아니라 실제 활동 감소입니다.',
                 'method.commitment.note': '커밋된 ETH에 대한 1.5배 프리미엄 배수는 실증적 근거 없이 임의 설정됨',
                 'method.appCapital.note': '스테이블코인을 총 App Capital의 28%로 추정 (과거 비율 기반)',
-                'method.appCapital.desc': 'App Capital은 온체인 총 자산을 나타냅니다: 스테이블코인, ERC-20 토큰, NFT, RWA, 브릿지된 자산. 직접적인 App Capital 데이터가 없어, 2021년 이후 안정적인 28% 스테이블코인 비율(스테이블코인/App Capital)을 사용해 추정합니다. App Capital은 시가총액의 하한선 역할을 합니다—네트워크 보안(MC)은 모든 결제된 자산의 가치를 뒷받침해야 합니다. TVL(DeFi 전용)과 달리, App Capital은 이더리움의 전체 결제 레이어 역할을 포착합니다.',
+                'method.appCapital.desc': 'App Capital은 온체인 총 자산을 나타냅니다: 스테이블코인, ERC-20 토큰, NFT, RWA, 브릿지된 자산. 직접적인 App Capital 데이터가 없어, 2021년 이후 안정적인 28% 스테이블코인 비율(스테이블코인/App Capital)을 사용해 추정합니다. App Capital은 시가총액의 하한선 역할을 합니다. 네트워크 보안(MC)은 모든 결제된 자산의 가치를 뒷받침해야 합니다. TVL(DeFi 전용)과 달리, App Capital은 이더리움의 전체 결제 레이어 역할을 포착합니다.',
                 'method.commitment.desc': '스테이킹과 DeFi 프로토콜에 예치된 ETH 비율에 따라 가격 프리미엄을 적용합니다. 높은 커밋먼트 비율은 더 강한 장기 보유 확신과 유동성 감소를 나타냅니다. 배수(1.5x)는 유동 자산 대비 커밋된 자산의 가치 프리미엄을 반영합니다. L1 토큰을 주식이 아닌 화폐(가치 저장)로 평가해야 한다는 개념에서 영감을 받았습니다.',
                 'method.settlement.note': 'Velocity 6배는 USD M1 벤치마크; 크립토의 화폐 속도는 상당히 다를 수 있음',
                 'method.settlement.desc': '교환방정식(MV=PQ)을 적용하여 ETH를 이더리움 정산 레이어의 화폐로 취급합니다. 일일 정산량은 L1 이체, L2 이체, 브릿지 거래량을 합산합니다. Velocity 6은 ETH의 가치저장(SoV) 특성을 반영합니다: 스테이킹은 ETH를 velocity 0으로 고정, ETF 이후 비트코인과 유사한 기관 보유 패턴, USD M1 velocity (~5.5x) 벤치마크. 낮은 velocity = 더 높은 내재 가치 (화폐가 지출되지 않고 오래 보유됨).',
@@ -21499,13 +21570,13 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.l1StablecoinSupply': "L1 스테이블코인 공급량",
                 'metric.appCapital': "앱 자본",
                 'metric.dexVolume': "L1 DEX 볼륨",
-                'metrics.investorSentiment': "02.1 — 투자자 심리",
-                'metrics.marketPosition': "02.2 — 시장 포지션",
-                'metrics.supplyDynamics': "02.3 — 공급 역학",
-                'metrics.networkDemand': "02.4 — 네트워크 수요",
-                'metrics.userActivity': "02.5 — 사용자 활동",
-                'metrics.lockedCapital': "02.6 — 예치 자본",
-                'metrics.settlementVolume': "02.7 — 결제 볼륨"
+                'metrics.investorSentiment': "02.1 투자자 심리",
+                'metrics.marketPosition': "02.2 시장 포지션",
+                'metrics.supplyDynamics': "02.3 공급 역학",
+                'metrics.networkDemand': "02.4 네트워크 수요",
+                'metrics.userActivity': "02.5 사용자 활동",
+                'metrics.lockedCapital': "02.6 예치 자본",
+                'metrics.settlementVolume': "02.7 결제 볼륨"
             },
             zh: {
                 'status.live': '实时',
@@ -21596,10 +21667,10 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'summary.modelRange': '模型范围',
                 'summary.toggleHint': '在下方开关各个模型，自定义您的估值计算。',
                 'summary.desc1': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18v-2H5V3H3zm4 14h2V9H7v8zm4 0h2V6h-2v11zm4 0h2v-5h-2v5zm4 0h2V9h-2v8z"/></svg> ETHval使用四种方法论类别的12个估值模型推导以太坊的内在价值：传统金融（DCF、P/S Ratio、Fee Yield、Validator Economics）、链上资产价值（TVL Multiple、App Capital）、网络效应（Metcalfe\'s Law、ETH Monetary、Ecosystem Settlement、L2 Ecosystem）和供应稀缺（Staking Scarcity、Liquidity Premium）。',
-                'summary.proofOfRating': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/></svg> Proof of Rating: ETHval完全免费 — 无订阅，无隐藏费用。用𝕏登录并评价2个模型即可解锁3Y历史数据和What-If模拟器。您的评价有助于完善估值框架 — 可以理解为质押您的意见来获取访问权限。一起构建更好的数据吧！',
-                'summary.feedback': '🐛 发现bug或有建议？随时联系我——非常欢迎反馈！',
+                'summary.proofOfRating': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/></svg> Proof of Rating: ETHval完全免费，无订阅，无隐藏费用。用𝕏登录并评价2个模型即可解锁3Y历史数据和What-If模拟器。您的评价有助于完善估值框架，可以理解为质押您的意见来获取访问权限。一起构建更好的数据吧！',
+                'summary.feedback': '🐛 发现bug或有建议？随时联系我，非常欢迎反馈！',
                 'summary.community': '💬 参与讨论！对每个模型的信心度进行评分并分享您的想法。让我们一起构建更准确的社区驱动可靠性权重系统。',
-                'summary.sharePrompt': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> 觉得有用吗？在<a href="https://twitter.com/intent/tweet?text=ETHval%20-%20%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%86%85%E5%9C%A8%E4%BB%B7%E5%80%BC%E4%BB%AA%E8%A1%A8%E6%9D%BF%0A%0A12%E4%B8%AA%E4%BC%B0%E5%80%BC%E6%A8%A1%E5%9E%8B%E4%BC%B0%E7%AE%97ETH%E5%85%AC%E5%85%81%E4%BB%B7%E5%80%BC%E3%80%82%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a>上分享，帮助更多人发现 — 发现bug或有建议？随时告诉我！',
+                'summary.sharePrompt': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> 觉得有用吗？在<a href="https://twitter.com/intent/tweet?text=ETHval%20-%20%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%86%85%E5%9C%A8%E4%BB%B7%E5%80%BC%E4%BB%AA%E8%A1%A8%E6%9D%BF%0A%0A12%E4%B8%AA%E4%BC%B0%E5%80%BC%E6%A8%A1%E5%9E%8B%E4%BC%B0%E7%AE%97ETH%E5%85%AC%E5%85%81%E4%BB%B7%E5%80%BC%E3%80%82%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a>上分享，帮助更多人发现。发现bug或有建议？随时告诉我！',
                 'summary.whyBuilt': '📝 开发背景',
                 'gated.loginTitle': '用 𝕏 登录解锁',
                 'gated.loginSubtitle': '评价2+模型可访问全部功能',
@@ -21688,9 +21759,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'valuation.sub.models': '模型与公允价值',
                 'valuation.sub.historical': '历史趋势',
                 'valuation.sub.simulator': '情景模拟器',
-                'valuation.sub.modelsFull': '01.2 — 模型与公允价值',
-                'valuation.sub.historicalFull': '01.3 — 历史趋势',
-                'valuation.sub.simulatorFull': '01.4 — 情景模拟器',
+                'valuation.sub.modelsFull': '01.2 模型与公允价值',
+                'valuation.sub.historicalFull': '01.3 历史趋势',
+                'valuation.sub.simulatorFull': '01.4 情景模拟器',
                 'chart.historicalTitle': '综合公允价值的变化',
                 'chart.marketPrice': '市场价格',
                 'chart.compositeFairValue': '综合公允价值',
@@ -21784,7 +21855,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.l2.note': '2倍L2权重乘数是专有设定，缺乏实证基础',
                 'method.l2.desc': '捕捉以太坊Layer 2扩展生态系统（Arbitrum, Optimism, Base, zkSync等）的价值。L2 TVL加权2倍，因为L2活动在以太坊主网上结算，消耗区块空间并通过EIP-1559销毁ETH。',
                 'method.ps.note': '25倍乘数借用自SaaS行业；加密协议可能需要不同的乘数',
-                'method.ps.desc': 'P/S（市销率）将市值与年度交易费用收入进行比较。此处费用仅指被销毁的费用（L1基础费 + Blob费，按ultrasound.money口径），不含小费与MEV的总费用（如DefiLlama）更高。与传统公司不同，以太坊等L1协议在协议层面没有"净利润"——所有费用都流向验证者。因此，如Token Terminal所使用的，P/S（而非P/E）是行业标准。25倍乘数反映成长型科技股估值。销毁费用在周末下降（近6个月周末中位数约为工作日的一半，与链上基础费销毁一致），因此日线每逢周六、周日回落。这是真实活动变化，并非数据缺失。',
+                'method.ps.desc': 'P/S（市销率）将市值与年度交易费用收入进行比较。此处费用仅指被销毁的费用（L1基础费 + Blob费，按ultrasound.money口径），不含小费与MEV的总费用（如DefiLlama）更高。与传统公司不同，以太坊等L1协议在协议层面没有"净利润"，所有费用都流向验证者。因此，如Token Terminal所使用的，P/S（而非P/E）是行业标准。25倍乘数反映成长型科技股估值。销毁费用在周末下降（近6个月周末中位数约为工作日的一半，与链上基础费销毁一致），因此日线每逢周六、周日回落。这是真实活动变化，并非数据缺失。',
                 'method.yield.note': '假设稳定收益环境；实际质押收益波动较大',
                 'method.yield.desc': '从实时质押APR反向推导公允价值，将ETH视为收益型债券。如果以太坊产生X年费，当前质押收益率为Y%，则隐含市值为X÷Y%。使用Lido stETH实时APR而非固定目标收益率。这种方法受到将加密货币评估为另类资产类别的TradFi分析师青睐。销毁费用在周末下降（近6个月周末中位数约为工作日的一半，与链上基础费销毁一致），因此日线每逢周六、周日回落。这是真实活动变化，并非数据缺失。',
                 'method.commitment.note': '锁定ETH的1.5倍溢价乘数是任意设定，缺乏实证依据',
@@ -21828,7 +21899,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'criteria.validator.m': '标准TradFi方法：要求回报率 = 无风险 + 风险溢价',
                 'criteria.validator.d': '来自Lido API的实时质押APR',
                 'criteria.validator.a': '无风险利率和风险溢价假设可变（目标5-7%）',
-                'method.appCapital.desc': 'App Capital代表链上总资产：稳定币、ERC-20代币、NFT、RWA和跨链资产。由于无法直接获取App Capital数据，我们使用自2021年以来稳定的28%稳定币比率（稳定币/App Capital）进行估算。App Capital作为市值下限——网络安全（MC）必须支撑所有结算资产的价值。与TVL（仅DeFi）不同，App Capital捕获了以太坊完整的结算层角色。',
+                'method.appCapital.desc': 'App Capital代表链上总资产：稳定币、ERC-20代币、NFT、RWA和跨链资产。由于无法直接获取App Capital数据，我们使用自2021年以来稳定的28%稳定币比率（稳定币/App Capital）进行估算。App Capital作为市值下限：网络安全（MC）必须支撑所有结算资产的价值。与TVL（仅DeFi）不同，App Capital捕获了以太坊完整的结算层角色。',
                 'method.commitment.desc': '根据质押和DeFi协议中锁定的ETH比例应用价格溢价。更高的承诺比率表明更强的长期持有信念和更低的流动性供应。乘数（1.5x）反映承诺资产相对于流动资产的价值溢价。灵感来自L1代币应被视为货币（价值储存）而非股票的概念。',
                 'onchain.ethInDefi': 'DeFi中的ETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH价格',
@@ -22004,13 +22075,13 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.bridgeVolume': "桥接ETH量",
                 'metric.l2DexVolume': "L2 DEX交易量",
                 'metric.bridgeTotalVolume': "桥接总量",
-                'metrics.investorSentiment': "02.1 — 投资者情绪",
-                'metrics.marketPosition': "02.2 — 市场地位",
-                'metrics.supplyDynamics': "02.3 — 供应动态",
-                'metrics.networkDemand': "02.4 — 网络需求",
-                'metrics.userActivity': "02.5 — 用户活动",
-                'metrics.lockedCapital': "02.6 — 锁定资本",
-                'metrics.settlementVolume': "02.7 — 结算量"
+                'metrics.investorSentiment': "02.1 投资者情绪",
+                'metrics.marketPosition': "02.2 市场地位",
+                'metrics.supplyDynamics': "02.3 供应动态",
+                'metrics.networkDemand': "02.4 网络需求",
+                'metrics.userActivity': "02.5 用户活动",
+                'metrics.lockedCapital': "02.6 锁定资本",
+                'metrics.settlementVolume': "02.7 结算量"
             },
             ja: {
                 'status.live': 'ライブ',
@@ -22101,10 +22172,10 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'summary.modelRange': 'モデル範囲',
                 'summary.toggleHint': '下の各モデルをオン・オフして、独自のバリュエーションを計算してみましょう。',
                 'summary.desc1': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18v-2H5V3H3zm4 14h2V9H7v8zm4 0h2V6h-2v11zm4 0h2v-5h-2v5zm4 0h2V9h-2v8z"/></svg> ETHvalは4つの方法論カテゴリにわたる12のバリュエーションモデルでイーサリアムの本質的価値を導出します：伝統金融（DCF、P/S Ratio、Fee Yield、Validator Economics）、オンチェーン資産価値（TVL Multiple、App Capital）、ネットワーク効果（Metcalfe\'s Law、ETH Monetary、Ecosystem Settlement、L2 Ecosystem）、供給希少性（Staking Scarcity、Liquidity Premium）。',
-                'summary.proofOfRating': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/></svg> Proof of Rating: ETHvalは完全無料です — サブスクも隠れた費用もありません。𝕏でログインして2つのモデルを評価するだけで、3Y履歴データとシミュレーターがアンロックされます。あなたの評価がバリュエーションフレームワークを発展させます — 意見をステーキングしてアクセス権を得ると考えてください。一緒により良いデータを作りましょう！',
-                'summary.feedback': '🐛 バグを発見されたり、ご提案がありましたら、いつでもお知らせください — フィードバックは大歓迎です！',
+                'summary.proofOfRating': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/></svg> Proof of Rating: ETHvalは完全無料です。サブスクも隠れた費用もありません。𝕏でログインして2つのモデルを評価するだけで、3Y履歴データとシミュレーターがアンロックされます。あなたの評価がバリュエーションフレームワークを発展させます。意見をステーキングしてアクセス権を得ると考えてください。一緒により良いデータを作りましょう！',
+                'summary.feedback': '🐛 バグを発見されたり、ご提案がありましたら、いつでもお知らせください。フィードバックは大歓迎です！',
                 'summary.community': '💬 ディスカッションに参加しましょう！各モデルの確信度を評価し、ご意見を共有してください。一緒に、より正確なコミュニティ主導の信頼度加重システムを作りましょう。',
-                'summary.sharePrompt': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> 役に立ちましたか？<a href="https://twitter.com/intent/tweet?text=ETHval%20-%20%E3%82%A4%E3%83%BC%E3%82%B5%E3%83%AA%E3%82%A2%E3%83%A0%E6%9C%AC%E8%B3%AA%E7%9A%84%E4%BE%A1%E5%80%A4%E3%83%80%E3%83%83%E3%82%B7%E3%83%A5%E3%83%9C%E3%83%BC%E3%83%89%0A%0A12%E3%81%AE%E3%83%90%E3%83%AA%E3%83%A5%E3%82%A8%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%83%A2%E3%83%87%E3%83%AB%E3%81%A7ETH%E3%81%AE%E9%81%A9%E6%AD%A3%E4%BE%A1%E6%A0%BC%E3%82%92%E6%8E%A8%E5%AE%9A%E3%80%82%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a>でシェアして、たくさんの人に届けましょう — バグやご提案があれば、いつでもお知らせください！',
+                'summary.sharePrompt': '<svg class="mono-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> 役に立ちましたか？<a href="https://twitter.com/intent/tweet?text=ETHval%20-%20%E3%82%A4%E3%83%BC%E3%82%B5%E3%83%AA%E3%82%A2%E3%83%A0%E6%9C%AC%E8%B3%AA%E7%9A%84%E4%BE%A1%E5%80%A4%E3%83%80%E3%83%83%E3%82%B7%E3%83%A5%E3%83%9C%E3%83%BC%E3%83%89%0A%0A12%E3%81%AE%E3%83%90%E3%83%AA%E3%83%A5%E3%82%A8%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%83%A2%E3%83%87%E3%83%AB%E3%81%A7ETH%E3%81%AE%E9%81%A9%E6%AD%A3%E4%BE%A1%E6%A0%BC%E3%82%92%E6%8E%A8%E5%AE%9A%E3%80%82%0A%0Ahttps%3A%2F%2Fethval.com&via=simonkim_nft" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">𝕏</a>でシェアして、たくさんの人に届けましょう。バグやご提案があれば、いつでもお知らせください！',
                 'summary.whyBuilt': '📝 ストーリー',
                 'gated.loginTitle': '𝕏でログインして解除',
                 'gated.loginSubtitle': '2+モデル評価で全機能にアクセス',
@@ -22193,9 +22264,9 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'valuation.sub.models': 'モデル & 適正価値',
                 'valuation.sub.historical': 'ヒストリカルトレンド',
                 'valuation.sub.simulator': 'シナリオシミュレーター',
-                'valuation.sub.modelsFull': '01.2 — モデル & 適正価値',
-                'valuation.sub.historicalFull': '01.3 — ヒストリカルトレンド',
-                'valuation.sub.simulatorFull': '01.4 — シナリオシミュレーター',
+                'valuation.sub.modelsFull': '01.2 モデル & 適正価値',
+                'valuation.sub.historicalFull': '01.3 ヒストリカルトレンド',
+                'valuation.sub.simulatorFull': '01.4 シナリオシミュレーター',
                 'chart.historicalTitle': '総合適正価格の変化',
                 'chart.marketPrice': '市場価格',
                 'chart.compositeFairValue': '総合適正価値',
@@ -22289,7 +22360,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'method.l2.note': '2倍のL2重み付け乗数は実証的根拠のない独自設定',
                 'method.l2.desc': 'イーサリアムのレイヤー2スケーリングエコシステム（Arbitrum、Optimism、Base、zkSyncなど）からの価値を捉えます。L2 TVLに2倍の重み付けをするのは、L2の活動がイーサリアムメインネットで決済され、ブロックスペースを消費し、EIP-1559を通じてETHを焼却するためです。',
                 'method.ps.note': '25倍はSaaS業界から借用；クリプトプロトコルには異なる倍率が適切な場合あり',
-                'method.ps.desc': 'P/S（株価売上高比率）は時価総額を年間取引手数料収益と比較します。ここでの手数料はバーンされた手数料（L1基本手数料 + Blob手数料、ultrasound.money基準）のみで、チップ・MEVを含む総手数料（DefiLlama等）より小さくなります。従来の企業とは異なり、イーサリアムのようなL1プロトコルにはプロトコルレベルでの「純利益」がありません — すべての手数料はバリデーターに流れます。そのため、Token Terminalが使用しているように、P/E（ではなく）P/Sが業界標準です。25倍の乗数は成長テック株のバリュエーションを反映しています。バーン手数料は週末に減ります（直近6か月の週末中央値は平日の約半分、オンチェーンの基本手数料バーンと一致）。そのため日次の線は毎週土・日に下がりますが、データ欠落ではなく実際の活動減少です。',
+                'method.ps.desc': 'P/S（株価売上高比率）は時価総額を年間取引手数料収益と比較します。ここでの手数料はバーンされた手数料（L1基本手数料 + Blob手数料、ultrasound.money基準）のみで、チップ・MEVを含む総手数料（DefiLlama等）より小さくなります。従来の企業とは異なり、イーサリアムのようなL1プロトコルにはプロトコルレベルでの「純利益」がありません。すべての手数料はバリデーターに流れます。そのため、Token Terminalが使用しているように、P/E（ではなく）P/Sが業界標準です。25倍の乗数は成長テック株のバリュエーションを反映しています。バーン手数料は週末に減ります（直近6か月の週末中央値は平日の約半分、オンチェーンの基本手数料バーンと一致）。そのため日次の線は毎週土・日に下がりますが、データ欠落ではなく実際の活動減少です。',
                 'method.yield.note': '安定した利回り環境を仮定；実際のステーキング利回りは変動が大きい',
                 'method.yield.desc': 'ライブステーキングAPRから適正価値を逆算し、ETHをイールドを生む債券のように扱います。イーサリアムが年間Xの手数料を生み出し、現在のステーキングイールドがY%の場合、暗黙の時価総額はX÷Y%です。固定目標イールドの代わりにLido stETHのリアルタイムAPRを使用します。このアプローチは、クリプト資産をオルタナティブ資産クラスとして評価するTradFiアナリストに支持されています。バーン手数料は週末に減ります（直近6か月の週末中央値は平日の約半分、オンチェーンの基本手数料バーンと一致）。そのため日次の線は毎週土・日に下がりますが、データ欠落ではなく実際の活動減少です。',
                 'method.commitment.note': 'コミットETHへの1.5倍プレミアム乗数は実証的根拠なく任意に設定',
@@ -22333,7 +22404,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'criteria.validator.m': '標準TradFiアプローチ：要求リターン = リスクフリー + リスクプレミアム',
                 'criteria.validator.d': 'Lido APIからのリアルタイムステーキングAPR',
                 'criteria.validator.a': 'リスクフリー率とリスクプレミアム仮定は可変的（目標5-7%）',
-                'method.appCapital.desc': 'App Capitalはオンチェーン総資産を表します：ステーブルコイン、ERC-20トークン、NFT、RWA、ブリッジ資産。直接的なApp Capitalデータが利用できないため、2021年以降安定している28%ステーブルコイン比率（ステーブルコイン/App Capital）を使用して推定しています。App Capitalは時価総額の下限として機能します—ネットワークセキュリティ（MC）はすべての決済資産の価値を裏付ける必要があります。TVL（DeFiのみ）とは異なり、App Capitalはイーサリアムの完全な決済レイヤーの役割を捉えます。',
+                'method.appCapital.desc': 'App Capitalはオンチェーン総資産を表します：ステーブルコイン、ERC-20トークン、NFT、RWA、ブリッジ資産。直接的なApp Capitalデータが利用できないため、2021年以降安定している28%ステーブルコイン比率（ステーブルコイン/App Capital）を使用して推定しています。App Capitalは時価総額の下限として機能します。ネットワークセキュリティ（MC）はすべての決済資産の価値を裏付ける必要があります。TVL（DeFiのみ）とは異なり、App Capitalはイーサリアムの完全な決済レイヤーの役割を捉えます。',
                 'method.commitment.desc': 'ステーキングとDeFiプロトコルにコミットされたETHの割合に基づいて価格プレミアムを適用します。高いコミットメント率は、より強い長期保有信念と流動性供給の減少を示します。乗数（1.5x）は、流動資産に対するコミットされた資産の価値プレミアムを反映します。L1トークンを株式ではなく通貨（価値貯蔵）として評価すべきという概念に着想を得ています。',
                 'onchain.ethInDefi': 'DeFi内ETH',
                 'onchain.ethInDefiNote': 'TVL ÷ ETH価格',
@@ -22504,13 +22575,13 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 'metric.appCapital': "アプリ資本",
                 'metric.dexVolume': "L1 DEX取引量",
                 'metric.l1Volume': "L1 ETH送金",
-                'metrics.investorSentiment': "02.1 — 投資家心理",
-                'metrics.marketPosition': "02.2 — 市場ポジション",
-                'metrics.supplyDynamics': "02.3 — 供給ダイナミクス",
-                'metrics.networkDemand': "02.4 — ネットワーク需要",
-                'metrics.userActivity': "02.5 — ユーザー活動",
-                'metrics.lockedCapital': "02.6 — ロック資本",
-                'metrics.settlementVolume': "02.7 — 決済量"
+                'metrics.investorSentiment': "02.1 投資家心理",
+                'metrics.marketPosition': "02.2 市場ポジション",
+                'metrics.supplyDynamics': "02.3 供給ダイナミクス",
+                'metrics.networkDemand': "02.4 ネットワーク需要",
+                'metrics.userActivity': "02.5 ユーザー活動",
+                'metrics.lockedCapital': "02.6 ロック資本",
+                'metrics.settlementVolume': "02.7 決済量"
             }
         };
 
@@ -23623,6 +23694,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                         // 텍스트를 구조화된 HTML로 변환
                         const formatCommentary = (text) => {
                             if (!text) return '';
+                            // Simon 2026-10-15: no AI-style dash punctuation (old rows may still contain it)
+                            text = String(text).replace(/\s*[—–]{1,2}\s*/g, ', ').replace(/, ([.,;:!?|])/g, '$1');
                             
                             // 다국어 섹션 제목 (프론트엔드에서 직접 출력)
                             const sectionHeaders = {
@@ -32416,6 +32489,14 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             shareCard.style.left = '0';
             shareCard.style.opacity = '1';
             
+            // 2026-10-15: drawn on canvas as a real browser-window screenshot (share-card.js); html2canvas only as fallback.
+            if (window.renderEthvalShareImage) {
+                shareCard.style.left = '-9999px';
+                window.renderEthvalShareImage().then(url => {
+                    previewImg.src = url; previewImg.alt = 'ETHval Share Card'; window.shareImageData = url;
+                }).catch(err => console.error('Share image render failed:', err));
+                return;
+            }
             setTimeout(() => {
                 ensureHtml2Canvas().then(() => html2canvas(shareCard, {
                     backgroundColor: null,
@@ -37199,25 +37280,26 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
         new MutationObserver(relabel).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     })();
     </script>
-    <script src="news-impact.js?v=20261015b" defer></script>
-    <script src="ethval-extras.js?v=20261014d" defer></script>
+    <script src="news-impact.js?v=20261015k" defer></script>
+    <script src="ethval-extras.js?v=20261015k" defer></script>
+    <script src="share-card.js?v=20261015d" defer></script>
     <script src="valuation-dist.js?v=20261013b" defer></script>
     <script src="fv-band.js?v=20261014b" defer></script>
     <script src="fv-backtest.js?v=20261014a" defer></script>
     <script src="model-constants.js?v=20261014a" defer></script>
     <script src="composite-sens.js?v=20261014a" defer></script>
-    <script src="triple-point.js?v=20261014a" defer></script>
-    <script src="relval.js?v=20261014a" defer></script>
+    <script src="triple-point.js?v=20261015k" defer></script>
+    <script src="relval.js?v=20261015k" defer></script>
     <script src="burn-board.js?v=20261014a" defer></script>
-    <script src="sim-presets.js?v=20261014a" defer></script>
+    <script src="sim-presets.js?v=20261015k" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
     <script src="dxy.js?v=20261013a" defer></script>
-    <script src="nav-sidebar.js?v=20261015i" defer></script>
+    <script src="nav-sidebar.js?v=20261015k" defer></script>
 
 <script>
-/* Simon 2026-10-13: subsection titles "02.1 — Title" -> small mono number + calm title (matches the section kicker). */
+/* Simon 2026-10-13: subsection titles "02.1 Title" -> small mono number + calm title (matches the section kicker). */
 (function () {
-  var RE = /^\s*(\d{2}\.\d)\s*[—–-]\s*([\s\S]*)$/;
+  var RE = /^\s*(\d{2}\.\d)\s*[—–-]?\s+([\s\S]*)$/;
   function esc(t) { return t.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
   function deco(el) {
     if (el.querySelector('.sg-num')) return;

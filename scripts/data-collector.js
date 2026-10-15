@@ -1076,6 +1076,7 @@ CRITICAL RULES:
 - scores array must have exactly 3 integers between 0-100
 - reasoning array must have exactly 3 strings explaining each score
 - text field contains exactly 3 paragraphs separated by ||| (no other separators, no line breaks)
+- Never use em dashes (—) or en dashes (–) as punctuation; write plain sentences with periods or commas instead
 - Each paragraph: 4-5 sentences, roughly 80-120 words
 - Cite at most 2-3 key numbers in total across the text (e.g. a percentile, a 90-day % change); round them and only use values present in the data above
 - Never invent numbers; prefer plain words ("near the 3-year low") for everything else
@@ -1108,6 +1109,7 @@ paragraph1 text here|||paragraph2 text here|||paragraph3 text here
 CRITICAL RULES:
 - ${config.instruction}
 - Exactly 3 paragraphs separated by ||| (no other separators, no line breaks, no headings)
+- Never use em dashes (—) or en dashes (–) as punctuation; write plain sentences with periods or commas instead
 - Paragraph 1 (Current Status): Focus on TODAY's spot data (current values and their percentiles)
 - Use only timeframes present in the data above (current, 90-day). Never mention, apologise for, or speculate about data that is not provided (e.g. weekly / 7-day comparisons)
 - Paragraph 2 (Trend): Focus on 90-DAY trends, medium-term direction
@@ -1224,7 +1226,14 @@ async function generateWithFormat(sectionKey, metricsData, lang, existingScores)
 /**
  * Save commentary to Supabase (with multilingual support, scores, and reasoning)
  */
+// Simon 2026-10-15: no AI-style dash punctuation in published analysis.
+function stripDashes(t) {
+    if (typeof t !== 'string') return t;
+    return t.replace(/\s*[—–]{1,2}\s*/g, ', ').replace(/, ([.,;:!?])/g, '$1').replace(/\s{2,}/g, ' ');
+}
 async function saveCommentary(sectionKey, commentaries, scores, reasoning, metricsSnapshot) {
+    for (const k of Object.keys(commentaries || {})) commentaries[k] = stripDashes(commentaries[k]);
+    if (Array.isArray(reasoning)) reasoning = reasoning.map(stripDashes);
     const today = new Date().toISOString().split('T')[0];
     
     try {

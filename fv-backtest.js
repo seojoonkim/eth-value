@@ -21,25 +21,25 @@
           days: 'days', hold: 'Hold', now: 'Now',
           holdNote: 'Hold = fewer than ' + MIN_N + ' days, no number shown.',
           note: function (a, b, n) { return 'Period: ' + a + ' – ' + b + ' (' + n + ' days with all 12 models and a stored price). Cell = median ETH return from that day\'s price to the stored price exactly 30/90/180 days later, and the number of days used. Days whose later price is not stored yet are left out, never filled. Dates under each gap = first and last month a day fell in that gap.'; },
-          warn: 'Caution — overfitting risk. These fair values are recomputed: today\'s 12 model formulas, constants and current circulating supply applied to the stored inputs of each past day, so they are not the numbers the site showed at the time. Neighbouring days share most of their later window, so the real number of independent samples is far smaller than the day count, and the whole period is a single market cycle. Not a forecast and not investment advice.' },
+          warn: 'Caution: overfitting risk. These fair values are recomputed: today\'s 12 model formulas, constants and current circulating supply applied to the stored inputs of each past day, so they are not the numbers the site showed at the time. Neighbouring days share most of their later window, so the real number of independent samples is far smaller than the day count, and the whole period is a single market cycle. Not a forecast and not investment advice.' },
     ko: { title: '모델 적중 기록 (백테스트)', sub: '그날 시장가가 합성 적정가에서 얼마나 떨어져 있었는지로 나눈, 이후 ETH 수익률',
           gap: '적정가 대비 괴리', all: '전체 날짜 (기준선)', after: function (h) { return h + '일 뒤'; },
           days: '일', hold: '판단 보류', now: '현재',
           holdNote: '판단 보류 = 표본 ' + MIN_N + '일 미만이라 숫자를 보여주지 않아.',
           note: function (a, b, n) { return '기간: ' + a + ' – ' + b + ' (12개 모델 값과 저장된 가격이 모두 있는 ' + n + '일). 칸 = 그날 가격 대비 정확히 30/90/180일 뒤 저장 가격의 ETH 수익률 중앙값과 사용한 일수. 뒤 가격이 아직 저장되지 않은 날은 빼고, 채우지 않아. 괴리 아래 날짜 = 그 구간에 속한 첫 달–마지막 달.'; },
-          warn: '주의 — 과적합 위험. 이 적정가는 다시 계산한 값이야: 지금의 12개 모델 공식·상수와 현재 유통량을 과거 각 날짜의 저장 입력에 적용했기 때문에, 당시 사이트에 보였던 숫자가 아니야. 이웃한 날들은 이후 기간이 대부분 겹쳐서 실제 독립 표본은 일수보다 훨씬 적고, 전체 기간이 한 번의 시장 국면이야. 예측도 투자 조언도 아니야.' },
+          warn: '주의: 과적합 위험. 이 적정가는 다시 계산한 값이야: 지금의 12개 모델 공식·상수와 현재 유통량을 과거 각 날짜의 저장 입력에 적용했기 때문에, 당시 사이트에 보였던 숫자가 아니야. 이웃한 날들은 이후 기간이 대부분 겹쳐서 실제 독립 표본은 일수보다 훨씬 적고, 전체 기간이 한 번의 시장 국면이야. 예측도 투자 조언도 아니야.' },
     zh: { title: '模型命中记录（回测）', sub: '按当日价格偏离综合公允价值的程度分组，此后的 ETH 收益率',
           gap: '相对公允价值偏离', all: '全部日期（基准）', after: function (h) { return h + '天后'; },
           days: '天', hold: '暂不判断', now: '当前',
           holdNote: '暂不判断 = 样本少于 ' + MIN_N + ' 天，不显示数字。',
           note: function (a, b, n) { return '期间：' + a + ' – ' + b + '（12 个模型值与已存价格齐全的 ' + n + ' 天）。单元格 = 从当日价格到恰好 30/90/180 天后已存价格的 ETH 收益率中位数，以及所用天数。之后价格尚未存储的日期不计入，不做填补。偏离区间下方的日期 = 落入该区间的首月–末月。'; },
-          warn: '注意 — 过拟合风险。这些公允价值是重新计算的：把现在的 12 个模型公式、常数和当前流通量套用到过去每一天的已存输入上，因此并非当时网站显示的数字。相邻日期的后续区间大部分重叠，真正独立的样本远少于天数，且整个期间只是一个市场周期。这不是预测，也不是投资建议。' },
+          warn: '注意：过拟合风险。这些公允价值是重新计算的：把现在的 12 个模型公式、常数和当前流通量套用到过去每一天的已存输入上，因此并非当时网站显示的数字。相邻日期的后续区间大部分重叠，真正独立的样本远少于天数，且整个期间只是一个市场周期。这不是预测，也不是投资建议。' },
     ja: { title: 'モデル的中記録（バックテスト）', sub: 'その日の市場価格が合成適正価値からどれだけ離れていたかで分けた、その後の ETH リターン',
           gap: '適正価値との乖離', all: '全期間（基準線）', after: function (h) { return h + '日後'; },
           days: '日', hold: '判断保留', now: '現在',
           holdNote: '判断保留 = サンプルが ' + MIN_N + ' 日未満のため数字を出さない。',
           note: function (a, b, n) { return '期間：' + a + ' – ' + b + '（12 モデルの値と保存価格がそろう ' + n + ' 日）。セル = その日の価格からちょうど 30/90/180 日後の保存価格までの ETH リターン中央値と使用日数。後の価格がまだ保存されていない日は除外し、補完しない。乖離の下の日付 = その区間に入った最初の月–最後の月。'; },
-          warn: '注意 — 過学習のリスク。この適正価値は再計算値：現在の 12 モデルの式・定数と現在の流通量を過去各日の保存入力に当てはめたもので、当時サイトに表示されていた数字ではない。隣り合う日はその後の期間がほぼ重なるため、実際の独立サンプルは日数よりはるかに少なく、全期間が一つの市場局面にすぎない。予測でも投資助言でもない。' }
+          warn: '注意：過学習のリスク。この適正価値は再計算値：現在の 12 モデルの式・定数と現在の流通量を過去各日の保存入力に当てはめたもので、当時サイトに表示されていた数字ではない。隣り合う日はその後の期間がほぼ重なるため、実際の独立サンプルは日数よりはるかに少なく、全期間が一つの市場局面にすぎない。予測でも投資助言でもない。' }
   };
   function lang() { var l = (document.documentElement.lang || 'en').slice(0, 2); return T[l] ? l : 'en'; }
   function ymd(d) { return new Date(d).toISOString().slice(0, 10); }

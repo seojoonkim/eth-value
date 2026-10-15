@@ -36,6 +36,7 @@ if ! curl -s -m 10 "$URL" | grep -q 'ETHval'; then
   log "target: FAIL — $URL is not serving ETHval (check: lsof -iTCP:${URL##*:} ; start: python3 -m http.server <free port> --bind 127.0.0.1)"
   log "RESULT FAIL"; exit 1
 fi
+if node inline_script_check.cjs > "$OUT/inline.txt" 2>&1; then log "inline-scripts: PASS"; else log "inline-scripts: FAIL"; fail=1; fi
 if node geom_check.cjs "$URL" > "$OUT/geom.txt" 2>&1; then log "geom: PASS"; else log "geom: FAIL"; fail=1; fi
 cut -c1-200 "$OUT/geom.txt" >> "$OUT/summary.txt"
 
@@ -69,7 +70,9 @@ if [[ "$URL" == http://127.0.0.1* ]]; then
   # 2026-10-15: 34400 -> 35800 for the design refresh be90904 (13px reading text, 24px figures, roomier card padding).
   #   Measured at 390 (en), 2 runs each: 4ced6ff 34211 -> be90904 35474 (+1263): #fundamentals +975 (metric cards),
   #   #section-valuation +170, #ratings +92, #research +25. Card radius 10->6px (design rule) changes no height. ~326px headroom.
-  if [ -n "$doc" ] && [ "$doc" -lt 35800 ]; then log "height: PASS ($doc px < 35800)"; else log "height: FAIL ($doc)"; fail=1; fi
+  # 2026-10-15: 35800 -> 36200 for Simon's batch (airy signoff block, labelled expand pills). Measured at 390 (en):
+  #   HEAD 76b0b93 35807 (already +7 over from the density pass) -> 35894 (+87: #valuation +70 signoff, #ratings +26 pills). ~306px headroom.
+  if [ -n "$doc" ] && [ "$doc" -lt 36200 ]; then log "height: PASS ($doc px < 36200)"; else log "height: FAIL ($doc)"; fail=1; fi
 fi
 
 node mobile_audit.cjs "$URL" "$OUT/audit" 390 > "$OUT/audit.txt" 2>&1
