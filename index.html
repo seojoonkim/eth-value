@@ -20588,6 +20588,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'share.postToX': 'Post to 𝕏',
                 'share.download': 'Download Image',
                 'share.cardLabel': 'Composite Fair Value · {n} / 12 models',
+                'share.tweet': '📊 ETH Intrinsic Value Analysis\n\nCurrent: {cur}\nFair Value: {fair}\nPotential: {up}\n\nBased on {n}/12 valuation models.\n\nCheck out ETHval 👇',
                 'section.priceTitle': 'Price & Market',
                 'section.onchainTitle': 'On-Chain Metrics & Trends',
                 'section.valuationTitle': 'Valuation & Simulator',
@@ -21084,6 +21085,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'share.postToX': '𝕏에 포스트',
                 'share.download': '이미지 다운로드',
                 'share.cardLabel': '종합 적정 가치 · 모델 {n} / 12',
+                'share.tweet': '📊 ETH 내재가치 분석\n\n현재 가격: {cur}\n적정 가치: {fair}\n상승 여력: {up}\n\n밸류에이션 모델 {n}/12개 기준\n\nETHval에서 확인하기 👇',
                 'section.priceTitle': '시세 & 시장',
                 'section.onchainTitle': '온체인 지표 & 트렌드',
                 'section.valuationTitle': '밸류에이션 & 시뮬레이터',
@@ -21573,6 +21575,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'share.postToX': '发布到 𝕏',
                 'share.download': '下载图片',
                 'share.cardLabel': '综合公允价值 · {n} / 12 个模型',
+                'share.tweet': '📊 ETH 内在价值分析\n\n当前价格：{cur}\n公允价值：{fair}\n潜在涨幅：{up}\n\n基于 {n}/12 个估值模型\n\n在 ETHval 查看 👇',
                 'section.priceTitle': '价格与市场',
                 'section.onchainTitle': '链上指标与趋势',
                 'section.valuationTitle': '估值 & 模拟器',
@@ -22066,6 +22069,7 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
                 'share.postToX': '𝕏に投稿',
                 'share.download': '画像をダウンロード',
                 'share.cardLabel': '総合適正価格 · {n} / 12 モデル',
+                'share.tweet': '📊 ETH 内在価値分析\n\n現在価格：{cur}\n適正価格：{fair}\n上昇余地：{up}\n\n{n}/12 のバリュエーションモデルに基づく\n\nETHval でチェック 👇',
                 'section.priceTitle': '価格・マーケット',
                 'section.onchainTitle': 'オンチェーン指標・トレンド',
                 'section.valuationTitle': 'バリュエーション & シミュレーター',
@@ -32259,17 +32263,12 @@ html[lang="ko"] body, html[lang="ko"] body * { word-break: keep-all; overflow-wr
             const upside = document.getElementById('summary-upside').textContent;
             const modelCount = document.getElementById('conclusion-model-count').textContent;
             
-            const text = `📊 ETH Intrinsic Value Analysis
-
-Current: ${currentPrice}
-Fair Value: ${fairValue}
-Potential: ${upside}
-
-Based on ${modelCount}/12 valuation models.
-
-Check out ETHval 👇`;
-            
-            const url = 'https://ethval.com'; // Replace with actual URL
+            // 트윗 본문도 선택 언어로 (값은 화면 값 그대로 복사), 링크는 같은 언어로 열리게 언어 해시 포함
+            const text = t('share.tweet', '📊 ETH Intrinsic Value Analysis\n\nCurrent: {cur}\nFair Value: {fair}\nPotential: {up}\n\nBased on {n}/12 valuation models.\n\nCheck out ETHval 👇')
+                .replace('{cur}', currentPrice).replace('{fair}', fairValue)
+                .replace('{up}', upside).replace('{n}', modelCount.trim() || '--');
+            const langPrefix = langUrlMap[currentLang] || '';
+            const url = 'https://ethval.com/' + (langPrefix ? '#' + langPrefix : '');
             const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             
             window.open(twitterUrl, '_blank', 'width=550,height=420');
