@@ -1512,6 +1512,18 @@ function getCgEthMarketChart() {
     return _cgEthChartPromise;
 }
 
+// CoinGecko BTC market_chart 365d — ETH Dominance와 상대가치(chain_mcap)가 같은 응답을 공유.
+// 예전엔 실행마다 같은 URL을 두 번 불러 두 번째(chain_mcap)가 429로 빠졌음(2026-10-14 20:17 UTC 실행: bitcoin missing).
+let _cgBtcChartPromise = null;
+function getCgBtcMarketChart() {
+    if (!_cgBtcChartPromise) {
+        _cgBtcChartPromise = fetchJSON('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily')
+            .then(d => { if (!d) _cgBtcChartPromise = null; return d; })
+            .catch(e => { _cgBtcChartPromise = null; throw e; });
+    }
+    return _cgBtcChartPromise;
+}
+
 // historical_eth_price.volume 채우기: CoinGecko total_volumes(일별, UTC 00:00 포인트)를
 // 프론트의 CoinGecko 경로와 같은 날짜 매핑(포인트 timestamp의 UTC 날짜)으로 저장.
 // 이미 가격 행이 있는 날짜만 갱신하고, 장중 스냅샷(00:00이 아닌 마지막 포인트)은 제외.
@@ -2149,8 +2161,17 @@ async function collect_chain_mcap() {
     const rows = [];
     const notes = [];
     for (const c of RELVAL_CHAINS) {
-        const d = c.cg === 'ethereum' ? await getCgEthMarketChart().catch(() => null)
+        let d = c.cg === 'ethereum' ? await getCgEthMarketChart().catch(() => null)
+            : c.cg === 'bitcoin' ? await getCgBtcMarketChart().catch(() => null)
             : await fetchJSON(`https://api.coingecko.com/api/v3/coins/${c.cg}/market_chart?vs_currency=usd&days=365&interval=daily`);
+        // 무료 CoinGecko 분당 한도는 5/10/15초 재시도로는 안 풀림 → 한 번 65초 쉬고 다시(같은 출처·같은 URL, 값 대체 없음)
+        if (!(d && Array.isArray(d.market_caps))) {
+            console.log(`  ⏳ chain_mcap: ${c.chain} retry after 65s (CoinGecko rate limit)`);
+            await sleep(65000);
+            d = c.cg === 'ethereum' ? await getCgEthMarketChart().catch(() => null)
+                : c.cg === 'bitcoin' ? await getCgBtcMarketChart().catch(() => null)
+                : await fetchJSON(`https://api.coingecko.com/api/v3/coins/${c.cg}/market_chart?vs_currency=usd&days=365&interval=daily`);
+        }
         const mc = d && Array.isArray(d.market_caps) ? d.market_caps : null;
         if (!mc) { notes.push(`${c.chain} missing`); await sleep(2500); continue; }
         for (const [ms, v] of mc) {
@@ -2369,7 +2390,7 @@ async function collect_eth_dominance() {
         // CoinGecko API (admin.html과 동일)
         const [ethData, btcData, globalData] = await Promise.all([
             getCgEthMarketChart(),
-            fetchJSON('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily'),
+            getCgBtcMarketChart(),
             fetchJSON('https://api.coingecko.com/api/v3/global')
         ]);
         
