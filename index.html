@@ -27172,27 +27172,29 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                 const now = Date.now();
                 const sortedHistory = [...state.priceHistory].sort((a, b) => a.date - b.date);
                 
-                // 기간별 라벨
-                let periodLabel = '3Y';
-                let daysBack = days;
-                if (days <= 90) {
-                    periodLabel = '90D';
-                    daysBack = 90;
-                } else if (days <= 365) {
-                    periodLabel = '1Y';
-                    daysBack = 365;
-                } else {
-                    periodLabel = '3Y';
-                    daysBack = 1095;
+                // 기간별 라벨: 선택한 탭(30D/90D/1Y/3Y) 그대로 — 30D를 90D로 묶지 않음
+                let periodLabel, daysBack;
+                if (period <= 30) { periodLabel = '30D'; daysBack = 30; }
+                else if (period <= 90) { periodLabel = '90D'; daysBack = 90; }
+                else if (period <= 365) { periodLabel = '1Y'; daysBack = 365; }
+                else { periodLabel = '3Y'; daysBack = 1095; }
+                
+                // 해당 기간 전 가격: 목표 시각에 가장 가까운 행(허용 오차 = 기간의 10%, 3~30일)
+                const DAY = 24 * 60 * 60 * 1000;
+                const targetTime = now - daysBack * DAY;
+                const tol = Math.min(30, Math.max(3, Math.round(daysBack * 0.1))) * DAY;
+                let pastPrice = null, bestDiff = Infinity;
+                for (const d of sortedHistory) {
+                    const diff = Math.abs(d.date.getTime() - targetTime);
+                    if (diff < bestDiff) { bestDiff = diff; pastPrice = d; }
                 }
+                if (bestDiff > tol) pastPrice = null;
                 
-                // 해당 기간 전 가격 찾기
-                const targetTime = now - daysBack * 24 * 60 * 60 * 1000;
-                let pastPrice = sortedHistory.find(d => Math.abs(d.date.getTime() - targetTime) < 30 * 24 * 60 * 60 * 1000);
-                
-                // 해당 기간 데이터 없으면 가장 오래된 데이터 사용
+                // 해당 기간 데이터가 없으면 가장 오래된 데이터 기준 — 라벨에 실제 일수를 밝힘
                 if (!pastPrice && sortedHistory.length > 0) {
                     pastPrice = sortedHistory[0];
+                    const actualDays = Math.round((now - pastPrice.date.getTime()) / DAY);
+                    if (actualDays < daysBack) periodLabel = actualDays + 'D';
                 }
                 
                 const changeEl = document.getElementById('price-change-stat');

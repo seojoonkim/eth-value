@@ -178,6 +178,8 @@ CHECKS=(
   "ytick_dup|ytick_dup_check|ytick_dup|$URL"
   # 2026-10-16: no chart prints the same x-axis label twice (net supply 90D showed Aug '26 twice); short ranges use "Aug 14"
   "xtick_dup|xtick_dup_check|xtick_dup|$URL"
+  # 2026-10-16: price card change stat follows the selected tab (30D showed "+43.4% 90D") and matches priceHistory N days ago
+  "price_period|price_period_check|price_period|$URL $OUT/pp"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '
