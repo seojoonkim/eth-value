@@ -1,4 +1,4 @@
-// 2026-10-15 Facebook-style layout gate: rail sits right next to the body container (not the screen edge);
+// 2026-10-15 Facebook-style layout gate: rail sits 24px beside the body container (not the screen edge);
 // rail + container centred as one group; top banner spans only the container. Usage: node .qa/layout_measure.cjs [url]
 const { chromium } = require('playwright');
 const URL = process.argv[2] || 'https://ethval.com/';
@@ -17,7 +17,7 @@ let fail = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); i
     });
     const tag = `${w} ${theme}`;
     const leftGap = r.sb.l, rightGap = r.vw - r.cont.r;
-    ok(Math.abs(r.sb.r - r.cont.l) <= 1, `${tag} rail touches container: rail ${r.sb.l|0}..${r.sb.r|0}, container ${r.cont.l|0}..${r.cont.r|0}`);
+    ok(Math.abs((r.cont.l - r.sb.r) - 24) <= 1, `${tag} rail→container gap 24 (${(r.cont.l - r.sb.r)|0}): rail ${r.sb.l|0}..${r.sb.r|0}, container ${r.cont.l|0}..${r.cont.r|0}`);
     ok(Math.abs(leftGap - rightGap) <= 10, `${tag} group centred: left gap ${leftGap|0} vs right gap ${rightGap|0}`);
     ok(r.cont.w <= 1401, `${tag} container width ${r.cont.w|0} <= 1400`);
     ok(r.sx <= r.vw + 1, `${tag} no horizontal scroll (${r.sx} <= ${r.vw})`);
