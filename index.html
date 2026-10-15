@@ -19571,7 +19571,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                                             color: '#6b7280',
                                             font: { size: 8 },
                                             maxTicksLimit: 3,
-                                            callback: v => '$' + (v/1000).toFixed(1) + 'K'
+                                            callback: (v, i, ticks) => axisTickLabel(v, ticks, (x, d) => '$' + (x/1000).toFixed(d) + 'K', 1)
                                         }
                                     }
                                 }
@@ -23442,6 +23442,22 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             return { x: 8, y: 7 };  // Tablet & Mobile
         };
 
+        // Y-axis tick labels: start at the chart's normal precision and add decimals only when two ticks
+        // would otherwise print the same text (narrow ranges, e.g. net supply 0.82%/0.84% → '0.8%' twice).
+        // Chart.js passes the same ticks array for every label of one axis pass, so the choice is cached on it.
+        function axisTickLabel(value, ticks, fmtDec, startDec = 0) {
+            if (!Array.isArray(ticks) || ticks.length < 2) return fmtDec(value, startDec);
+            if (ticks._axisDec === undefined) {
+                let d = startDec;
+                for (; d < startDec + 4; d++) {
+                    const ls = ticks.map(t => fmtDec(t.value, d));
+                    if (new Set(ls).size === ls.length) break;
+                }
+                ticks._axisDec = d;
+            }
+            return fmtDec(value, ticks._axisDec);
+        }
+
         const chartConfig = (color, data, labels, formatFn, yAxisFormat, dates) => {
             const axisFontSize = getChartAxisFontSize();
             const mobile = isMobile();
@@ -23525,20 +23541,18 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                             maxTicksLimit: 4,
                             padding: 2,
                             mirror: false,
-                            callback: function(value) {
-                                if (yAxisFormat === 'pct') return value.toFixed(0) + '%';
-                                if (yAxisFormat === 'pct2') return value.toFixed(2) + '%';
-                                if (yAxisFormat === 'ratio') return value.toFixed(3);
+                            callback: function(value, index, ticks) {
+                                if (yAxisFormat === 'pct') return axisTickLabel(value, ticks, (v, d) => v.toFixed(d) + '%', 0);
+                                if (yAxisFormat === 'pct2') return axisTickLabel(value, ticks, (v, d) => v.toFixed(d) + '%', 2);
+                                if (yAxisFormat === 'ratio') return axisTickLabel(value, ticks, (v, d) => v.toFixed(d), 3);
                                 if (yAxisFormat === 'eth') {
-                                    if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
-                                    if (value >= 1e3) return (value / 1e3).toFixed(1) + 'K';
-                                    return value.toFixed(0);
+                                    if (value >= 1e6) return axisTickLabel(value, ticks, (v, d) => (v / 1e6).toFixed(d) + 'M', 1);
+                                    if (value >= 1e3) return axisTickLabel(value, ticks, (v, d) => (v / 1e3).toFixed(d) + 'K', 1);
+                                    return axisTickLabel(value, ticks, (v, d) => v.toFixed(d), 0);
                                 }
-                                if (value >= 1e12) return '$' + (value / 1e12).toFixed(1) + 'T';
-                                if (value >= 1e9) return '$' + (value / 1e9).toFixed(1) + 'B';
-                                if (value >= 1e6) return '$' + (value / 1e6).toFixed(1) + 'M';
-                                if (value >= 1e3) return '$' + (value / 1e3).toFixed(1) + 'K';
-                                return '$' + value.toFixed(0);
+                                const u = (v, d) => v >= 1e12 ? '$' + (v / 1e12).toFixed(d) + 'T' : v >= 1e9 ? '$' + (v / 1e9).toFixed(d) + 'B'
+                                    : v >= 1e6 ? '$' + (v / 1e6).toFixed(d) + 'M' : v >= 1e3 ? '$' + (v / 1e3).toFixed(d) + 'K' : '$' + v.toFixed(Math.max(0, d - 1));
+                                return axisTickLabel(value, ticks, u, 1);
                             }
                         }
                     }
@@ -27262,7 +27276,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                             ticks: {
                                 font: { size: 8 },
                                 color: getChartColors().tick,
-                                callback: v => '$' + (v/1000).toFixed(1) + 'K'
+                                callback: (v, i, ticks) => axisTickLabel(v, ticks, (x, d) => '$' + (x/1000).toFixed(d) + 'K', 1)
                             }
                         },
                         y1: {
@@ -29182,7 +29196,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     } } },
                     scales: {
                         x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(0) + '%' } }
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v, i, ticks) => axisTickLabel(v, ticks, (x, d) => x.toFixed(d) + '%', 0) } }
                     }
                 }
             });
@@ -29297,7 +29311,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     } } },
                     scales: {
                         x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => fmt.num(v) } }
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v, i, ticks) => axisTickLabel(v, ticks, (x, d) => fmt.num(x, d), 1) } }
                     }
                 }
             });
@@ -29342,7 +29356,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                     } } },
                     scales: {
                         x: { display: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 5, autoSkip: true, autoSkipPadding: 15, maxRotation: 0 } },
-                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v) => v.toFixed(1) + '%' } }
+                        y: { display: true, position: 'right', grid: { display: false }, ticks: { font: { size: 8 }, color: '#6b7280', maxTicksLimit: 4, callback: (v, i, ticks) => axisTickLabel(v, ticks, (x, d) => x.toFixed(d) + '%', 1) } }
                     }
                 }
             });
@@ -33734,7 +33748,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
                                 color: '#6b7280',
                                 font: { size: 8 },
                                 maxTicksLimit: 3,
-                                callback: v => '$' + (v/1000).toFixed(1) + 'K'
+                                callback: (v, i, ticks) => axisTickLabel(v, ticks, (x, d) => '$' + (x/1000).toFixed(d) + 'K', 1)
                             }
                         }
                     }

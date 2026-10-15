@@ -174,6 +174,8 @@ CHECKS=(
   "fab_cover|fab_cover_check|fab_cover|$URL $OUT/fab"
   # 2026-10-16: Astra audit P0 — net supply sign/label, one Staking DCF name, no raw JSON / Chinese chars in analysis
   "astra_p0|astra_p0_check|astra_p0|$URL"
+  # 2026-10-16: no chart prints the same y-axis tick label twice (net supply 90D showed 0.8%·0.8%·0.8%)
+  "ytick_dup|ytick_dup_check|ytick_dup|$URL"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '
