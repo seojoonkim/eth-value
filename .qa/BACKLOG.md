@@ -5,6 +5,8 @@ Rules: one item per run, top to bottom. Mark `[x]` only after live verification
 Never insert synthetic/estimated values. Push only via `bash .qa/push.sh`.
 If an item needs Simon (paid key, account, credential), mark `[blocked: reason]` and move on.
 
+- [ ] 1100px EN light/dark 가격 카드 내부 여백 224px 수정 및 회귀 검증. 2026-10-16 전체 QA와 라이브 `node .qa/val_balance_check.cjs https://ethval.com/`에서 동일 재현; 390/900/1280/1440은 PASS. 증거 `/tmp/ethval-prevention-balance-live.log`, `/tmp/ethval-qa.run.OwwSRQ/val_balance_check.txt`. 이번 d-001d8cc649 변경은 QA 파일만이며 제품 코드는 변경하지 않음. 기준을 완화하지 말고 원인을 측정해 해결.
+
 - [x] L2 total volume: Dune saved query 6386591 fails → only 28 recent rows via fallback SQL. Restore full daily history (fix/replace query with inline SQL via Dune execute API or a free source such as growthepie `txcosts`/DefiLlama volumes) so 1Y/3Y views are complete.
   - 2026-10-10 verified: "28 rows" is the incremental window per run (7 chains × 4 days), not the history. DB has 10,075 rows, 2022-01-01→2026-10-08, 1,742 dates, 0 date gaps (Arbitrum/Optimism full; only launch-week gaps on Base/Mantle/Linea 2023-06/07). Frontend query (limit 16500, 10k cap) reaches back to 2022-02-07 → 3Y complete. Run 37979778515 fallback OK; freshness PASS (1d); chart-audit PASS 59 charts; live 1Y=92 pts (same downsampling as L1 Total/L2 DEX), 1280/390 shots OK. Commit e017475 (chart-audit local launcher fix).
   - 2026-10-10 b687381: per-chain incremental SQL is now the primary path (saved query only as last resort) → no more daily "query failing" warning.

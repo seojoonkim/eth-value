@@ -191,6 +191,9 @@ CHECKS=(
   "method_diff_clip|method_diff_clip_check|method_diff_clip|$URL"
   # 2026-10-16: mobile tab row never cuts its first tab off the left (centred + overflow hid 'Valuation' at 360-430)
   "navbar_clip|navbar_clip_check|navbar_clip|$URL"
+  # 2026-10-16: d-001d8cc649 bounded regression gate — real theme toggle (390/1280 both directions),
+  # share-card bars, mobile signoff dividers, locator re-query after rerenders
+  "prevention|prevention_check|prevention|$URL $OUT/prevention"
 )
 for spec in "${CHECKS[@]}"; do IFS="|" read -r label script out args <<< "$spec"; rm -f "$OUT/$out.rc"; done
 printf '%s\n' "${CHECKS[@]}" | xargs -P "$QA_JOBS" -I{} bash -c '
