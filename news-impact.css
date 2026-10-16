@@ -300,6 +300,14 @@
   #valuation .summary-valuation-box > .vd { margin-top: 16px; }
   #valuation .summary-description { justify-content: space-between; }
 }
+/* At 1001–1199px the intro is the tallest of three columns. Measured at
+   1100px EN: 888px card, capped 96px headline rows, 200px unused tail.
+   Share surplus between the two content groups instead of leaving it below
+   the spread. Keep the >=1200px sidebar layout and mobile unchanged. */
+@media (min-width: 1001px) and (max-width: 1199px) {
+  #valuation .summary-valuation-box > .summary-model-range-section,
+  #valuation .summary-valuation-box > .vd { margin-top: auto; }
+}
 @media (max-width: 1000px) { #valuation .summary-valuation-box .vd { display: none; } }
 
 /* Avatars in the narrow 3-column view (1001–1279px): overlap a bit more so the row never pushes past the card. */
