@@ -14833,6 +14833,25 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
             background: color-mix(in srgb, var(--primary) 11%, transparent); stroke-width: 2.6; }
         .community-stats-box:hover .community-stats-arrow { background: color-mix(in srgb, var(--primary) 18%, transparent); }
 </style>
+<style id="community-reading-polish">
+/* Responsive faces and reading surfaces: keep data and interactions unchanged. */
+html body .community-recent-participants { width: 100%; min-width: 0; align-items: center; gap: 14px; }
+html body .recent-participants-avatars { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+html body .recent-participants-avatars img { width: 32px; height: 32px; flex: 0 0 32px; margin-left: 0; border: 2px solid var(--bg-card); box-shadow: none; }
+html body .recent-participants-more { margin-left: 2px; align-self: center; }
+html body .summary-description > .summary-text + .summary-text { margin-top: 1.7em; }
+html body .ai-commentary { background: var(--bg-card); border: 0; border-radius: 16px; padding: 24px; box-shadow: none; }
+html body .ai-commentary-text { gap: 28px; }
+html body .commentary-section-header { color: var(--text); font-weight: 600; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+html body .ai-commentary-footer { opacity: 1; margin-top: 24px; text-align: left; line-height: 1.6; }
+@media (max-width: 768px) {
+ html body .community-recent-participants { align-items: flex-start; flex-direction: column; gap: 10px; }
+ html body .recent-participants-avatars { width: 100%; gap: 6px; }
+ html body .recent-participants-avatars img { width: 28px; height: 28px; flex-basis: 28px; }
+ html body .ai-commentary { padding: 20px; }
+ html body .ai-commentary-text { gap: 24px; }
+}
+</style>
 </head>
 <body>
     <a id="top"></a>
@@ -37466,7 +37485,7 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
     <script src="sim-presets.js?v=20261015k" defer></script>
     <script src="us10y.js?v=20261013a" defer></script>
     <script src="dxy.js?v=20261013a" defer></script>
-    <script src="nav-sidebar.js?v=20261015k" defer></script>
+    <script src="nav-sidebar.js?v=20261016polish" defer></script>
 
 <script>
 /* Simon 2026-10-13: subsection titles "02.1 Title" -> small mono number + calm title (matches the section kicker). */
