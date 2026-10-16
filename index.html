@@ -14836,8 +14836,8 @@ html[lang="ja"] body *:not(a), html[lang="zh"] body *:not(a) { word-break: norma
 <style id="community-reading-polish">
 /* Responsive faces and reading surfaces: keep data and interactions unchanged. */
 html body .community-recent-participants { width: 100%; min-width: 0; align-items: center; gap: 14px; }
-html body .recent-participants-avatars { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-html body .recent-participants-avatars img { width: 32px; height: 32px; flex: 0 0 32px; margin-left: 0; border: 2px solid var(--bg-card); box-shadow: none; }
+html body .recent-participants-avatars { --face: 40px; flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, calc(var(--face) * .9)); gap: 8px 0; padding-right: calc(var(--face) * .1); }
+html body .recent-participants-avatars img { box-sizing: border-box; width: var(--face); height: var(--face); margin-left: 0; border: 2px solid var(--bg-card); box-shadow: none; }
 html body .recent-participants-more { margin-left: 2px; align-self: center; }
 html body .summary-description > .summary-text + .summary-text { margin-top: 1.7em; }
 html body .ai-commentary { background: var(--bg-card); border: 0; border-radius: 16px; padding: 24px; box-shadow: none; }
@@ -14846,8 +14846,8 @@ html body .commentary-section-header { color: var(--text); font-weight: 600; gap
 html body .ai-commentary-footer { opacity: 1; margin-top: 24px; text-align: left; line-height: 1.6; }
 @media (max-width: 768px) {
  html body .community-recent-participants { align-items: flex-start; flex-direction: column; gap: 10px; }
- html body .recent-participants-avatars { width: 100%; gap: 6px; }
- html body .recent-participants-avatars img { width: 28px; height: 28px; flex-basis: 28px; }
+ html body .recent-participants-avatars { --face: 36px; width: 100%; }
+ html body .recent-participants-avatars img { width: var(--face); height: var(--face); }
  html body .ai-commentary { padding: 20px; }
  html body .ai-commentary-text { gap: 24px; }
 }
