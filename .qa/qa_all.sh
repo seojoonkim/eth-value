@@ -152,6 +152,7 @@ CHECKS=(
   "forum_header|forum_header_check|forum_header|$URL"
   "forum_author|forum_author_check|forum_author|$URL"
   "forum_mobile_title|forum_mobile_title_check|forum_mobile_title|$URL"
+  "mobile_summary_gap|mobile_summary_gap_check|mobile_summary_gap|$URL"
   "menu_gap|menu_gap_check|menu_gap|$URL"
   "subtitle|subtitle_size_check|subtitle|$URL"
   "rating_title|rating_title_check|rating_title|$URL"
