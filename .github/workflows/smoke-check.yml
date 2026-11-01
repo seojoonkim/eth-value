@@ -20,9 +20,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Install Playwright
-        run: npm i --no-save playwright@1.58 && npx playwright install --with-deps chromium
+        run: npm i --no-save --no-package-lock playwright@1.64.0 && npx playwright install --with-deps chromium
       - name: Smoke check
         run: node scripts/smoke-check.js "https://ethval.com/?cb=${{ github.run_id }}"
       - name: Data freshness

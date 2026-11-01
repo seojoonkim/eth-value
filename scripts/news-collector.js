@@ -139,8 +139,10 @@ For each event output:
  source_idx: array of indices of the headlines used
 Only include events with real price relevance. Quality over quantity. Return JSON {"events":[...]}.`;
 
+// After a 429/quota error, skip the primary for the rest of this run (10-27~11-01: no credits, every window waited on it).
+let primaryDown = false;
 async function llm(user, system = SYSTEM) {
-    if (OPENAI_API_KEY) {
+    if (OPENAI_API_KEY && !primaryDown) {
         try {
             const r = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
@@ -153,7 +155,7 @@ async function llm(user, system = SYSTEM) {
             const t = j.choices?.[0]?.message?.content;
             if (t) { console.log(`  🤖 ${MODEL} ${j.usage?.prompt_tokens}/${j.usage?.completion_tokens}`); return { text: t, model: MODEL }; }
             throw new Error('empty');
-        } catch (e) { console.log(`  ⚠️ ${MODEL}: ${e.message}`); }
+        } catch (e) { console.log(`  ⚠️ ${MODEL}: ${e.message}`); if (/HTTP 429|insufficient_quota/.test(e.message)) primaryDown = true; }
     }
     if (!ANTHROPIC_API_KEY) throw new Error('no LLM key');
     const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -164,8 +166,20 @@ async function llm(user, system = SYSTEM) {
     });
     if (!r.ok) throw new Error(`Haiku HTTP ${r.status}`);
     const j = await r.json();
+    if (j.stop_reason === 'max_tokens') console.log(`  ⚠️ ${HAIKU}: hit max_tokens, JSON may be cut`);
     // Haiku 5.5 may lead with thinking blocks: read text blocks by type.
     return { text: (j.content || []).filter(x => x.type === 'text').map(x => x.text).join(''), model: HAIKU };
+}
+
+// LLM call + JSON parse, retried: a malformed/cut JSON reply failed the whole run 10-24~11-01.
+async function llmJson(user, system = SYSTEM, tries = 3) {
+    let last;
+    for (let i = 1; i <= tries; i++) {
+        const { text, model } = await llm(user, system);
+        try { return { data: parseJson(text), model }; }
+        catch (e) { last = e; console.log(`  ⚠️ JSON parse (try ${i}/${tries}, ${model}): ${e.message}`); }
+    }
+    throw last;
 }
 
 function parseJson(t) {
@@ -197,8 +211,8 @@ async function classifyWindow(heads, existing) {
     if (!heads.length) return [];
     const lines = heads.slice(0, 400).map((h, i) => `${i}. [${h.date}] ${h.title} (${h.source})`).join('\n');
     const ex = existing.length ? `\nAlready recorded events (do NOT output these again; output only NEW events):\n${existing.map(e => `- ${e.date} ${e.id}: ${e.title}`).join('\n')}\n` : '';
-    const { text, model } = await llm(`Headlines:\n${lines}\n${ex}`);
-    const out = parseJson(text).events || [];
+    const { data, model } = await llmJson(`Headlines:\n${lines}\n${ex}`);
+    const out = data.events || [];
     const res = [];
     for (const ev of out) {
         if (!validEvent(ev)) { console.log(`  skip invalid: ${JSON.stringify(ev).slice(0, 120)}`); continue; }
@@ -260,7 +274,7 @@ async function repairLang() {
         const chunk = bad.slice(i, i + 10);
         const user = chunk.map((e, k) => `${k + 1}. title.en: ${e.title?.en}\n   summary.en: ${e.summary?.en || '(none)'}\n   mechanism.en: ${e.mechanism?.en}`).join('\n');
         let items = [];
-        try { items = parseJson((await llm(user, REPAIR_SYSTEM)).text).items || []; } catch (err) { console.log(`  ⚠️ repair chunk ${i}: ${err.message}`); process.exitCode = 1; continue; }
+        try { items = (await llmJson(user, REPAIR_SYSTEM)).data.items || []; } catch (err) { console.log(`  ⚠️ repair chunk ${i}: ${err.message}`); process.exitCode = 1; continue; }
         for (const it of items) {
             const e = chunk[+it.n - 1];
             if (!e) continue;
