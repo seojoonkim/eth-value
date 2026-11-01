@@ -18,6 +18,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = process.env.NEWS_MODEL || process.env.COMMENTARY_MODEL || 'gpt-6-luna';
+const NEWS_MAX_AGE_DAYS = +(process.env.NEWS_MAX_AGE_DAYS || 4);
 const HAIKU = process.env.HAIKU_MODEL || 'claude-haiku-5-5'; // latest Haiku (2026-10-07); fallback after Luna
 
 const args = process.argv.slice(2);
@@ -136,7 +137,7 @@ For each event output:
  mechanism: {en,ko,zh,ja} one short causal chain from event -> metric -> ETH price, using arrows (e.g. "ETF inflow ↑ → exchange reserve ↓ → sell pressure ↓ → price +"). The last step must agree with direction (bearish → "downside pressure ↑" or "price -", never "pressure ↓"), and every language keeps the same arrows.
  Reversal wording: "end/snap/break a streak", "halt", "reverse" mean the old trend STOPPED — translate as stopped (e.g. ko "연속 순유출 끊고 순유입"), never as a word that can read as still continuing (ko "마감").
  Do not output an event that re-reports an already recorded incident (same company/protocol and about the same amount), even weeks later.
- source_idx: array of indices of the headlines used
+ source_idx: REQUIRED array of integer indices (the number before each headline) of the headlines used; never omit
 Only include events with real price relevance. Quality over quantity. Return JSON {"events":[...]}.`;
 
 // After a 429/quota error, skip the primary for the rest of this run (10-27~11-01: no credits, every window waited on it).
@@ -212,7 +213,7 @@ async function classifyWindow(heads, existing) {
     if (!heads.length) return [];
     const lines = heads.slice(0, 400).map((h, i) => `${i}. [${h.date}] ${h.title} (${h.source})`).join('\n');
     const ex = existing.length ? `\nAlready recorded events (do NOT output these again; output only NEW events):\n${existing.map(e => `- ${e.date} ${e.id}: ${e.title}`).join('\n')}\n` : '';
-    const { data, model } = await llmJson(`Headlines:\n${lines}\n${ex}`);
+    const { data, model } = await llmJson(`Headlines:\n${lines}\n${ex}\nEvery event MUST carry source_idx: the integer numbers of the headlines above it is based on.`);
     const out = data.events || [];
     const res = [];
     for (const ev of out) {
@@ -322,7 +323,7 @@ async function applyFixes() {
 }
 
 async function main() {
-    try { await applyFixes(); } catch (e) { console.log(`  ⚠️ fixes: ${e.message}`); process.exitCode = 1; }
+    try { await applyFixes(); } catch (e) { console.log(`::warning title=news fixes::${e.message.slice(0, 180)}`); }
     if (args.includes('--repair-lang')) return repairLang();
     if (args.includes('--fixes-only')) return;
     const today = iso(new Date());
@@ -332,7 +333,7 @@ async function main() {
     } else {
         windows.push([addDays(today, -3), today, true]);
     }
-    let total = 0;
+    let total = 0, windowFailed = false;
     const dump = [];
     for (const [from, to, rss] of windows) {
         console.log(`📰 window ${from}..${to}`);
@@ -353,12 +354,20 @@ async function main() {
             if (fresh.length) await sb('news_events?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(fresh) });
             total += fresh.length;
         } catch (e) {
-            console.log(`  ❌ window ${from}: ${e.message}`);
-            process.exitCode = 1;
+            console.log(`::warning title=news window ${from}::${e.message.slice(0, 180)}`);
+            windowFailed = true;
         }
     }
     if (DRY) console.log(JSON.stringify(dump, null, 1));
     console.log(`✅ news events written: ${total}`);
+    // One flaky LLM window is retried 12h later by the next run; alert (fail) only when the
+    // feed itself has gone stale, so the owner gets mail for real outages, not model hiccups.
+    if (!DRY && BACKFILL_DAYS === 0 && SUPABASE_URL && SUPABASE_KEY) {
+        const last = (await sb('news_events?select=date&order=date.desc&limit=1'))?.[0]?.date;
+        const age = last ? Math.round((Date.parse(today) - Date.parse(last)) / 86400000) : 99;
+        console.log(`  latest news event: ${last} (${age}d old, max ${NEWS_MAX_AGE_DAYS}d)`);
+        if (age > NEWS_MAX_AGE_DAYS) { console.log(`::error title=news feed stale::latest event ${last} is ${age}d old`); process.exitCode = 1; }
+    } else if (windowFailed) process.exitCode = 1;
 }
 
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
