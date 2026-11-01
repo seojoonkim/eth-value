@@ -219,8 +219,10 @@ async function classifyWindow(heads, existing) {
         if (!validEvent(ev)) { console.log(`  skip invalid: ${JSON.stringify(ev).slice(0, 120)}`); continue; }
         const conflict = mechanismConflicts(ev);
         if (conflict.length) { console.log(`  skip chain/direction mismatch (${conflict.join(',')}): ${ev.title.en}`); continue; }
-        const srcs = (ev.source_idx || []).map(i => heads[i]).filter(Boolean);
-        if (!srcs.length) { console.log(`  skip unsourced: ${ev.title.en}`); continue; }
+        // Haiku sometimes returns indices as strings ("12", "#12", "12. ...") or under another key.
+        const rawIdx = [].concat(ev.source_idx ?? ev.source_indices ?? ev.sources ?? ev.source_ids ?? []);
+        const srcs = rawIdx.map(i => heads[typeof i === 'number' ? i : parseInt(String(i).replace(/^\D+/, ''), 10)]).filter(Boolean);
+        if (!srcs.length) { console.log(`  skip unsourced: ${ev.title.en} (raw=${JSON.stringify(rawIdx).slice(0, 60)}, keys=${Object.keys(ev).join(',')})`); continue; }
         const slug = String(ev.id_hint || ev.title.en).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
         const date = srcs.map(s => s.date).sort()[0];
         res.push({
