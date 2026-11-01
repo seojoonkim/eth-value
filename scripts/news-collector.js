@@ -161,12 +161,13 @@ async function llm(user, system = SYSTEM) {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: HAIKU, max_tokens: 16000, system, messages: [{ role: 'user', content: user + '\nReturn only the JSON object.' }] }),
+        body: JSON.stringify({ model: HAIKU, max_tokens: 32000, thinking: { type: 'disabled' }, system, messages: [{ role: 'user', content: user + '\nReturn only the JSON object.' }] }),
         signal: AbortSignal.timeout(300000)
     });
-    if (!r.ok) throw new Error(`Haiku HTTP ${r.status}`);
+    if (!r.ok) throw new Error(`Haiku HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
     const j = await r.json();
-    if (j.stop_reason === 'max_tokens') console.log(`  ⚠️ ${HAIKU}: hit max_tokens, JSON may be cut`);
+    if (j.stop_reason === 'max_tokens') console.log(`  ⚠️ ${HAIKU}: hit max_tokens (${j.usage?.output_tokens} out), JSON may be cut`);
+    else console.log(`  🤖 ${HAIKU} ${j.usage?.input_tokens}/${j.usage?.output_tokens}`);
     // Haiku 5.5 may lead with thinking blocks: read text blocks by type.
     return { text: (j.content || []).filter(x => x.type === 'text').map(x => x.text).join(''), model: HAIKU };
 }
