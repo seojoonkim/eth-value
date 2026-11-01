@@ -19,7 +19,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = process.env.NEWS_MODEL || process.env.COMMENTARY_MODEL || 'gpt-6-luna';
 const NEWS_MAX_AGE_DAYS = +(process.env.NEWS_MAX_AGE_DAYS || 4);
-const HAIKU = process.env.HAIKU_MODEL || 'claude-haiku-5-5'; // latest Haiku (2026-10-07); fallback after Luna
+const HAIKU = process.env.HAIKU_MODEL || 'claude-haiku-5-5'; // default model (Simon 2026-11-01); GPT is fallback only
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry-run');
@@ -140,37 +140,51 @@ For each event output:
  source_idx: REQUIRED array of integer indices (the number before each headline) of the headlines used; never omit
 Only include events with real price relevance. Quality over quantity. Return JSON {"events":[...]}.`;
 
-// After a 429/quota error, skip the primary for the rest of this run (10-27~11-01: no credits, every window waited on it).
-let primaryDown = false;
-async function llm(user, system = SYSTEM) {
-    if (OPENAI_API_KEY && !primaryDown) {
-        try {
-            const r = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-                body: JSON.stringify({ model: MODEL, max_completion_tokens: 16000, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }),
-                signal: AbortSignal.timeout(300000)
-            });
-            if (!r.ok) throw new Error(`HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
-            const j = await r.json();
-            const t = j.choices?.[0]?.message?.content;
-            if (t) { console.log(`  🤖 ${MODEL} ${j.usage?.prompt_tokens}/${j.usage?.completion_tokens}`); return { text: t, model: MODEL }; }
-            throw new Error('empty');
-        } catch (e) { console.log(`  ⚠️ ${MODEL}: ${e.message}`); if (/HTTP 429|insufficient_quota/.test(e.message)) primaryDown = true; }
-    }
-    if (!ANTHROPIC_API_KEY) throw new Error('no LLM key');
+// Default: Claude Haiku 5.5 (Simon 2026-11-01). GPT is only a fallback when Haiku errors.
+async function callHaiku(user, system) {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({ model: HAIKU, max_tokens: 32000, thinking: { type: 'disabled' }, system, messages: [{ role: 'user', content: user + '\nReturn only the JSON object.' }] }),
         signal: AbortSignal.timeout(300000)
     });
-    if (!r.ok) throw new Error(`Haiku HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
     const j = await r.json();
     if (j.stop_reason === 'max_tokens') console.log(`  ⚠️ ${HAIKU}: hit max_tokens (${j.usage?.output_tokens} out), JSON may be cut`);
     else console.log(`  🤖 ${HAIKU} ${j.usage?.input_tokens}/${j.usage?.output_tokens}`);
-    // Haiku 5.5 may lead with thinking blocks: read text blocks by type.
-    return { text: (j.content || []).filter(x => x.type === 'text').map(x => x.text).join(''), model: HAIKU };
+    const t = (j.content || []).filter(x => x.type === 'text').map(x => x.text).join('');
+    if (!t) throw new Error('empty');
+    return { text: t, model: HAIKU };
+}
+
+// After a 429/quota error, skip GPT for the rest of this run.
+let gptDown = false;
+async function callGpt(user, system) {
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+        body: JSON.stringify({ model: MODEL, max_completion_tokens: 16000, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }),
+        signal: AbortSignal.timeout(300000)
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
+    const j = await r.json();
+    const t = j.choices?.[0]?.message?.content;
+    if (!t) throw new Error('empty');
+    console.log(`  🤖 ${MODEL} ${j.usage?.prompt_tokens}/${j.usage?.completion_tokens}`);
+    return { text: t, model: MODEL };
+}
+
+async function llm(user, system = SYSTEM) {
+    let err;
+    if (ANTHROPIC_API_KEY) {
+        try { return await callHaiku(user, system); }
+        catch (e) { err = e; console.log(`  ⚠️ ${HAIKU}: ${e.message}${OPENAI_API_KEY && !gptDown ? ' → fallback ' + MODEL : ''}`); }
+    }
+    if (OPENAI_API_KEY && !gptDown) {
+        try { return await callGpt(user, system); }
+        catch (e) { err = e; console.log(`  ⚠️ ${MODEL}: ${e.message}`); if (/HTTP 429|insufficient_quota/.test(e.message)) gptDown = true; }
+    }
+    throw err || new Error('no LLM key');
 }
 
 // LLM call + JSON parse, retried: a malformed/cut JSON reply failed the whole run 10-24~11-01.
