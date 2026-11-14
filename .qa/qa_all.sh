@@ -169,6 +169,8 @@ CHECKS=(
   "share_card_i18n|share_card_i18n_check|share_card_i18n|$URL $OUT/share"
   # 2026-10-15: ETH->USD conversions use that day's close (no $3,500 fallback); same values on every load
   "price_fallback|price_fallback_check|price_fallback|$URL"
+  # 2026-11-15: judge self-test — live price tick between loads passes, stale render / differing inputs fail
+  "float_judge|float_judge_selftest|float_judge|"
   "float_consistency|float_consistency_check|float_consistency|$URL"
   # 2026-10-15: keep-all text must stay in its box (ja/zh no-space sentences ran out at 390; ko legend under badge)
   "keep_all_overflow|keep_all_overflow_check|keep_all_overflow|$URL 390,1280"
