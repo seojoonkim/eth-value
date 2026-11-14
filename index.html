@@ -55,7 +55,7 @@
     <link rel="stylesheet" href="news-impact.css?v=20261015u">
     <link rel="stylesheet" href="valuation-dist.css?v=20261013b">
     <link rel="stylesheet" href="fv-band.css?v=20261014b">
-    <link rel="stylesheet" href="fv-backtest.css?v=20261014a">
+    <link rel="stylesheet" href="fv-backtest.css?v=20261115a">
     <link rel="stylesheet" href="model-constants.css?v=20261015k">
     <link rel="stylesheet" href="composite-sens.css?v=20261014a">
     <link rel="stylesheet" href="triple-point.css?v=20261014b">
@@ -30150,7 +30150,9 @@ html body .ai-commentary-footer { opacity: 1; margin-top: 24px; text-align: left
             const stables = state.stablecoins || 0;
             
             // ETH in DeFi
-            const ethInDefi = state.ethInDefi || (price > 0 && tvl > 0 ? tvl / price : 0);
+            // 2026-11-15: TVL ÷ the same price the models use. state.ethInDefi was set once with whichever price arrived first
+            // (Supabase close vs live), so Liquidity Premium flipped 2,587.83 ↔ 2,640.00 between loads of the same data.
+            const ethInDefi = (price > 0 && tvl > 0) ? tvl / price : (state.ethInDefi || 0);
             
             return {
                 price,
@@ -37492,7 +37494,7 @@ html body .ai-commentary-footer { opacity: 1; margin-top: 24px; text-align: left
     <script src="share-card.js?v=20261015d" defer></script>
     <script src="valuation-dist.js?v=20261013b" defer></script>
     <script src="fv-band.js?v=20261014b" defer></script>
-    <script src="fv-backtest.js?v=20261014a" defer></script>
+    <script src="fv-backtest.js?v=20261115a" defer></script>
     <script src="model-constants.js?v=20261014a" defer></script>
     <script src="composite-sens.js?v=20261014a" defer></script>
     <script src="triple-point.js?v=20261015k" defer></script>

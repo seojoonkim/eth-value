@@ -18,6 +18,17 @@ const API = 'https://ultrasound.money/api/fees/grouped-analysis-1';
     const p = await b.newPage({ viewport: { width: w, height: 900 } });
     let raw = null;
     p.on('response', async r => { if (r.url().startsWith(API) && r.ok()) { try { raw = await r.json(); } catch (e) {} } });
+    // 2026-11-15: ultrasound.money origin is down (Cloudflare 521 for most origins; curl with Origin https://ethval.com gets
+    // a cached 200 + ACAO '*', with Origin http://127.0.0.1 gets 521, no CORS header). So the local QA server origin cannot load
+    // the board while the live site still can. For local URLs only, answer the browser's request with exactly what the API returns
+    // to the ethval.com origin (same URL, same body, fetched by Node) — data unchanged; runs against https://ethval.com/ untouched.
+    if (/^http:\/\/(127\.0\.0\.1|localhost)/.test(url)) {
+      await p.route(API + '*', async route => {
+        try { const r = await fetch(route.request().url(), { headers: { Origin: 'https://ethval.com' } });
+          await route.fulfill({ status: r.status, headers: { 'content-type': r.headers.get('content-type') || 'application/json', 'access-control-allow-origin': '*' }, body: Buffer.from(await r.arrayBuffer()) });
+        } catch (e) { try { await route.abort(); } catch (_) {} }
+      });
+    }
     await p.addInitScript(([t, l]) => { try { localStorage.setItem('ethval-theme', t); localStorage.setItem('ethval-lang', l); } catch (e) {} }, [theme, lang]);
     // 2026-10-15: default 30s goto timed out under load (full QA runs 10+ browsers); 90s + one retry.
     const target = url + (lang === 'en' ? '' : `?lang=${lang}`);

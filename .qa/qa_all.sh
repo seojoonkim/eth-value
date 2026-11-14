@@ -137,6 +137,7 @@ CHECKS=(
   "extras_check|extras_check|extras_check|$URL"
   "fv_band_check|fv_band_check|fv_band_check|$URL"
   "fv_backtest_check|fv_backtest_check|fv_backtest_check|$URL"
+  "fv_record_check|fv_record_check|fv_record_check|$URL"
   "constants_check|constants_check|constants_check|$URL"
   "composite_sens|composite_sens_check|composite_sens|$URL"
   "triple_point|triple_point_check|triple_point|$URL"
